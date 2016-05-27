@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -99,14 +100,8 @@ public class OAuth2ClientFilterTest {
         initMocks(this);
         attributesContext = new AttributesContext(new RootContext());
         sessionContext = new SessionContext(attributesContext, newSession());
-        context = new UriRouterContext(sessionContext,
-                                       null,
-                                       null,
-                                       Collections.<String, String>emptyMap(),
-                                       new URI(ORIGINAL_URI));
         registrations = new ClientRegistrationRepository();
         request = new Request();
-        request.setMethod("GET").setUri(REQUESTED_URI);
     }
 
     @DataProvider
@@ -163,20 +158,20 @@ public class OAuth2ClientFilterTest {
     /** handleProtectedResource case
     /************************************************************************************************************/
 
-    @Test
-    public void shouldFailToHandleProtectedResourceWhenNoClientRegistrationIsSpecified() throws Exception {
-        final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        final Response response = filter.filter(context, request, next).get();
-
-        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(response.getEntity().getString()).isEmpty();
-        verifyZeroInteractions(next, failureHandler, discoveryAndDynamicRegistrationChain, registrationHandler);
+    private void setUpForHandleProtectedResourceCases() throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI));
+        request.setMethod("GET").setUri(REQUESTED_URI);
+        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
     }
 
     @Test
     public void shouldHandleProtectedResourceRedirectToAuthorizeEndpointWhenNotAuthorized() throws Exception {
         // Given
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
+        setUpForHandleProtectedResourceCases();
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
 
         // When
@@ -195,13 +190,11 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldSucceedToHandleProtectedResourceWhenAuthorized() throws Exception {
         // Given
+        setUpForHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class)))
             .thenReturn(newResponsePromise(new Response(OK)));
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -217,6 +210,7 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldSucceedToHandleProtectedResourceByRefreshingTheToken() throws Exception {
         // Given
+        setUpForHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class)))
             // Accessing the resource is unauthorized for the first time due to an invalid access token.
             .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(UNAUTHORIZED,
@@ -231,11 +225,7 @@ public class OAuth2ClientFilterTest {
                                                              field("expires_in", 1000),
                                                              field("id_token", OAuth2TestUtils.ID_TOKEN))))));
 
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
-
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -253,6 +243,7 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldHandleProtectedResourceTriesToRefreshTokenOnlyOnce() throws Exception {
         // Given
+        setUpForHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class)))
             // Accessing the resource is always unauthorized due to an invalid access token.
             .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(UNAUTHORIZED,
@@ -266,11 +257,8 @@ public class OAuth2ClientFilterTest {
                                                                      field("refresh_token", NEW_REFRESH_TOKEN),
                                                                      field("expires_in", 1000),
                                                                      field("id_token", OAuth2TestUtils.ID_TOKEN))))));
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -288,6 +276,7 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldFailToHandleProtectedResourceWhenRefreshingTokenFails() throws Exception {
         // Given
+        setUpForHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class)))
             // Accessing the resource is unauthorized for the first time due to an invalid access token.
             .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(UNAUTHORIZED,
@@ -298,11 +287,8 @@ public class OAuth2ClientFilterTest {
             .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(INTERNAL_SERVER_ERROR,
                                                                     E_TEMPORARILY_UNAVAILABLE,
                                                                     "Something bad happens")));
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -334,15 +320,12 @@ public class OAuth2ClientFilterTest {
     public void shouldHandleProtectedResourceReturnAnyResponseWhichDoNotNeedToRefreshToken(final Response response)
             throws Exception {
         // Given
+        setUpForHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class)))
             // Accessing the resource returns a non 401/expired token:
             .thenReturn(newResponsePromise(response));
 
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
-
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -412,6 +395,7 @@ public class OAuth2ClientFilterTest {
                                                                  Expression.valueOf(DEFAULT_CLIENT_ENDPOINT,
                                                                                     String.class));
         filter.setFailureHandler(failureHandler);
+        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
         return filter;
     }
 
