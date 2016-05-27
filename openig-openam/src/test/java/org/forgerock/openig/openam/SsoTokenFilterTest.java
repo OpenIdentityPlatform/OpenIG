@@ -40,7 +40,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.log.Logger;
-import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
@@ -58,7 +57,7 @@ public class SsoTokenFilterTest {
                                                                   field("successUrl", "/openam/console"));
     private static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
-    private AttributesContext attributesContext;
+    private Context context;
     private Request request;
     private Response authenticated;
     private Response unauthorized;
@@ -72,7 +71,7 @@ public class SsoTokenFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        attributesContext = new AttributesContext(new RootContext());
+        context = new RootContext();
 
         request = new Request();
         unauthorized = new Response();
@@ -126,14 +125,14 @@ public class SsoTokenFilterTest {
     public void shouldRequestForSSOTokenWhenNone(final String givenSsoTokenHeaderName) throws Exception {
         // Given
         when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
+        when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(attributesContext, request, next);
+        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(context, request, next);
 
         // Then
         verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next).handle(attributesContext, request);
+        verify(next).handle(context, request);
         assertThat(request.getHeaders().get(givenSsoTokenHeaderName != null
                                             ? givenSsoTokenHeaderName
                                             : DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
@@ -146,13 +145,13 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(attributesContext,
+        final Response finalResponse = buildSsoTokenFilter().filter(context,
                                                                     request,
                                                                     next).get();
 
         // Then
         verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
-        verify(next, times(2)).handle(attributesContext, request);
+        verify(next, times(2)).handle(context, request);
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
         assertThat(finalResponse).isSameAs(unauthorized);
     }
@@ -169,7 +168,7 @@ public class SsoTokenFilterTest {
         final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
 
         // When
-        final Response finalResponse = ssoTokenFilter.filter(attributesContext, request, next).get();
+        final Response finalResponse = ssoTokenFilter.filter(context, request, next).get();
 
         // Then
         verifyZeroInteractions(next);
@@ -184,13 +183,13 @@ public class SsoTokenFilterTest {
     public void shouldOnlyAuthenticateOnceOnMultiThreadingMode() throws Exception {
         // Given
         when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)));
+        when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                ssoTokenFilter.filter(attributesContext, request, next);
+                ssoTokenFilter.filter(context, request, next);
             }
         };
         final int taskNumber = 10;
@@ -207,7 +206,7 @@ public class SsoTokenFilterTest {
 
         // Then
         verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next, times(taskNumber)).handle(attributesContext, request);
+        verify(next, times(taskNumber)).handle(context, request);
         shutdownExecutor(executorService);
     }
 
@@ -216,7 +215,7 @@ public class SsoTokenFilterTest {
     public void shouldUpdateTokenOnMultiThreadingMode() throws Exception {
         // Given
         when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
-        when(next.handle(attributesContext, request)).thenReturn(newResponsePromise(new Response(OK)),
+        when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)),
                                                                  newResponsePromise(unauthorized),
                                                                  newResponsePromise(new Response(OK)));
 
@@ -225,7 +224,7 @@ public class SsoTokenFilterTest {
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                ssoTokenFilter.filter(attributesContext, request, next);
+                ssoTokenFilter.filter(context, request, next);
             }
         };
         final int taskNumber = 10;
@@ -235,7 +234,7 @@ public class SsoTokenFilterTest {
 
         // When
         // First call
-        ssoTokenFilter.filter(attributesContext, request, next).get();
+        ssoTokenFilter.filter(context, request, next).get();
         // before workers...
         for (int i = 0; i < taskNumber; i++) {
             executorService.execute(new Worker(action, started, finished));
@@ -248,7 +247,7 @@ public class SsoTokenFilterTest {
         verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
         // Next is called a first time before the workers, plus (x + 1) times by the workers (task_number + one
         // for managing the unauthorized response).
-        verify(next, times(1 + taskNumber + 1)).handle(attributesContext, request);
+        verify(next, times(1 + taskNumber + 1)).handle(context, request);
         shutdownExecutor(executorService);
     }
 
