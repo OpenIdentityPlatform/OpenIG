@@ -34,6 +34,7 @@ import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -103,7 +104,7 @@ import org.forgerock.util.time.Duration;
  *          "pepPassword"            :    expression,         [REQUIRED*]
  *          "pepRealm"               :    String,             [OPTIONAL*- default value is the one used for "realm"
  *                                                                        attribute]
- *          "policiesHandler"        :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
+ *          "amHandler"              :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
  *                                                                        provided in heap.]
  *          "realm"                  :    String,             [OPTIONAL - default is '/']
  *          "ssoTokenHeader"         :    String,             [OPTIONAL]
@@ -128,7 +129,7 @@ import org.forgerock.util.time.Duration;
  * (*) "pepUsername" and "pepPassword" are the credentials, and "pepRealm" is the
  * realm of the user who has access to perform the operation.
  * <p>
- * This heaplet adds an SsoTokenFilter to the policiesHandler's chain and its
+ * This heaplet adds an SsoTokenFilter to the amHandler's chain and its
  * role is to retrieve and set the SSO token header of this given user (REST API
  * calls must present the session token, aka SSO Token, in an HTTP header as
  * proof of authentication).
@@ -194,14 +195,14 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
      * @param target
      *            Map which will be used to store policy decision extra
      *            attributes, not {@code null}.
-     * @param policiesHandler
+     * @param amHandler
      *            The handler used to get perform policies requests, not {@code null}.
      */
     public PolicyEnforcementFilter(final URI baseUri,
                                    @SuppressWarnings("rawtypes") final Expression<Map> target,
-                                   final Handler policiesHandler) {
+                                   final Handler amHandler) {
         this.target = checkNotNull(target);
-        this.requestHandler = CrestHttp.newRequestHandler(policiesHandler, baseUri);
+        this.requestHandler = CrestHttp.newRequestHandler(amHandler, baseUri);
     }
 
     /**
@@ -459,9 +460,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             final String pepPassword = config.get("pepPassword").required().as(evaluated()).asString();
             final String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
             final String pepRealm = config.get("pepRealm").as(evaluated()).defaultTo(realm).asString();
-            final Handler policiesHandler = config.get("policiesHandler")
-                                                  .defaultTo(CLIENT_HANDLER_HEAP_KEY)
-                                                  .as(requiredHeapObject(heap, Handler.class));
+            final Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
+                                        .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                        .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
 
             @SuppressWarnings("rawtypes")
@@ -470,7 +471,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                  .as(expression(Map.class));
 
             try {
-                final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(policiesHandler,
+                final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
                                                                          new URI(openamUrl),
                                                                          pepRealm,
                                                                          ssoTokenHeader,
@@ -481,7 +482,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 final PolicyEnforcementFilter filter =
                         new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl, realm),
                                                     target,
-                                                    chainOf(policiesHandler,
+                                                    chainOf(amHandler,
                                                             ssoTokenFilter,
                                                             new ApiVersionProtocolHeaderFilter()));
 
