@@ -30,7 +30,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
@@ -104,8 +104,8 @@ import org.forgerock.util.time.Duration;
  *          "pepPassword"            :    expression,         [REQUIRED*]
  *          "pepRealm"               :    String,             [OPTIONAL*- default value is the one used for "realm"
  *                                                                        attribute]
- *          "amHandler"              :    handler,            [OPTIONAL - by default it uses the 'ClientHandler'
- *                                                                        provided in heap.]
+ *          "amHandler"              :    handler,            [OPTIONAL - by default it uses the
+ *                                                                        'ForgeRockClientHandler' provided in heap.]
  *          "realm"                  :    String,             [OPTIONAL - default is '/']
  *          "ssoTokenHeader"         :    String,             [OPTIONAL]
  *          "application"            :    String,             [OPTIONAL]
@@ -461,7 +461,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             final String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
             final String pepRealm = config.get("pepRealm").as(evaluated()).defaultTo(realm).asString();
             final Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
-                                        .defaultTo(CLIENT_HANDLER_HEAP_KEY)
+                                        .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                         .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
 
