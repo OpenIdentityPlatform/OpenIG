@@ -22,6 +22,7 @@ import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -193,7 +194,8 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
 
         @Override
         public Object create() throws HeapException {
-            Handler amHandler = config.get("amHandler").required().as(requiredHeapObject(heap, Handler.class));
+            Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY).required()
+                                                       .as(requiredHeapObject(heap, Handler.class));
             URI baseUri = getOpenamBaseUri();
             String realm = config.get("realm").as(evaluated()).defaultTo("/").asString();
             String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluated()).asString();
