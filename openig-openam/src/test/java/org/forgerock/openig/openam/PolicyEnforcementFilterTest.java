@@ -117,7 +117,7 @@ public class PolicyEnforcementFilterTest {
     private Handler next;
 
     @Mock
-    private Handler policiesHandler;
+    private Handler amHandler;
 
     @Mock
     private Logger logger;
@@ -143,7 +143,7 @@ public class PolicyEnforcementFilterTest {
         cache = new PerItemEvictionStrategyCache<>(newSingleThreadScheduledExecutor(), duration(1, TimeUnit.MINUTES));
         target = Expression.valueOf("${attributes.policy}", Map.class);
 
-        when(policiesHandler.handle(any(Context.class), any(Request.class)))
+        when(amHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(policyDecisionResponse()));
 
         resourceRequest = new Request();
@@ -269,9 +269,9 @@ public class PolicyEnforcementFilterTest {
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
     public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri,
                                                           final Expression<Map> target,
-                                                          final Handler policiesHandler)
+                                                          final Handler amHandler)
             throws Exception {
-        new PolicyEnforcementFilter(baseUri, target, policiesHandler);
+        new PolicyEnforcementFilter(baseUri, target, amHandler);
     }
 
     @Test
@@ -289,7 +289,7 @@ public class PolicyEnforcementFilterTest {
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
-        when(policiesHandler.handle(any(Context.class), any(Request.class)))
+        when(amHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(displayEmptyResourceResponse));
 
         // When
@@ -297,7 +297,7 @@ public class PolicyEnforcementFilterTest {
                                                      request,
                                                      next).get();
         // Then
-        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(amHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
                                                                                        .get(DEFAULT_POLICY_KEY);
@@ -318,7 +318,7 @@ public class PolicyEnforcementFilterTest {
                                                      resourceRequest,
                                                      next).get();
         // Then
-        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(amHandler).handle(any(Context.class), any(Request.class));
         verify(next).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
@@ -339,7 +339,7 @@ public class PolicyEnforcementFilterTest {
                                                      request,
                                                      next).get();
         // Then
-        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(amHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         assertThatAttributesAndAdvicesAreStoredInAttributesContext();
     }
@@ -353,7 +353,7 @@ public class PolicyEnforcementFilterTest {
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
         filter.setLogger(logger);
 
-        when(policiesHandler.handle(any(Context.class), any(Request.class)))
+        when(amHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(errorResponse));
 
         // When
@@ -361,7 +361,7 @@ public class PolicyEnforcementFilterTest {
                                                      resourceRequest,
                                                      next).get();
         // Then
-        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(amHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
         verify(logger).debug(any(Exception.class));
@@ -405,7 +405,7 @@ public class PolicyEnforcementFilterTest {
         // Given
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
                                                                      target,
-                                                                     policiesHandler);
+                                                                     amHandler);
         filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
@@ -421,7 +421,7 @@ public class PolicyEnforcementFilterTest {
                       resourceRequest,
                       next).get();
         // Then
-        verify(policiesHandler).handle(any(Context.class), any(Request.class));
+        verify(amHandler).handle(any(Context.class), any(Request.class));
         verify(next).handle(attributesContext, resourceRequest);
         verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
@@ -437,12 +437,12 @@ public class PolicyEnforcementFilterTest {
         // Mimic cache expiration
         captor.getValue().run();
 
-        // When third call: the policiesHandler must do another call to get the policy decision result.
+        // When third call: the amHandler must do another call to get the policy decision result.
         filter.filter(attributesContext,
                       resourceRequest,
                       next).get();
 
-        verify(policiesHandler, times(2)).handle(any(Context.class), any(Request.class));
+        verify(amHandler, times(2)).handle(any(Context.class), any(Request.class));
         verify(next, times(3)).handle(attributesContext, resourceRequest);
     }
 
@@ -659,7 +659,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
-        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, target, policiesHandler);
+        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, target, amHandler);
         Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
@@ -673,7 +673,7 @@ public class PolicyEnforcementFilterTest {
                        field("pepUsername", "jackson"),
                        field("pepPassword", "password"),
                        field("ssoTokenSubject", "${attributes.ssoTokenSubject}"),
-                       field("policiesHandler", "policiesHandler")));
+                       field("amHandler", "amHandler")));
     }
 
     private static JsonValue buildHeapletConfiguration(final String givenMaxCacheExpiration) {
@@ -703,7 +703,7 @@ public class PolicyEnforcementFilterTest {
         heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
-        heap.put("policiesHandler", policiesHandler);
+        heap.put("amHandler", amHandler);
         return heap;
     }
 }
