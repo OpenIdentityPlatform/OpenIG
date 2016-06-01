@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_CLIENT;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
@@ -338,12 +339,114 @@ public class OAuth2ClientFilterTest {
         verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
 
+    /*
+     * OPENID USE CASES In these tests, we pretend that the client registration
+     * contains the scopes "openid" and "email" This is required to have a
+     * response from userinfo endpoint containing the email attribute. See RFC
+     * https://openid.net/specs/openid-connect-basic-1_0.html#Scopes
+     */
+
+    @Test
+    public void shouldSucceedToHandleProtectedOpenIdResource() throws Exception {
+        // Given
+        setUpForHandleProtectedResourceCases();
+        when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
+        when(registrationHandler.handle(eq(context), any(Request.class)))
+            .thenReturn(newResponsePromise(
+                    buildOAuth2Response(OK, json(object(field("email", "janedoe@example.com"))))));
+
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(OK);
+        verifyZeroInteractions(registrationHandler);
+        // Checking for the user info (openid case) calls the LoadUserInfoCallable.
+        assertThatTargetAttributesAreSetAndContain(null, null, singletonMap("email", "janedoe@example.com"));
+        verify(next).handle(eq(context), any(Request.class));
+        verify(registrationHandler).handle(eq(context), any(Request.class));
+        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+    }
+
+    @Test
+    public void shouldSucceedToHandleProtectedOpenIdResourceByRefreshingToken() throws Exception {
+        // Given
+        setUpForHandleProtectedResourceCases();
+        when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
+        when(registrationHandler.handle(eq(context), any(Request.class)))
+            // First call is an invalid token for accessing the user info endpoint.
+            .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(UNAUTHORIZED,
+                                                                    "invalid_token",
+                                                                    "The Access Token expired")))
+            // Refresh the token
+            .thenReturn(newResponsePromise(buildOAuth2Response(OK,
+                                                               json(object(
+                                                                     field("access_token", NEW_ACCESS_TOKEN),
+                                                                     field("refresh_token", NEW_REFRESH_TOKEN),
+                                                                     field("expires_in", 1000),
+                                                                     field("id_token", OAuth2TestUtils.ID_TOKEN))))))
+            .thenReturn(newResponsePromise(
+                    buildOAuth2Response(OK, json(object(field("email", "janedoe@example.com"))))));
+
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(OK);
+        verifyZeroInteractions(registrationHandler);
+        // Checking for the user info (openid case) calls the LoadUserInfoCallable.
+        assertThatTargetAttributesAreSetAndContain(null, null, singletonMap("email", "janedoe@example.com"));
+        verify(next).handle(eq(context), any(Request.class));
+        verify(registrationHandler, times(3)).handle(eq(context), any(Request.class));
+        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+    }
+
+    @Test
+    public void shouldFailToHandleProtectedOpenIdResourceWhenRefreshingTokenFail() throws Exception {
+        // Given
+        setUpForHandleProtectedResourceCases();
+        when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
+        when(registrationHandler.handle(eq(context), any(Request.class)))
+            // Called twice. The second call tries to refresh the token.
+            .thenReturn(newResponsePromise(buildOAuth2ErrorResponse(UNAUTHORIZED,
+                                                                    "invalid_token",
+                                                                    "The Access Token expired")));
+
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(OK);
+        verifyZeroInteractions(registrationHandler);
+        // The user info attribute should be empty when an error occurs.
+        assertThatTargetAttributesAreSetAndContain(null, null, Collections.<String, String> emptyMap());
+        verify(next).handle(eq(context), any(Request.class));
+        verify(registrationHandler, times(2)).handle(eq(context), any(Request.class));
+        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+    }
+
     private void assertThatTargetAttributesAreSet() {
-        assertThatTargetAttributesAreSetAndContain(null, null);
+        assertThatTargetAttributesAreSetAndContain(null, null, null);
+    }
+
+    private void assertThatTargetAttributesAreSetAndContain(final String accessToken,
+                                                            final String refreshToken) {
+        assertThatTargetAttributesAreSetAndContain(accessToken, refreshToken, null);
     }
 
     @SuppressWarnings("unchecked")
-    private void assertThatTargetAttributesAreSetAndContain(final String accessToken, final String refreshToken) {
+    private void assertThatTargetAttributesAreSetAndContain(final String accessToken,
+                                                            final String refreshToken,
+                                                            final Map<String, String> userInfo) {
         final Map<String, ?> attributes = (Map<String, ?>) sessionContext.asContext(AttributesContext.class)
                                                                          .getAttributes()
                                                                          .get("openid");
@@ -362,6 +465,19 @@ public class OAuth2ClientFilterTest {
         assertThat((Long) attributes.get("expires_in")).isGreaterThan(0);
         assertThat((List<String>) attributes.get("scope")).isNotEmpty();
         assertThat(((Map<String, ?>) attributes.get("id_token_claims"))).isNotEmpty();
+        if (userInfo != null) {
+            assertThatTargetContainsUserInfoAttributes(attributes, userInfo);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertThatTargetContainsUserInfoAttributes(final Map<String, ?> attributes,
+                                                                   final Map<String, String> expectedUserInfoValues) {
+        final Map<String, ?> userInfo = (Map<String, ?>) attributes.get("user_info");
+        for (final Map.Entry<String, String> userInfoAttribute : expectedUserInfoValues.entrySet()) {
+            assertThat(userInfo.get(userInfoAttribute.getKey())).isEqualTo(userInfoAttribute.getValue());
+        }
+        assertThat(userInfo).hasSameSizeAs(expectedUserInfoValues);
     }
 
     private static Response buildOAuth2ErrorResponse(final Status status,
