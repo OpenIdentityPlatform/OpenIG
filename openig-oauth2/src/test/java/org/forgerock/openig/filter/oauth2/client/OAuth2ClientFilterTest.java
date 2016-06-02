@@ -166,6 +166,36 @@ public class OAuth2ClientFilterTest {
     }
 
     /************************************************************************************************************/
+    /** handleUserInitiatedDiscovery case
+    /************************************************************************************************************/
+
+    private void setUpForHandleUserInitiatedDiscoveryCases(final String discoveryUri) throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI + DEFAULT_CLIENT_ENDPOINT + discoveryUri));
+        request.setUri(ORIGINAL_URI + discoveryUri);
+    }
+
+    @Test
+    public void shouldSucceedToHandleUserInitiatedDiscovery() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedDiscoveryCases("/login?discovery=bjensen@example.com&goto=redirectUri");
+        when(discoveryAndDynamicRegistrationChain.handle(eq(context), eq(request)))
+            .thenReturn(newResponsePromise(new Response(TEAPOT)));
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(discoveryAndDynamicRegistrationChain).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(TEAPOT);
+        verifyZeroInteractions(failureHandler, loginHandler, next, registrationHandler);
+    }
+
+    /************************************************************************************************************/
     /** handleUserInitiatedLogin case
     /************************************************************************************************************/
 
