@@ -234,6 +234,149 @@ public class OAuth2ClientFilterTest {
     }
 
     /************************************************************************************************************/
+    /** handleAuthorizationCallback case
+    /************************************************************************************************************/
+
+    private void setUpForHandleAuthorizationCallbackCases(final String uri) throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI + DEFAULT_CLIENT_ENDPOINT + uri));
+        request.setMethod("GET");
+        request.setUri(ORIGINAL_URI + uri);
+    }
+
+    @Test
+    public void shouldFailToHandleAuthorizationCallbackWhenRequestIsNotSufficientlySecure() throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(true);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @DataProvider
+    private static Object[][] requestMethod() {
+        return new Object[][] {
+            { "POST" },
+            { "CONNECT" },
+            { "PATCH" },
+            { "PUT" },
+            { "DELETE" },
+            { "HEAD" } };
+    }
+
+    @Test(dataProvider = "requestMethod")
+    public void shouldFailToHandleAuthorizationCallbackWhenRequestIsMethodNotGet(final String method) throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback");
+        request.setMethod(method);
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @Test
+    public void shouldFailToHandleAuthorizationCallbackWhenSessionNotAuthorized() throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @Test
+    public void shouldFailToHandleAuthorizationCallbackWhenSessionStateIsNotAuthorizing() throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback?state=af0ifjsldkj");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @Test
+    public void shouldFailToHandleAuthorizationCallbackWhenNoCodeProvided() throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback?state=af0ifjsldkj");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @Test
+    public void shouldFailToHandleAuthorizationCallbackWhenNoClientRegistrationSpecified() throws Exception {
+        // Given
+        setUpForHandleAuthorizationCallbackCases("/callback?state=af0ifjsldkj&code=authorizationCode");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    @Test
+    public void shouldSucceedToHandleAuthorizationCallback() throws Exception {
+        // Given
+        when(registrationHandler.handle(any(Context.class), any(Request.class)))
+            .thenReturn(newResponsePromise(
+                    buildOAuth2Response(OK, json(object(field("access_token", NEW_ACCESS_TOKEN),
+                                                        field("refresh_token", NEW_REFRESH_TOKEN),
+                                                        field("expires_in", 1000),
+                                                        field("id_token", OAuth2TestUtils.ID_TOKEN))))));
+        setUpForHandleAuthorizationCallbackCases("/callback?state=af0ifjsldkj:redirectUri&code=authorizationCode");
+        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+        setSessionAuthorized();
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(FOUND);
+        assertThat(response.getHeaders().getFirst("Location")).isEqualTo("redirectUri");
+        verify(registrationHandler).handle(eq(context), any(Request.class));
+        verifyZeroInteractions(next, failureHandler, discoveryAndDynamicRegistrationChain);
+    }
+
+    /************************************************************************************************************/
     /** handleUserInitiatedLogout case
     /************************************************************************************************************/
 

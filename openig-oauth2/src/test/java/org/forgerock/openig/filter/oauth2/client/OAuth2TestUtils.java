@@ -93,6 +93,7 @@ public final class OAuth2TestUtils {
 
     static JsonValue buildAuthorizedOAuth2Session(final String clientRegistrationName, final String requestedUri) {
         return json(object(field("crn", clientRegistrationName),
+                           field("arn", "af0ifjsldkj"),
                            field("ce", requestedUri),
                            field("s", array("address", "phone", "openid", "profile")),
                            field("atr", object(field("access_token", ID_TOKEN),
