@@ -22,7 +22,6 @@ import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.http.handler.Handlers.chainOf;
-import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValueFunctions.duration;
@@ -62,6 +61,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
@@ -315,10 +315,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
             // Everything else...
             return handleProtectedResource(context, request, next, true);
-        } catch (final OAuth2ErrorException e) {
-            return handleOAuth2ErrorException(context, request, e);
-        } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
+        } catch (final OAuth2ErrorException | ResponseException e) {
+            return handleException(context, request, e);
         }
     }
 
@@ -489,88 +487,84 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
     private Promise<Response, NeverThrowsException> handleAuthorizationCallback(final Context context,
                                                                                 final Request request)
-            throws OAuth2ErrorException {
+            throws OAuth2ErrorException, ResponseException {
 
-        try {
-            if (!"GET".equals(request.getMethod())) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                        "Authorization call-back failed because the request was not a GET");
-            }
-
-            /*
-             * The state must be valid regardless of whether the authorization
-             * succeeded or failed.
-             */
-            final String state = request.getForm().getFirst("state");
-            if (state == null) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                        "Authorization call-back failed because there was no state parameter");
-            }
-            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
-            if (!session.isAuthorizing()) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                        "Authorization call-back failed because there is no authorization in progress");
-            }
-            final int colonPos = state.indexOf(':');
-            final String actualHash = colonPos < 0 ? state : state.substring(0, colonPos);
-            final String gotoUri = colonPos < 0 ? null : state.substring(colonPos + 1);
-            final String expectedHash =
-                    createAuthorizationNonceHash(session.getAuthorizationRequestNonce());
-            if (!expectedHash.equals(actualHash)) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST,
-                        "Authorization call-back failed because the state parameter contained "
-                                + "an unexpected value");
-            }
-
-            final String code = request.getForm().getFirst("code");
-            if (code == null) {
-                throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
-            }
-
-            final ClientRegistration client = getClientRegistration(session);
-            if (client == null) {
-                throw new OAuth2ErrorException(E_INVALID_REQUEST, format(
-                        "Authorization call-back failed because the client registration %s was unrecognized",
-                        session.getClientRegistrationName()));
-            }
-            final JsonValue accessTokenResponse =
-                    blockingCall(client.getAccessToken(context, code, buildCallbackUri(context, request).toString()),
-                                 "getting the access token");
-
-            /*
-             * Finally complete the authorization request by redirecting to the
-             * original goto URI and saving the session. It is important to save the
-             * session after setting the response because it may need to access
-             * response cookies.
-             */
-            final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
-            return httpRedirectGoto(context, request, gotoUri, defaultLoginGoto)
-                    .then(new Function<Response, Response, NeverThrowsException>() {
-                        @Override
-                        public Response apply(final Response response) {
-                            try {
-                                saveSession(context, authorizedSession, buildUri(context, request, clientEndpoint));
-                            } catch (ResponseException e) {
-                                return e.getResponse();
-                            }
-                            return response;
-                        }
-                    });
-        } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
+        if (!"GET".equals(request.getMethod())) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                    "Authorization call-back failed because the request was not a GET");
         }
+
+        /*
+         * The state must be valid regardless of whether the authorization
+         * succeeded or failed.
+         */
+        final String state = request.getForm().getFirst("state");
+        if (state == null) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                    "Authorization call-back failed because there was no state parameter");
+        }
+        final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
+        if (!session.isAuthorizing()) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                    "Authorization call-back failed because there is no authorization in progress");
+        }
+        final int colonPos = state.indexOf(':');
+        final String actualHash = colonPos < 0 ? state : state.substring(0, colonPos);
+        final String gotoUri = colonPos < 0 ? null : state.substring(colonPos + 1);
+        final String expectedHash =
+                createAuthorizationNonceHash(session.getAuthorizationRequestNonce());
+        if (!expectedHash.equals(actualHash)) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST,
+                    "Authorization call-back failed because the state parameter contained "
+                            + "an unexpected value");
+        }
+
+        final String code = request.getForm().getFirst("code");
+        if (code == null) {
+            throw new OAuth2ErrorException(OAuth2Error.valueOfForm(request.getForm()));
+        }
+
+        final ClientRegistration client = getClientRegistration(session);
+        if (client == null) {
+            throw new OAuth2ErrorException(E_INVALID_REQUEST, format(
+                    "Authorization call-back failed because the client registration %s was unrecognized",
+                    session.getClientRegistrationName()));
+        }
+        final JsonValue accessTokenResponse =
+                blockingCall(client.getAccessToken(context, code, buildCallbackUri(context, request).toString()),
+                             "getting the access token");
+
+        /*
+         * Finally complete the authorization request by redirecting to the
+         * original goto URI and saving the session. It is important to save the
+         * session after setting the response because it may need to access
+         * response cookies.
+         */
+        final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
+        return httpRedirectGoto(context, request, gotoUri, defaultLoginGoto)
+                .then(new Function<Response, Response, NeverThrowsException>() {
+                    @Override
+                    public Response apply(final Response response) {
+                        try {
+                            saveSession(context, authorizedSession, buildUri(context, request, clientEndpoint));
+                        } catch (ResponseException e) {
+                            return e.getResponse();
+                        }
+                        return response;
+                    }
+                });
     }
 
-    private Promise<Response, NeverThrowsException> handleOAuth2ErrorException(final Context context,
-                                                                               final Request request,
-                                                                               final OAuth2ErrorException e) {
+    private Promise<Response, NeverThrowsException> handleException(final Context context,
+                                                                    final Request request,
+                                                                    final Exception e) {
         final Map<String, Object> info = new LinkedHashMap<>();
         try {
             final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
             info.putAll(session.getAccessTokenResponse());
 
             // Override these with effective values.
-            info.put("clientRegistration", session.getClientRegistrationName());
+            info.put("client_registration", session.getClientRegistrationName());
             info.put("client_endpoint", session.getClientEndpoint());
             info.put("expires_in", session.getExpiresIn());
             info.put("scope", session.getScopes());
@@ -589,9 +583,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              * was passed in to this method.
              */
         }
-        final OAuth2Error error = e.getOAuth2Error();
-        logger.error(e.getMessage());
-        info.put("error", error.toJsonContent());
+        if (e instanceof OAuth2ErrorException) {
+            final OAuth2Error error = ((OAuth2ErrorException) e).getOAuth2Error();
+            logger.error(e.getMessage());
+            info.put("error", error.toJsonContent());
+        }
+        info.put("exception", e);
         target.set(bindings(context, request), info);
         return failureHandler.handle(context, request);
     }
@@ -603,10 +600,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         final OAuth2Session session;
         try {
             session = loadOrCreateSession(context, request, clientEndpoint, time);
-        } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
-        } catch (OAuth2ErrorException e) {
-            return newResultPromise(newInternalServerError(e));
+        } catch (OAuth2ErrorException | ResponseException e) {
+            return handleException(context, request, e);
         }
         if (!session.isAuthorized() && requireLogin) {
             return sendAuthorizationRedirect(context, request, null);
@@ -630,9 +625,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return new AsyncFunction<Response, Response, NeverThrowsException>() {
             @Override
             public Promise<Response, NeverThrowsException> apply(final Response response) {
-                if (!UNAUTHORIZED.equals(response.getStatus())) {
-                    // Just forward the response as-is.
+                final Status status = response.getStatus();
+                if (!(status.isServerError() || status.isClientError())) {
+                    // Just forward the response as-is if not an error.
                     return newResultPromise(response);
+                }
+                if (!UNAUTHORIZED.equals(status)) {
+                    return handleException(context, request, response.getCause());
                 }
 
                 final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response).getOAuth2Error();
@@ -641,7 +640,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         || (error.is(E_INVALID_TOKEN)
                                 && (clientRegistration == null || session.getRefreshToken() == null))) {
                     // Unauthorized but not due to an invalid token, forwards it.
-                    return newResultPromise(response);
+                    return handleException(context, request, response.getCause());
                 }
 
                 // At this point, we only react once to try to refresh the access token.
@@ -661,7 +660,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                 // Couldn't refresh the access token: return the original response (401)
                                 // to the caller.
                                 logger.error(e);
-                                return newResultPromise(response);
+                                return handleException(context, request, e);
                             }
                         });
             }
@@ -730,10 +729,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 });
     }
 
-    private static Promise<Response, NeverThrowsException> httpRedirectGoto(final Context context,
-                                                                            final Request request,
-                                                                            final String gotoUri,
-                                                                            final Expression<String> defaultGotoUri) {
+    private Promise<Response, NeverThrowsException> httpRedirectGoto(final Context context,
+                                                                     final Request request,
+                                                                     final String gotoUri,
+                                                                     final Expression<String> defaultGotoUri) {
         try {
             if (gotoUri != null) {
                 return completion(httpRedirect(gotoUri));
@@ -743,7 +742,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 return completion(httpResponse(OK));
             }
         } catch (ResponseException e) {
-            return newResultPromise(e.getResponse());
+            return handleException(context, request, e);
         }
     }
 

@@ -22,8 +22,12 @@ import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_CLIENT;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_TEMPORARILY_UNAVAILABLE;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Status.BAD_GATEWAY;
+import static org.forgerock.http.protocol.Status.CREATED;
+import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.http.protocol.Status.FOUND;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
+import static org.forgerock.http.protocol.Status.MOVED_PERMANENTLY;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.TEAPOT;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
@@ -80,11 +84,13 @@ public class OAuth2ClientFilterTest {
     private static final String NEW_REFRESH_TOKEN = "tGzv3JOkF0XG5Qx2TlKWAAA";
     private static final String ORIGINAL_URI = "http://www.example.com:443";
     private static final String REQUESTED_URI = "http://www.example.com/myapp/endpoint";
+    private static final String TARGET = "openid";
 
     private AttributesContext attributesContext;
     private ClientRegistrationRepository registrations;
     private Context context;
     private Request request;
+    private Response failureResponse;
     private SessionContext sessionContext;
 
     @Mock
@@ -103,6 +109,10 @@ public class OAuth2ClientFilterTest {
         sessionContext = new SessionContext(attributesContext, newSession());
         registrations = new ClientRegistrationRepository();
         request = new Request();
+        failureResponse = new Response();
+        failureResponse.setStatus(INTERNAL_SERVER_ERROR).setEntity("An error occured");
+        when(failureHandler.handle(any(Context.class), any(Request.class)))
+            .thenReturn(newResponsePromise(failureResponse));
     }
 
     @DataProvider
@@ -296,29 +306,69 @@ public class OAuth2ClientFilterTest {
         final Response response = filter.filter(context, request, next).get();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(UNAUTHORIZED);
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler).handle(eq(context), any(Request.class));
         assertThatTargetAttributesAreSet();
-        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain);
     }
 
     /**
-     * All non 401(and not about refreshing the access token) error responses
-     * are returned without any process.
+     * All successful responses are returned without any process.
+     * (not a 5xx Server Error or a 4xx Client Error)
      */
     @DataProvider
-    private static Object[][] resourceResponses() {
+    private static Object[][] okResourceResponses() {
         return new Object[][] {
-            { new Response(TEAPOT) },
             { new Response(OK) },
             { new Response(FOUND) },
+            { new Response(MOVED_PERMANENTLY) },
+            { new Response(CREATED) } };
+    }
+
+    @Test(dataProvider = "okResourceResponses")
+    public void shouldHandleProtectedResourceReturnProtectedResourceWithoutRefreshingToken(final Response response)
+            throws Exception {
+        // Given
+        setUpForHandleProtectedResourceCases();
+        when(next.handle(eq(context), any(Request.class)))
+        // Accessing the resource returns a non 401/expired token:
+                .thenReturn(newResponsePromise(response));
+
+        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
+
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
+        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
+
+        setSessionAuthorized();
+
+        // When
+        final Response finalResponse = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(finalResponse.getStatus()).isEqualTo(response.getStatus());
+        verify(next).handle(eq(context), any(Request.class));
+        assertThatTargetAttributesAreSet();
+        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain, registrationHandler);
+    }
+
+    /**
+     * All non 401(and all 401 not about refreshing the access token) error responses
+     * are handled by the failure handler.
+     */
+    @DataProvider
+    private static Object[][] errorResponsesFromAccessingTheResource() {
+        return new Object[][] {
+            { new Response(TEAPOT) },
+            { new Response(BAD_GATEWAY) },
+            { new Response(FORBIDDEN) },
             { new Response(INTERNAL_SERVER_ERROR) },
             { buildOAuth2ErrorResponse(UNAUTHORIZED, E_INVALID_CLIENT, "Invalid client") } };
     }
 
-    @Test(dataProvider = "resourceResponses")
-    public void shouldHandleProtectedResourceReturnAnyResponseWhichDoNotNeedToRefreshToken(final Response response)
+    @Test(dataProvider = "errorResponsesFromAccessingTheResource")
+    public void shouldHandleProtectedResourceOnErrorResponseShouldHandleError(final Response response)
             throws Exception {
         // Given
         setUpForHandleProtectedResourceCases();
@@ -330,13 +380,14 @@ public class OAuth2ClientFilterTest {
         setSessionAuthorized();
 
         // When
-        final Response finalResponse = filter.filter(context, request, next).get();
+        Response finalResponse = filter.filter(context, request, next).get();
 
         // Then
-        assertThat(finalResponse.getStatus()).isEqualTo(response.getStatus());
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(finalResponse.getStatus()).isEqualTo(failureResponse.getStatus());
         verify(next).handle(eq(context), any(Request.class));
         assertThatTargetAttributesAreSet();
-        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain, registrationHandler);
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, registrationHandler);
     }
 
     /*
@@ -428,7 +479,7 @@ public class OAuth2ClientFilterTest {
         assertThat(response.getStatus()).isEqualTo(OK);
         verifyZeroInteractions(registrationHandler);
         // The user info attribute should be empty when an error occurs.
-        assertThatTargetAttributesAreSetAndContain(null, null, Collections.<String, String> emptyMap());
+        assertThatTargetAttributesAreSetAndContain(null, null, Collections.<String, String>emptyMap());
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler, times(2)).handle(eq(context), any(Request.class));
         verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
@@ -449,7 +500,7 @@ public class OAuth2ClientFilterTest {
                                                             final Map<String, String> userInfo) {
         final Map<String, ?> attributes = (Map<String, ?>) sessionContext.asContext(AttributesContext.class)
                                                                          .getAttributes()
-                                                                         .get("openid");
+                                                                         .get(TARGET);
         if (accessToken != null) {
             assertThat(attributes.get("access_token")).isEqualTo(accessToken);
         } else {
