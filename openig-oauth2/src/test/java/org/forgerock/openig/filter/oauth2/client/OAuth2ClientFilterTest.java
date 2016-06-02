@@ -234,6 +234,72 @@ public class OAuth2ClientFilterTest {
     }
 
     /************************************************************************************************************/
+    /** handleUserInitiatedLogout case
+    /************************************************************************************************************/
+
+    private void setUpForHandleUserInitiatedLogoutCases(final String logoutUri) throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI + DEFAULT_CLIENT_ENDPOINT + logoutUri));
+        request.setUri(ORIGINAL_URI + logoutUri);
+    }
+
+    @Test
+    public void shouldSucceedToHandleUserInitiatedLogoutWithoutGoto() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLogoutCases("/logout");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(OK);
+        assertThatSessionIsEmpty();
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, failureHandler, loginHandler, next,
+                               registrationHandler);
+    }
+
+    @Test
+    public void shouldSucceedToHandleUserInitiatedLogoutWithGoto() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLogoutCases("/logout?goto=www.forgerock.com");
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(FOUND);
+        assertThat(response.getHeaders().getFirst("Location")).isEqualTo("www.forgerock.com");
+        assertThatSessionIsEmpty();
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, failureHandler, loginHandler, next,
+                               registrationHandler);
+    }
+
+    @Test
+    public void shouldFailToHandleUserInitiatedLogoutWithInvalidDefaultLogoutUri() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLogoutCases("/logout");
+
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter()
+                                              .setRequireHttps(false)
+                                              .setDefaultLogoutGoto(Expression.valueOf("<??>", String.class));
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        assertThatSessionIsEmpty();
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
+    }
+
+    /************************************************************************************************************/
     /** handleProtectedResource case
     /************************************************************************************************************/
 
@@ -550,6 +616,11 @@ public class OAuth2ClientFilterTest {
                 "client_id=" + DEFAULT_CLIENT_REGISTRATION_NAME,
                 "redirect_uri=" + ORIGINAL_URI + "/openid/callback",
                 "scope=openid", "state=");
+    }
+
+    private void assertThatSessionIsEmpty() {
+        SessionContext sessionContext = context.asContext(SessionContext.class);
+        assertThat(sessionContext.getSession()).isEmpty();
     }
 
     private void assertThatTargetAttributesAreSet() {
