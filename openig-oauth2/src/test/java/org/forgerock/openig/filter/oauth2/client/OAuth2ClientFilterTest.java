@@ -166,6 +166,74 @@ public class OAuth2ClientFilterTest {
     }
 
     /************************************************************************************************************/
+    /** handleUserInitiatedLogin case
+    /************************************************************************************************************/
+
+    private void setUpForHandleUserInitiatedLoginCases(final String loginUri) throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI + DEFAULT_CLIENT_ENDPOINT + loginUri));
+
+        request.setUri(ORIGINAL_URI + loginUri);
+        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
+    }
+
+    @DataProvider
+    private static Object[][] loginUri() {
+        return new Object[][] {
+            { "/login?registration=unknown" },
+            { "/login" } };
+    }
+
+    @Test(dataProvider = "loginUri")
+    public void shouldHandleUserInitiatedLoginFailsWithInvalidClientRegistration(final String loginUri)
+            throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLoginCases(loginUri);
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
+    }
+
+    @Test
+    public void shouldHandleUserInitiatedLoginFailsWhenRequestIsNotSufficientlySecure() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLoginCases("/login?registration=" + DEFAULT_CLIENT_REGISTRATION_NAME);
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(true);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        verify(failureHandler).handle(eq(context), eq(request));
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
+    }
+
+    @Test
+    public void shouldHandleUserInitiatedLoginSucceedToAuthorizationRedirect() throws Exception {
+        // Given
+        setUpForHandleUserInitiatedLoginCases("/login?registration=" + DEFAULT_CLIENT_REGISTRATION_NAME);
+        final OAuth2ClientFilter filter = buildOAuth2ClientFilter().setRequireHttps(false);
+
+        // When
+        final Response response = filter.filter(context, request, next).get();
+
+        // Then
+        assertThatAuthorizationRedirectHandlerProducesRedirect(response);
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, failureHandler, loginHandler, next,
+                               registrationHandler);
+    }
+
+    /************************************************************************************************************/
     /** handleProtectedResource case
     /************************************************************************************************************/
 
@@ -189,12 +257,7 @@ public class OAuth2ClientFilterTest {
         final Response response = filter.filter(context, request, next).get();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(FOUND);
-        assertThat(response.getHeaders().get("Location").getFirstValue()).contains(
-                "response_type=code",
-                "client_id=" + DEFAULT_CLIENT_REGISTRATION_NAME,
-                "redirect_uri=" + ORIGINAL_URI + "/openid/callback",
-                "scope=openid", "state=");
+        assertThatAuthorizationRedirectHandlerProducesRedirect(response);
         verifyZeroInteractions(next, failureHandler, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
 
@@ -202,8 +265,7 @@ public class OAuth2ClientFilterTest {
     public void shouldSucceedToHandleProtectedResourceWhenAuthorized() throws Exception {
         // Given
         setUpForHandleProtectedResourceCases();
-        when(next.handle(eq(context), any(Request.class)))
-            .thenReturn(newResponsePromise(new Response(OK)));
+        when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
         setSessionAuthorized();
@@ -336,11 +398,7 @@ public class OAuth2ClientFilterTest {
         // Accessing the resource returns a non 401/expired token:
                 .thenReturn(newResponsePromise(response));
 
-        registrations.add(buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME, registrationHandler));
-
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
-
         setSessionAuthorized();
 
         // When
@@ -483,6 +541,15 @@ public class OAuth2ClientFilterTest {
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler, times(2)).handle(eq(context), any(Request.class));
         verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+    }
+
+    private static void assertThatAuthorizationRedirectHandlerProducesRedirect(final Response response) {
+        assertThat(response.getStatus()).isEqualTo(FOUND);
+        assertThat(response.getHeaders().get("Location").getFirstValue()).contains(
+                "response_type=code",
+                "client_id=" + DEFAULT_CLIENT_REGISTRATION_NAME,
+                "redirect_uri=" + ORIGINAL_URI + "/openid/callback",
+                "scope=openid", "state=");
     }
 
     private void assertThatTargetAttributesAreSet() {
