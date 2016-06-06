@@ -29,10 +29,14 @@ import org.forgerock.audit.json.AuditJsonConfig;
 import org.forgerock.audit.providers.DefaultLocalHostNameProvider;
 import org.forgerock.audit.providers.LocalHostNameProvider;
 import org.forgerock.audit.providers.ProductInfoProvider;
+import org.forgerock.http.Client;
+import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ServiceUnavailableException;
 import org.forgerock.openig.heap.GenericHeaplet;
+import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.annotations.VisibleForTesting;
 
 /**
  * Constructs an {@link AuditService} through an {@link Heaplet}.
@@ -84,7 +88,7 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
         }
         AuditServiceBuilder auditServiceBuilder = newAuditService();
         auditServiceBuilder.withConfiguration(auditServiceConfiguration);
-        auditServiceBuilder.withDependencyProvider(new GatewayDependencyProvider());
+        auditServiceBuilder.withDependencyProvider(new GatewayDependencyProvider(heap));
 
         final ClassLoader classLoader = this.getClass().getClassLoader();
         for (final JsonValue handlerConfig : config.get("event-handlers")) {
@@ -98,7 +102,8 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
         return auditServiceBuilder.build();
     }
 
-    private static class GatewayDependencyProvider implements DependencyProvider {
+    @VisibleForTesting
+    static class GatewayDependencyProvider implements DependencyProvider {
 
         private final LocalHostNameProvider localHostNameProvider = new DefaultLocalHostNameProvider();
 
@@ -109,6 +114,11 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
                 return "OpenIG";
             }
         };
+        private final Heap heap;
+
+        GatewayDependencyProvider(Heap heap) {
+            this.heap = heap;
+        }
 
         @Override
         public <T> T getDependency(Class<T> type) throws ClassNotFoundException {
@@ -116,6 +126,16 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
                 return type.cast(localHostNameProvider);
             } else if (ProductInfoProvider.class.equals(type)) {
                 return type.cast(productInfoProvider);
+            } else if (Client.class.equals(type)) {
+                try {
+                    Handler handler = heap.get("ElasticsearchClientHandler", Handler.class);
+                    if (handler != null) {
+                        return type.cast(new Client(handler));
+                    }
+                } catch (HeapException e) {
+                    LOGGER.error("An error occurred while looking for the ElasticsearchClientHandler", e);
+                    throw new ClassNotFoundException(type.getName(), e);
+                }
             }
             throw new ClassNotFoundException(type.getName());
         }
