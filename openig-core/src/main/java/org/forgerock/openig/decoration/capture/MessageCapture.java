@@ -157,11 +157,13 @@ public class MessageCapture {
 
     private void captureContextAsJson(final PrintWriter writer, final Context context) {
         // TODO we restrict ourselves to attributes only here, we should pretty print the chain of contexts instead
-        AttributesContext attributesContext = context.asContext(AttributesContext.class);
-        Map<String, Object> map = new LinkedHashMap<>(attributesContext.getAttributes());
-        map.remove("javax.servlet.http.HttpServletRequest");
-        map.remove("javax.servlet.http.HttpServletResponse");
-        writer.println(prettyPrint(toJson(map)));
+        if (context.containsContext(AttributesContext.class)) {
+            AttributesContext attributesContext = context.asContext(AttributesContext.class);
+            Map<String, Object> map = new LinkedHashMap<>(attributesContext.getAttributes());
+            map.remove("javax.servlet.http.HttpServletRequest");
+            map.remove("javax.servlet.http.HttpServletResponse");
+            writer.println(prettyPrint(toJson(map)));
+        }
     }
 
     private void captureRequest(PrintWriter writer, Request request, String id) {
