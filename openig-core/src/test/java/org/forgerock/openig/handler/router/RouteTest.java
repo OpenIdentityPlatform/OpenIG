@@ -86,13 +86,16 @@ public class RouteTest {
                     }
                 });
 
-        // MDC is empty before
-        assertThat(MDC.get("routeId")).isNull();
+        final String routeId = "my-enclosing-router";
+        MDC.put("routeId", routeId);
+
+        // 2 routes can be enclosed : a Router can be defined as a Route, so it sets first its routeId in the MDC
+        assertThat(MDC.get("routeId")).isEqualTo(routeId);
 
         route.handle(new RootContext(), new Request());
 
-        // MDC is empty after
-        assertThat(MDC.get("routeId")).isNull();
+        // MDC contains the same value than before having handled the route for routeId
+        assertThat(MDC.get("routeId")).isEqualTo(routeId);
     }
 
     private Route createRoute(final Expression<Boolean> condition) {
