@@ -18,6 +18,8 @@ package org.forgerock.openig.handler.router;
 
 import static org.forgerock.openig.el.Bindings.bindings;
 
+import java.util.Map;
+
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -136,8 +138,16 @@ abstract class Route implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        try (MDC.MDCCloseable ignored = MDC.putCloseable("routeId", name)) {
+        Map<String, String> previous = MDC.getCopyOfContextMap();
+        try {
+            MDC.put("routeId", name);
             return handler.handle(context, request);
+        } finally {
+            if (previous != null) {
+                MDC.setContextMap(previous);
+            } else {
+                MDC.clear();
+            }
         }
     }
 }
