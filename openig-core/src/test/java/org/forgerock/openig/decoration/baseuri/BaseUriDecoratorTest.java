@@ -11,30 +11,42 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.baseuri;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Status.TEAPOT;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
 import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.openig.decoration.Context;
+import org.forgerock.http.filter.ResponseHandler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.decoration.helper.LazyReference;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.LogSink;
 import org.forgerock.openig.log.NullLogSink;
+import org.forgerock.services.context.Context;
+import org.forgerock.services.context.RootContext;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -54,7 +66,7 @@ public class BaseUriDecoratorTest {
     private Handler handler;
 
     @Mock
-    private Context context;
+    private org.forgerock.openig.decoration.Context context;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -78,16 +90,51 @@ public class BaseUriDecoratorTest {
 
     @Test
     public void shouldDecorateFilter() throws Exception {
-        final Object decorated = new BaseUriDecorator(reference).decorate(filter, json("http://localhost:80"), context);
-        assertThat(decorated).isInstanceOf(BaseUriFilter.class);
+        filter = spy(new Filter() {
+            @Override
+            public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
+                assertThat(request.getUri().toASCIIString()).isEqualTo("http://localhost:80/foo");
+                return next.handle(context, request);
+            }
+        });
+
+        final Object decorated = new BaseUriDecorator(reference).decorate(filter,
+                                                                          json("http://localhost:80"),
+                                                                          context);
+        assertThat(decorated).isInstanceOf(Filter.class);
+        Filter decoratedHandler = (Filter) decorated;
+        Request request = new Request();
+        request.setMethod("GET").setUri("http://www.forgerock.org:8080/foo");
+
+        Response response = decoratedHandler.filter(new RootContext(), request, new ResponseHandler(TEAPOT)).get();
+
+        assertThat(response.getStatus()).isEqualTo(TEAPOT);
     }
 
     @Test
     public void shouldDecorateHandler() throws Exception {
+        when(handler.handle(any(Context.class), any(Request.class)))
+                .then(new Answer<Promise<Response, NeverThrowsException>>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation)
+                            throws Throwable {
+                        Request request = (Request) invocation.getArguments()[1];
+                        assertThat(request.getUri().toASCIIString()).isEqualTo("http://localhost:80/foo");
+                        return newResponsePromise(new Response(TEAPOT));
+                    }
+                });
+
         final Object decorated = new BaseUriDecorator(reference).decorate(handler,
                                                                           json("http://localhost:80"),
                                                                           context);
-        assertThat(decorated).isInstanceOf(BaseUriHandler.class);
+        assertThat(decorated).isInstanceOf(Handler.class);
+        Handler decoratedHandler = (Handler) decorated;
+        Request request = new Request();
+        request.setMethod("GET").setUri("http://www.forgerock.org:8080/foo");
+
+        Response response = decoratedHandler.handle(new RootContext(), request).get();
+
+        assertThat(response.getStatus()).isEqualTo(TEAPOT);
     }
 
     @Test

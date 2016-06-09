@@ -23,6 +23,8 @@ import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.filter.Filters;
+import org.forgerock.http.handler.Handlers;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
@@ -88,7 +90,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriFilter(delegate, decoratorConfig.as(expression(String.class)), getLogger(context));
+            return Filters.chainOf(createBaseUriFilter(decoratorConfig, context), delegate);
         }
         return delegate;
     }
@@ -97,9 +99,13 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.isString()) {
-            return new BaseUriHandler(delegate, decoratorConfig.as(expression(String.class)), getLogger(context));
+            return Handlers.chainOf(delegate, createBaseUriFilter(decoratorConfig, context));
         }
         return delegate;
+    }
+
+    private BaseUriFilter createBaseUriFilter(JsonValue decoratorConfig, Context context) throws HeapException {
+        return new BaseUriFilter(decoratorConfig.as(expression(String.class)), getLogger(context));
     }
 
     private Logger getLogger(final Context context) throws HeapException {
