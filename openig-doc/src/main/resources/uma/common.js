@@ -49,7 +49,7 @@ var uma_scope         = "uma_authorization";
 // Requesting party's OpenAM user
 var uma_username      = "bob";
 var uma_password      = "password";
-var subjectDn         = "bob";
+var subject           = "bob";
 
 // Current configuration
 var conf              = {
@@ -89,7 +89,7 @@ var conf              = {
                           {
                             "uma_username": uma_username,
                             "uma_password": uma_password,
-                            "subjectDn": subjectDn
+                            "subject": subject
                           }
                         };
 
