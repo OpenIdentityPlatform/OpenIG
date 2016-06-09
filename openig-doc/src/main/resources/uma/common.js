@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 // OpenAM configuration
@@ -32,7 +32,7 @@ var rs_client_secret  = "password";
 var rs_scope          = "uma_protection";
 
 // Resource owners's OpenAM user
-var rs_username       = "alice"
+var rs_username       = "alice";
 var rs_password       = "password";
 
 // Resources to share
@@ -44,10 +44,10 @@ var resource_url = "http://api.example.com:8080/login";
 // UMA client configuration with OpenAM
 var uma_client_id     = "UmaClient";
 var uma_client_secret = "password";
-var uma_scope         = "uma_authorization"
+var uma_scope         = "uma_authorization";
 
 // Requesting party's OpenAM user
-var uma_username      = "bob"
+var uma_username      = "bob";
 var uma_password      = "password";
 var subjectDn         = "id=bob,ou=user,dc=openam,dc=forgerock,dc=org";
 
