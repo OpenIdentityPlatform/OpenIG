@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.baseuri;
@@ -25,7 +25,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URISyntaxException;
 
-import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -33,8 +32,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
-import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promise;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -43,8 +40,6 @@ import org.testng.annotations.Test;
 public class BaseUriFilterTest {
 
     private static final String REQUEST_URI = "http://www.forgerock.org/key_path";
-
-    private Filter delegate;
 
     @Mock
     private Logger logger;
@@ -57,16 +52,13 @@ public class BaseUriFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        delegate = new DelegateFilter();
         context = new RootContext();
     }
 
     @Test
     public void shouldRebaseUri() throws Exception {
-        final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf("http://www.example.com:443",
-                                                                      String.class),
-                                                              logger);
+        Expression<String> expression = Expression.valueOf("http://www.example.com:443", String.class);
+        final BaseUriFilter baseUriFilter = new BaseUriFilter(expression, logger);
 
         final Request request = createRequest();
         baseUriFilter.filter(context, request, terminal);
@@ -79,9 +71,7 @@ public class BaseUriFilterTest {
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldFailWithNullExpression() throws Exception {
-        final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              null,
-                                                              logger);
+        final BaseUriFilter baseUriFilter = new BaseUriFilter(null, logger);
 
         final Request request = createRequest();
         baseUriFilter.filter(context, request, terminal);
@@ -90,10 +80,8 @@ public class BaseUriFilterTest {
 
     @Test
     public void shouldFailWhenRebasingFail() throws Exception {
-        final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf(
-                                                                      "http://<<servername>>:8080",  String.class),
-                                                              logger);
+        Expression<String> expression = Expression.valueOf("http://<<servername>>:8080", String.class);
+        final BaseUriFilter baseUriFilter = new BaseUriFilter(expression, logger);
 
         final Request request = createRequest();
         final Response response = baseUriFilter.filter(context, request, terminal).get();
@@ -105,10 +93,8 @@ public class BaseUriFilterTest {
 
     @Test
     public void shouldReturnErrorResponseDueToUnresolvableExpression() throws Exception {
-        final BaseUriFilter baseUriFilter = new BaseUriFilter(delegate,
-                                                              Expression.valueOf("${EXPRESSION_ERROR}",
-                                                                                 String.class),
-                                                              logger);
+        Expression<String> expression = Expression.valueOf("${EXPRESSION_ERROR}", String.class);
+        final BaseUriFilter baseUriFilter = new BaseUriFilter(expression, logger);
 
         final Request request = createRequest();
         final Response response =  baseUriFilter.filter(context, request, terminal).get();
@@ -123,12 +109,4 @@ public class BaseUriFilterTest {
         return request;
     }
 
-    private static class DelegateFilter implements Filter {
-        @Override
-        public Promise<Response, NeverThrowsException> filter(final Context context,
-                                                              final Request request,
-                                                              final Handler next) {
-            return next.handle(context, request);
-        }
-    }
 }

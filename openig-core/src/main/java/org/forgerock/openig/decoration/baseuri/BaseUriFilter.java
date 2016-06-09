@@ -40,23 +40,18 @@ import org.forgerock.util.promise.Promise;
  */
 class BaseUriFilter implements Filter {
 
-    private final Filter delegate;
-
     private final Expression<String> baseUri;
     private final Logger logger;
 
     /**
      * Creates a new base URI filter.
      *
-     * @param delegate
-     *            The delegated filter.
      * @param baseUri
      *            The new base URI to set.
      * @param logger
      *            The logger for this filter.
      */
-    BaseUriFilter(final Filter delegate, final Expression<String> baseUri, final Logger logger) {
-        this.delegate = delegate;
+    BaseUriFilter(final Expression<String> baseUri, final Logger logger) {
         this.baseUri = baseUri;
         this.logger = logger;
     }
@@ -78,6 +73,6 @@ class BaseUriFilter implements Filter {
                 return newResultPromise(newInternalServerError(e));
             }
         }
-        return delegate.filter(context, request, next);
+        return next.handle(context, request);
     }
 }
