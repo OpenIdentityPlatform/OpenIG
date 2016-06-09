@@ -49,7 +49,7 @@ var uma_scope         = "uma_authorization";
 // Requesting party's OpenAM user
 var uma_username      = "bob";
 var uma_password      = "password";
-var subjectDn         = "id=bob,ou=user,dc=openam,dc=forgerock,dc=org";
+var subjectDn         = "bob";
 
 // Current configuration
 var conf              = {
