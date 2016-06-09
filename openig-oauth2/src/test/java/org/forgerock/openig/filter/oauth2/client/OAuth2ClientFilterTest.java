@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
@@ -32,8 +33,10 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.DEFAULT_SCOPE;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildAuthorizedOAuth2Session;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildClientRegistration;
+import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildClientRegistrationWithScopes;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.newSession;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_CLIENT;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_TOKEN;
@@ -80,6 +83,7 @@ public class OAuth2ClientFilterTest {
     private static final String ACCESS_TOKEN_HAS_EXPIRED = "The access token has expired";
     private static final String DEFAULT_CLIENT_REGISTRATION_NAME = "openam";
     private static final String DEFAULT_CLIENT_ENDPOINT = "/openid";
+    private static final String DEFAULT_OPENID_CLIENT_REGISTRATION_NAME = "openam-openid";
     private static final String NEW_ACCESS_TOKEN = "2YoLoFZFEjr1zCsicMWpAA*";
     private static final String NEW_REFRESH_TOKEN = "tGzv3JOkF0XG5Qx2TlKWAAA";
     private static final String ORIGINAL_URI = "http://www.example.com:443";
@@ -475,7 +479,7 @@ public class OAuth2ClientFilterTest {
     /************************************************************************************************************/
     /** handleProtectedResource case
     /************************************************************************************************************/
-
+    /** Set up for the oauth2 unit tests. */
     private void setUpForHandleProtectedResourceCases() throws URISyntaxException {
         context = new UriRouterContext(sessionContext,
                                        null,
@@ -694,17 +698,38 @@ public class OAuth2ClientFilterTest {
      * https://openid.net/specs/openid-connect-basic-1_0.html#Scopes
      */
 
+    /** Set up for the oauth2 openid unit tests. */
+    private void setUpForOpenIdHandleProtectedResourceCases() throws URISyntaxException {
+        context = new UriRouterContext(sessionContext,
+                                       null,
+                                       null,
+                                       Collections.<String, String>emptyMap(),
+                                       new URI(ORIGINAL_URI));
+        request.setMethod("GET").setUri(REQUESTED_URI);
+        final List<String> scopes = asList("openid", "email");
+        registrations.add(buildClientRegistrationWithScopes(DEFAULT_OPENID_CLIENT_REGISTRATION_NAME,
+                                                            registrationHandler,
+                                                            null,
+                                                            scopes));
+        // Authorize the session for the openid registration with the given scopes
+        context.asContext(SessionContext.class)
+               .getSession()
+               .put("oauth2:http://www.example.com:443/openid",
+                    buildAuthorizedOAuth2Session(DEFAULT_OPENID_CLIENT_REGISTRATION_NAME,
+                                                 REQUESTED_URI,
+                                                 scopes));
+    }
+
     @Test
     public void shouldSucceedToHandleProtectedOpenIdResource() throws Exception {
         // Given
-        setUpForHandleProtectedResourceCases();
+        setUpForOpenIdHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
         when(registrationHandler.handle(eq(context), any(Request.class)))
             .thenReturn(newResponsePromise(
                     buildOAuth2Response(OK, json(object(field("email", "janedoe@example.com"))))));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        setSessionAuthorized();
 
         // When
         final Response response = filter.filter(context, request, next).get();
@@ -722,7 +747,7 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldSucceedToHandleProtectedOpenIdResourceByRefreshingToken() throws Exception {
         // Given
-        setUpForHandleProtectedResourceCases();
+        setUpForOpenIdHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
         when(registrationHandler.handle(eq(context), any(Request.class)))
             // First call is an invalid token for accessing the user info endpoint.
@@ -740,7 +765,6 @@ public class OAuth2ClientFilterTest {
                     buildOAuth2Response(OK, json(object(field("email", "janedoe@example.com"))))));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        setSessionAuthorized();
 
         // When
         final Response response = filter.filter(context, request, next).get();
@@ -758,7 +782,7 @@ public class OAuth2ClientFilterTest {
     @Test
     public void shouldFailToHandleProtectedOpenIdResourceWhenRefreshingTokenFail() throws Exception {
         // Given
-        setUpForHandleProtectedResourceCases();
+        setUpForOpenIdHandleProtectedResourceCases();
         when(next.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
         when(registrationHandler.handle(eq(context), any(Request.class)))
             // Called twice. The second call tries to refresh the token.
@@ -767,7 +791,6 @@ public class OAuth2ClientFilterTest {
                                                                     "The Access Token expired")));
 
         final OAuth2ClientFilter filter = buildOAuth2ClientFilter();
-        setSessionAuthorized();
 
         // When
         final Response response = filter.filter(context, request, next).get();
@@ -788,7 +811,7 @@ public class OAuth2ClientFilterTest {
                 "response_type=code",
                 "client_id=" + DEFAULT_CLIENT_REGISTRATION_NAME,
                 "redirect_uri=" + ORIGINAL_URI + "/openid/callback",
-                "scope=openid", "state=");
+                "scope=" + DEFAULT_SCOPE, "state=");
     }
 
     private void assertThatSessionIsEmpty() {
@@ -822,7 +845,7 @@ public class OAuth2ClientFilterTest {
         } else {
             assertThat(attributes.get("refresh_token")).isEqualTo(OAuth2TestUtils.REFRESH_TOKEN);
         }
-        assertThat(attributes.get("client_registration")).isEqualTo(DEFAULT_CLIENT_REGISTRATION_NAME);
+        assertThat(attributes.get("client_registration")).isNotNull();
         assertThat(attributes.get("client_endpoint")).isEqualTo(REQUESTED_URI);
         assertThat((Long) attributes.get("expires_in")).isGreaterThan(0);
         assertThat((List<String>) attributes.get("scope")).isNotEmpty();
@@ -882,7 +905,8 @@ public class OAuth2ClientFilterTest {
         heap.put("myFailureHandler", failureHandler);
         heap.put("myLoginHandler", loginHandler);
         heap.put(DEFAULT_CLIENT_REGISTRATION_NAME, buildClientRegistration(DEFAULT_CLIENT_REGISTRATION_NAME,
-                                                                           registrationHandler));
+                                                                           registrationHandler,
+                                                                           DEFAULT_SCOPE));
         return heap;
     }
 }

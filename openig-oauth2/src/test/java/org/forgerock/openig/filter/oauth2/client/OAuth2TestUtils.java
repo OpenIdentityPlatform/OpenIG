@@ -15,13 +15,14 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.json.JsonValue.array;
+import static java.util.Collections.singletonList;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
@@ -40,6 +41,7 @@ public final class OAuth2TestUtils {
     static final String REGISTRATION_ENDPOINT = "/openam/oauth2/connect/register";
     static final String WELLKNOWN_ENDPOINT = "/openam/oauth2/.well-known/openid-configuration";
     static final String ISSUER_URI = "http://www.example.com:8089";
+    static final String DEFAULT_SCOPE = "myScope";
 
     /** From the OIDC core spec. */
     static final String ID_TOKEN =
@@ -65,10 +67,20 @@ public final class OAuth2TestUtils {
     static ClientRegistration buildClientRegistration(final String clientName,
                                                       final Handler registrationHandler,
                                                       final String issuerName) {
+        return buildClientRegistrationWithScopes(clientName,
+                                                 registrationHandler,
+                                                 issuerName,
+                                                 singletonList(DEFAULT_SCOPE));
+    }
+
+    static ClientRegistration buildClientRegistrationWithScopes(final String clientName,
+                                                                final Handler registrationHandler,
+                                                                final String issuerName,
+                                                                final List<String> scopes) {
         final JsonValue config = json(object(field("clientId", clientName),
                                              field("clientSecret", "password"),
                                              field("issuer", issuerName),
-                                             field("scopes", array("openid"))));
+                                             field("scopes", scopes)));
         return new ClientRegistration(clientName,
                                       config,
                                       buildIssuerWithoutWellKnownEndpoint(issuerName),
@@ -92,13 +104,19 @@ public final class OAuth2TestUtils {
     }
 
     static JsonValue buildAuthorizedOAuth2Session(final String clientRegistrationName, final String requestedUri) {
+        return buildAuthorizedOAuth2Session(clientRegistrationName, requestedUri, singletonList(DEFAULT_SCOPE));
+    }
+
+    static JsonValue buildAuthorizedOAuth2Session(final String clientRegistrationName,
+                                                  final String requestedUri,
+                                                  final List<String> scopes) {
         return json(object(field("crn", clientRegistrationName),
                            field("arn", "af0ifjsldkj"),
                            field("ce", requestedUri),
-                           field("s", array("address", "phone", "openid", "profile")),
+                           field("s", scopes),
                            field("atr", object(field("access_token", ID_TOKEN),
                                                field("refresh_token", REFRESH_TOKEN),
-                                               field("scope" , "address phone openid profile"),
+                                               field("scope" , scopes),
                                                field("id_token", ID_TOKEN),
                                                field("token_type", "Bearer"),
                                                field("expires_in", 3600))),
