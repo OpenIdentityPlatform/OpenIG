@@ -29,8 +29,20 @@
       <defaultValue>system</defaultValue>
     </discriminator>
     <sift>
-      <appender name="FILE-${routeId}" class="ch.qos.logback.core.FileAppender">
+      <!-- Create a separate log file for each <key> -->
+      <appender name="FILE-${routeId}" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${openig.base}/logs/route-${routeId}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+          <!-- Rotate files daily -->
+          <fileNamePattern>${openig.base}/logs/route-${routeId}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+
+          <!-- each file should be at most 100MB, keep 30 days worth of history, but at most 3GB -->
+          <maxFileSize>100MB</maxFileSize>
+          <maxHistory>30</maxHistory>
+          <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
         <encoder>
           <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %message%n%xException</pattern>
         </encoder>
