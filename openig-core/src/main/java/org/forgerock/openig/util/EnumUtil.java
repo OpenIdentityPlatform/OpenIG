@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -23,10 +23,15 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utility class for accessing Java enum types.
  */
 public final class EnumUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(EnumUtil.class);
 
     /** Cache of name sets for repeated call efficiency. */
     private static final Map<Class<?>, Set<String>> NAMESETS = new HashMap<>();
@@ -73,6 +78,7 @@ public final class EnumUtil {
             try {
                 value = Enum.valueOf(enumType, name.toString());
             } catch (IllegalArgumentException iae) {
+                logger.error("{} is not a valid value for enum {}", name, enumType.getName(), iae);
                 // result in null return value
             }
         }

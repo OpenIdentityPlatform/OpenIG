@@ -29,11 +29,15 @@ import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.util.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of {@link JsonTransformer} that tries to evaluate each {@link String} as an {@link Expression}.
  */
 class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, JsonValueException> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExpressionJsonTransformFunction.class);
 
     private final Bindings bindings;
 
@@ -80,6 +84,7 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
         try {
             return Expression.valueOf(str, Object.class).eval(bindings);
         } catch (ExpressionException e) {
+            logger.error("Ignoring the malformed expression : {}", str, e);
             // Malformed expressions are ignored
         }
         return str;
