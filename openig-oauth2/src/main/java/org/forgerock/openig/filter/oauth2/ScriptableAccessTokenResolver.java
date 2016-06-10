@@ -19,11 +19,11 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 import javax.script.ScriptException;
 
-import org.forgerock.authz.modules.oauth2.AccessTokenException;
-import org.forgerock.authz.modules.oauth2.AccessTokenInfo;
-import org.forgerock.authz.modules.oauth2.AccessTokenResolver;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.oauth2.AccessTokenException;
+import org.forgerock.openig.oauth2.AccessTokenInfo;
+import org.forgerock.openig.oauth2.AccessTokenResolver;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;

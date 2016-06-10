@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.forgerock.authz.modules.oauth2.OAuth2;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.Warning;
@@ -46,6 +45,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.oauth2.OAuth2;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
