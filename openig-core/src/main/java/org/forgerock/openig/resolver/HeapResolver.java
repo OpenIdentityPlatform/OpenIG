@@ -11,17 +11,21 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.resolver;
 
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Resolves {@link Heap} objects.
  */
 public class HeapResolver implements Resolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(HeapResolver.class);
 
     @Override
     public Class<?> getKey() {
@@ -36,6 +40,7 @@ public class HeapResolver implements Resolver {
             try {
                 return heap.get(key, Object.class);
             } catch (HeapException ex) {
+                logger.error("An error occurred during the resolution", ex);
                 return Resolver.UNRESOLVED;
             }
         }
