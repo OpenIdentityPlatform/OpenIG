@@ -138,7 +138,6 @@ public class GroovyScriptableFilterTest {
     public void testBindingsArePresent() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert contexts != null",
                 "assert logger != null",
                 "assert ldap != null",
@@ -250,8 +249,7 @@ public class GroovyScriptableFilterTest {
 
     @Test
     public void testConstructFromString() throws Exception {
-        final String script =
-                "import org.forgerock.http.protocol.*;new Response(Status.OK)";
+        final String script = "new Response(Status.OK)";
         final Map<String, Object> config = new HashMap<>();
         config.put("type", Script.GROOVY_MIME_TYPE);
         config.put("source", script);
@@ -269,7 +267,6 @@ public class GroovyScriptableFilterTest {
     public void testGlobalsPersistedBetweenInvocations() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert globals.x == null",
                 "globals.x = 'value'",
                 "new Response(Status.OK)");
@@ -300,8 +297,6 @@ public class GroovyScriptableFilterTest {
             final int port = server.getPort();
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
-                    "import org.forgerock.http.protocol.*",
-                    "import org.forgerock.services.context.RootContext",
                     "Request request = new Request()",
                     "request.method = 'GET'",
                     "request.uri = new URI('http://0.0.0.0:" + port + "/example')",
@@ -397,8 +392,6 @@ public class GroovyScriptableFilterTest {
             // @formatter:off
             final ScriptableFilter filter = newGroovyFilter(
                     "import org.forgerock.opendj.ldap.*",
-                    "import org.forgerock.http.protocol.Response",
-                    "import org.forgerock.http.protocol.Status",
                     "",
                     "username = request.headers.Username.values[0]",
                     "password = request.headers.Password.values[0]",
@@ -643,10 +636,10 @@ public class GroovyScriptableFilterTest {
         return new Object[][] {
                 { "return next.handle(context, request)" },
                 { "next.handle(context, request)" },
-                { "import org.forgerock.http.protocol.*; return new Response(Status.OK)" },
-                { "import org.forgerock.http.protocol.*; new Response(Status.OK)" },
-                { "import org.forgerock.http.protocol.*; return Response.newResponsePromise(new Response(Status.OK))" },
-                { "import org.forgerock.http.protocol.*; Response.newResponsePromise(new Response(Status.OK))" },
+                { "return new Response(Status.OK)" },
+                { "new Response(Status.OK)" },
+                { "return Response.newResponsePromise(new Response(Status.OK))" },
+                { "Response.newResponsePromise(new Response(Status.OK))" },
         };
         // @Checkstyle:on
     }
@@ -662,7 +655,6 @@ public class GroovyScriptableFilterTest {
     public void testReadJsonEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.entity.json.person.firstName == 'Tim'",
                 "assert request.entity.json.person.lastName == 'Yates'",
                 "assert request.entity.json.person.address.country == 'UK'",
@@ -677,7 +669,6 @@ public class GroovyScriptableFilterTest {
     public void testReadXmlEntity() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.entity.xml.root.a",
                 "new Response(Status.OK)"); // TODO
         // @formatter:on
@@ -691,7 +682,6 @@ public class GroovyScriptableFilterTest {
     public void testRequestCookies() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.cookies.username[0].value == 'test'",
                 "new Response(Status.OK)");
         // @formatter:on
@@ -705,7 +695,6 @@ public class GroovyScriptableFilterTest {
     public void testRequestForm() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.form.username[0] == 'test'",
                 "new Response(Status.OK)");
         // @formatter:on
@@ -719,7 +708,6 @@ public class GroovyScriptableFilterTest {
     public void testRequestHeaders() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.headers.Username.values[0] == 'test'",
                 "request.headers.Test = [ 'test' ]",
                 "assert request.headers.remove('Username')",
@@ -738,7 +726,6 @@ public class GroovyScriptableFilterTest {
     public void testRequestURI() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert request.uri.scheme == 'http'",
                 "assert request.uri.host == 'example.com'",
                 "assert request.uri.port == 8080",
@@ -763,7 +750,6 @@ public class GroovyScriptableFilterTest {
 
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "response = new Response(Status.OK)",
                 "response.entity = 'hello world'",
                 "return response");
@@ -800,7 +786,6 @@ public class GroovyScriptableFilterTest {
     public void testSession() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "assert session.inKey == 'inValue'",
                 "session.outKey = 'outValue'",
                 "assert session.remove('inKey')",
@@ -819,7 +804,6 @@ public class GroovyScriptableFilterTest {
     public void testSetResponse() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "import org.forgerock.http.protocol.*",
                 "new Response(Status.NOT_FOUND)");
         // @formatter:on
         Context context = new RootContext();
