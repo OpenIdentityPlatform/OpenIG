@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
@@ -20,12 +20,16 @@ package org.forgerock.openig.resolver;
 import java.util.List;
 
 import org.forgerock.http.util.UnmodifiableCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Resolves {@link List} objects.
  */
 @SuppressWarnings("rawtypes")
 public class ListResolver implements Resolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(ListResolver.class);
 
     @Override
     public Class<?> getKey() {
@@ -38,6 +42,7 @@ public class ListResolver implements Resolver {
             try {
                 return ((List) object).get(((Number) element).intValue());
             } catch (IndexOutOfBoundsException ioobe) {
+                logger.error("An error occurred during the resolution", ioobe);
                 // cannot resolve index
             }
         }

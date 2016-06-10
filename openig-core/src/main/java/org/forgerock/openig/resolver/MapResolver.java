@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
@@ -20,12 +20,16 @@ package org.forgerock.openig.resolver;
 import java.util.Map;
 
 import org.forgerock.http.util.UnmodifiableCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Resolves {@link Map} objects.
  */
 @SuppressWarnings("rawtypes")
 public class MapResolver implements Resolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(MapResolver.class);
 
     @Override
     public Class<?> getKey() {
@@ -51,6 +55,7 @@ public class MapResolver implements Resolver {
             try {
                 return map.put(element, value);
             } catch (UnsupportedOperationException uoe) {
+                logger.error("Can't insert an element into a read-only map", uoe);
                 // ignore failed attempts to write to read-only map
             }
         }

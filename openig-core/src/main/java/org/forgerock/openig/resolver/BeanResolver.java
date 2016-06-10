@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
@@ -22,10 +22,15 @@ import javax.el.ELResolver;
 import javax.el.FunctionMapper;
 import javax.el.VariableMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Resolves Java Beans objects.
  */
 public class BeanResolver implements Resolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(BeanResolver.class);
 
     private final BeanELResolver delegate;
     private final ELContext context;
@@ -51,6 +56,7 @@ public class BeanResolver implements Resolver {
                 return value;
             }
         } catch (Exception e) {
+            logger.error("An error occurred during the resolution", e);
             // Ignored, considered as un-resolved
         }
         return UNRESOLVED;
@@ -61,6 +67,7 @@ public class BeanResolver implements Resolver {
         try {
             delegate.setValue(context, object, element, value);
         } catch (Exception e) {
+            logger.error("An error occurred during the resolution", e);
             // Ignored, let other resolvers take over
         }
         return UNRESOLVED;
