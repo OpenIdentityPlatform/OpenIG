@@ -22,8 +22,8 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2BearerWWWAuthentic
 import java.util.Arrays;
 import java.util.List;
 
-import org.forgerock.authz.modules.oauth2.OAuth2Error;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.openig.oauth2.OAuth2Error;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

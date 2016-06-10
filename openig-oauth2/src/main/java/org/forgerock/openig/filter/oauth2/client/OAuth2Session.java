@@ -19,8 +19,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_INVALID_REQUEST;
-import static org.forgerock.authz.modules.oauth2.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_REQUEST;
+import static org.forgerock.openig.oauth2.OAuth2Error.E_SERVER_ERROR;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,11 +29,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.authz.modules.oauth2.OAuth2Error;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.exceptions.JwtReconstructionException;
 import org.forgerock.json.jose.jws.SignedJwt;
+import org.forgerock.openig.oauth2.OAuth2Error;
 import org.forgerock.util.time.TimeService;
 
 /**
