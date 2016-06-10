@@ -258,7 +258,7 @@ public class DiscoveryFilter implements Filter {
                 try {
                     return new URI(uri);
                 } catch (URISyntaxException e) {
-                    throw new DiscoveryException(format("Invalid URI '%s'", uri));
+                    throw new DiscoveryException(format("Invalid URI '%s'", uri), e);
                 }
             }
         };
