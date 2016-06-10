@@ -35,11 +35,15 @@ import java.util.regex.PatternSyntaxException;
 import org.forgerock.http.util.Uris;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Methods exposed for EL usage.
  */
 public final class Functions {
+
+    private static final Logger logger = LoggerFactory.getLogger(Functions.class);
 
     private Functions() { }
 
@@ -73,6 +77,7 @@ public final class Functions {
         try {
             return Integer.parseInt(value, radix);
         } catch (NumberFormatException e) {
+            logger.error("Not recognized as a number : {}", value, e);
             return null;
         }
     }
@@ -215,12 +220,14 @@ public final class Functions {
      *         expression pattern.
      */
     public static boolean matches(String value, String pattern) {
+        Pattern compiledPattern;
         try {
-            return Pattern.compile(pattern).matcher(value).find();
+            compiledPattern = Pattern.compile(pattern);
         } catch (PatternSyntaxException pse) {
-            // ignore invalid pattern
+            logger.error("Ignoring incorrect pattern : {}", pattern, pse);
+            return false;
         }
-        return false;
+        return compiledPattern.matcher(value).find();
     }
 
     /**
@@ -249,7 +256,7 @@ public final class Functions {
                 return matches;
             }
         } catch (PatternSyntaxException pse) {
-            // ignore invalid pattern
+            logger.error("Ignoring incorrect pattern : {}", pattern, pse);
         }
         return null;
     }
@@ -393,6 +400,7 @@ public final class Functions {
             properties.load(fis);
             return properties;
         } catch (IOException e) {
+            logger.error("An error occurred while reading the file {}", filename, e);
             return null;
         } finally {
             closeSilently(fis);
