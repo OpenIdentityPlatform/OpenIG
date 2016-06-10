@@ -267,9 +267,12 @@ public class GroovyScriptableFilterTest {
     public void testGlobalsPersistedBetweenInvocations() throws Exception {
         // @formatter:off
         final ScriptableFilter filter = newGroovyFilter(
-                "assert globals.x == null",
-                "globals.x = 'value'",
-                "new Response(Status.OK)");
+                "if (globals.x == null) {",
+                "  globals.x = 'value'",
+                "  new Response(Status.OK)",
+                "} else {",
+                "  new Response(Status.INTERNAL_SERVER_ERROR)",
+                "}");
         // @formatter:on
         Response one = filter.filter(new RootContext(), null, null).get();
         assertThat(one.getStatus()).isEqualTo(Status.OK);
