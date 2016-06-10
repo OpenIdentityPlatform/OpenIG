@@ -67,7 +67,7 @@ import org.forgerock.util.promise.Promise;
  * @param <V> The expected result type of the {@link Promise}. As a convenience, this class supports non-Promise type to
  * be returned from the script, and will wrap it into a {@link Promise}.
  */
-public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject {
+public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
@@ -204,18 +204,28 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
     protected final Promise<V, ScriptException> runScript(final Bindings bindings,
                                                           final Context context,
                                                           final Class<V> clazz) {
+        Object o;
         try {
-            Object o = compiledScript.run(enrichBindings(bindings, context));
-            if (o instanceof Promise) {
-                return ((Promise<V, ScriptException>) o);
-            }
-            // Allow to return an instance of directly from script, then we wrap it in a Promise.
-            return newResultPromise(clazz.cast(o));
-        } catch (final Exception e) {
+            o = compiledScript.run(enrichBindings(bindings, context));
+        } catch (ScriptException e) {
             logger.warning("Cannot execute script");
             logger.warning(e);
-            return newExceptionPromise(e instanceof ScriptException ? (ScriptException) e : new ScriptException(e));
+            return newExceptionPromise(e);
         }
+        if (o == null) {
+            return newResultPromise(null);
+        }
+        if (o instanceof Promise) {
+            return ((Promise<V, ScriptException>) o);
+        }
+        if (clazz.isInstance(o)) {
+            return newResultPromise(clazz.cast(o));
+        } else {
+            return newExceptionPromise(new ScriptException(format("Expecting a result of type %s, got %s",
+                                                                  clazz.getName(),
+                                                                  o.getClass().getName())));
+        }
+
     }
 
     private Map<String, Object> enrichBindings(final Bindings source, final Context context) throws ScriptException {
@@ -232,7 +242,10 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
             try {
                 final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
                 for (final Entry<String, Object> entry : args.entrySet()) {
-                    checkBindingNotAlreadyUsed(bindings, entry.getKey());
+                    final String key = entry.getKey();
+                    if (bindings.containsKey(key)) {
+                        throw new ScriptException("Can't override the binding named " + key);
+                    }
                     bindings.put(entry.getKey(), evaluate(entry.getValue(), exprEvalBindings));
                 }
             } catch (ExpressionException ex) {
@@ -244,12 +257,4 @@ public abstract class AbstractScriptableHeapObject<V> extends GenericHeapObject 
         return bindings;
     }
 
-    private void checkBindingNotAlreadyUsed(final Map<String, Object> bindings,
-                                            final String key) throws ScriptException {
-        if (bindings.containsKey(key)) {
-            final String errorMsg = "Can't override the binding named " + key;
-            logger.error(errorMsg);
-            throw new ScriptException(errorMsg);
-        }
-    }
 }
