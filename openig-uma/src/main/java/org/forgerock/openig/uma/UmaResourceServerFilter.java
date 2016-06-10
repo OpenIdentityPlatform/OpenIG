@@ -114,6 +114,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             return ticket(context, share, request);
 
         } catch (UmaException e) {
+            logger.error(e);
             // No share found
             // Make sure we return a 404
             return newResponsePromise(e.getResponse().setStatus(Status.NOT_FOUND));
@@ -222,6 +223,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                     value = json(token.getEntity().getJson());
                 } catch (IOException e) {
                     logger.debug("Cannot extract JSON from token introspection response, possibly malformed JSON");
+                    logger.debug(e);
                     return newResponsePromise(newInternalServerError(e));
                 }
                 if (value.get("active").asBoolean()) {
