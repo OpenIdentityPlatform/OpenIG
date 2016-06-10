@@ -137,7 +137,7 @@ public final class Functions {
      * not found.
      */
     public static int indexOf(String value, String substring) {
-        return value != null && substring != null ? value.indexOf(substring) : null;
+        return value != null && substring != null ? value.indexOf(substring) : -1;
     }
 
     /**
