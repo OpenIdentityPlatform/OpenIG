@@ -233,6 +233,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
     }
@@ -249,6 +250,7 @@ public class OAuth2ClientFilterTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
     }
 
@@ -292,6 +294,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -319,6 +322,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -334,6 +338,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -350,6 +355,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -366,6 +372,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -382,6 +389,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verifyZeroInteractions(next, discoveryAndDynamicRegistrationChain, registrationHandler);
     }
@@ -471,6 +479,7 @@ public class OAuth2ClientFilterTest {
         // Then
 
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         assertThatSessionIsEmpty();
         verifyZeroInteractions(discoveryAndDynamicRegistrationChain, loginHandler, next, registrationHandler);
@@ -612,6 +621,7 @@ public class OAuth2ClientFilterTest {
 
         // Then
         verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
         assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler).handle(eq(context), any(Request.class));
@@ -832,9 +842,7 @@ public class OAuth2ClientFilterTest {
     private void assertThatTargetAttributesAreSetAndContain(final String accessToken,
                                                             final String refreshToken,
                                                             final Map<String, String> userInfo) {
-        final Map<String, ?> attributes = (Map<String, ?>) sessionContext.asContext(AttributesContext.class)
-                                                                         .getAttributes()
-                                                                         .get(TARGET);
+        final Map<String, ?> attributes = getAttributes();
         if (accessToken != null) {
             assertThat(attributes.get("access_token")).isEqualTo(accessToken);
         } else {
@@ -853,6 +861,17 @@ public class OAuth2ClientFilterTest {
         if (userInfo != null) {
             assertThatTargetContainsUserInfoAttributes(attributes, userInfo);
         }
+    }
+
+    private void assertThatExceptionAttributeIsSet() {
+        assertThat(getAttributes().get("exception")).isNotNull().isInstanceOf(Exception.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, ?> getAttributes() {
+        return (Map<String, ?>) sessionContext.asContext(AttributesContext.class)
+                                              .getAttributes()
+                                              .get(TARGET);
     }
 
     @SuppressWarnings("unchecked")
