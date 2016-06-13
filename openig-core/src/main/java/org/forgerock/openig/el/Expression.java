@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.el;
@@ -36,6 +36,8 @@ import org.forgerock.http.util.Loader;
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
 import org.forgerock.util.Reject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.odysseus.el.ExpressionFactoryImpl;
 
@@ -47,6 +49,8 @@ import de.odysseus.el.ExpressionFactoryImpl;
  * @param <T> expected result type
  */
 public final class Expression<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(Expression.class);
 
     /** The underlying EL expression that this object represents. */
     private final ValueExpression valueExpression;
@@ -115,6 +119,9 @@ public final class Expression<T> {
             Object value = valueExpression.getValue(new XLContext(bindings.asMap()));
             return (value != null && expectedType.isInstance(value) ? expectedType.cast(value) : null);
         } catch (ELException ele) {
+            logger.error("An error occurred while evaluating the expression {}",
+                         valueExpression.getExpressionString(),
+                         ele);
             // unresolved element yields null value
             return null;
         }
@@ -143,6 +150,9 @@ public final class Expression<T> {
         try {
             valueExpression.setValue(new XLContext(bindings.asMap()), value);
         } catch (ELException ele) {
+            logger.error("An error occurred setting the result of the expression {}",
+                         valueExpression.getExpressionString(),
+                         ele);
             // unresolved elements are simply ignored
         }
     }
