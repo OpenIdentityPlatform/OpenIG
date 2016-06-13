@@ -115,17 +115,30 @@ public final class Expression<T> {
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
     public T eval(final Bindings bindings) {
+        Object value;
         try {
-            Object value = valueExpression.getValue(new XLContext(bindings.asMap()));
-            return (value != null && expectedType.isInstance(value) ? expectedType.cast(value) : null);
+            value = valueExpression.getValue(new XLContext(bindings.asMap()));
         } catch (ELException ele) {
             logger.error("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
                          ele);
             // unresolved element yields null value
+            value = null;
+        }
+
+        if (value == null) {
             return null;
         }
 
+        if (!expectedType.isInstance(value)) {
+            logger.info("For the expression {}, expected a result of type {} but got {}. Returning null",
+                        valueExpression.getExpressionString(),
+                        expectedType.getClass().getName(),
+                        value.getClass().getName());
+            return null;
+        }
+
+        return expectedType.cast(value);
     }
 
     /**
