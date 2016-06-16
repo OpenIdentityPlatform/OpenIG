@@ -24,6 +24,7 @@ import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.buildUri;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.createAuthorizationNonceHash;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.httpRedirect;
@@ -611,9 +612,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         if (session.isAuthorized()) {
             fillTarget(context, session, request);
         }
-        final Promise<Response, NeverThrowsException> promise = next.handle(context, request);
+        // Ensure we always work on a defensive copy of the request while executing the handler.
+        final Handler handler = refreshToken ? chainOf(next, requestCopyFilter()) : next;
+        final Promise<Response, NeverThrowsException> promise = handler.handle(context, request);
         if (refreshToken) {
-            return promise.thenAsync(passThroughOrRefreshToken(context, request, next, session));
+            return promise.thenAsync(passThroughOrRefreshToken(context, request, handler, session));
         }
         return promise;
     }
