@@ -37,12 +37,17 @@ import org.forgerock.util.promise.Promise;
  * This can be helpful when it is needed to reuse the original request(as in the
  * {@link HttpBasicAuthFilter} or in the {@link PasswordReplayFilterHeaplet}).
  */
-final class RequestCopyFilter implements Filter {
+public final class RequestCopyFilter implements Filter {
 
     private static final RequestCopyFilter INSTANCE = new RequestCopyFilter();
 
     private RequestCopyFilter() { }
 
+    /**
+     * Returns the unique instance of a {@code RequestCopyFilter}.
+     *
+     * @return The unique instance of a {@code RequestCopyFilter}.
+     */
     public static RequestCopyFilter requestCopyFilter() {
         return INSTANCE;
     }
