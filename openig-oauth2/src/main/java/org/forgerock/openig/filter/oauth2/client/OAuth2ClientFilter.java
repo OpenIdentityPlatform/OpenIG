@@ -17,7 +17,6 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
@@ -46,6 +45,7 @@ import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.forgerock.util.time.Duration.ZERO;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -73,12 +73,12 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.oauth2.OAuth2Error;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
-import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
-import org.forgerock.util.LazyMap;
 import org.forgerock.util.PerItemEvictionStrategyCache;
+import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -257,7 +257,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private boolean requireLogin = true;
     private Expression<?> target;
     private final TimeService time;
-    private PerItemEvictionStrategyCache<String, Map<String, Object>> userInfoCache;
+    private PerItemEvictionStrategyCache<String, Promise<Map<String, Object>, OAuth2ErrorException>> userInfoCache;
     private final Handler discoveryAndDynamicRegistrationChain;
     private final ClientRegistrationRepository registrations;
 
@@ -267,6 +267,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      * @param registrations
      *            The {@link ClientRegistrationRepository} that handles the
      *            registrations.
+     * @param userInfoCache
+     *            The cache to store the user informations, not {@code null}.
      * @param time
      *            The TimeService to use.
      * @param discoveryAndDynamicRegistrationChain
@@ -276,10 +278,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *            for this filter.
      */
     public OAuth2ClientFilter(ClientRegistrationRepository registrations,
+                              PerItemEvictionStrategyCache<String,
+                                      Promise<Map<String, Object>, OAuth2ErrorException>> userInfoCache,
                               TimeService time,
                               Handler discoveryAndDynamicRegistrationChain,
                               Expression<String> clientEndpoint) {
         this.registrations = checkNotNull(registrations);
+        this.userInfoCache = checkNotNull(userInfoCache);
         this.time = time;
         this.clientEndpoint = clientEndpoint;
         this.discoveryAndDynamicRegistrationChain = discoveryAndDynamicRegistrationChain;
@@ -567,31 +572,18 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Promise<Response, NeverThrowsException> handleException(final Context context,
                                                                     final Request request,
                                                                     final Exception e) {
-        final Map<String, Object> info = new LinkedHashMap<>();
+        Map<String, Object> info;
         try {
-            final OAuth2Session session = loadOrCreateSession(context, request, clientEndpoint, time);
-            info.putAll(session.getAccessTokenResponse());
-
-            // Override these with effective values.
-            info.put("client_registration", session.getClientRegistrationName());
-            info.put("client_endpoint", session.getClientEndpoint());
-            info.put("expires_in", session.getExpiresIn());
-            info.put("scope", session.getScopes());
-            final SignedJwt idToken = session.getIdToken();
-            if (idToken != null) {
-                final Map<String, Object> idTokenClaims = new LinkedHashMap<>();
-                for (final String claim : idToken.getClaimsSet().keys()) {
-                    idTokenClaims.put(claim, idToken.getClaimsSet().getClaim(claim));
-                }
-                info.put("id_token_claims", idTokenClaims);
-            }
+            info = extractSessionInfo(context, request);
         } catch (Exception ignored) {
             /*
              * The session could not be decoded. Presumably this is why we are
              * here already, so simply ignore the error, and use the error that
              * was passed in to this method.
              */
+            info = new LinkedHashMap<String, Object>();
         }
+
         if (e instanceof OAuth2ErrorException) {
             final OAuth2Error error = ((OAuth2ErrorException) e).getOAuth2Error();
             logger.error(e.getMessage());
@@ -609,14 +601,15 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         final OAuth2Session session;
         try {
             session = loadOrCreateSession(context, request, clientEndpoint, time);
+
+            if (!session.isAuthorized() && requireLogin) {
+                return sendAuthorizationRedirect(context, request, null);
+            }
+            if (session.isAuthorized()) {
+                fillTarget(context, session, request);
+            }
         } catch (OAuth2ErrorException | ResponseException e) {
             return handleException(context, request, e);
-        }
-        if (!session.isAuthorized() && requireLogin) {
-            return sendAuthorizationRedirect(context, request, null);
-        }
-        if (session.isAuthorized()) {
-            fillTarget(context, session, request);
         }
         // Ensure we always work on a defensive copy of the request while executing the handler.
         final Handler handler = refreshToken ? chainOf(next, requestCopyFilter()) : next;
@@ -776,8 +769,32 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                     .handle(context, request);
     }
 
-    private void fillTarget(final Context context, final OAuth2Session session, final Request request) {
-        final Map<String, Object> info = new LinkedHashMap<>(session.getAccessTokenResponse());
+    private void fillTarget(final Context context,
+                            final OAuth2Session session,
+                            final Request request) throws ResponseException, OAuth2ErrorException {
+        final Map<String, Object> info;
+
+        final ClientRegistration clientRegistration = getClientRegistration(session);
+        if (clientRegistration != null
+                && clientRegistration.getIssuer().hasUserInfoEndpoint()
+                && session.getScopes().contains("openid")) {
+            final Map<String, Object> userInfo = getUserInfo(context, session, request, clientRegistration);
+
+            // Use the session info only after having fetched the user info: the session may have been refreshed.
+            info = extractSessionInfo(context, request);
+            info.put("user_info", userInfo);
+        } else {
+            info = extractSessionInfo(context, request);
+        }
+        target.set(bindings(context, null), info);
+    }
+
+    private Map<String, Object> extractSessionInfo(final Context context,
+                                                   final Request request) throws ResponseException,
+                                                                                 OAuth2ErrorException {
+        final OAuth2Session session = OAuth2Utils.loadOrCreateSession(context, request, clientEndpoint, time);
+        final Map<String, Object> info = new LinkedHashMap<>();
+        info.putAll(session.getAccessTokenResponse());
         // Override these with effective values.
         info.put("client_registration", session.getClientRegistrationName());
         info.put("client_endpoint", session.getClientEndpoint());
@@ -791,35 +808,35 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             }
             info.put("id_token_claims", idTokenClaims);
         }
-
-        final ClientRegistration clientRegistration = getClientRegistration(session);
-        if (clientRegistration != null
-                && clientRegistration.getIssuer().hasUserInfoEndpoint()
-                && session.getScopes().contains("openid")) {
-            // Load the user_info resources lazily (when requested)
-            info.put("user_info", new LazyMap<>(new UserInfoFactory(session,
-                                                                    clientRegistration,
-                                                                    context,
-                                                                    request)));
-        }
-        target.set(bindings(context, null), info);
+        return info;
     }
 
-    /**
-     * Set the cache of user info resources. The cache is keyed by the OAuth 2.0 Access Token. It should be configured
-     * with a small expiration duration (something between 5 and 30 seconds).
-     *
-     * @param userInfoCache
-     *         the cache of user info resources.
-     */
-    public void setUserInfoCache(final PerItemEvictionStrategyCache<String, Map<String, Object>> userInfoCache) {
-        this.userInfoCache = userInfoCache;
+    private Map<String, Object> getUserInfo(final Context context,
+                                            final OAuth2Session session,
+                                            final Request request,
+                                            final ClientRegistration clientRegistration) throws OAuth2ErrorException {
+        Map<String, Object> userInfo = null;
+        try {
+            Promise<Map<String, Object>, OAuth2ErrorException> promise =
+                    userInfoCache.getValue(session.getAccessToken(),
+                                           new LoadUserInfoCallable(session, clientRegistration, context, request));
+            return safeGetOrThrow(promise);
+        } catch (InterruptedException e) {
+            logger.error(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
+                    clientRegistration.getName()));
+            logger.error(e);
+        } catch (ExecutionException e) {
+            logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
+                    clientRegistration.getName()));
+            logger.error(e);
+        }
+        return userInfo;
     }
 
     /** Creates and initializes the filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private PerItemEvictionStrategyCache<String, Map<String, Object>> cache;
+        private PerItemEvictionStrategyCache<String, Promise<Map<String, Object>, OAuth2ErrorException>> cache;
 
         @Override
         public Object create() throws HeapException {
@@ -852,7 +869,17 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     new DiscoveryFilter(discoveryHandler, heap, logger),
                     new ClientRegistrationFilter(registrations, discoveryHandler, config.get("metadata"), logger));
 
+            // Build the cache of user-info
+            final Duration expiration = config.get("cacheExpiration")
+                                              .as(evaluated())
+                                              .defaultTo("20 seconds")
+                                              .as(duration());
+            ScheduledExecutorService executor = config.get("executor").defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                    .as(requiredHeapObject(heap, ScheduledExecutorService.class));
+
+            cache = new PerItemEvictionStrategyCache<>(executor, expirationFunction(expiration));
             final OAuth2ClientFilter filter = new OAuth2ClientFilter(registrations,
+                                                                     cache,
                                                                      time,
                                                                      discoveryAndDynamicRegistrationChain,
                                                                      clientEndpoint);
@@ -872,17 +899,44 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto").as(expression(String.class)));
             filter.setRequireHttps(config.get("requireHttps").as(evaluated()).defaultTo(true).asBoolean());
             filter.setRequireLogin(config.get("requireLogin").as(evaluated()).defaultTo(true).asBoolean());
-            // Build the cache of user-info
-            Duration expiration = config.get("cacheExpiration").as(evaluated()).defaultTo("20 seconds").as(duration());
-            if (!expiration.isZero()) {
-                ScheduledExecutorService executor = config.get("executor")
-                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
-                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
-                cache = new PerItemEvictionStrategyCache<>(executor, expiration);
-                filter.setUserInfoCache(cache);
-            }
 
             return filter;
+        }
+
+        @VisibleForTesting
+        static AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception>
+        expirationFunction(final Duration expiration) {
+            return new AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception>() {
+                @Override
+                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(Promise<Map<String, Object>,
+                        OAuth2ErrorException> value) throws Exception {
+                    return value.thenAsync(
+                            new AsyncFunction<Map<String, Object>, Duration, OAuth2ErrorException>() {
+
+                                private final Promise<Duration, OAuth2ErrorException> onResultDuration =
+                                        newResultPromise(expiration);
+
+                                @Override
+                                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(
+                                        Map<String, Object> value)
+                                        throws OAuth2ErrorException {
+                                    return onResultDuration;
+                                }
+                            },
+                            new AsyncFunction<OAuth2ErrorException, Duration, OAuth2ErrorException>() {
+
+                                private final Promise<Duration, OAuth2ErrorException> onExceptionDuration =
+                                        newResultPromise(ZERO);
+
+                                @Override
+                                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(
+                                        OAuth2ErrorException value)
+                                        throws OAuth2ErrorException {
+                                    return onExceptionDuration;
+                                }
+                            });
+                }
+            };
         }
 
         @Override
@@ -894,73 +948,16 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     }
 
     /**
-     * UserInfoFactory is responsible to load the profile of the authenticated user
-     * from the OpenID Connect Provider's user_info endpoint when the lazy map is accessed for the first time.
-     * If a cache has been configured
-     */
-    private class UserInfoFactory implements Factory<Map<String, Object>> {
-
-        private final LoadUserInfoCallable callable;
-
-        public UserInfoFactory(final OAuth2Session session,
-                               final ClientRegistration clientRegistration,
-                               final Context context,
-                               final Request request) {
-            this.callable = new LoadUserInfoCallable(session, clientRegistration, context, request);
-        }
-
-        @Override
-        public Map<String, Object> newInstance() {
-            /*
-             * When the 'user_info' attribute is accessed for the first time,
-             * try to load the value (from the cache or not depending on the configuration).
-             * The callable (factory for loading user info resource) will perform the appropriate HTTP request
-             * to retrieve the user info as JSON, and then will return that content as a Map
-             */
-
-            if (userInfoCache == null) {
-                // No cache is configured, go directly though the callable
-                try {
-                    return callable.call();
-                } catch (Exception e) {
-                    logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
-                                          callable.getClientRegistration().getName()));
-                    logger.error(e);
-                }
-            } else {
-                // A cache is configured, extract the value from the cache
-                try {
-                    return userInfoCache.getValue(callable.getSession().getAccessToken(),
-                                                  callable);
-                } catch (InterruptedException e) {
-                    logger.error(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
-                                        callable.getClientRegistration().getName()));
-                    logger.error(e);
-                } catch (ExecutionException e) {
-                    logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
-                                        callable.getClientRegistration().getName()));
-                    logger.error(e);
-                }
-            }
-
-            // In case of errors, returns an empty Map
-            return emptyMap();
-        }
-    }
-
-    /**
      * LoadUserInfoCallable simply encapsulate the logic required to load the user_info resources.
      */
-    private class LoadUserInfoCallable implements Callable<Map<String, Object>> {
+    private class LoadUserInfoCallable implements Callable<Promise<Map<String, Object>, OAuth2ErrorException>> {
         private OAuth2Session session;
         private final ClientRegistration clientRegistration;
         private final Context context;
         private final Request request;
 
-        public LoadUserInfoCallable(final OAuth2Session session,
-                                    final ClientRegistration clientRegistration,
-                                    final Context context,
-                                    final Request request) {
+        public LoadUserInfoCallable(final OAuth2Session session, final ClientRegistration clientRegistration,
+                final Context context, final Request request) {
             this.session = session;
             this.clientRegistration = clientRegistration;
             this.context = context;
@@ -968,42 +965,79 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
 
         @Override
-        public Map<String, Object> call() throws Exception {
-            try {
-                return blockingCall(clientRegistration.getUserInfo(context, session), "getting the user info").asMap();
-            } catch (OAuth2ErrorException e) {
-                final OAuth2Error error = e.getOAuth2Error();
-                if (error.is(E_INVALID_TOKEN) && session.getRefreshToken() != null) {
-                    // Supposed expired token, try to update it by generating a new access token.
-                    return updateSessionStateWithRefreshTokenOrFailWithNewSession();
+        public Promise<Map<String, Object>, OAuth2ErrorException> call() throws Exception {
+            return clientRegistration.getUserInfo(context, session)
+                                     .thenCatchAsync(onOAuth2ErrorException())
+                                     .then(transformJsonValueToMap(), rethrowException());
+        }
+
+        private Function<OAuth2ErrorException, Map<String, Object>, OAuth2ErrorException> rethrowException() {
+            return new Function<OAuth2ErrorException, Map<String, Object>, OAuth2ErrorException>() {
+                @Override
+                public Map<String, Object> apply(OAuth2ErrorException e) throws OAuth2ErrorException {
+                    throw e;
                 }
-                throw e;
-            }
+            };
         }
 
-        private Map<String, Object> updateSessionStateWithRefreshTokenOrFailWithNewSession() throws ResponseException,
-                                                                                             OAuth2ErrorException {
+        private Function<JsonValue, Map<String, Object>, OAuth2ErrorException> transformJsonValueToMap() {
+            return new Function<JsonValue, Map<String, Object>, OAuth2ErrorException>() {
+                @Override
+                public Map<String, Object> apply(JsonValue jsonValue) throws OAuth2ErrorException {
+                    return jsonValue.asMap();
+                }
+            };
+        }
+
+        private AsyncFunction<OAuth2ErrorException, JsonValue, OAuth2ErrorException> onOAuth2ErrorException() {
+            return new AsyncFunction<OAuth2ErrorException, JsonValue, OAuth2ErrorException>() {
+
+                @Override
+                public Promise<JsonValue, OAuth2ErrorException> apply(OAuth2ErrorException e)
+                        throws OAuth2ErrorException {
+                    final OAuth2Error error = e.getOAuth2Error();
+                    if (error.is(E_INVALID_TOKEN) && session.getRefreshToken() != null) {
+                        // Supposed expired token, try to update it by
+                        // generating a new access token.
+                        return updateSessionStateWithRefreshTokenOrFailWithNewSession();
+                    }
+                    return Promises.newExceptionPromise(e);
+                }
+            };
+        }
+
+        private Promise<JsonValue, OAuth2ErrorException> updateSessionStateWithRefreshTokenOrFailWithNewSession() {
+            final URI uri;
             try {
-                JsonValue refreshAccessToken = blockingCall(clientRegistration.refreshAccessToken(context, session),
-                                                            "refreshing the access token");
-                session = session.stateRefreshed(refreshAccessToken);
-                saveSession(context, session, buildUri(context, request, clientEndpoint));
-                return blockingCall(clientRegistration.getUserInfo(context, session), "getting the user info").asMap();
-            } catch (OAuth2ErrorException ex) {
-                logger.error("Fail to refresh OAuth2 Access Token");
-                logger.error(ex);
-                session = OAuth2Session.stateNew(time);
-                saveSession(context, session, buildUri(context, request, clientEndpoint));
-                throw ex;
+                uri = buildUri(context, request, clientEndpoint);
+            } catch (ResponseException ex1) {
+                OAuth2ErrorException e = new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
+                        "Unable to build the client endpoint URI", ex1);
+                return Promises.newExceptionPromise(e);
             }
-        }
 
-        public OAuth2Session getSession() {
-            return session;
-        }
+            return clientRegistration.refreshAccessToken(context, session).thenAsync(
+                    new AsyncFunction<JsonValue, JsonValue, OAuth2ErrorException>() {
 
-        public ClientRegistration getClientRegistration() {
-            return clientRegistration;
+                        @Override
+                        public Promise<JsonValue, OAuth2ErrorException> apply(JsonValue refreshAccessToken)
+                                throws OAuth2ErrorException {
+                            session = session.stateRefreshed(refreshAccessToken);
+                            saveSession(context, session, uri);
+                            return clientRegistration.getUserInfo(context, session);
+                        }
+                    }, new AsyncFunction<OAuth2ErrorException, JsonValue, OAuth2ErrorException>() {
+
+                        @Override
+                        public Promise<JsonValue, OAuth2ErrorException> apply(OAuth2ErrorException ex)
+                                throws OAuth2ErrorException {
+                            logger.error("Fail to refresh OAuth2 Access Token");
+                            logger.error(ex);
+                            session = OAuth2Session.stateNew(time);
+                            saveSession(context, session, uri);
+                            return Promises.newExceptionPromise(ex);
+                        }
+                    });
         }
     }
 

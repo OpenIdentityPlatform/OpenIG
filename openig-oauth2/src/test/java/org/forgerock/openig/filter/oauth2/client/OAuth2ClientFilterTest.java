@@ -18,6 +18,7 @@ package org.forgerock.openig.filter.oauth2.client;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.BAD_GATEWAY;
@@ -41,6 +42,7 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.newSessi
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_CLIENT;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_TEMPORARILY_UNAVAILABLE;
+import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -54,6 +56,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -71,6 +74,11 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.AsyncFunction;
+import org.forgerock.util.PerItemEvictionStrategyCache;
+import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
@@ -746,8 +754,6 @@ public class OAuth2ClientFilterTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(OK);
-        verifyZeroInteractions(registrationHandler);
-        // Checking for the user info (openid case) calls the LoadUserInfoCallable.
         assertThatTargetAttributesAreSetAndContain(null, null, singletonMap("email", "janedoe@example.com"));
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler).handle(eq(context), any(Request.class));
@@ -781,9 +787,8 @@ public class OAuth2ClientFilterTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(OK);
-        verifyZeroInteractions(registrationHandler);
-        // Checking for the user info (openid case) calls the LoadUserInfoCallable.
-        assertThatTargetAttributesAreSetAndContain(null, null, singletonMap("email", "janedoe@example.com"));
+        assertThatTargetAttributesAreSetAndContain(NEW_ACCESS_TOKEN,
+                                                   NEW_REFRESH_TOKEN, singletonMap("email", "janedoe@example.com"));
         verify(next).handle(eq(context), any(Request.class));
         verify(registrationHandler, times(3)).handle(eq(context), any(Request.class));
         verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
@@ -806,13 +811,38 @@ public class OAuth2ClientFilterTest {
         final Response response = filter.filter(context, request, next).get();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(OK);
-        verifyZeroInteractions(registrationHandler);
-        // The user info attribute should be empty when an error occurs.
-        assertThatTargetAttributesAreSetAndContain(null, null, Collections.<String, String>emptyMap());
-        verify(next).handle(eq(context), any(Request.class));
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
+        // If an exception occurs when retrieving the user info. The failureHandler manages it.
+        // Attributes should not be filled.
+        verify(failureHandler).handle(eq(context), eq(request));
+        assertThatExceptionAttributeIsSet();
+        assertThat(response.getStatus()).isEqualTo(failureResponse.getStatus());
         verify(registrationHandler, times(2)).handle(eq(context), any(Request.class));
-        verifyZeroInteractions(failureHandler, discoveryAndDynamicRegistrationChain);
+        verifyZeroInteractions(discoveryAndDynamicRegistrationChain, next);
+    }
+
+
+    @Test
+    public void shouldExpirationFunctionReturnZeroWhenPromiseFailed() throws Exception {
+        AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception> expirationFunction =
+                OAuth2ClientFilter.Heaplet.expirationFunction(duration(1, TimeUnit.MINUTES));
+
+        Promise<? extends Duration, ? extends Exception> promiseDuration = expirationFunction.apply(
+                Promises.<Map<String, Object>, OAuth2ErrorException>newExceptionPromise(null));
+
+        assertThat(promiseDuration.getOrThrow()).isEqualByComparingTo(Duration.ZERO);
+    }
+
+    @Test
+    public void shouldExpirationFunctionReturnTheExpirationWhenPromiseFailed() throws Exception {
+        Duration oneMinute = duration(1, TimeUnit.MINUTES);
+        AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception> expirationFunction =
+                OAuth2ClientFilter.Heaplet.expirationFunction(oneMinute);
+
+        Promise<? extends Duration, ? extends Exception> promiseDuration = expirationFunction.apply(
+                Promises.<Map<String, Object>, OAuth2ErrorException>newResultPromise(null));
+
+        assertThat(promiseDuration.getOrThrow()).isEqualByComparingTo(oneMinute);
     }
 
     private static void assertThatAuthorizationRedirectHandlerProducesRedirect(final Response response) {
@@ -909,7 +939,11 @@ public class OAuth2ClientFilterTest {
     }
 
     private OAuth2ClientFilter buildOAuth2ClientFilter() throws ExpressionException {
+        final PerItemEvictionStrategyCache<String, Promise<Map<String, Object>, OAuth2ErrorException>> cache
+            = new PerItemEvictionStrategyCache<>(
+                newSingleThreadScheduledExecutor(), Duration.ZERO);
         final OAuth2ClientFilter filter = new OAuth2ClientFilter(registrations,
+                                                                 cache,
                                                                  time,
                                                                  discoveryAndDynamicRegistrationChain,
                                                                  Expression.valueOf(DEFAULT_CLIENT_ENDPOINT,
@@ -928,4 +962,5 @@ public class OAuth2ClientFilterTest {
                                                                            DEFAULT_SCOPE));
         return heap;
     }
+
 }
