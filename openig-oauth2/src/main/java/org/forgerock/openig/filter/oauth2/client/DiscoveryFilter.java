@@ -297,10 +297,10 @@ public class DiscoveryFilter implements Filter {
                 if (!decodedUserInput.startsWith("acct:")) {
                     normalizedIdentifier = "acct:" + decodedUserInput;
                 }
-                if (decodedUserInput.lastIndexOf("@") > decodedUserInput.indexOf("@") + 1) {
+                if (decodedUserInput.lastIndexOf('@') > decodedUserInput.indexOf('@') + 1) {
                     /* Extracting the host only when the input like 'joe@example.com@example.org' */
                     /* the https scheme is assumed */
-                    uri = new URI("https://".concat(decodedUserInput.substring(decodedUserInput.lastIndexOf("@") + 1,
+                    uri = new URI("https://".concat(decodedUserInput.substring(decodedUserInput.lastIndexOf('@') + 1,
                                                                                decodedUserInput.length())));
                 } else {
                     uri = new URI(normalizedIdentifier.replace("acct:", "acct://"));
@@ -309,7 +309,7 @@ public class DiscoveryFilter implements Filter {
                 uri = new URI(decodedUserInput);
                 // Removing fragments
                 if (decodedUserInput.contains("#")) {
-                    normalizedIdentifier = decodedUserInput.substring(0, decodedUserInput.indexOf("#"));
+                    normalizedIdentifier = decodedUserInput.substring(0, decodedUserInput.indexOf('#'));
                 }
             }
 
