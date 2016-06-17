@@ -548,6 +548,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         try {
                             saveSession(context, authorizedSession, buildUri(context, request, clientEndpoint));
                         } catch (ResponseException e) {
+                            logger.error("Unable to save the session on redirect");
+                            logger.error(e);
                             return e.getResponse();
                         }
                         return response;
@@ -722,6 +724,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         try {
                             removeSession(context, request, clientEndpoint);
                         } catch (ResponseException e) {
+                            logger.error("Cannot remove the session on redirect");
+                            logger.error(e);
                             return e.getResponse();
                         }
                         return response;
