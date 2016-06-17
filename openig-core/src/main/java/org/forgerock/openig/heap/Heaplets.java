@@ -82,7 +82,7 @@ public final class Heaplets {
             try {
                 heaplet = c.asSubclass(Heaplet.class).newInstance();
             } catch (Exception e) {
-                logger.error("An error occurred while trying to instantiate %s as a Heaplet", c.getName(), e);
+                logger.warn("An error occurred while trying to instantiate %s as a Heaplet", c.getName(), e);
                 // Ignored
             }
         }

@@ -44,7 +44,7 @@ public class RequestResolver extends BeanResolver {
                     try {
                         return request.setUri((String) value);
                     } catch (URISyntaxException ex) {
-                        logger.error("{} is not a valid URI", value, ex);
+                        logger.warn("{} is not a valid URI", value, ex);
                         // Cannot resolve the value as a URI.
                     }
                 } else if (value instanceof URI) {

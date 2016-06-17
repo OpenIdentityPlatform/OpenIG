@@ -53,7 +53,7 @@ public class MapResolver implements Resolver {
             try {
                 return map.put(element, value);
             } catch (UnsupportedOperationException uoe) {
-                logger.error("Can't insert an element into a read-only map", uoe);
+                logger.warn("Can't insert an element into a read-only map", uoe);
                 // ignore failed attempts to write to read-only map
             }
         }

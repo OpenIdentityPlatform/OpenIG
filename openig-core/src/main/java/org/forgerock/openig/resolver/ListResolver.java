@@ -42,7 +42,7 @@ public class ListResolver implements Resolver {
             try {
                 return ((List) object).get(((Number) element).intValue());
             } catch (IndexOutOfBoundsException ioobe) {
-                logger.error("An error occurred during the resolution", ioobe);
+                logger.warn("An error occurred during the resolution", ioobe);
                 // cannot resolve index
             }
         }

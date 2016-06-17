@@ -313,7 +313,7 @@ public final class Issuer {
                 try {
                     patterns.add(Pattern.compile(s));
                 } catch (final PatternSyntaxException ex) {
-                    logger.error("Not a valid pattern : {}", s, ex);
+                    logger.warn("Not a valid pattern : {}", s, ex);
                     // Ignore
                 }
             }

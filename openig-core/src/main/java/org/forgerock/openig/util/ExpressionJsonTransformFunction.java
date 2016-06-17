@@ -84,7 +84,7 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
         try {
             return Expression.valueOf(str, Object.class).eval(bindings);
         } catch (ExpressionException e) {
-            logger.error("Ignoring the malformed expression : {}", str, e);
+            logger.warn("Ignoring the malformed expression : {}", str, e);
             // Malformed expressions are ignored
         }
         return str;

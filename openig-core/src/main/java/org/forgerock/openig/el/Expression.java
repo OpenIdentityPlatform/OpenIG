@@ -119,7 +119,7 @@ public final class Expression<T> {
         try {
             value = valueExpression.getValue(new XLContext(bindings.asMap()));
         } catch (ELException ele) {
-            logger.error("An error occurred while evaluating the expression {}",
+            logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
                          ele);
             // unresolved element yields null value
@@ -163,7 +163,7 @@ public final class Expression<T> {
         try {
             valueExpression.setValue(new XLContext(bindings.asMap()), value);
         } catch (ELException ele) {
-            logger.error("An error occurred setting the result of the expression {}",
+            logger.warn("An error occurred setting the result of the expression {}",
                          valueExpression.getExpressionString(),
                          ele);
             // unresolved elements are simply ignored
