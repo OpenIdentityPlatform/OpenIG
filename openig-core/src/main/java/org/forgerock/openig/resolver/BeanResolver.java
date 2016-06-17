@@ -66,7 +66,7 @@ public class BeanResolver implements Resolver {
                 return value;
             }
         } catch (Exception e) {
-            logger.error("An error occurred during the resolution", e);
+            logger.warn("An error occurred during the resolution", e);
             // Ignored, considered as un-resolved
         }
         return UNRESOLVED;
@@ -77,7 +77,7 @@ public class BeanResolver implements Resolver {
         try {
             delegate.setValue(context, object, element, value);
         } catch (Exception e) {
-            logger.error("An error occurred during the resolution", e);
+            logger.warn("An error occurred during the resolution", e);
             // Ignored, let other resolvers take over
         }
         return UNRESOLVED;

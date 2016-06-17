@@ -40,7 +40,7 @@ public class HeapResolver implements Resolver {
             try {
                 return heap.get(key, Object.class);
             } catch (HeapException ex) {
-                logger.error("An error occurred during the resolution", ex);
+                logger.warn("An error occurred during the resolution", ex);
                 return Resolver.UNRESOLVED;
             }
         }

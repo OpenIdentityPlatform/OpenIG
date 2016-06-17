@@ -77,7 +77,7 @@ public final class Functions {
         try {
             return Integer.parseInt(value, radix);
         } catch (NumberFormatException e) {
-            logger.error("Not recognized as a number : {}", value, e);
+            logger.warn("Not recognized as a number : {}", value, e);
             return null;
         }
     }
@@ -224,7 +224,7 @@ public final class Functions {
         try {
             compiledPattern = Pattern.compile(pattern);
         } catch (PatternSyntaxException pse) {
-            logger.error("Ignoring incorrect pattern : {}", pattern, pse);
+            logger.warn("Ignoring incorrect pattern : {}", pattern, pse);
             return false;
         }
         return compiledPattern.matcher(value).find();
@@ -256,7 +256,7 @@ public final class Functions {
                 return matches;
             }
         } catch (PatternSyntaxException pse) {
-            logger.error("Ignoring incorrect pattern : {}", pattern, pse);
+            logger.warn("Ignoring incorrect pattern : {}", pattern, pse);
         }
         return null;
     }
@@ -381,7 +381,7 @@ public final class Functions {
         try {
             return asString(new FileInputStream(new File(filename)), Charset.defaultCharset());
         } catch (IOException e) {
-            logger.error("An error occurred while reading the file {}", filename, e);
+            logger.warn("An error occurred while reading the file {}", filename, e);
             return null;
         }
     }
@@ -401,7 +401,7 @@ public final class Functions {
             properties.load(fis);
             return properties;
         } catch (IOException e) {
-            logger.error("An error occurred while reading the file {}", filename, e);
+            logger.warn("An error occurred while reading the file {}", filename, e);
             return null;
         } finally {
             closeSilently(fis);

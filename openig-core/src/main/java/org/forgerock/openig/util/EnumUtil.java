@@ -78,7 +78,7 @@ public final class EnumUtil {
             try {
                 value = Enum.valueOf(enumType, name.toString());
             } catch (IllegalArgumentException iae) {
-                logger.error("{} is not a valid value for enum {}", name, enumType.getName(), iae);
+                logger.warn("{} is not a valid value for enum {}", name, enumType.getName(), iae);
                 // result in null return value
             }
         }

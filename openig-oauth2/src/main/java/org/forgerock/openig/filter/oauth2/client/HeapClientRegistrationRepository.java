@@ -60,7 +60,8 @@ class HeapClientRegistrationRepository extends ClientRegistrationRepository {
             }
             return reg;
         } catch (HeapException ex) {
-            logger.error(ex);
+            logger.warning("Unable to extract the client registration from the heap");
+            logger.warning(ex);
             return null;
         }
     }
