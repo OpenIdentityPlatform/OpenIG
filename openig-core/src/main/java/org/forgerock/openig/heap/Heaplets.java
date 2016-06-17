@@ -22,6 +22,8 @@ import static java.util.Collections.*;
 import java.util.List;
 
 import org.forgerock.http.util.Loader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads {@link Heaplet} classes based on the class of object they create. Three methods of
@@ -38,6 +40,8 @@ import org.forgerock.http.util.Loader;
  * </ol>
  */
 public final class Heaplets {
+
+    private static final Logger logger = LoggerFactory.getLogger(Heaplets.class);
 
     /** List of classpath-discovered {@link HeapletFactory} services. */
     private static final List<HeapletFactory> SERVICES = unmodifiableList(Loader.loadList(HeapletFactory.class));
@@ -78,6 +82,7 @@ public final class Heaplets {
             try {
                 heaplet = c.asSubclass(Heaplet.class).newInstance();
             } catch (Exception e) {
+                logger.error("An error occurred while trying to instantiate %s as a Heaplet", c.getName(), e);
                 // Ignored
             }
         }

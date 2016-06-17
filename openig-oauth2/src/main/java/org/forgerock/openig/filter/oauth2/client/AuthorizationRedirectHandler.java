@@ -101,6 +101,8 @@ class AuthorizationRedirectHandler implements Handler {
         try {
             clientEndpoint = buildUri(context, request, endpoint);
         } catch (ResponseException e) {
+            logger.error("Unable to build the client endpoint");
+            logger.error(e);
             return newResultPromise(e.getResponse());
         }
         String gotoUri = request.getForm().getFirst("goto");

@@ -60,6 +60,7 @@ class HeapClientRegistrationRepository extends ClientRegistrationRepository {
             }
             return reg;
         } catch (HeapException ex) {
+            logger.error(ex);
             return null;
         }
     }

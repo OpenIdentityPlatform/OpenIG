@@ -46,6 +46,8 @@ import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
 import org.forgerock.util.Reject;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A configuration for an OpenID Connect Issuer. Two approaches to create the
@@ -128,6 +130,9 @@ import org.forgerock.util.promise.Promise;
  * </pre>
  */
 public final class Issuer {
+
+    private static final Logger logger = LoggerFactory.getLogger(Issuer.class);
+
     /** The key used to store this issuer in the context. */
     public static final String ISSUER_KEY = "issuer";
 
@@ -304,10 +309,11 @@ public final class Issuer {
         final List<Pattern> patterns = new LinkedList<>();
         if (from != null) {
             for (String s : from) {
+                s = new StringBuilder("(http|https)://").append(s).append("/$").toString();
                 try {
-                    s = new StringBuilder("(http|https)://").append(s).append("/$").toString();
                     patterns.add(Pattern.compile(s));
                 } catch (final PatternSyntaxException ex) {
+                    logger.error("Not a valid pattern : {}", s, ex);
                     // Ignore
                 }
             }
