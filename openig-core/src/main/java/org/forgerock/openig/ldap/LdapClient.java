@@ -57,9 +57,9 @@ public final class LdapClient {
     private static final LdapClient INSTANCE = new LdapClient();
 
     /**
-     * Returns an instance of an {@code LdapClient}.
+     * Returns the unique instance of an {@code LdapClient}.
      *
-     * @return An instance of an {@code LdapClient}.
+     * @return The unique instance of an {@code LdapClient}.
      */
     public static LdapClient getInstance() {
         return INSTANCE;
