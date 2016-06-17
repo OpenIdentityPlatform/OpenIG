@@ -101,7 +101,6 @@ public class AuthorizationRedirectHandlerTest {
         // Then
         final Response response = handler.handle(context, request).get();
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
-        verifyZeroInteractions(logger);
     }
 
     @Test

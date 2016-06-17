@@ -381,6 +381,7 @@ public final class Functions {
         try {
             return asString(new FileInputStream(new File(filename)), Charset.defaultCharset());
         } catch (IOException e) {
+            logger.error("An error occurred while reading the file {}", filename, e);
             return null;
         }
     }
