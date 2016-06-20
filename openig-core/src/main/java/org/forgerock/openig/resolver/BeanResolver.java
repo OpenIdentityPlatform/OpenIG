@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Resolves Java Beans objects.
+ *
+ * <p>Notice that this object is considered as a fallback in the resolution mechanism.
+ * It MUST NOT be declared in the {@literal META-INF/services/org.forgerock.openig.resolver.Resolver} services file.
  */
 public class BeanResolver implements Resolver {
 
@@ -34,6 +37,9 @@ public class BeanResolver implements Resolver {
 
     private final BeanELResolver delegate;
     private final ELContext context;
+
+    /** The unique resolver instance. */
+    static final BeanResolver INSTANCE = new BeanResolver();
 
     /**
      * Builds a new BeanResolver around an EL {@link BeanELResolver} instance.
@@ -43,6 +49,10 @@ public class BeanResolver implements Resolver {
         context = new BasicELContext();
     }
 
+    /**
+     * Do not forget to override this method in sub-classes.
+     * @return the {@code Object.class} type reference.
+     */
     @Override
     public Class<?> getKey() {
         return Object.class;
