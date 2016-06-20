@@ -31,6 +31,11 @@ public class RequestResolver extends BeanResolver {
     private static final Logger logger = LoggerFactory.getLogger(RequestResolver.class);
 
     @Override
+    public Class<?> getKey() {
+        return Request.class;
+    }
+
+    @Override
     public Object put(Object object, Object element, Object value) {
         if (object instanceof Request) {
             final Request request = (Request) object;
