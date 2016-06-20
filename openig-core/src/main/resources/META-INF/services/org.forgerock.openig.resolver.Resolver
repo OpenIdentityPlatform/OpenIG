@@ -11,12 +11,11 @@
 # Header, with the fields enclosed by brackets [] replaced by your own identifying
 # information: "Portions copyright [year] [name of copyright owner]".
 #
-# Copyright 2015 ForgeRock AS.
+# Copyright 2015-2016 ForgeRock AS.
 #
 org.forgerock.openig.resolver.ListResolver
 org.forgerock.openig.resolver.MapResolver
 org.forgerock.openig.resolver.PrincipalResolver
-org.forgerock.openig.resolver.BeanResolver
 org.forgerock.openig.resolver.RequestResolver
 org.forgerock.openig.resolver.HeadersResolver
 org.forgerock.openig.resolver.HeapResolver

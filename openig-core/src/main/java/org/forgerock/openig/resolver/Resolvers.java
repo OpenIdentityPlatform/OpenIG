@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.resolver;
@@ -103,7 +103,7 @@ public final class Resolvers {
                         }
                         // exhausted interface hierarchy
                         class2 = null;
-                        return new Unresolver();
+                        return BeanResolver.INSTANCE;
                     }
 
                     public void remove() {
