@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -531,9 +532,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     "Authorization call-back failed because the client registration %s was unrecognized",
                     session.getClientRegistrationName()));
         }
-        final JsonValue accessTokenResponse =
-                blockingCall(client.getAccessToken(context, code, buildCallbackUri(context, request).toString()),
-                             "getting the access token");
+        JsonValue accessTokenResponse;
+        try {
+            accessTokenResponse = safeGetOrThrow(client.getAccessToken(context,
+                                                                       code,
+                                                                       buildCallbackUri(context, request).toString()));
+        } catch (InterruptedException ex) {
+            throw new OAuth2ErrorException(E_SERVER_ERROR, "Interrupted while getting the access token", ex);
+        }
 
         /*
          * Finally complete the authorization request by redirecting to the
@@ -1004,10 +1010,29 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private static <V, E extends Exception> V blockingCall(Promise<V, E> promise, String message)
             throws E, OAuth2ErrorException {
         try {
-            return promise.getOrThrow();
+            return safeGetOrThrow(promise);
         } catch (InterruptedException e) {
             // TODO Remove the getOrThrow()
             throw new OAuth2ErrorException(E_SERVER_ERROR, "Interrupted while " + message, e);
         }
+    }
+
+    private static <V, E extends Exception> V safeGetOrThrow(Promise<V, E> promise) throws InterruptedException, E {
+        final CountDownLatch latch = new CountDownLatch(1);
+        V value = promise
+                // Decrement the latch at the very end of the listener's sequence
+                .thenAlways(new Runnable() {
+                    @Override
+                    public void run() {
+                        latch.countDown();
+                    }
+                })
+                // Block the promise, waiting for the response
+                .getOrThrow();
+
+        // Wait for the latch to be released so we can make sure that all of the Promise's ResultHandlers
+        // and Functions have been invoked
+        latch.await();
+        return value;
     }
 }
