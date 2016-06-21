@@ -9,12 +9,12 @@
  * When distributing Covered Software, include this CDDL Header Notice in each file and include
  * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
- * information: "Portions Copyright [year] [name of copyright owner]".
+ * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.http;
+package org.forgerock.openig.resolver;
 
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
@@ -24,7 +24,6 @@ import java.net.URI;
 
 import org.forgerock.http.protocol.Form;
 import org.forgerock.http.protocol.Request;
-import org.forgerock.openig.resolver.RequestResolver;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
