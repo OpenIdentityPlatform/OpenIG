@@ -44,6 +44,7 @@ import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
+import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.time.Duration.ZERO;
 
@@ -53,7 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -78,7 +78,6 @@ import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -537,36 +536,56 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     "Authorization call-back failed because the client registration %s was unrecognized",
                     session.getClientRegistrationName()));
         }
-        JsonValue accessTokenResponse;
-        try {
-            accessTokenResponse = safeGetOrThrow(client.getAccessToken(context,
-                                                                       code,
-                                                                       buildCallbackUri(context, request).toString()));
-        } catch (InterruptedException ex) {
-            throw new OAuth2ErrorException(E_SERVER_ERROR, "Interrupted while getting the access token", ex);
-        }
 
-        /*
-         * Finally complete the authorization request by redirecting to the
-         * original goto URI and saving the session. It is important to save the
-         * session after setting the response because it may need to access
-         * response cookies.
-         */
-        final OAuth2Session authorizedSession = session.stateAuthorized(accessTokenResponse);
-        return httpRedirectGoto(context, request, gotoUri, defaultLoginGoto)
-                .then(new Function<Response, Response, NeverThrowsException>() {
-                    @Override
-                    public Response apply(final Response response) {
-                        try {
-                            saveSession(context, authorizedSession, buildUri(context, request, clientEndpoint));
-                        } catch (ResponseException e) {
-                            logger.error("Unable to save the session on redirect");
-                            logger.error(e);
-                            return e.getResponse();
-                        }
-                        return response;
-                    }
-                });
+        //@Checkstyle:off
+        return client.getAccessToken(context, code, buildCallbackUri(context, request).toString())
+                     .then(new Function<JsonValue, OAuth2Session, OAuth2ErrorException>() {
+                         @Override
+                         public OAuth2Session apply(JsonValue accessTokenResponse) throws OAuth2ErrorException {
+                             return session.stateAuthorized(accessTokenResponse);
+                         }
+                     })
+                     .thenAsync(new AsyncFunction<OAuth2Session, Response, NeverThrowsException>() {
+                                    @Override
+                                    public Promise<Response, NeverThrowsException> apply(
+                                            final OAuth2Session authorizedSession) {
+                                        //
+                                        // Finally complete the authorization request by redirecting to the
+                                        // original goto URI and saving the session. It is important to save the
+                                        // session after setting the response because it may need to access
+                                        // response cookies.
+                                        //
+                                        return httpRedirectGoto(context, request, gotoUri, defaultLoginGoto)
+                                                .then(new Function<Response, Response, NeverThrowsException>() {
+                                                    @Override
+                                                    public Response apply(final Response response) {
+                                                        try {
+                                                            saveSession(context,
+                                                                        authorizedSession,
+                                                                        buildUri(context, request, clientEndpoint));
+                                                        } catch (ResponseException e) {
+                                                            logger.error("Unable to save the session on redirect");
+                                                            logger.error(e);
+                                                            return e.getResponse();
+                                                        }
+                                                        return response;
+                                                    }
+                                                });
+                                    }
+                                },
+                                handleOAuth2ErrorException(context, request));
+        //@Checkstyle:on
+    }
+
+    private AsyncFunction<OAuth2ErrorException, Response, NeverThrowsException>
+    handleOAuth2ErrorException(final Context context, final Request request) {
+        return new AsyncFunction<OAuth2ErrorException, Response, NeverThrowsException>() {
+            @Override
+            public Promise<Response, NeverThrowsException> apply(OAuth2ErrorException e) {
+                logger.error(e);
+                return handleException(context, request, e);
+            }
+        };
     }
 
     private Promise<Response, NeverThrowsException> handleException(final Context context,
@@ -581,9 +600,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
              * here already, so simply ignore the error, and use the error that
              * was passed in to this method.
              */
-            info = new LinkedHashMap<String, Object>();
+            info = new LinkedHashMap<>();
         }
-
         if (e instanceof OAuth2ErrorException) {
             final OAuth2Error error = ((OAuth2ErrorException) e).getOAuth2Error();
             logger.error(e.getMessage());
@@ -601,23 +619,35 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         final OAuth2Session session;
         try {
             session = loadOrCreateSession(context, request, clientEndpoint, time);
-
-            if (!session.isAuthorized() && requireLogin) {
-                return sendAuthorizationRedirect(context, request, null);
-            }
-            if (session.isAuthorized()) {
-                fillTarget(context, session, request);
-            }
         } catch (OAuth2ErrorException | ResponseException e) {
             return handleException(context, request, e);
         }
-        // Ensure we always work on a defensive copy of the request while executing the handler.
-        final Handler handler = refreshToken ? chainOf(next, requestCopyFilter()) : next;
-        final Promise<Response, NeverThrowsException> promise = handler.handle(context, request);
-        if (refreshToken) {
-            return promise.thenAsync(passThroughOrRefreshToken(context, request, handler, session));
+
+        if (!session.isAuthorized() && requireLogin) {
+            return sendAuthorizationRedirect(context, request, null);
         }
-        return promise;
+
+        Promise<Void, OAuth2ErrorException> result;
+        if (session.isAuthorized()) {
+            result = fillTarget(context, session, request);
+        } else {
+            result = newResultPromise(null);
+        }
+
+        return result.thenAsync(
+                new AsyncFunction<Void, Response, NeverThrowsException>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> apply(Void ignore) {
+                        // Ensure we always work on a defensive copy of the request while executing the handler.
+                        final Handler handler = refreshToken ? chainOf(next, requestCopyFilter()) : next;
+                        final Promise<Response, NeverThrowsException> promise = handler.handle(context, request);
+                        if (refreshToken) {
+                            return promise.thenAsync(passThroughOrRefreshToken(context, request, handler, session));
+                        }
+                        return promise;
+                    }
+                },
+                handleOAuth2ErrorException(context, request));
     }
 
     private AsyncFunction<Response, Response, NeverThrowsException> passThroughOrRefreshToken(
@@ -653,20 +683,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         .thenAsync(new AsyncFunction<Void, Response, NeverThrowsException>() {
 
                             @Override
-                            public Promise<Response, NeverThrowsException> apply(Void value) {
+                            public Promise<Response, NeverThrowsException> apply(Void ignore) {
                                 // Try to access to the protected resource again with new access token.
                                 return handleProtectedResource(context, request, next, false);
                             }
-                        }, new AsyncFunction<OAuth2ErrorException, Response, NeverThrowsException>() {
-
-                            @Override
-                            public Promise<Response, NeverThrowsException> apply(OAuth2ErrorException e) {
-                                // Couldn't refresh the access token: return the original response (401)
-                                // to the caller.
-                                logger.error(e);
-                                return handleException(context, request, e);
-                            }
-                        });
+                        },
+                                   handleOAuth2ErrorException(context, request));
             }
 
         };
@@ -769,32 +791,54 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                     .handle(context, request);
     }
 
-    private void fillTarget(final Context context,
-                            final OAuth2Session session,
-                            final Request request) throws ResponseException, OAuth2ErrorException {
-        final Map<String, Object> info;
+    private Promise<Void, OAuth2ErrorException> fillTarget(final Context context,
+                                                           final OAuth2Session session,
+                                                           final Request request) {
+        Promise<Map<String, Object>, OAuth2ErrorException> promise;
 
         final ClientRegistration clientRegistration = getClientRegistration(session);
         if (clientRegistration != null
                 && clientRegistration.getIssuer().hasUserInfoEndpoint()
                 && session.getScopes().contains("openid")) {
-            final Map<String, Object> userInfo = getUserInfo(context, session, request, clientRegistration);
-
-            // Use the session info only after having fetched the user info: the session may have been refreshed.
-            info = extractSessionInfo(context, request);
-            info.put("user_info", userInfo);
+            promise = getUserInfo(context, session, request, clientRegistration)
+                    .then(new Function<Map<String, Object>, Map<String, Object>, OAuth2ErrorException>() {
+                        @Override
+                        public Map<String, Object> apply(Map<String, Object> userInfo) throws OAuth2ErrorException {
+                            // Use the session info only after having fetched the user info: the session may have
+                            // been refreshed.
+                            final Map<String, Object> info = extractSessionInfo(context, request);
+                            if (userInfo != null) {
+                                info.put("user_info", userInfo);
+                            }
+                            return info;
+                        }
+                    });
         } else {
-            info = extractSessionInfo(context, request);
+            try {
+                promise = newResultPromise(extractSessionInfo(context, request));
+            } catch (OAuth2ErrorException e) {
+                promise = newExceptionPromise(e);
+            }
         }
-        target.set(bindings(context, null), info);
+
+        return promise.then(new Function<Map<String, Object>, Void, OAuth2ErrorException>() {
+            @Override
+            public Void apply(Map<String, Object> info) {
+                target.set(bindings(context, null), info);
+                return null;
+            }
+        });
     }
 
     private Map<String, Object> extractSessionInfo(final Context context,
-                                                   final Request request) throws ResponseException,
-                                                                                 OAuth2ErrorException {
-        final OAuth2Session session = OAuth2Utils.loadOrCreateSession(context, request, clientEndpoint, time);
-        final Map<String, Object> info = new LinkedHashMap<>();
-        info.putAll(session.getAccessTokenResponse());
+                                                   final Request request) throws OAuth2ErrorException {
+        final OAuth2Session session;
+        try {
+            session = loadOrCreateSession(context, request, clientEndpoint, time);
+        } catch (ResponseException e) {
+            throw new OAuth2ErrorException(E_SERVER_ERROR, "Unable to load the OAuth2 session", e);
+        }
+        final Map<String, Object> info = new LinkedHashMap<>(session.getAccessTokenResponse());
         // Override these with effective values.
         info.put("client_registration", session.getClientRegistrationName());
         info.put("client_endpoint", session.getClientEndpoint());
@@ -811,26 +855,23 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return info;
     }
 
-    private Map<String, Object> getUserInfo(final Context context,
-                                            final OAuth2Session session,
-                                            final Request request,
-                                            final ClientRegistration clientRegistration) throws OAuth2ErrorException {
-        Map<String, Object> userInfo = null;
+    private Promise<Map<String, Object>, OAuth2ErrorException> getUserInfo(Context context,
+                                                                           OAuth2Session session,
+                                                                           Request request,
+                                                                           ClientRegistration clientRegistration) {
         try {
-            Promise<Map<String, Object>, OAuth2ErrorException> promise =
-                    userInfoCache.getValue(session.getAccessToken(),
-                                           new LoadUserInfoCallable(session, clientRegistration, context, request));
-            return safeGetOrThrow(promise);
+            return userInfoCache.getValue(session.getAccessToken(),
+                                          new LoadUserInfoCallable(session, clientRegistration, context, request));
         } catch (InterruptedException e) {
             logger.error(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
-                    clientRegistration.getName()));
+                                clientRegistration.getName()));
             logger.error(e);
         } catch (ExecutionException e) {
             logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
-                    clientRegistration.getName()));
+                                clientRegistration.getName()));
             logger.error(e);
         }
-        return userInfo;
+        return null;
     }
 
     /** Creates and initializes the filter in a heap environment. */
@@ -872,10 +913,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             // Build the cache of user-info
             final Duration expiration = config.get("cacheExpiration")
                                               .as(evaluated())
-                                              .defaultTo("20 seconds")
+                                              .defaultTo("10 minutes")
                                               .as(duration());
-            ScheduledExecutorService executor = config.get("executor").defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
-                    .as(requiredHeapObject(heap, ScheduledExecutorService.class));
+            ScheduledExecutorService executor = config.get("executor")
+                                                      .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                      .as(requiredHeapObject(heap, ScheduledExecutorService.class));
 
             cache = new PerItemEvictionStrategyCache<>(executor, expirationFunction(expiration));
             final OAuth2ClientFilter filter = new OAuth2ClientFilter(registrations,
@@ -884,7 +926,8 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                      discoveryAndDynamicRegistrationChain,
                                                                      clientEndpoint);
 
-            filter.setTarget(config.get("target").defaultTo(format("${attributes.%s}", DEFAULT_TOKEN_KEY))
+            filter.setTarget(config.get("target")
+                                   .defaultTo(format("${attributes.%s}", DEFAULT_TOKEN_KEY))
                                    .as(expression(Object.class)));
 
             final Handler loginHandler = config.get("loginHandler").as(optionalHeapObject(heap, Handler.class));
@@ -907,34 +950,39 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         static AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception>
         expirationFunction(final Duration expiration) {
             return new AsyncFunction<Promise<Map<String, Object>, OAuth2ErrorException>, Duration, Exception>() {
+
+                private final Promise<Duration, OAuth2ErrorException> onResultDuration =
+                        newResultPromise(expiration);
+
+                private final Promise<Duration, OAuth2ErrorException> onExceptionDuration =
+                        newResultPromise(ZERO);
+
                 @Override
-                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(Promise<Map<String, Object>,
-                        OAuth2ErrorException> value) throws Exception {
-                    return value.thenAsync(
-                            new AsyncFunction<Map<String, Object>, Duration, OAuth2ErrorException>() {
+                public Promise<Duration, OAuth2ErrorException> apply(Promise<Map<String, Object>,
+                        OAuth2ErrorException> value) {
+                    return value.thenAsync(onResult(onResultDuration), onException(onExceptionDuration));
+                }
 
-                                private final Promise<Duration, OAuth2ErrorException> onResultDuration =
-                                        newResultPromise(expiration);
+                private AsyncFunction<Map<String, Object>, Duration, OAuth2ErrorException> onResult(
+                        final Promise<Duration, OAuth2ErrorException> onResultDuration) {
+                    return new AsyncFunction<Map<String, Object>, Duration, OAuth2ErrorException>() {
 
-                                @Override
-                                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(
-                                        Map<String, Object> value)
-                                        throws OAuth2ErrorException {
-                                    return onResultDuration;
-                                }
-                            },
-                            new AsyncFunction<OAuth2ErrorException, Duration, OAuth2ErrorException>() {
+                        @Override
+                        public Promise<Duration, OAuth2ErrorException> apply(Map<String, Object> value) {
+                            return onResultDuration;
+                        }
+                    };
+                }
 
-                                private final Promise<Duration, OAuth2ErrorException> onExceptionDuration =
-                                        newResultPromise(ZERO);
+                private AsyncFunction<OAuth2ErrorException, Duration, OAuth2ErrorException> onException(
+                        final Promise<Duration, OAuth2ErrorException> onExceptionDuration) {
+                    return new AsyncFunction<OAuth2ErrorException, Duration, OAuth2ErrorException>() {
 
-                                @Override
-                                public Promise<? extends Duration, ? extends OAuth2ErrorException> apply(
-                                        OAuth2ErrorException value)
-                                        throws OAuth2ErrorException {
-                                    return onExceptionDuration;
-                                }
-                            });
+                        @Override
+                        public Promise<Duration, OAuth2ErrorException> apply(OAuth2ErrorException value) {
+                            return onExceptionDuration;
+                        }
+                    };
                 }
             };
         }
@@ -944,6 +992,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             if (cache != null) {
                 cache.clear();
             }
+            super.destroy();
         }
     }
 
@@ -956,8 +1005,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         private final Context context;
         private final Request request;
 
-        public LoadUserInfoCallable(final OAuth2Session session, final ClientRegistration clientRegistration,
-                final Context context, final Request request) {
+        public LoadUserInfoCallable(final OAuth2Session session,
+                                    final ClientRegistration clientRegistration,
+                                    final Context context,
+                                    final Request request) {
             this.session = session;
             this.clientRegistration = clientRegistration;
             this.context = context;
@@ -997,11 +1048,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         throws OAuth2ErrorException {
                     final OAuth2Error error = e.getOAuth2Error();
                     if (error.is(E_INVALID_TOKEN) && session.getRefreshToken() != null) {
-                        // Supposed expired token, try to update it by
-                        // generating a new access token.
+                        logger.trace("Supposed expired token, try to update it by generating a new access token.");
                         return updateSessionStateWithRefreshTokenOrFailWithNewSession();
                     }
-                    return Promises.newExceptionPromise(e);
+                    return newExceptionPromise(e);
                 }
             };
         }
@@ -1010,10 +1060,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final URI uri;
             try {
                 uri = buildUri(context, request, clientEndpoint);
-            } catch (ResponseException ex1) {
-                OAuth2ErrorException e = new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
-                        "Unable to build the client endpoint URI", ex1);
-                return Promises.newExceptionPromise(e);
+            } catch (ResponseException re) {
+                return newExceptionPromise(new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
+                                                                    "Unable to build the client endpoint URI",
+                                                                    re));
             }
 
             return clientRegistration.refreshAccessToken(context, session).thenAsync(
@@ -1029,44 +1079,14 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     }, new AsyncFunction<OAuth2ErrorException, JsonValue, OAuth2ErrorException>() {
 
                         @Override
-                        public Promise<JsonValue, OAuth2ErrorException> apply(OAuth2ErrorException ex)
-                                throws OAuth2ErrorException {
+                        public Promise<JsonValue, OAuth2ErrorException> apply(OAuth2ErrorException ex) {
                             logger.error("Fail to refresh OAuth2 Access Token");
                             logger.error(ex);
                             session = OAuth2Session.stateNew(time);
                             saveSession(context, session, uri);
-                            return Promises.newExceptionPromise(ex);
+                            return newExceptionPromise(ex);
                         }
                     });
         }
-    }
-
-    private static <V, E extends Exception> V blockingCall(Promise<V, E> promise, String message)
-            throws E, OAuth2ErrorException {
-        try {
-            return safeGetOrThrow(promise);
-        } catch (InterruptedException e) {
-            // TODO Remove the getOrThrow()
-            throw new OAuth2ErrorException(E_SERVER_ERROR, "Interrupted while " + message, e);
-        }
-    }
-
-    private static <V, E extends Exception> V safeGetOrThrow(Promise<V, E> promise) throws InterruptedException, E {
-        final CountDownLatch latch = new CountDownLatch(1);
-        V value = promise
-                // Decrement the latch at the very end of the listener's sequence
-                .thenAlways(new Runnable() {
-                    @Override
-                    public void run() {
-                        latch.countDown();
-                    }
-                })
-                // Block the promise, waiting for the response
-                .getOrThrow();
-
-        // Wait for the latch to be released so we can make sure that all of the Promise's ResultHandlers
-        // and Functions have been invoked
-        latch.await();
-        return value;
     }
 }
