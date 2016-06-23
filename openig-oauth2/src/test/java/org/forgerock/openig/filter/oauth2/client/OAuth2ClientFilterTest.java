@@ -842,7 +842,7 @@ public class OAuth2ClientFilterTest {
         Promise<? extends Duration, ? extends Exception> promiseDuration = expirationFunction.apply(
                 Promises.<Map<String, Object>, OAuth2ErrorException>newResultPromise(null));
 
-        assertThat(promiseDuration.getOrThrow()).isEqualByComparingTo(oneMinute);
+        assertThat(promiseDuration.getOrThrow()).isEqualByComparingTo(duration(1, TimeUnit.MINUTES));
     }
 
     private static void assertThatAuthorizationRedirectHandlerProducesRedirect(final Response response) {
@@ -940,8 +940,7 @@ public class OAuth2ClientFilterTest {
 
     private OAuth2ClientFilter buildOAuth2ClientFilter() throws ExpressionException {
         final PerItemEvictionStrategyCache<String, Promise<Map<String, Object>, OAuth2ErrorException>> cache
-            = new PerItemEvictionStrategyCache<>(
-                newSingleThreadScheduledExecutor(), Duration.ZERO);
+            = new PerItemEvictionStrategyCache<>(newSingleThreadScheduledExecutor(), Duration.ZERO);
         final OAuth2ClientFilter filter = new OAuth2ClientFilter(registrations,
                                                                  cache,
                                                                  time,
@@ -962,5 +961,4 @@ public class OAuth2ClientFilterTest {
                                                                            DEFAULT_SCOPE));
         return heap;
     }
-
 }
