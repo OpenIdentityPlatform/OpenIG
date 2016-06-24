@@ -40,9 +40,7 @@ public class MapResolver implements Resolver {
     public Object get(Object object, Object element) {
         if (object instanceof Map) {
             Map<?, ?> map = (Map<?, ?>) object;
-            if (map.containsKey(element)) {
-                return map.get(element);
-            }
+            return map.get(element);
         }
         return Resolver.UNRESOLVED;
     }
