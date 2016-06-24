@@ -16,6 +16,7 @@
 package org.forgerock.http.filter.throttling;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.time.Duration.duration;
 
@@ -90,15 +91,19 @@ public class TokenBucketTest {
 
     @Test
     public void shouldNotConsumeMoreTokensThanExpected() throws Exception {
-        FakeTicker ticker = new FakeTicker(42);
-        // 3 reqs / sec means it has a unlimited fractional part
-        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3, duration("1 second")));
+        FakeTicker ticker = new FakeTicker(0);
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(1, duration("1 second")));
 
-        // Simulate some heavy load by trying to consume some tokens in the same millisecond : only the first one
-        // has to be consumed.
-        assertThat(bucket.tryConsume()).as("Consume first token").isLessThanOrEqualTo(0);
-        assertThat(bucket.tryConsume()).as("Consume second token").isLessThanOrEqualTo(0);
-        assertThat(bucket.tryConsume()).as("Consume third token").isLessThanOrEqualTo(0);
-        assertThat(bucket.tryConsume()).as("Consume fourth token").isGreaterThan(0);
+        // The token #1 can be consumed,
+        // The token #2 is refused and is advised to wait at least 1_000_000_000 ns (i.e. 1s)
+        assertThat(bucket.tryConsume()).as("Consume token #1").isEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume token #2").isEqualTo(1_000_000_000L);
+
+        // Wait a bit more than advised
+        ticker.advance(1_300_000_000L, NANOSECONDS);
+        // The 4th token can then be accepted
+        assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(0);
+        // The 5th is refused and is advised to wait at least 700_000_000 ns (1s - 0.3s)
+        assertThat(bucket.tryConsume()).as("Consume token #5").isEqualTo(700_000_000L);
     }
 }
