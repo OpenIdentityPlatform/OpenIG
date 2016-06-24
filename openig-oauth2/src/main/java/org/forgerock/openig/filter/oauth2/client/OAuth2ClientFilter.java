@@ -642,7 +642,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         final Handler handler = refreshToken ? chainOf(next, requestCopyFilter()) : next;
                         final Promise<Response, NeverThrowsException> promise = handler.handle(context, request);
                         if (refreshToken) {
-                            return promise.thenAsync(passThroughOrRefreshToken(context, request, handler, session));
+                            return promise.thenAsync(passThroughOrRefreshToken(context, request, handler));
                         }
                         return promise;
                     }
@@ -653,8 +653,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private AsyncFunction<Response, Response, NeverThrowsException> passThroughOrRefreshToken(
             final Context context,
             final Request request,
-            final Handler next,
-            final OAuth2Session session) {
+            final Handler next) {
 
         return new AsyncFunction<Response, Response, NeverThrowsException>() {
             @Override
@@ -666,6 +665,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 }
                 if (!UNAUTHORIZED.equals(status)) {
                     return handleException(context, request, response.getCause());
+                }
+
+                final OAuth2Session session;
+                try {
+                    session = loadOrCreateSession(context, request, clientEndpoint, time);
+                } catch (OAuth2ErrorException | ResponseException e) {
+                    return handleException(context, request, e);
                 }
 
                 final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response).getOAuth2Error();
