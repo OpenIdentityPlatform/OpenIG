@@ -117,8 +117,10 @@ class TokenBucket {
                 long newTokens = tokensThatCanBeAdded(now, currentState);
                 // Refill the bucket as much as possible
                 if (newTokens > 0) {
-                    timestampLastRefill = now;
-                    counter = Math.min(capacity, currentState.counter + newTokens);
+                    // Take care not to exceed the full capacity
+                    newTokens = Math.min(newTokens, capacity - currentState.counter);
+                    counter += newTokens;
+                    timestampLastRefill = currentState.timestampLastRefill + newTokens * nanosToWaitForNextToken;
                 }
 
                 if (counter <= 0) {
