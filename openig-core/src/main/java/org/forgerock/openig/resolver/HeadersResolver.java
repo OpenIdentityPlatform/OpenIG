@@ -11,12 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  *
  */
 
 package org.forgerock.openig.resolver;
 
+import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Headers;
 
 /**
@@ -32,12 +33,12 @@ public class HeadersResolver implements Resolver {
     @Override
     public Object get(Object object, Object element) {
         if (object instanceof Headers) {
-            Headers headers = (Headers) object;
-            String key = element.toString();
-            if (headers.containsKey(key)) {
-                // We just do the getValues() on behalf of the script so we don't have to write .values in expressions
-                return headers.get(key).getValues();
+            Header header = ((Headers) object).get(element.toString());
+            if (header == null) {
+                return null;
             }
+            // We just do the getValues() on behalf of the script so we don't have to write .values in expressions
+            return header.getValues();
         }
         return Resolver.UNRESOLVED;
     }
