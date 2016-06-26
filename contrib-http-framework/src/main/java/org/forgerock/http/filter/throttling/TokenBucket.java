@@ -15,7 +15,6 @@
  */
 package org.forgerock.http.filter.throttling;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,7 +46,7 @@ import org.forgerock.util.Reject;
  *     //  - either you give up
  *     //  - or you wait for the delay and try again
  *     // Here we will try again after sleeping a bit :
- *     Thread.sleep(delay);
+ *     TimeUnit.NANOSECONDS.sleep(delay);
  *     return doSomething();
  *   }
  * }
@@ -101,7 +100,7 @@ class TokenBucket {
      *
      * @return the delay to wait before a next token can be consumed. If it is equal to 0, that means a
      * token has been consumed from the bucket, if it is greater than 0, that means the delay to wait, in
-     * milliseconds, for having an opportunity to consume a token.
+     * nanoseconds, for having an opportunity to consume a token.
      */
     public long tryConsume() {
         do {
@@ -125,8 +124,8 @@ class TokenBucket {
                 if (counter <= 0) {
                     // We had not any opportunity to refill the bucket so we just give up
                     long delayForNextRetry = (currentState.timestampLastRefill + this.nanosToWaitForNextToken) - now;
-                    // Return at least 1ms to indicate we did not consume a token
-                    return Math.max(1, MILLISECONDS.convert(delayForNextRetry, NANOSECONDS));
+                    // Return at least 1ns to indicate we did not consume a token
+                    return Math.max(1, delayForNextRetry);
                 }
                 counter--;
                 newState = new State(counter, timestampLastRefill);

@@ -15,7 +15,7 @@
  */
 package org.forgerock.http.filter.throttling;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
@@ -136,11 +136,12 @@ public class ThrottlingFilter implements Filter {
                     }
 
                     private String computeRetryAfter(final long delay) {
-                        // According to the Javadoc of TimeUnit.convert : 999 ms => 0 sec, but we want to answer 1 sec.
-                        //  999 + 999 = 1998 => 1 second
-                        // 1000 + 999 = 1999 => 1 second
-                        // 1001 + 999 = 2000 => 2 seconds
-                        return Long.toString(SECONDS.convert(delay + 999L, MILLISECONDS));
+                        // According to the Javadoc of TimeUnit.convert :
+                        // 999_999_999 ns => 0 sec, but we want to answer 1 sec.
+                        //   999_999_999 ns + 999_999_999 ns = 1_000_000_998 ns => 1 second
+                        // 1_000_000_000 ns + 999_999_999 ns = 1_000_000_999 ns => 1 second
+                        // 1_000_000_001 ns + 999_999_999 ns = 2_000_000_000 ns => 2 seconds
+                        return Long.toString(SECONDS.convert(delay + 999_999_999L, NANOSECONDS));
                     }
 
                 });

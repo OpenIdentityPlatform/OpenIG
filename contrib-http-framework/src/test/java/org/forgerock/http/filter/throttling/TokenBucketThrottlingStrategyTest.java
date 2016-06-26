@@ -157,13 +157,13 @@ public class TokenBucketThrottlingStrategyTest {
 
         // The same request will be refused as the previous token is not yet expired
         delay = strategy.throttle(FOO, throttlingRate).get();
-        assertThat(delay).isEqualTo(1_000);
+        assertThat(delay).isEqualTo(1_000_000_000);
 
         // Even if ticker was forwarded by 50ms it's not enough for the token to be expired but the returned delay is
         // returning the correct value to wait for the next valid try
         ticker.advance(50, MILLISECONDS);
         delay = strategy.throttle(FOO, throttlingRate).get();
-        assertThat(delay).isEqualTo(950);
+        assertThat(delay).isEqualTo(950_000_000);
 
         // Let's follow the advice and retry in the given delay
         ticker.advance(delay, MILLISECONDS);

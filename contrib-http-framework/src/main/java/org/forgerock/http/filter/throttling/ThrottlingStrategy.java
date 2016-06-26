@@ -27,8 +27,8 @@ public interface ThrottlingStrategy {
     /**
      * Based on the given {@literal partitionKey} and {@literal throttlingRate}, return if the call is accepted or not.
      * The returned promise is succeeded with a value of 0 if the call is accepted. Any value greater than 0 means that
-     * the next call that can be accepted after {@literal value} seconds.
-     * This method returns a promise as the decision to let this call going through can be queued and thus completed
+     * the next call that could be accepted after {@literal value} nanoseconds.
+     * <p>This method returns a promise as the decision to let this call going through can be queued and thus completed
      * later. That may allow for example to queue the first calls and complete the returned promises at a constant rate.
      *
      * @param partitionKey the key used to identify the different groups
