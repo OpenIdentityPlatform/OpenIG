@@ -53,6 +53,7 @@ public class TokenBucketTest {
         // a token bucket that can refill 1 token every 333.333 ms.
         TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3, duration("1 second")));
 
+        // The first 3 calls correspond to the burst phase
         ticker.advance(0, MILLISECONDS);
         assertThat(bucket.tryConsume()).isEqualTo(0); // First ticker, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(2);
@@ -64,8 +65,9 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).isEqualTo(0); // Third ticker < 1s, so we can consume a token
         assertThat(bucket.getRemainingTokensCount()).isEqualTo(0);
 
+        //
         ticker.advance(2, MILLISECONDS); // t0 + 3 ms
-        assertThat(bucket.tryConsume()).isEqualTo(330); // Not enough elapsed ticker to get a refill
+        assertThat(bucket.tryConsume()).isEqualTo(330_333_333); // Not enough elapsed ticker to get a refill
 
         ticker.advance(331, MILLISECONDS); // t0 + 334 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Enough elapsed ticker to get a refill
@@ -79,11 +81,11 @@ public class TokenBucketTest {
         TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3000, duration("1 second")));
 
         assertThat(bucket.tryConsume()).isEqualTo(0); // First ticker, so we can consume a token
-        assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
+        assertThat(bucket.getRemainingTokensCount()).isEqualTo(2_999);
 
         ticker.advance(1, MILLISECONDS);
         assertThat(bucket.tryConsume()).isEqualTo(0); // Second ticker < 1s, so we can consume a token
-        assertThat(bucket.getRemainingTokensCount()).isEqualTo(2999);
+        assertThat(bucket.getRemainingTokensCount()).isEqualTo(2_999);
     }
 
     @Test
@@ -99,6 +101,4 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).as("Consume third token").isLessThanOrEqualTo(0);
         assertThat(bucket.tryConsume()).as("Consume fourth token").isGreaterThan(0);
     }
-
-
 }
