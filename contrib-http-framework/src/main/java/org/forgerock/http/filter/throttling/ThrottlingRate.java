@@ -93,14 +93,4 @@ public final class ThrottlingRate {
     public String toString() {
         return numberOfRequests + "/" + duration.getValue() + " " + duration.getUnit();
     }
-
-    /**
-     * Returns the theoretical delay between two requests.
-     * @param unit the unit of time of the delay
-     * @return the theoretical delay between two requests.
-     */
-    public long delayBetweenRequests(TimeUnit unit) {
-        return duration.to(unit) / numberOfRequests;
-    }
-
 }
