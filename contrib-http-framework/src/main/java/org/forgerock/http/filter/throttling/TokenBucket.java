@@ -90,7 +90,7 @@ class TokenBucket {
         this.throttlingRate = rate;
         this.capacity = rate.getNumberOfRequests();
         this.duration = rate.getDuration().to(NANOSECONDS);
-        this.nanosToWaitForNextToken = rate.delayBetweenRequests(NANOSECONDS);
+        this.nanosToWaitForNextToken = (long) Math.ceil(duration / (double) capacity);
         this.state = new AtomicReference<>();
     }
 

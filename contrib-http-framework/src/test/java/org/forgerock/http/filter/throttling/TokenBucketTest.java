@@ -68,7 +68,7 @@ public class TokenBucketTest {
 
         //
         ticker.advance(2, MILLISECONDS); // t0 + 3 ms
-        assertThat(bucket.tryConsume()).isEqualTo(330_333_333); // Not enough elapsed ticker to get a refill
+        assertThat(bucket.tryConsume()).isEqualTo(330_333_334); // Not enough elapsed ticker to get a refill
 
         ticker.advance(331, MILLISECONDS); // t0 + 334 ms
         assertThat(bucket.tryConsume()).isEqualTo(0); // Enough elapsed ticker to get a refill
@@ -105,5 +105,19 @@ public class TokenBucketTest {
         assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(0);
         // The 5th is refused and is advised to wait at least 700_000_000 ns (1s - 0.3s)
         assertThat(bucket.tryConsume()).as("Consume token #5").isEqualTo(700_000_000L);
+    }
+
+
+    @Test
+    public void shouldRoundUpTheDelayBetweenTokens() throws Exception {
+        FakeTicker ticker = new FakeTicker(42);
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(3, duration("1 second")));
+
+        // Consume the burst.
+        for (int i = 1; i <= 3; i++) {
+            assertThat(bucket.tryConsume()).as("Consume token #" + i).isEqualTo(0);
+        }
+        // This one is refused and advised to wait at least 333_333_334 ns before it can be accepted.
+        assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(333_333_334);
     }
 }
