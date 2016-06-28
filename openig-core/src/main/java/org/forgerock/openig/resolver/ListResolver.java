@@ -66,6 +66,7 @@ public class ListResolver implements Resolver {
                 }
                 // otherwise, ignore out-of-range index
             } catch (UnsupportedOperationException uoe) {
+                logger.warn("Can't insert an element into a read-only list", uoe);
                 // ignore failed attempts to write to read-only list
             }
         }
