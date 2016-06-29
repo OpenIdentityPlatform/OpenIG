@@ -1,0 +1,70 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+<div class="container">
+    <div class="page-header">
+        <h1>{{t "templates.apps.addAppTitle"}}</h1>
+    </div>
+</div>
+<div class="container">
+    <form class="form-horizontal" role="form" id="appForm">
+        <!-- inputs prevent browser autocompletion of form fields -->
+        <input type="text" style="display:none">
+        <input type="password" style="display:none">
+        <div class="panel panel-collapse-group has-border">
+            <div>
+                <div class="panel-body">
+                    <div class="form-group has-feedback">
+                        <label class="col-sm-3 control-label" for="appName">{{t "templates.apps.appName"}}</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" id="appName" name="name" value="{{appName}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}} autofocus />
+                            <div class="validation-message"></div>
+                            {{#unless editState}}
+                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                            <div class="help-block">{{t "templates.apps.appNameHint"}}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group has-feedback">
+                        <label class="col-sm-3 control-label" for="appUrl">{{t "templates.apps.appUrl"}}</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" id="appUrl" name="url" value="{{appUrl}}" {{#if editState}} disabled="true" {{else}}data-validator="required baseURI spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}} autofocus />
+                            <div class="validation-message"></div>
+
+                            {{#unless editState}}
+                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                            <div class="help-block">{{t "templates.apps.appUrlHint"}}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group has-feedback">
+                        <label class="col-sm-3 control-label" for="appCondition">{{t "templates.apps.appCondition"}}</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" id="appCondition" name="condition" value="{{appCondition}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}} autofocus />
+                            <div class="validation-message"></div>
+
+                            {{#unless editState}}
+                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                            <div class="help-block">{{t "templates.apps.appConditionHint"}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer clearfix">
+                <div class="pull-right">
+                    <a href="#apps/"><button class="btn btn-default" type="button">{{t 'common.form.cancel'}}</button></a>
+                    <input id="submitApp" name="submitApp" disabled="true" class="btn btn-primary" type="submit" value="{{t 'templates.apps.addAppButton'}}" />
+                </div>
+            </div>
+        </div>
+
+        <div role="alert" id="appErrorMessage" class="alert alert-danger" style="display:none;">
+            <i class="fa fa-exclamation-circle"></i><strong>{{t "common.form.error" }}</strong>
+            <span class="message"></span>
+        </div>
+
+        <div role="alert" id="appWarningMessage" class="alert alert-warning" style="display:none;">
+            <i class="fa fa-exclamation-circle"></i><strong>{{t "common.form.warning" }}</strong>
+            <span class="message"></span>
+        </div>
+    </form>
+</div>

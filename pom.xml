@@ -44,6 +44,7 @@
     <module>openig-doc</module>
     <module>openig-uma</module>
     <module>openig-openam</module>
+    <module>openig-ui</module>
   </modules>
 
   <build>
@@ -104,6 +105,7 @@
 
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>http://openig.forgerock.org/docs.html</welcomeDocUrl>
+    <maven.min.version>3.1.0</maven.min.version>
   </properties>
 
   <repositories>
