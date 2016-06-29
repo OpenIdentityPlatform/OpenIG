@@ -1,0 +1,9 @@
+.DS_Store
+docs
+node_modules
+node/
+target
+.idea
+*.iml
+.vscode/launch.json
+jsconfig.json

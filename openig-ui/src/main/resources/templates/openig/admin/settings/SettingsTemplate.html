@@ -1,0 +1,83 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+<div class="container">
+    <div class="page-header">
+        <h1>{{t "templates.settings.settingsTitle"}}</h1>
+    </div>
+</div>
+<section>
+    <div class="container">
+        <div class="tab-panel" role="tabpanel">
+            <div class="tab-menu">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="active" role="presentation">
+                        <a aria-controls="tab-options" data-toggle="tab" href="#tab-admin" role="tab" aria-expanded="true">{{t "templates.settings.adminChannel"}}</a>
+                    </li>
+                    <li class="" role="presentation">
+                        <a aria-controls="tab-settings" data-toggle="tab" href="#tab-functional" role="tab" aria-expanded="false">{{t "templates.settings.functionalChannel"}}</a>
+                    </li>
+                </ul>
+            </div>
+            <form id="settings" data-form-validate="true">
+                <div class="panel panel-default fr-panel-tab">
+                    <div class="panel-body">
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="tab-admin" role="tabpanel">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{t "templates.settings.port_network"}}</label>
+                                        <div class="col-sm-6">
+                                            <input class="form-control" id="port_network" name="admin.port_network" type="text" value="{{settings.admin.port_network}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus
+                                                {{/if}} autofocus/>
+                                            <div class="validation-message"></div>
+                                            {{#unless editState}}
+                                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{t "templates.settings.https"}}</label>
+                                        <div class="col-sm-6">
+                                            <input class="form-control" name="admin.https" type="text" value="{{settings.admin.https}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}} autofocus>
+                                            <div class="validation-message"></div>
+                                            {{#unless editState}}
+                                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="tab-functional" role="tabpanel">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{t "templates.settings.port_network"}}</label>
+                                        <div class="col-sm-6">
+                                            <input class="form-control" name="functional.port_network" type="text" value="{{settings.functional.port_network}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}}
+                                                autofocus>
+                                            <div class="validation-message"></div>
+                                            {{#unless editState}}
+                                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{t "templates.settings.https"}}</label>
+                                        <div class="col-sm-6">
+                                            <input class="form-control" name="functional.https" type="text" value="{{settings.functional.https}}" {{#if editState}} disabled="true" {{else}}data-validator="required spaceCheck" data-validator-event="keyup blur" required autofocus {{/if}} autofocus>
+                                            <div class="validation-message"></div>
+                                            {{#unless editState}}
+                                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span> {{/unless}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer clearfix">
+                        <div class="pull-right">
+                            <a href="#settings/"><button class="btn btn-secondary" type="button">{{t "common.form.cancel"}}</button></a>
+                            <input id="submitSettings" name="submitSettings" class="btn btn-primary" disabled="true" type="submit" value="{{t 'common.form.save'}}" />
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
