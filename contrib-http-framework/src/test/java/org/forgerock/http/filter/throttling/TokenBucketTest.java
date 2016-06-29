@@ -17,6 +17,7 @@ package org.forgerock.http.filter.throttling;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.time.Duration.duration;
 
@@ -101,12 +102,31 @@ public class TokenBucketTest {
 
         // Wait a bit more than advised
         ticker.advance(1_300_000_000L, NANOSECONDS);
-        // The 4th token can then be accepted
-        assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(0);
-        // The 5th is refused and is advised to wait at least 700_000_000 ns (1s - 0.3s)
-        assertThat(bucket.tryConsume()).as("Consume token #5").isEqualTo(700_000_000L);
+        // The token #3 can then be accepted
+        assertThat(bucket.tryConsume()).as("Consume token #3").isEqualTo(0);
+        // The token #4 is refused and is advised to wait at least for 1_000_000_000 ns :
+        // 1,3s > 1s so the bucket is considered as expired
+        assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(1_000_000_000L);
     }
 
+    @Test
+    public void shouldExpireBetweenPausedActivity() throws Exception {
+        FakeTicker ticker = new FakeTicker(0);
+        TokenBucket bucket = new TokenBucket(ticker, new ThrottlingRate(2, duration("1 second")));
+
+        // The token #1 an #2 can be consumed,
+        assertThat(bucket.tryConsume()).as("Consume token #1").isEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume token #2").isEqualTo(0);
+
+        // Wait more than advised
+        ticker.advance(10, SECONDS);
+        // The token #3 and #4 can then be accepted
+        assertThat(bucket.tryConsume()).as("Consume token #3").isEqualTo(0);
+        assertThat(bucket.tryConsume()).as("Consume token #4").isEqualTo(0);
+        // The token #5 is refused and is advised to wait at least for 500_000_000 ns :
+        // 10,3s > 1s so the bucket is considered as expired
+        assertThat(bucket.tryConsume()).as("Consume token #5").isEqualTo(500_000_000L);
+    }
 
     @Test
     public void shouldRoundUpTheDelayBetweenTokens() throws Exception {

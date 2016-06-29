@@ -108,8 +108,9 @@ class TokenBucket {
 
             final State currentState = state.get();
             final State newState;
-            if (currentState == null) {
-                // First ticker, start at full capacity minus the current call.
+            if (currentState == null || isExpired(now)) {
+                // first time or the bucket is expired
+                // start at full capacity minus the current call.
                 newState = new State(capacity - 1, now);
             } else {
                 long timestampLastRefill = currentState.timestampLastRefill;
@@ -165,7 +166,11 @@ class TokenBucket {
      * @return whether this token bucket is expired or not
      */
     public boolean isExpired() {
-        return (ticker.read() - getTimestampLastRefill()) > duration;
+        return isExpired(ticker.read());
+    }
+
+    private boolean isExpired(long timestamp) {
+        return (timestamp - getTimestampLastRefill()) > duration;
     }
 
 }
