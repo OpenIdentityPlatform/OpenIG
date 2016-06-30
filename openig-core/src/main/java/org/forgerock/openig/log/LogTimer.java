@@ -21,7 +21,9 @@ import static java.util.concurrent.TimeUnit.*;
 
 /**
  * Records elapsed time in a log in milliseconds.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class LogTimer {
 
     /** The time that the timer was started. */

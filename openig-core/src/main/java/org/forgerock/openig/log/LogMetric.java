@@ -12,14 +12,16 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
 
 /**
  * Log entry data that provides a measurement.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class LogMetric {
 
     /** The unit of measurement the metric is expressed in. */

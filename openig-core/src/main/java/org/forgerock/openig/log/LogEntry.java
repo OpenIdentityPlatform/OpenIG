@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -21,7 +21,9 @@ import org.forgerock.openig.heap.Name;
 
 /**
  * The log entry data structure.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class LogEntry {
     /** The time of the event being logged (milliseconds since the 1970 epoch). */
     private final long time = System.currentTimeMillis();

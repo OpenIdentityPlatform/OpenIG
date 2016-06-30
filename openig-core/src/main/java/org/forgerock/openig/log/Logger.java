@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -21,7 +21,9 @@ import org.forgerock.openig.heap.Name;
 
 /**
  * Wraps a log sink and exposes a set of convenience methods for various logging activities.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class Logger {
 
     /** The sink to write log entries to. */

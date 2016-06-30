@@ -30,7 +30,9 @@ import org.forgerock.openig.heap.Name;
 
 /**
  * A sink that writes log entries to the standard output or error stream (depending on the object configuration).
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class ConsoleLogSink implements LogSink {
 
     private static final Object LOCK = new Object();
