@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.log;
@@ -20,7 +20,9 @@ package org.forgerock.openig.log;
 /**
  * Levels used for categorizing log entries. Constants are ordered from most verbose to
  * least verbose.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public enum LogLevel {
 
     /** Indicates that all entries should be logged. */

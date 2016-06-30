@@ -37,7 +37,9 @@ import org.forgerock.openig.heap.Name;
 
 /**
  * A sink that writes log entries to a file.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class FileLogSink implements LogSink {
 
     /** File where the entries will be written to. */

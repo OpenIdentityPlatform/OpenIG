@@ -12,10 +12,11 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2014 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 /**
  * Facility for logging and real-time performance monitoring.
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
 package org.forgerock.openig.log;

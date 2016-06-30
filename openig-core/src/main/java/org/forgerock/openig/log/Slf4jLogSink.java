@@ -51,7 +51,9 @@ import org.slf4j.Marker;
  *   }
  *   }
  * </pre>
+ * @deprecated Will be replaced by SLF4J / Logback in OpenIG 5.0
  */
+@Deprecated
 public class Slf4jLogSink implements LogSink {
 
     private final String baseName;
