@@ -55,6 +55,7 @@ public class TokenBucketThrottlingStrategyTest {
     FakeTicker ticker;
 
     @BeforeMethod
+    @SuppressWarnings("unchecked")
     public void beforeMethod() {
         ticker = new FakeTicker();
         ScheduledExecutorService scheduledExecutor = mock(ScheduledExecutorService.class);

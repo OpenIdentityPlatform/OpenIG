@@ -113,6 +113,7 @@ public class ExpressionJsonTransformFunctionTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldEvaluateSet() throws Exception {
         JsonValue node = evaluate(json(set(1, "${1}", "${3.5}")));
 
