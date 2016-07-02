@@ -24,7 +24,8 @@ import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.filter.AssignmentFilter;
-import org.forgerock.openig.filter.Chain;
+import org.forgerock.openig.filter.ChainFilterHeaplet;
+import org.forgerock.openig.filter.ChainHandlerHeaplet;
 import org.forgerock.openig.filter.ConditionEnforcementFilter;
 import org.forgerock.openig.filter.ConditionalFilterHeaplet;
 import org.forgerock.openig.filter.CookieFilter;
@@ -75,7 +76,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("AssignmentFilter", AssignmentFilter.class);
         ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
         ALIASES.put("CaptureDecorator", CaptureDecorator.class);
-        ALIASES.put("Chain", Chain.class);
+        ALIASES.put("Chain", ChainHandlerHeaplet.class);
         ALIASES.put("ClientHandler", ClientHandler.class);
         ALIASES.put("ConditionalFilter", ConditionalFilterHeaplet.class);
         ALIASES.put("ConditionEnforcementFilter", ConditionEnforcementFilter.class);
