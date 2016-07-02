@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -29,6 +29,7 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.handler.Handlers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
@@ -128,7 +129,7 @@ public class AssignmentFilterTest {
         Request request = new Request();
         request.setMethod("DELETE");
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
-        Chain chain = new Chain(handler, singletonList((Filter) filter));
+        Handler chain = Handlers.chainOf(handler, singletonList((Filter) filter));
         chain.handle(context, request).get();
         assertThat(context.getAttributes().get("newAttr")).isEqualTo("DELETE");
     }
@@ -143,7 +144,7 @@ public class AssignmentFilterTest {
         Request request = new Request();
         request.setUri("www.example.com");
 
-        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
+        Handler chain = Handlers.chainOf(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
         chain.handle(context, request).get();
         assertThat(request.getUri().toString()).isEqualTo("www.forgerock.com");
@@ -157,7 +158,7 @@ public class AssignmentFilterTest {
                                   Expression.valueOf("${response.status.code}", Integer.class));
 
         AttributesContext context = new AttributesContext(new RootContext());
-        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
+        Handler chain = Handlers.chainOf(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
         chain.handle(context, new Request()).get();
         assertThat(context.getAttributes().get("newAttr")).isEqualTo(200);
     }

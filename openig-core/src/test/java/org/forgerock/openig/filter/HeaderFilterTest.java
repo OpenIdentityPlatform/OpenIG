@@ -20,6 +20,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.handler.Handlers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -43,7 +45,7 @@ public class HeaderFilterTest {
         request.setMethod("DELETE");
         request.setUri("http://test.com:123/path/to/resource.html");
         StaticResponseHandler handler = new StaticResponseHandler(Status.OK);
-        Chain chain = new Chain(handler, singletonList((Filter) filter));
+        Handler chain = Handlers.chainOf(handler, singletonList((Filter) filter));
         Response response = chain.handle(new RootContext(), request).get();
 
         assertThat(response.getHeaders().get("Location").getValues())
