@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.doc;
@@ -20,10 +20,11 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.forgerock.http.Filter;
+import org.forgerock.http.Handler;
+import org.forgerock.http.handler.Handlers;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.filter.Chain;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -41,7 +42,7 @@ public class SampleFilterTest {
         Context context = new RootContext();
         Request request = new Request();
 
-        Chain chain = new Chain(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
+        Handler chain = Handlers.chainOf(new StaticResponseHandler(Status.OK), singletonList((Filter) filter));
 
         Response response = chain.handle(context, request).get();
 
