@@ -81,8 +81,6 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
-import org.forgerock.openig.filter.Chain;
-import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -117,11 +115,11 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     private static final JsonValue DEFAULT_CLIENT_HANDLER =
                                         json(object(field("name", CLIENT_HANDLER_HEAP_KEY),
-                                                    field("type", ClientHandler.class.getName())));
+                                                    field("type", "ClientHandler")));
 
     private static final JsonValue FORGEROCK_CLIENT_HANDLER =
                                 json(object(field("name", FORGEROCK_CLIENT_HANDLER_HEAP_KEY),
-                                            field("type", Chain.class.getName()),
+                                            field("type", "Chain"),
                                             field("config", object(
                                                    field("filters", array(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY)),
                                                    field("handler", CLIENT_HANDLER_HEAP_KEY)))));

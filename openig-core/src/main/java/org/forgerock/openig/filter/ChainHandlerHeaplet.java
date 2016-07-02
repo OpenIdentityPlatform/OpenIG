@@ -25,14 +25,8 @@ import java.util.List;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.handler.Handlers;
-import org.forgerock.http.protocol.Request;
-import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.services.context.Context;
-import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promise;
 
 /**
  * A chain of zero or more filters and one handler. The chain is responsible for
@@ -49,36 +43,15 @@ import org.forgerock.util.promise.Promise;
  *
  * @see Filter
  */
-public class Chain extends GenericHeapObject implements Handler {
-
-    /** The CHF Chain implementation. */
-    private final Handler delegate;
-
-    /**
-     * Builds a chain of filters that will finally dispatch to the given handler.
-     * List of Filters is empty by default.
-     * @param handler terminus of the chain
-     * @param filters list of {@link Filter}s
-     */
-    public Chain(final Handler handler, final List<Filter> filters) {
-        delegate = Handlers.chainOf(handler, filters);
-    }
+public class ChainHandlerHeaplet extends GenericHeaplet {
 
     @Override
-    public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        return delegate.handle(context, request);
-    }
-
-    /** Creates and initializes a filter chain in a heap environment. */
-    public static class Heaplet extends GenericHeaplet {
-        @Override
-        public Object create() throws HeapException {
-            Handler terminus = config.get("handler").as(requiredHeapObject(heap, Handler.class));
-            List<Filter> filters = config.get("filters")
-                                         .required()
-                                         .expect(List.class)
-                                         .as(listOf(requiredHeapObject(heap, Filter.class)));
-            return new Chain(terminus, filters);
-        }
+    public Object create() throws HeapException {
+        Handler terminus = config.get("handler").as(requiredHeapObject(heap, Handler.class));
+        List<Filter> filters = config.get("filters")
+                                     .required()
+                                     .expect(List.class)
+                                     .as(listOf(requiredHeapObject(heap, Filter.class)));
+        return Handlers.chainOf(terminus, filters);
     }
 }
