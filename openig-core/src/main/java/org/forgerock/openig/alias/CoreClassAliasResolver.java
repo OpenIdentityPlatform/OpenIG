@@ -77,6 +77,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("BaseUriDecorator", BaseUriDecorator.class);
         ALIASES.put("CaptureDecorator", CaptureDecorator.class);
         ALIASES.put("Chain", ChainHandlerHeaplet.class);
+        ALIASES.put("ChainOfFilters", ChainFilterHeaplet.class);
         ALIASES.put("ClientHandler", ClientHandler.class);
         ALIASES.put("ConditionalFilter", ConditionalFilterHeaplet.class);
         ALIASES.put("ConditionEnforcementFilter", ConditionEnforcementFilter.class);
