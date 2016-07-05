@@ -111,12 +111,13 @@ public class ScheduledExecutorServiceHeapletTest {
         // Should exit quickly without killing the task
         heaplet.destroy();
 
-        // task not completed yet
-        assertThat(future.isDone()).isFalse();
+        // task has been completed (using cancel())
+        assertThat(future.isCancelled()).isTrue();
+        assertThat(future.isDone()).isTrue();
         assertThat(interrupted.get()).isFalse();
 
-        // There are still tasks running
-        assertThat(service.isTerminated()).isFalse();
+        // There are no running tasks
+        assertThat(service.isTerminated()).isTrue();
 
         // release latch, un-block thread
         latch.countDown();
