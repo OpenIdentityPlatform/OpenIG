@@ -17,12 +17,12 @@
 package org.forgerock.openig.thread;
 
 import static java.lang.String.format;
-import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -41,7 +41,7 @@ import org.forgerock.util.time.Duration;
  *         "type": "ScheduledExecutorService",
  *         "config": {
  *             "corePoolSize":  integer > 0 [ OPTIONAL - default to 1 (will grow as needed)]
- *             "gracefulStop":  boolean     [ OPTIONAL - default to true (all submitted jobs will be executed)]
+ *             "gracefulStop":  boolean     [ OPTIONAL - default to true (all running jobs will complete)]
  *             "gracePeriod" :  duration    [ OPTIONAL - default to '10 second']
  *         }
  *     }
@@ -91,7 +91,6 @@ import org.forgerock.util.time.Duration;
  * <p>Note that all configuration attributes can be defined using static expressions (they can't be resolved against
  * {@code context} or {@code request} objects that are not available at init time).
  *
- * @see java.util.concurrent.Executors#newScheduledThreadPool(int)
  * @see ExecutorService#shutdown()
  * @see ExecutorService#shutdownNow()
  * @see ExecutorService#awaitTermination(long, java.util.concurrent.TimeUnit)
@@ -109,7 +108,10 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
         // Force checks at init time
         gracefulStop = evaluated.get("gracefulStop").defaultTo(true).asBoolean();
         gracePeriod = evaluated.get("gracePeriod").defaultTo("10 seconds").as(duration());
-        return new MdcScheduledExecutorServiceDelegate(newScheduledThreadPool(corePoolSize()));
+
+        ScheduledThreadPoolExecutor delegate = new ScheduledThreadPoolExecutor(corePoolSize());
+        delegate.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        return new MdcScheduledExecutorServiceDelegate(delegate);
     }
 
     private int corePoolSize() throws HeapException {
@@ -131,7 +133,7 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
         if (gracefulStop) {
             // Graceful shutdown:
             // * Does not accept new jobs
-            // * Submitted jobs will be executed
+            // * Submitted jobs (not yet running) will be drained from the task queue
             // * Running jobs won't be killed
             // * Does not wait for termination
             service.shutdown();
