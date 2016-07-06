@@ -1,0 +1,14 @@
+{
+    "env": {
+        "development": {
+            "sourceMaps": true
+        }
+    },
+    "only": [
+        "main.js",
+        "config/**/*.js",
+        "config/*.js",
+        "org/forgerock/openig/**/*.js"
+    ],
+    "presets": ["es2015"]
+}
