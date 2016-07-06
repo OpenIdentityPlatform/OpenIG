@@ -17,6 +17,7 @@
 /* global module, require */
 
 module.exports = function (grunt) {
+    grunt.loadNpmTasks("grunt-babel");
     grunt.loadNpmTasks("grunt-contrib-less");
     grunt.loadNpmTasks("grunt-contrib-qunit");
     grunt.loadNpmTasks("grunt-contrib-requirejs");
@@ -27,6 +28,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-serve");
 
     var targetDirectory = "target/www",
+        compositionDirectory = "target/composition",
         testTargetDirectory = "target/test",
         sourceDirectory = "src/main/js",
         watchDirs = [
@@ -36,6 +38,9 @@ module.exports = function (grunt) {
         testWatchDirs = [
             "src/test/js",
             "src/test/resources"
+        ],
+        transpiledFiles = [
+            "**/*.js"
         ];
 
     grunt.initConfig({
@@ -104,7 +109,7 @@ module.exports = function (grunt) {
                 }
             }
         },
-       /* notify_hooks: {
+        /* notify_hooks: {
             options: {
                 enabled: true,
                 title: "ForgeRock UI QUnit Tests"
@@ -123,6 +128,17 @@ module.exports = function (grunt) {
                         cwd: dir,
                         src: ["**"],
                         dest: targetDirectory
+                    };
+                }),
+                verbose: true,
+                compareUsing: "md5"
+            },
+            babel: {
+                files: watchDirs.map(function (dir) {
+                    return {
+                        cwd: dir,
+                        src: transpiledFiles,
+                        dest: compositionDirectory
                     };
                 }),
                 verbose: true,
@@ -165,11 +181,21 @@ module.exports = function (grunt) {
                 },
                 port: 9000
             }
+        },
+        babel: {
+            transpile: {
+                files: [{
+                    expand: true,
+                    cwd: compositionDirectory,
+                    src: transpiledFiles,
+                    dest: targetDirectory
+                }]
+            }
         }
     });
 
-    grunt.registerTask("build", ["eslint", "less", "requirejs"]);
-    grunt.registerTask("build-dev", ["sync", "less", "qunit"]);
+    grunt.registerTask("build", ["eslint", "less", "babel", "requirejs"]);
+    grunt.registerTask("build-dev", ["sync", "less", "babel", "qunit"]);
     grunt.registerTask("dev", ["build-dev", "watch"]);
     grunt.registerTask("dev-web", ["sync", "less", "serve"]);
     grunt.registerTask("web", "dev-web"); // use Serve module for local development
