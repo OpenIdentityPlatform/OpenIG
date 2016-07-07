@@ -122,8 +122,8 @@ import org.forgerock.util.time.TimeService;
  *                                                                      heap object]
  * "metadata"                     : {                       [OPTIONAL - contains metadata dedicated for dynamic
  *                                                                      client registration.]
- *             "redirect_uris"    : [ strings ],                [REQUIRED for dynamic client registration.]
- *             "scopes"           : [ strings ]                 [OPTIONAL - usage with OpenAM only.]
+ *             "redirect_uris"    : [ expression ],                [REQUIRED for dynamic client registration.]
+ *             "scopes"           : [ expression ]                 [OPTIONAL - usage with OpenAM only.]
  * }
  * }
  * </pre>
@@ -914,7 +914,10 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             final Handler discoveryAndDynamicRegistrationChain = chainOf(
                     new AuthorizationRedirectHandler(time, clientEndpoint, logger),
                     new DiscoveryFilter(discoveryHandler, heap, logger),
-                    new ClientRegistrationFilter(registrations, discoveryHandler, config.get("metadata"), logger));
+                    new ClientRegistrationFilter(registrations,
+                                                 discoveryHandler,
+                                                 config.as(evaluated()).get("metadata"),
+                                                 logger));
 
             // Build the cache of user-info
             final Duration expiration = config.get("cacheExpiration")
