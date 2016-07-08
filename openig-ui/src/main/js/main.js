@@ -169,7 +169,7 @@ require([
         _id: "test",
         _rev: "1",
         component: "'mock/repo/internal/user",
-        roles: ["'ui-admin", "ui-user", "ui-self-service-user"],
+        roles: ["ui-admin", "ui-user", "ui-self-service-user"],
         uid: "test",
         userName: "test",
         password: "test",
