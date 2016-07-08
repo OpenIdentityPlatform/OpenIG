@@ -20,62 +20,59 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/AbstractCollection",
     "org/forgerock/openig/ui/admin/models/AppModel"
-], function (
+], (
     $,
     _,
     Constants,
     AbstractCollection,
     AppModel
-) {
+) => {
     /* Get and keep apps(=app configs)*/
     // TODO: Save to server
-    var appsCollection,
-        AppsCollection = AbstractCollection.extend({
-            model: AppModel,
-            url: "/openig/api/system/objects/config"
-        });
+    const AppsCollection = AbstractCollection.extend({
+        model: AppModel,
+        url: "/openig/api/system/objects/config",
 
-    appsCollection = new AppsCollection();
-    appsCollection.appsCache = {};
+        appsCache: {},
+        // Get all apps from server and save in local cache
+        availableApps () {
+            var deferred = $.Deferred(),
+                promise = deferred.promise(),
+                appPromise;
 
-    // Get all apps from server and save in local cache
-    appsCollection.availableApps = function () {
-        var deferred = $.Deferred(),
-            promise = deferred.promise(),
-            appPromise;
+            if (this.appsCache.currentApps) {
+                deferred.resolve(this.appsCache.currentApps);
+            } else {
+                appPromise = this.fetch();
+                appPromise.then(() => {
+                    this.appsCache.currentApps = this;
+                    deferred.resolve(this);
+                });
+            }
 
-        if (appsCollection.appsCache.currentApps) {
-            deferred.resolve(appsCollection.appsCache.currentApps);
-        } else {
-            appPromise = appsCollection.fetch();
-            appPromise.then(function () {
-                appsCollection.appsCache.currentApps = appsCollection;
-                deferred.resolve(appsCollection);
-            });
-        }
-
-        return promise;
-    };
+            return promise;
+        },
 
         // Find by Id, also in cache
-    appsCollection.byId = function (appId) {
-        var deferred = $.Deferred(),
-            promise = deferred.promise();
+        byId (appId) {
+            const deferred = $.Deferred();
+            const promise = deferred.promise();
 
-        appsCollection.availableApps().then(function () {
-            deferred.resolve(appsCollection._byId[appId]);
-        });
+            this.availableApps().then(() => {
+                deferred.resolve(this.get(appId));
+            });
 
-        return promise;
-    };
+            return promise;
+        },
 
-        // Remove also from local cache
-    appsCollection.removeById = function (appId) {
-        var item = appsCollection._byId[appId];
-        item.destroy();
-        appsCollection.remove(item);
-        appsCollection.appsCache.currentApps.remove(item);
-    };
+            // Remove also from local cache
+        removeById (appId) {
+            const item = this.get(appId);
+            item.destroy();
+            this.remove(item);
+            this.appsCache.currentApps.remove(item);
+        }
+    });
 
-    return appsCollection;
+    return new AppsCollection();
 });

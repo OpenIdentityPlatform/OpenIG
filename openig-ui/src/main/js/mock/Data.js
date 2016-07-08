@@ -93,7 +93,8 @@ define([
                                 "name": "weatherAPI",
                                 "url": "www.weather.com:8081/latest",
                                 "condition": "",
-                                "status": "deployed"
+                                "deployedDate": new Date(),
+                                "pendingChanges": false
                             }
                         }
                     ],
