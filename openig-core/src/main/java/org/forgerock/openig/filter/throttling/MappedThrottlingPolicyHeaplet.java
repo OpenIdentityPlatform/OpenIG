@@ -29,6 +29,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.ExpressionRequestAsyncFunction;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Function;
