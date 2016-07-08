@@ -19,16 +19,16 @@ define([
     "underscore",
     "backbone",
     "org/forgerock/commons/ui/common/main/AbstractModel"
-], function (
+], (
     $,
     _,
     Backbone,
     AbstractModel
-    ) {
+    ) => {
         /* Define App structure + add defaults, constants, orders */
 
         //var mockPrefix = "mock/repo/internal/AppModel/";
-    var AppModel = AbstractModel.extend({
+    const AppModel = AbstractModel.extend({
         defaults: {
             _id: "",
             content: {
@@ -39,6 +39,8 @@ define([
 
                 router: "",
                 route: "",
+                deployedDate: undefined,
+                pendingChanges: false,
 
                 // Order is as defined by user in "chain"
                 filters: [
@@ -77,7 +79,7 @@ define([
             }
         },
 
-        validate: function (attrs) {
+        validate (attrs) {
             if (attrs._id.trim() === "" || attrs.content.id.trim() === "") {
                 return "appErrorNoId";
             }
