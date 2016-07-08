@@ -14,13 +14,12 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.filter.throttling;
+package org.forgerock.openig.el;
 
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import org.forgerock.http.ContextAndRequest;
-import org.forgerock.openig.el.Expression;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.Promise;
 
@@ -28,10 +27,15 @@ import org.forgerock.util.promise.Promise;
  * This is an implementation of the {@link AsyncFunction} based on the evaluation of an {@link Expression}.
  * @param <V>
  */
-class ExpressionRequestAsyncFunction<V> implements AsyncFunction<ContextAndRequest, V, Exception> {
+public class ExpressionRequestAsyncFunction<V> implements AsyncFunction<ContextAndRequest, V, Exception> {
 
     private final Expression<V> expression;
 
+    /**
+     * Constructs an {@link AsyncFunction} that evaluates the provided {@link Expression}.
+     *
+     * @param expression the expression to evaluate
+     */
     public ExpressionRequestAsyncFunction(Expression<V> expression) {
         this.expression = expression;
     }
