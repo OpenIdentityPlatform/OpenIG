@@ -30,6 +30,7 @@ import static org.forgerock.openig.util.JsonValues.asClass;
 import static org.forgerock.openig.util.JsonValues.bindings;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
+import static org.forgerock.openig.util.JsonValues.resolvedLocation;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.util.ArrayDeque;
@@ -183,6 +184,7 @@ public class HeapImpl implements Heap {
         // Register the bindings if any provided
         this.bindings.bind(config.get("bindings")
                                  .defaultTo(emptyMap())
+                                 .as(resolvedLocation())
                                  .expect(Map.class)
                                  .as(bindings()));
         boolean logDeprecationWarning = false;
