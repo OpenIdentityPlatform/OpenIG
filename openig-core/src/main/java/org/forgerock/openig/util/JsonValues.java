@@ -117,6 +117,16 @@ public final class JsonValues {
     }
 
     /**
+     * Returns a function that will resolve the field "$location".
+     * @return a function that will resolve the field "$location".
+     *
+     * @see ResolveLocationJsonValueFunction
+     */
+    public static Function<JsonValue, JsonValue, JsonValueException> resolvedLocation() {
+        return new ResolveLocationJsonValueFunction();
+    }
+
+    /**
      * Returns a function that will look for the name of the object. It infers a locally unique name for the given
      * object declaration. If a {@literal name} attribute is provided, simply return its value as name, otherwise
      * builds a unique name composed of both the declaration JSON pointer (map to the location within the JSON file)
