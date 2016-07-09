@@ -18,6 +18,7 @@ package org.forgerock.openig.security;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.security.KeyStore;
@@ -83,6 +84,6 @@ public class TrustManagerHeaplet extends GenericHeaplet {
     private String loadingError(final String algorithm, final JsonValue reference) {
         return format("Cannot build TrustManager[alg:%s] from KeyStore %s",
                       algorithm,
-                      reference.asString());
+                      reference.as(heapObjectNameOrPointer()));
     }
 }

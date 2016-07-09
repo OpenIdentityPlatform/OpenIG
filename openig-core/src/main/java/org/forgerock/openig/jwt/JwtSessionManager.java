@@ -21,6 +21,7 @@ import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
 import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.IOException;
@@ -222,7 +223,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                     if (cert == null) {
                         throw new HeapException(format("Cannot get Certificate[alias:%s] from KeyStore[ref:%s]",
                                                        alias,
-                                                       config.get("keystore").asString()));
+                                                       config.get("keystore").as(heapObjectNameOrPointer())));
                     }
 
                     // Get public key
@@ -232,14 +233,14 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                     return new KeyPair(publicKey, (PrivateKey) key);
                 } else {
                     throw new HeapException(format("Either no Key[alias:%s] is available in KeyStore[ref:%s], "
-                                                   + "or it is not a private key",
+                                                           + "or it is not a private key",
                                                    alias,
-                                                   config.get("keystore").asString()));
+                                                   config.get("keystore").as(heapObjectNameOrPointer())));
                 }
             } catch (GeneralSecurityException e) {
                 throw new HeapException(format("Wrong password for Key[alias:%s] in KeyStore[ref:%s]",
                                                alias,
-                                               config.get("keystore").asString()),
+                                               config.get("keystore").as(heapObjectNameOrPointer())),
                                         e);
             }
         }
