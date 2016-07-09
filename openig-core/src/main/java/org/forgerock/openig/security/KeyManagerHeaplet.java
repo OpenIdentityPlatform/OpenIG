@@ -85,6 +85,6 @@ public class KeyManagerHeaplet extends GenericHeaplet {
     private String loadingError(final String algorithm, final JsonValue reference) {
         return format("Cannot build KeyManager[alg:%s] from KeyStore %s",
                       algorithm,
-                      reference.asString());
+                      reference.as(heapObjectNameOrPointer()));
     }
 }

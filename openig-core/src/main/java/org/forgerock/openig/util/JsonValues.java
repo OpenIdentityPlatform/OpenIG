@@ -116,6 +116,17 @@ public final class JsonValues {
     }
 
     /**
+     * Returns a function that will look for the name of the object. If it's a reference to an already defined heap
+     * object, then that name is returned, if it is an inline declaration, it looks for the name of the object if any
+     * and returns it otherwise it returns the pointer to that declaration.
+     *
+     * @return the name of the heap object or the pointer to that object if it is anonymous.
+     */
+    public static Function<JsonValue, String, JsonValueException> heapObjectNameOrPointer() {
+        return new HeapObjectNameOrPointerJsonTransformFunction();
+    }
+
+    /**
      * Returns a function that will evaluate all String nodes. Transformation is applied
      * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
      * and their values are not changed. <p>When an error occurs during the
