@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.jwt;
@@ -20,7 +20,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.forgerock.http.util.Json.*;
+import static org.forgerock.http.util.Json.checkJsonCompatibility;
 import static org.forgerock.openig.jwt.JwtSessionManager.MAX_SESSION_TIMEOUT;
 
 import java.io.IOException;
@@ -37,14 +37,14 @@ import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
-import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
-import org.forgerock.json.jose.common.JwtReconstruction;
 import org.forgerock.json.jose.exceptions.JweDecryptionException;
-import org.forgerock.json.jose.jwe.EncryptedJwt;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweAlgorithm;
+import org.forgerock.json.jose.jws.JwsAlgorithm;
+import org.forgerock.json.jose.jws.SignedEncryptedJwt;
+import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.jwt.dirty.DirtyCollection;
 import org.forgerock.openig.jwt.dirty.DirtyListener;
@@ -85,11 +85,6 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private static final Date EPOCH = new Date(0L);
 
     /**
-     * Know how to rebuild a JWT from a String.
-     */
-    private final JwtReconstruction reader = new JwtReconstruction();
-
-    /**
      * Factory for JWT.
      */
     private final JwtBuilderFactory factory = new JwtBuilderFactory();
@@ -125,6 +120,11 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private final Duration sessionTimeout;
 
     /**
+     * Hmac Signing Handler.
+     */
+    private final SigningHandler signingHandler;
+
+    /**
      * Builds a new JwtCookieSession that will manage the given Request's session.
      *
      * @param request
@@ -139,18 +139,22 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      *         TimeService to use when dealing with cookie sessions
      * @param sessionTimeout
      *         The duration of the cookie session
+     * @param signingHandler
+     *         The JWT signing handler
      */
     public JwtCookieSession(final Request request,
                             final KeyPair pair,
                             final String cookieName,
                             final Logger logger,
                             final TimeService timeService,
-                            final Duration sessionTimeout) {
+                            final Duration sessionTimeout,
+                            final SigningHandler signingHandler) {
         super(new LinkedHashMap<String, Object>());
         this.pair = pair;
         this.cookieName = cookieName;
         this.logger = logger;
         this.timeService = timeService;
+        this.signingHandler = signingHandler;
 
         // The MAX_SESSION_TIMEOUT is more than enough to mark a session to not expire
         // so use this in place of larger values.
@@ -173,7 +177,16 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         Cookie cookie = findJwtSessionCookie(request);
         if (cookie != null) {
             try {
-                EncryptedJwt jwt = reader.reconstructJwt(cookie.getValue(), EncryptedJwt.class);
+                SignedEncryptedJwt jwt = factory.reconstruct(cookie.getValue(), SignedEncryptedJwt.class);
+                if (!jwt.verify(signingHandler)) {
+                    // Force cookie expiration / overwrite.
+                    dirty = true;
+                    logger.warning(format("The session content will be discarded because OpenIG cannot verify "
+                                                  + "the JWT signature from Cookie '%s'.  The incoming session might "
+                                                  + "be forged or come from an older version of OpenIG.", cookieName));
+                    return;
+                }
+
                 jwt.decrypt(pair.getPrivate());
                 JwtClaimsSet claimsSet = jwt.getClaimsSet();
                 for (String key : claimsSet.keys()) {
@@ -327,14 +340,16 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      * Builds a JWT from the session's content.
      */
     private String buildJwtSession() {
-        EncryptedJwtBuilder jwtBuilder = factory.jwe(pair.getPublic());
         JwtClaimsSetBuilder claimsBuilder = factory.claims();
         claimsBuilder.claims(this);
-        jwtBuilder.claims(claimsBuilder.build());
-        jwtBuilder.headers()
-                  .alg(JweAlgorithm.RSAES_PKCS1_V1_5)
-                  .enc(EncryptionMethod.A128CBC_HS256);
-        return jwtBuilder.build();
+        return factory.jwe(pair.getPublic())
+                      .headers()
+                      .alg(JweAlgorithm.RSAES_PKCS1_V1_5)
+                      .enc(EncryptionMethod.A128CBC_HS256)
+                      .done()
+                      .claims(claimsBuilder.build())
+                      .sign(signingHandler, JwsAlgorithm.HS256)
+                      .build();
     }
 
     /**

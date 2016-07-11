@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 package org.forgerock.openig.jwt;
 
@@ -21,15 +21,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.nio.charset.StandardCharsets;
+
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
+import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class JwtSessionManagerTest {
+
+    private static final HmacSigningHandler SIGNING_HANDLER =
+            new HmacSigningHandler("HelloWorld".getBytes(StandardCharsets.UTF_8));
 
     private JwtSessionManager manager;
 
@@ -39,7 +45,7 @@ public class JwtSessionManagerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        manager = new JwtSessionManager(null, null, null, null);
+        manager = new JwtSessionManager(null, null, null, null, SIGNING_HANDLER);
         session = mock(Session.class);
     }
 

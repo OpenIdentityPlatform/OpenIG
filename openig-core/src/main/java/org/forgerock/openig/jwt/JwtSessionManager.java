@@ -34,15 +34,20 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
+import java.util.Arrays;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
+import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
+import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.encode.Base64;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 
@@ -59,7 +64,8 @@ import org.forgerock.util.time.TimeService;
  *             "alias": "PrivateKey Alias",
  *             "password": "KeyStore/Key Password",
  *             "cookieName": "OpenIG",
- *             "sessionTimeout": "30 minutes"
+ *             "sessionTimeout": "30 minutes",
+ *             "sharedSecret": "hello=="
  *         }
  *     }
  *     }
@@ -85,6 +91,9 @@ import org.forgerock.util.time.TimeService;
  * The {@literal sessionTimeout} optional duration attribute, specifies the amount of time before the cookie session
  * expires. If not set, a default of 30 minutes is used. A duration of 0 is not valid and it will be limited to
  * a maximum duration of approximately 10 years.
+ * <p>
+ * The {@literal sharedSecret} optional string attribute, specifies the key used to sign/verify the JWTs. It is
+ * expected to be Base 64 encoded. If unspecified some random data is generated as key.
  *
  * @since 3.1
  */
@@ -122,6 +131,11 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
     private final Duration sessionTimeout;
 
     /**
+     * Hmac signing handler.
+     */
+    private final SigningHandler signingHandler;
+
+    /**
      * Builds a new JwtSessionManager using the given KeyPair for session encryption, storing the opaque result in a
      * cookie with the given name.
      *
@@ -133,20 +147,24 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
      *         TimeService to use when dealing with cookie sessions
      * @param sessionTimeout
      *         The duration of the cookie session
+     * @param handler
+     *         The JWT signing handler
      */
     public JwtSessionManager(final KeyPair keyPair,
                              final String cookieName,
                              final TimeService timeService,
-                             final Duration sessionTimeout) {
+                             final Duration sessionTimeout,
+                             final SigningHandler handler) {
         this.keyPair = keyPair;
         this.cookieName = cookieName;
         this.timeService = timeService;
         this.sessionTimeout = sessionTimeout;
+        this.signingHandler = handler;
     }
 
     @Override
     public Session load(final Request request) {
-        return new JwtCookieSession(request, keyPair, cookieName, logger, timeService, sessionTimeout);
+        return new JwtCookieSession(request, keyPair, cookieName, logger, timeService, sessionTimeout, signingHandler);
     }
 
     @Override
@@ -174,13 +192,14 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                 throw new HeapException("sessionTimeout duration must be greater than 0");
             }
 
-            // Create the session factory with the given KeyPair and cookie name
+            // Create the session manager with the given KeyPair, cookie name, and signing handler
             return new JwtSessionManager(keyPair(),
                                          evaluated.get("cookieName")
                                                   .defaultTo(OPENIG_JWT_SESSION)
                                                   .asString(),
                                          timeService,
-                                         sessionTimeout);
+                                         sessionTimeout,
+                                         createHmacSigningHandler(evaluated));
         }
 
         private KeyPair keyPair() throws HeapException {
@@ -243,6 +262,37 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                                    + "configuration change, a server restart, nor will it be able to decrypt "
                                    + "JWT session cookies encrypted by another OpenIG server.");
             return keyPair;
+        }
+
+        private SigningHandler createHmacSigningHandler(final JsonValue evaluated) {
+            byte[] secret;
+            if (!evaluated.isDefined("sharedSecret")) {
+                // No shared secret, generate one
+                logger.warning("No shared secret have been configured for JWT session authenticity verification."
+                                       + "A temporary key will be used but this means that OpenIG will not be able "
+                                       + "to verify any JWT session cookies after a configuration change, a server "
+                                       + "restart, nor will it be able to verify JWT session cookies signed by "
+                                       + "another OpenIG server.");
+                secret = new byte[32];
+                new SecureRandom().nextBytes(secret);
+            } else {
+                // User-defined shared secret
+                JsonValue sharedSecret = evaluated.get("sharedSecret").required().expect(String.class);
+                secret = Base64.decode(sharedSecret.asString());
+                if ((secret == null) || (secret.length == 0)) {
+                    throw new JsonValueException(sharedSecret,
+                                                 "Shared secret base64 decoding gave an empty result "
+                                                         + "that is not allowed");
+                }
+                if (secret.length < 32) {
+                    throw new JsonValueException(sharedSecret,
+                                                 "Shared secret must be at least 256-bits base64 encoded");
+                }
+            }
+
+            SigningHandler handler = new HmacSigningHandler(secret);
+            Arrays.fill(secret, (byte) 0);
+            return handler;
         }
     }
 }
