@@ -19,15 +19,21 @@ package org.forgerock.openig.jwt;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
 import static org.forgerock.openig.jwt.JwtSessionManager.DEFAULT_SESSION_TIMEOUT;
 import static org.forgerock.openig.jwt.JwtSessionManager.MAX_SESSION_TIMEOUT;
 import static org.forgerock.util.time.Duration.duration;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -41,8 +47,10 @@ import org.forgerock.http.header.SetCookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.json.jose.common.JwtReconstruction;
-import org.forgerock.json.jose.jwe.EncryptedJwt;
+import org.forgerock.json.jose.builders.JwtBuilderFactory;
+import org.forgerock.json.jose.jws.SignedEncryptedJwt;
+import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
+import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.log.Logger;
@@ -50,6 +58,7 @@ import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -62,15 +71,15 @@ public class JwtCookieSessionTest {
     // @Checkstyle:on
 
     /**
-     * Represents the following claims, signed using 'secret' with HMac 256.
+     * Represents the following claims, encrypted and then signed with 'HelloWorld' Hmac SHA-256.
      * {
      *     "a-value" : "ForgeRock OpenIG"
      * }
      */
     // @Checkstyle:off
-    private static final String ORIGINAL = "eyAidHlwIjogIkpXVCIsICJhbGciOiAiUlNBRVNfUEtDUzFfVjFfNSIsICJlbmMiOiAiQTEyOENCQ19IUzI1NiIgfQ."
-            + "VcBqC0hgiEdE2OqirUY9QGItTboPunTwlBaKOIQu81vwEYocaO20G0DecedPpiE99np5v1Rifw82kCfAd4Kvfg."
-            + "InWrJbg39qUmMS11Hc54SA.xgatQtOnS-krnjq9hN_e3t4pPw_0yxJX1ByXOv0W0plRnAHoldtRFJLLOvS09TlC.14WSYyCegapzGCIU3fbGPw";
+    private static final String ORIGINAL = "eyAidHlwIjogIkpXRSIsICJhbGciOiAiSFMyNTYiIH0."
+            + "ZXlBaWRIbHdJam9nSWtwWFZDSXNJQ0psYm1NaU9pQWlRVEV5T0VOQ1F5MUlVekkxTmlJc0lDSmhiR2NpT2lBaVVsTkJNVjgxSWlCOS5WaXdJczk4alY2LWtLWHVzbXRYOEROYkdONnZRVEZkWlN4Y2gtSTdPRnVobGk5dHFxLUtuUGdrQjJLcS1GejRkSFN5YlRna3BPaC12UGFicEZIYWFNdy5VM2xGS3JXdXhwOGRVSy12ei1oNU13LmFCMEx4blhmRUg2WHZYRFFlSzFVSnpkUW0xUGo2Z0NyY1ZmVGhXRzBIUFp3XzVMQ2hfQlp4QjBhODRXM21rS3AuOV9jT2hUcERSV0FsX0Q1OGpjd0F6QQ."
+            + "_RXMPsV7llUphwscriRlklsVas-ucYxL6QzTFttswwM";
     // @Checkstyle:on
 
     /**
@@ -83,6 +92,23 @@ public class JwtCookieSessionTest {
     private static final String ALTERED = "eyAiYWxnIjogIkhTMjU2IiwgInR5cCI6ICJqd3QiIH0."
             + "eyAiYS12YWx1ZSI6ICJGb3JnZVJvY2sgT3BlbkFNIiB9."
             + "A8Z4xSPTfobTUYwwBaAymm1Ovfe1T3oMG5W9zFkOC-o";
+
+    /**
+     * Represents the following claims, only encrypted (OpenIG 4.0 and before).
+     * {
+     *     "a-value" : "ForgeRock OpenIG"
+     * }
+     */
+    // @Checkstyle:off
+    private static final String ONLY_ENCRYPTED = "eyAidHlwIjogIkpXVCIsICJhbGciOiAiUlNBRVNfUEtDUzFfVjFfNSIsICJlbmMiOiAiQTEyOENCQ19IUzI1NiIgfQ."
+            + "VcBqC0hgiEdE2OqirUY9QGItTboPunTwlBaKOIQu81vwEYocaO20G0DecedPpiE99np5v1Rifw82kCfAd4Kvfg."
+            + "InWrJbg39qUmMS11Hc54SA."
+            + "xgatQtOnS-krnjq9hN_e3t4pPw_0yxJX1ByXOv0W0plRnAHoldtRFJLLOvS09TlC."
+            + "14WSYyCegapzGCIU3fbGPw";
+    // @Checkstyle:on
+
+    private static final SigningHandler SIGNING_HANDLER =
+            new HmacSigningHandler("HelloWorld".getBytes(StandardCharsets.UTF_8));
 
     /**
      * Default logger.
@@ -194,7 +220,8 @@ public class JwtCookieSessionTest {
     }
 
     private JwtClaimsSet decryptClaimsSet(final String cookieValue) {
-        EncryptedJwt jwt = new JwtReconstruction().reconstructJwt(cookieValue, EncryptedJwt.class);
+        JwtBuilderFactory factory = new JwtBuilderFactory();
+        SignedEncryptedJwt jwt = factory.reconstruct(cookieValue, SignedEncryptedJwt.class);
         jwt.decrypt(keyPair.getPrivate());
         return jwt.getClaimsSet();
     }
@@ -258,26 +285,29 @@ public class JwtCookieSessionTest {
         assertThat(response.getHeaders().get("Set-Cookie")).isNull();
     }
 
-    @Test
-    public void shouldNotLoadUnexpectedSignedJwt() throws Exception {
+
+    @DataProvider
+    public static Object[][] invalidJwtSessionCookieValues() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { ALTERED },
+                { ONLY_ENCRYPTED },
+                { "Completely-invalid-JWT" }
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "invalidJwtSessionCookieValues")
+    public void shouldNotLoadUnexpectedSession(String cookieValue) throws Exception {
         Request request = new Request();
-        setRequestCookie(request, ALTERED);
+        setRequestCookie(request, cookieValue);
 
         JwtCookieSession session = newJwtSession(request);
         assertThat(session).isEmpty();
     }
 
     @Test
-    public void shouldNotLoadInvalidJwt() throws Exception {
-        Request request = new Request();
-        setRequestCookie(request, "Completely-invalid-JWT");
-
-        JwtCookieSession session = newJwtSession(request);
-        assertThat(session).isEmpty();
-    }
-
-    @Test
-    public void shouldLoadVerifiedJwtSession() throws Exception {
+    public void shouldLoadSignedAndEncryptedJwtSession() throws Exception {
         Request request = new Request();
         setRequestCookie(request, ORIGINAL);
 
@@ -304,8 +334,9 @@ public class JwtCookieSessionTest {
                 "Test",
                 spied,
                 TimeService.SYSTEM,
-                duration(DEFAULT_SESSION_TIMEOUT));
-        session.put("in-between-3KB-and-4KB", generateMessageOf(2500));
+                duration(DEFAULT_SESSION_TIMEOUT),
+                SIGNING_HANDLER);
+        session.put("in-between-3KB-and-4KB", generateMessageOf(2000));
         session.save(new Response());
 
         verify(spied).warning(matches("Current JWT session's size \\(.* chars\\) is quite close to the 4KB limit.*"));
@@ -327,7 +358,13 @@ public class JwtCookieSessionTest {
                                            final Logger logger,
                                            final TimeService timeService,
                                            final Duration sessionTimeout) {
-        return new JwtCookieSession(request, keyPair, OPENIG_JWT_SESSION, logger, timeService, sessionTimeout);
+        return new JwtCookieSession(request,
+                                    keyPair,
+                                    OPENIG_JWT_SESSION,
+                                    logger,
+                                    timeService,
+                                    sessionTimeout,
+                                    SIGNING_HANDLER);
     }
 
     private static void setRequestCookie(final Request request, final String value) {
