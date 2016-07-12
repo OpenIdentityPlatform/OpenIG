@@ -61,9 +61,9 @@
             <phase>package</phase>
             <configuration>
               <tarLongFileMode>gnu</tarLongFileMode>
-              <descriptorRefs>
-                <descriptorRef>project</descriptorRef>
-              </descriptorRefs>
+              <descriptors>
+                <descriptor>src/assembly/src.xml</descriptor>
+              </descriptors>
             </configuration>
           </execution>
         </executions>
