@@ -216,7 +216,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
             heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
-            heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator());
+            heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
             heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.put(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY, new TransactionIdOutboundFilter());
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
