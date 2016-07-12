@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.decoration.baseuri;
 
-import static java.lang.String.format;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -29,10 +28,10 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
 
 /**
  * BaseUriFilter overrides the existing request URI, making requests relative to
@@ -49,7 +48,7 @@ class BaseUriFilter implements Filter {
      * @param baseUri
      *            The new base URI to set.
      * @param logger
-     *            The logger for this filter.
+     *            The logger used to log messages.
      */
     BaseUriFilter(final Expression<String> baseUri, final Logger logger) {
         this.baseUri = baseUri;
@@ -62,14 +61,14 @@ class BaseUriFilter implements Filter {
                                                           final Handler next) {
         final String newBaseUri = baseUri.eval(bindings(context, request));
         if (newBaseUri == null) {
-            logger.error(format("BaseUri expression '%s' was evaluated to null", baseUri));
+            logger.error("BaseUri expression '{}' was evaluated to null", baseUri);
             return newResultPromise(newInternalServerError());
         }
         if (request != null && request.getUri() != null) {
             try {
                 request.getUri().rebase(new URI(newBaseUri));
             } catch (URISyntaxException e) {
-                logger.error(format("Invalid baseUri '%s'", baseUri));
+                logger.error("Invalid baseUri '{}'", baseUri);
                 return newResultPromise(newInternalServerError(e));
             }
         }

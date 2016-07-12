@@ -18,9 +18,7 @@ package org.forgerock.openig.decoration.baseuri;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URISyntaxException;
@@ -29,10 +27,11 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -41,7 +40,6 @@ public class BaseUriFilterTest {
 
     private static final String REQUEST_URI = "http://www.forgerock.org/key_path";
 
-    @Mock
     private Logger logger;
 
     @Mock
@@ -53,6 +51,7 @@ public class BaseUriFilterTest {
     public void setUp() throws Exception {
         initMocks(this);
         context = new RootContext();
+        logger = LoggerFactory.getLogger("decoratedObjectName");
     }
 
     @Test
@@ -66,7 +65,6 @@ public class BaseUriFilterTest {
         verify(terminal).handle(context, request);
 
         assertThat(request.getUri().toString()).isEqualTo("http://www.example.com:443/key_path");
-        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -75,7 +73,6 @@ public class BaseUriFilterTest {
 
         final Request request = createRequest();
         baseUriFilter.filter(context, request, terminal);
-        verify(logger).error(anyString());
     }
 
     @Test
@@ -88,7 +85,6 @@ public class BaseUriFilterTest {
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
         assertThat(response.getCause()).isInstanceOf(URISyntaxException.class);
-        verify(logger).error(anyString());
     }
 
     @Test
@@ -100,10 +96,9 @@ public class BaseUriFilterTest {
         final Response response =  baseUriFilter.filter(context, request, terminal).get();
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
-        verify(logger).error(anyString());
     }
 
-    private Request createRequest() throws URISyntaxException {
+    private static Request createRequest() throws URISyntaxException {
         Request request = new Request();
         request.setUri(REQUEST_URI);
         return request;
