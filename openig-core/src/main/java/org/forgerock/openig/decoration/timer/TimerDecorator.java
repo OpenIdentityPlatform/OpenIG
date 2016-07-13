@@ -16,10 +16,14 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+import static org.forgerock.util.Reject.checkNotNull;
 
+import java.util.concurrent.TimeUnit;
+
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
@@ -29,14 +33,11 @@ import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@literal timer} decorator can decorate both {@link Filter} and {@link Handler} instances.
- * It will log {@literal started}, {@literal elapsed} and {@literal elapsed-within} events into the {@link LogSink}
- * of the decorated heap object.
+ * It will log elapsed time within the decorated heap object.
  * <p>
  * It has to be declared inside of the heap objects section:
  * <pre>
@@ -65,11 +66,43 @@ import org.forgerock.openig.log.Logger;
  */
 public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
 
+    private final TimeUnit timeUnit;
+    private final String name;
+
+    /**
+     * Builds a new {@code TimerDecorator} where the elapsed time unit is
+     * milliseconds.
+     *
+     * @param name
+     *            The name of this decorator.
+     */
+    public TimerDecorator(final String name) {
+        this(name, MILLISECONDS);
+    }
+
+    /**
+     * Builds a new {@code TimerDecorator} with the given {@code TimeUnit}
+     * reference (not {@code null}), which logs the elapsed time within the
+     * decorated heap object.
+     *
+     * @param name
+     *            The name of this decorator.
+     * @param timeUnit
+     *            The {@code TimeUnit} of the elapsed time.
+     */
+    public TimerDecorator(final String name, final TimeUnit timeUnit) {
+        this.name = name;
+        this.timeUnit = checkNotNull(timeUnit, "The time unit must be set");
+    }
+
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.as(evaluated(context.getHeap().getBindings())).asBoolean()) {
-            return new TimerFilter(delegate, getLogger(context));
+            return new TimerFilter(delegate,
+                                   LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                   lookupTicker(context.getHeap()),
+                                   timeUnit);
         }
         return delegate;
     }
@@ -78,29 +111,20 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
         if (decoratorConfig.as(evaluated(context.getHeap().getBindings())).asBoolean()) {
-            return new TimerHandler(delegate, getLogger(context));
+            return new TimerHandler(delegate,
+                                    LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                    lookupTicker(context.getHeap()),
+                                    timeUnit);
         }
         return delegate;
     }
 
-    /**
-     * Builds a new Logger dedicated for the heap object context.
-     *
-     * @param context
-     *         Context of the heap object
-     * @return a new Logger dedicated for the heap object context.
-     * @throws HeapException
-     *         when no logSink can be resolved (very unlikely to happen).
-     */
-    private static Logger getLogger(final Context context) throws HeapException {
-        // Use the sink of the decorated component
-        Heap heap = context.getHeap();
-        LogSink sink = context.getConfig()
-                              .get("logSink")
-                              .defaultTo(LOGSINK_HEAP_KEY)
-                              .as(requiredHeapObject(heap, LogSink.class));
-        Name name = context.getName();
-        return new Logger(sink, name.decorated("Timer"));
+    private String getDecoratedObjectName(final Context context) {
+        return context.getName().decorated(name).getLeaf();
+    }
+
+    private static Ticker lookupTicker(final Heap heap) throws HeapException {
+        return heap.get(TICKER_HEAP_KEY, Ticker.class);
     }
 
     /**
@@ -109,7 +133,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     public static class Heaplet extends DecoratorHeaplet {
         @Override
         public Decorator create() throws HeapException {
-            return new TimerDecorator();
+            return new TimerDecorator(name.getLeaf());
         }
     }
 }
