@@ -16,20 +16,20 @@
 
 package org.forgerock.openig.decoration.timer;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.NullLogSink;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -38,6 +38,9 @@ import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class TimerDecoratorTest {
+
+    private String name;
+
     @Mock
     private Filter filter;
 
@@ -51,23 +54,35 @@ public class TimerDecoratorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         HeapImpl heap = new HeapImpl(Name.of("anonymous"));
-        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
+        heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
         when(context.getHeap()).thenReturn(heap);
-        when(context.getConfig()).thenReturn(json(emptyMap()));
         when(context.getName()).thenReturn(Name.of("config.json", "Router"));
+        name = "myTimerDecorator";
     }
 
-    @Test
-    public void shouldDecorateFilter() throws Exception {
-        TimerDecorator decorator = new TimerDecorator();
+    @SuppressWarnings("unused")
+    @Test(expectedExceptions = NullPointerException.class)
+    public void shouldFailWhenNullTimeUnitIsProvided() {
+        new TimerDecorator(name, null);
+    }
 
-        Object decorated = decorator.decorate(filter, json(true), context);
+
+    @DataProvider
+    public Object[][] timerDecorator() {
+        return new Object[][] {
+            { new TimerDecorator(name) },
+            { new TimerDecorator(name, TimeUnit.MICROSECONDS)} };
+    }
+
+    @Test(dataProvider = "timerDecorator")
+    public void shouldDecorateFilter(final TimerDecorator timerDecorator) throws Exception {
+        Object decorated = timerDecorator.decorate(filter, json(true), context);
         assertThat(decorated).isInstanceOf(TimerFilter.class);
     }
 
     @Test
     public void shouldDecorateHandler() throws Exception {
-        TimerDecorator decorator = new TimerDecorator();
+        TimerDecorator decorator = new TimerDecorator(name);
 
         Object decorated = decorator.decorate(handler, json(true), context);
         assertThat(decorated).isInstanceOf(TimerHandler.class);
@@ -75,7 +90,7 @@ public class TimerDecoratorTest {
 
     @Test
     public void shouldNotDecorateFilter() throws Exception {
-        TimerDecorator decorator = new TimerDecorator();
+        TimerDecorator decorator = new TimerDecorator(name);
 
         Object decorated = decorator.decorate(filter, json(false), context);
         assertThat(decorated).isSameAs(filter);
@@ -83,7 +98,7 @@ public class TimerDecoratorTest {
 
     @Test
     public void shouldNotDecorateHandler() throws Exception {
-        TimerDecorator decorator = new TimerDecorator();
+        TimerDecorator decorator = new TimerDecorator(name);
 
         Object decorated = decorator.decorate(handler, json(false), context);
         assertThat(decorated).isSameAs(handler);
@@ -102,7 +117,6 @@ public class TimerDecoratorTest {
 
     @Test(dataProvider = "undecoratableObjects")
     public void shouldNotDecorateUnsupportedTypes(Object o) throws Exception {
-        TimerDecorator decorator = new TimerDecorator();
-        assertThat(decorator.decorate(o, null, context)).isSameAs(o);
+        assertThat(new TimerDecorator(name).decorate(o, null, context)).isSameAs(o);
     }
 }

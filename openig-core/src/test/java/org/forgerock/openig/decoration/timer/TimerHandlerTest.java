@@ -11,63 +11,59 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.inOrder;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
-import org.forgerock.services.context.Context;
-import org.forgerock.services.context.RootContext;
-import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promises;
-import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class TimerHandlerTest {
 
+    private Logger logger;
+
     @Mock
     private Handler delegate;
 
-    @Spy
-    private Logger logger = new Logger(new NullLogSink(), Name.of("Test"));
+    @Mock
+    private org.forgerock.openig.decoration.Context context;
 
-    @Spy
-    private LogTimer timer = new LogTimer(logger);
+    @Mock
+    private Ticker ticker;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        doReturn(timer).when(logger).getTimer();
+        initMocks(this);
+        when(context.getName()).thenReturn(Name.of("myDecoratedHandler"));
+        logger = LoggerFactory.getLogger("decoratedObjectName");
     }
 
     @Test
-    public void shouldLogStartedAndElapsedMessages() throws Exception {
-        TimerHandler time = new TimerHandler(delegate, logger);
-
-        Context context = new RootContext();
-        when(delegate.handle(context, null))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
-        time.handle(context, null).get();
-
-        InOrder inOrder = inOrder(timer, delegate);
-        inOrder.verify(timer).start();
-        inOrder.verify(delegate).handle(context, null);
-        inOrder.verify(timer).stop();
+    public void shouldReadTickerForAllInterceptions() throws Exception {
+        // Given
+        TimerHandler handler = new TimerHandler(delegate, logger, ticker, MICROSECONDS);
+        when(delegate.handle(null, null)).thenReturn(newResponsePromise(new Response()));
+        // When
+        handler.handle(null, null).get();
+        // Then
+        verify(delegate).handle(null, null);
+        verify(ticker, times(2)).read();
     }
 
 }

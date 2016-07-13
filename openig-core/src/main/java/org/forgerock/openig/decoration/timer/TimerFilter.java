@@ -11,59 +11,88 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
+import static org.forgerock.openig.util.StringUtil.toSIAbbreviation;
+
+import java.util.concurrent.TimeUnit;
+
+import org.forgerock.guava.common.base.Stopwatch;
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.log.LogTimer;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
 
 /**
- * Log a {@literal started} message when an {@link Request} is flowing into this Filter and both a {@literal
- * elapsed} and (potentially, if not equals to the globally elapsed time) {@literal elapsed-within}
- * messages when the {@link Response} is flowing out, delegating to a given encapsulated {@link Filter} instance.
+ * Capture time elapsed in a delegated {@link Filter}.
+ * <p>
+ * Global and local elapsed times are logged.
  */
 class TimerFilter implements Filter {
-    private final Filter delegate;
-    private final Logger logger;
 
-    public TimerFilter(final Filter delegate, final Logger logger) {
+    private final Filter delegate;
+    private final Ticker ticker;
+    private final Logger logger;
+    private final TimeUnit timeUnit;
+
+    TimerFilter(final Filter delegate, final Logger logger, final Ticker ticker, final TimeUnit timeUnit) {
         this.delegate = delegate;
         this.logger = logger;
+        this.ticker = ticker;
+        this.timeUnit = timeUnit;
     }
 
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
-        final LogTimer timer = logger.getTimer().start();
-        // Wraps the next handler to mark when the flow exits/re-enter the delegated filter
-        // Used to pause/resume the timer
-        return delegate.filter(context, request, new Handler() {
-            @Override
-            public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-                timer.pause();
-                return next.handle(context, request)
-                        .thenAlways(new Runnable() {
-                            @Override
-                            public void run() {
-                                timer.resume();
-                            }
-                        });
-            }
-        }).thenAlways(new Runnable() {
+        final CaptureTimeHandler captured = new CaptureTimeHandler(next);
+        final Stopwatch timeWatch = Stopwatch.createStarted(ticker);
+        return delegate.filter(context, request, captured).thenAlways(new Runnable() {
             @Override
             public void run() {
-                timer.stop();
+                timeWatch.stop();
+                final long total = timeWatch.elapsed(timeUnit);
+                final long downstream = captured.downstreamTime;
+                final String unit = toSIAbbreviation(timeUnit);
+                logger.info("Elapsed time: {} {} (internal: {} {}, downstream: {} {})",
+                            total, unit,
+                            total - downstream, unit,
+                            downstream, unit);
             }
         });
+    }
+
+    /**
+     * Capture time to execute the handler end-to-end.
+     */
+    private class CaptureTimeHandler implements Handler {
+        private final Handler next;
+        private long downstreamTime;
+
+        CaptureTimeHandler(final Handler next) {
+            this.next = next;
+        }
+
+        @Override
+        public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+            final Stopwatch downStreamWatch = Stopwatch.createStarted(ticker);
+            return next.handle(context, request)
+                       .thenAlways(new Runnable() {
+                           @Override
+                           public void run() {
+                               downStreamWatch.stop();
+                               downstreamTime = downStreamWatch.elapsed(timeUnit);
+                           }
+                       });
+        }
     }
 }
