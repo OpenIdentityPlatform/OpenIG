@@ -13,7 +13,7 @@
  *
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010-2011 ApexIdentity Inc.
- * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2011-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.util;
@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Miscellaneous string utility methods.
@@ -143,4 +144,35 @@ public final class StringUtil {
                          .replaceAll("\\s", "-");
     }
 
+    /**
+     * Return the SI abbreviation from the given {@literal TimeUnit} name.
+     *
+     * @param timeUnit
+     *            The time unit to get the abbreviation from(for output usage
+     *            for example).
+     * @return the SI abbreviation from the given {@code TimeUnit} name.
+     */
+    public static String toSIAbbreviation(final TimeUnit timeUnit) {
+        if (timeUnit == null) {
+            return "";
+        }
+        switch (timeUnit) {
+        case DAYS:
+            return "d";
+        case HOURS:
+            return "h";
+        case MINUTES:
+            return "min";
+        case SECONDS:
+            return "s";
+        case MILLISECONDS:
+            return "ms";
+        case MICROSECONDS:
+            return "\u03BCs"; // lower-greek-mu
+        case NANOSECONDS:
+            return "ns";
+        default:
+            return timeUnit.name();
+        }
+    }
 }

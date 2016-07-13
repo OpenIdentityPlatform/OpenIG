@@ -17,8 +17,11 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.openig.util.StringUtil.trailingSlash;
+import static org.forgerock.openig.util.StringUtil.toSIAbbreviation;
 import static org.forgerock.openig.util.StringUtil.slug;
+import static org.forgerock.openig.util.StringUtil.trailingSlash;
+
+import java.util.concurrent.TimeUnit;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -62,5 +65,27 @@ public class StringUtilTest {
     @Test(dataProvider = "slugs")
     public void shouldPerformSlugConversion(String value, String expected) throws Exception {
         assertThat(slug(value)).isEqualTo(expected);
+    }
+
+    @DataProvider
+    private static Object[][] timeUnitAndExpectedAbbreviation() {
+        return new Object[][] {
+            { TimeUnit.DAYS, "d" },
+            { TimeUnit.HOURS, "h" },
+            { TimeUnit.MINUTES, "min" },
+            { TimeUnit.SECONDS, "s" },
+            { TimeUnit.MILLISECONDS, "ms" },
+            { TimeUnit.MICROSECONDS, "\u03BCs" },
+            { TimeUnit.NANOSECONDS, "ns" } };
+    }
+
+    @Test(dataProvider = "timeUnitAndExpectedAbbreviation")
+    public void shouldConvertTimeUnitToSIAbbreviation(final TimeUnit timeUnit, final String abbreviation) {
+        assertThat(toSIAbbreviation(timeUnit)).isEqualTo(abbreviation);
+    }
+
+    @Test
+    public void shouldNotConvertNullTimeUnitToSIAbbreviation() {
+        assertThat(toSIAbbreviation(null)).isEqualTo("");
     }
 }
