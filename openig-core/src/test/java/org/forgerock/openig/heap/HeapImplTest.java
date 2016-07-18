@@ -296,27 +296,6 @@ public class HeapImplTest {
     }
 
     @Test
-    public void testInlineObjectNamingWithNoNameProvided() throws Exception {
-        JsonValue declaration = json(object(field("type", "WelcomeHandler")));
-        assertThat(HeapImpl.name(declaration)).isEqualTo("{WelcomeHandler}/");
-    }
-
-    @Test
-    public void testInlineObjectNamingWithNoNameProvidedInDeepHierarchy() throws Exception {
-        JsonValue root = json(object(field("heap",
-                                           object(field("objects",
-                                                        array(object(field("type", "WelcomeHandler"))))))));
-        assertThat(HeapImpl.name(root.get("heap").get("objects").get(0)))
-                .isEqualTo("{WelcomeHandler}/heap/objects/0");
-    }
-
-    @Test
-    public void testInlineObjectNamingWithNameProvided() throws Exception {
-        JsonValue declaration = json(object(field("name", "Inline"), field("type", "WelcomeHandler")));
-        assertThat(HeapImpl.name(declaration)).isEqualTo("Inline");
-    }
-
-    @Test
     public void shouldSupportObjectOverridingUntilInitialized2() throws Exception {
         HeapImpl heap = buildDefaultHeap();
 

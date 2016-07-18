@@ -29,6 +29,7 @@ import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asClass;
 import static org.forgerock.openig.util.JsonValues.bindings;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.util.ArrayDeque;
@@ -414,7 +415,7 @@ public class HeapImpl implements Heap {
             return value;
         } else if (required.isMap()) {
             // handle inline declaration
-            String generated = name(required);
+            String generated = required.as(heapObjectNameOrPointer());
 
             // when resolve() is called multiple times with the same reference, this prevent "already registered" errors
             // do not lookup into parent's heap : if an object is declared with the same name into the parent's heap, it
@@ -436,43 +437,6 @@ public class HeapImpl implements Heap {
         throw new JsonValueException(reference,
                                      format("JsonValue[%s] is neither a String nor a Map (inline declaration)",
                                             reference.getPointer()));
-    }
-
-    /**
-     * Infer a locally unique name for the given object declaration.
-     * If a {@literal name} attribute is provided, simply return its value as name, otherwise compose a
-     * unique name composed of both the declaration JSON pointer (map to the location within the JSON file) and
-     * the value of the {@literal type} attribute (ease to identify the object).
-     * <p>
-     * The following declaration would return {@literal Inline}:
-     * <pre>
-     *     {@code
-     *     {
-     *         "name": "Inline",
-     *         "type": "Router"
-     *     }
-     *     }
-     * </pre>
-     * <p>
-     * And this one would return {@literal {WelcomeHandler}/heap/objects/0/config/defaultHandler}:
-     * <pre>
-     *     {@code
-     *     {
-     *         "type": "WelcomeHandler"
-     *     }
-     *     }
-     * </pre>
-     * @param declaration source inline object declaration
-     * @return a locally unique name
-     */
-    public static String name(final JsonValue declaration) {
-        JsonValue node = declaration.get("name");
-        if (node.isNull()) {
-            String location = declaration.getPointer().toString();
-            String type = declaration.get("type").required().asString();
-            return format("{%s}%s", type, location);
-        }
-        return node.asString();
     }
 
     /**

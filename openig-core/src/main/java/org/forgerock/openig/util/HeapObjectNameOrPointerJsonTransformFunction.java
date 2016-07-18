@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.util;
 
+import static java.lang.String.format;
+
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.util.Function;
@@ -23,6 +25,7 @@ import org.forgerock.util.annotations.VisibleForTesting;
 
 @VisibleForTesting
 class HeapObjectNameOrPointerJsonTransformFunction implements Function<JsonValue, String, JsonValueException> {
+
     @Override
     public String apply(JsonValue heapObjectRef) {
         // Ref to an already defined heap object
@@ -31,9 +34,13 @@ class HeapObjectNameOrPointerJsonTransformFunction implements Function<JsonValue
         }
         // Inline declaration
         if (heapObjectRef.isMap()) {
-            return heapObjectRef.get("name")
-                                .defaultTo(heapObjectRef.getPointer().toString())
-                                .asString();
+            JsonValue name = heapObjectRef.get("name");
+            if (name.isNotNull()) {
+                return name.asString();
+            }
+            String location = heapObjectRef.getPointer().toString();
+            String type = heapObjectRef.get("type").required().asString();
+            return format("{%s}%s", type, location);
         }
         throw new JsonValueException(heapObjectRef, "Expecting a string or an object definition");
     }
