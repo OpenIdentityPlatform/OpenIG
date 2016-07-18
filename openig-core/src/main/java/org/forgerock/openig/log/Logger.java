@@ -187,27 +187,6 @@ public class Logger {
     }
 
     /**
-     * Returns a new timer to measure elapsed time. Entries are written to the log with a
-     * {@code STAT} log level.
-     * @return A timer to measure elapsed time.
-     */
-    public LogTimer getTimer() {
-        return new LogTimer(this, LogLevel.STAT);
-    }
-
-    /**
-     * Returns a new timer to measure elapsed time for a specified event. The event is
-     * appended to the source in hierarchical fashion. Entries are written to the log with a
-     * {@code STAT} log level.
-     *
-     * @param event the event that is being timed.
-     * @return A timer to measure elapsed time for a specified event.
-     */
-    public LogTimer getTimer(String event) {
-        return new LogTimer(this, LogLevel.STAT, event);
-    }
-
-    /**
      * Creates a {@link LogEntry} with the given parameters and no attached data.
      * The created entry will inherit the source name of this logger.
      *
