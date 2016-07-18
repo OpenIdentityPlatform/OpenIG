@@ -117,9 +117,29 @@ public final class JsonValues {
     }
 
     /**
-     * Returns a function that will look for the name of the object. If it's a reference to an already defined heap
-     * object, then that name is returned, if it is an inline declaration, it looks for the name of the object if any
-     * and returns it otherwise it returns the pointer to that declaration.
+     * Returns a function that will look for the name of the object. It infers a locally unique name for the given
+     * object declaration. If a {@literal name} attribute is provided, simply return its value as name, otherwise
+     * builds a unique name composed of both the declaration JSON pointer (map to the location within the JSON file)
+     * and the value of the {@literal type} attribute (ease to identify the object).
+     * <p>
+     * The following declaration would return {@literal Inline}:
+     * <pre>
+     *     {@code
+     *     {
+     *         "name": "Inline",
+     *         "type": "Router"
+     *     }
+     *     }
+     * </pre>
+     * <p>
+     * And this one would return {@literal {WelcomeHandler}/heap/objects/0/config/defaultHandler}:
+     * <pre>
+     *     {@code
+     *     {
+     *         "type": "WelcomeHandler"
+     *     }
+     *     }
+     * </pre>
      *
      * @return the name of the heap object or the pointer to that object if it is anonymous.
      */

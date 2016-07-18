@@ -17,9 +17,11 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
@@ -45,12 +47,12 @@ public class HeapObjectNameOrPointerJsonTransformFunctionTest {
                 { json("foo"),
                   "foo" },
                 // Inline declaration with a provided name
-                { json(object(field("type", "MyType"),
-                              field("name", "foo"))),
-                  "foo" },
+                { json(object(field("type", "WelcomeHandler"),
+                              field("name", "Inline"))),
+                  "Inline" },
                 // Anonymous inline declaration
-                { json(object(field("type", "MyType"))),
-                  "/" }
+                { json(object(field("type", "WelcomeHandler"))),
+                  "{WelcomeHandler}/" }
         };
         //@Checkstyle:on
     }
@@ -63,5 +65,14 @@ public class HeapObjectNameOrPointerJsonTransformFunctionTest {
     @Test(expectedExceptions = JsonValueException.class)
     public void shouldThrowAnExceptionIfNotCorrectHeapObjectRef() throws Exception {
         json(true).as(heapObjectNameOrPointer);
+    }
+
+    @Test
+    public void shouldResolveInlineObjectNamingWithNoNameProvidedInDeepHierarchy() throws Exception {
+        JsonValue root = json(object(field("heap",
+                                           object(field("objects",
+                                                        array(object(field("type", "WelcomeHandler"))))))));
+        assertThat(root.get("heap").get("objects").get(0).as(heapObjectNameOrPointer()))
+                .isEqualTo("{WelcomeHandler}/heap/objects/0");
     }
 }
