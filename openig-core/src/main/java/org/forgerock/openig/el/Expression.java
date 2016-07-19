@@ -59,7 +59,10 @@ public final class Expression<T> {
     private final String original;
 
     /** The expected type of this expression. */
-    private Class<T> expectedType;
+    private final Class<T> expectedType;
+
+    /** the initial bindings captured when creating this expression. */
+    private final Bindings initialBindings;
 
     /** The expression plugins configured in META-INF/services. */
     private static final Map<String, ExpressionPlugin> PLUGINS =
@@ -76,7 +79,23 @@ public final class Expression<T> {
      *             if the expression was not syntactically correct.
      */
     public static <T> Expression<T> valueOf(String expression, Class<T> expectedType) throws ExpressionException {
-        return new Expression<>(expression, expectedType);
+        return valueOf(expression, expectedType, bindings());
+    }
+
+    /**
+     * Factory method to create an Expression.
+     *
+     * @param <T> expected result type
+     * @param expression The expression to parse.
+     * @param expectedType The expected result type of the expression.
+     * @param initialBindings The initial bindings used when evaluated this expression
+     * @return An expression based on the given string.
+     * @throws ExpressionException
+     *             if the expression was not syntactically correct.
+     */
+    public static <T> Expression<T> valueOf(String expression, Class<T> expectedType, Bindings initialBindings)
+            throws ExpressionException {
+        return new Expression<>(expression, expectedType, initialBindings);
     }
 
     /**
@@ -84,11 +103,13 @@ public final class Expression<T> {
      *
      * @param expression the expression to parse.
      * @param expectedType The expected result type of the expression.
+     * @param initialBindings The initial bindings used when evaluated this expression
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    private Expression(String expression, Class<T> expectedType) throws ExpressionException {
+    private Expression(String expression, Class<T> expectedType, Bindings initialBindings) throws ExpressionException {
         original = expression;
         this.expectedType = expectedType;
+        this.initialBindings = initialBindings;
         try {
             ExpressionFactoryImpl exprFactory = new ExpressionFactoryImpl();
             /*
@@ -117,7 +138,8 @@ public final class Expression<T> {
     public T eval(final Bindings bindings) {
         Object value;
         try {
-            value = valueExpression.getValue(new XLContext(bindings.asMap()));
+            Bindings evaluationBindings = bindings().bind(initialBindings).bind(bindings);
+            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap()));
         } catch (ELException ele) {
             logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),

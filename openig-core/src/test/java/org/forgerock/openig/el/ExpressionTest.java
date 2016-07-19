@@ -381,6 +381,19 @@ public class ExpressionTest {
         assertThat(expression.eval(bindings("heap", heap))).isNull();
     }
 
+    @Test
+    public void shouldUseInitialBindingsWhenEvaluating() throws Exception {
+        Bindings initialBindings = bindings().bind("a", 1);
+        Expression<Long> expression = Expression.valueOf("${a + b}", Long.class, initialBindings);
+
+        Bindings evaluationBindings = bindings().bind("b", 2);
+        Long eval = expression.eval(evaluationBindings);
+
+        assertThat(eval).isEqualTo(3L);
+        assertThat(initialBindings.asMap()).containsExactly(entry("a", 1));
+        assertThat(evaluationBindings.asMap()).containsExactly(entry("b", 2));
+    }
+
     public static class ExternalBean {
         private InternalBean internal;
 
