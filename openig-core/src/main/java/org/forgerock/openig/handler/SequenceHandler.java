@@ -126,7 +126,8 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
             for (final JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
-                final Expression<Boolean> postcondition = jv.get("postcondition").as(expression(Boolean.class));
+                final Expression<Boolean> postcondition = jv.get("postcondition")
+                                                            .as(expression(Boolean.class, heap.getProperties()));
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;

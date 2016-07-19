@@ -71,7 +71,8 @@ public class ConditionalFilterHeaplet extends GenericHeaplet {
             }
         }
 
-        final Expression<Boolean> expression = condition.expect(String.class).as(expression(Boolean.class));
+        final Expression<Boolean> expression = condition.expect(String.class)
+                                                        .as(expression(Boolean.class, heap.getProperties()));
         return new ConditionalFilter(delegate, new ExpressionRequestAsyncFunction<>(expression));
     }
 }

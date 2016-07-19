@@ -107,7 +107,7 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
-                                                        .as(expression(String.class));
+                                                        .as(expression(String.class, heap.getProperties()));
 
         Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping")
                                                   .as(ratesMappings(heap.getProperties()));

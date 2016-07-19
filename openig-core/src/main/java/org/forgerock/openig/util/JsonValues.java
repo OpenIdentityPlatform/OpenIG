@@ -224,11 +224,26 @@ public final class JsonValues {
      * @return A function for transforming JsonValues to expressions.
      */
     public static <T> Function<JsonValue, Expression<T>, JsonValueException> expression(final Class<T> type) {
+        return expression(type, Bindings.bindings());
+    }
+
+    /**
+     * Returns a function for transforming JsonValues to expressions.
+     *
+     * @param <T> expected result type
+     * @param type The expected result type of the expression.
+     * @param bindings The initial bindings used when evaluated this expression
+     * @return A function for transforming JsonValues to expressions.
+     */
+    public static <T> Function<JsonValue, Expression<T>, JsonValueException> expression(final Class<T> type,
+                                                                                        final Bindings bindings) {
         return new Function<JsonValue, Expression<T>, JsonValueException>() {
             @Override
             public Expression<T> apply(final JsonValue value) {
                 try {
-                    return (value == null || value.isNull() ? null : Expression.valueOf(value.asString(), type));
+                    return value == null || value.isNull()
+                           ? null
+                           : Expression.valueOf(value.asString(), type, bindings);
                 } catch (ExpressionException ee) {
                     throw new JsonValueException(value, ee);
                 }

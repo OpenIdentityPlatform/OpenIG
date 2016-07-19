@@ -499,9 +499,11 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                             new ApiVersionProtocolHeaderFilter()));
 
                 filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
-                filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
-                filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
-                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
+                filter.setSsoTokenSubject(config.get("ssoTokenSubject")
+                                                .as(expression(String.class, heap.getProperties())));
+                filter.setJwtSubject(config.get("jwtSubject")
+                                           .as(expression(String.class, heap.getProperties())));
+                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
 
                 if (config.get("ssoTokenSubject").isNull()
                         && config.get("jwtSubject").isNull()
@@ -509,7 +511,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     throw new HeapException(SUBJECT_ERROR);
                 }
 
-                filter.setEnvironment(environment());
+                filter.setEnvironment(environment(heap.getProperties()));
 
                 // Sets the cache
                 ScheduledExecutorService executor = config.get("executor")
@@ -534,13 +536,13 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment() {
+        private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment(Bindings heapBindings) {
             // Double cast to satisfy compiler error due to type erasure
-            return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class);
+            return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class, heapBindings);
         }
 
         private static <T> Function<Bindings, Map<String, T>, ExpressionException>
-        asFunction(final JsonValue node, final Class<T> expectedType) {
+        asFunction(final JsonValue node, final Class<T> expectedType, final Bindings initialBindings) {
 
             if (node.isNull()) {
                 return null;
@@ -550,7 +552,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     @SuppressWarnings("unchecked")
                     @Override
                     public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return node.as(expression(Map.class)).eval(bindings);
+                        return node.as(expression(Map.class, initialBindings)).eval(bindings);
                     }
                 };
             } else if (node.isMap()) {

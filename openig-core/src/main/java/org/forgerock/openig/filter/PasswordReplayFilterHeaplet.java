@@ -243,7 +243,7 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
             throw new HeapException("Either 'loginPage' or 'loginPageContentMarker' (or both) must have a value");
         }
 
-        loginPage = hasLoginPage ? config.get("loginPage").as(expression(Boolean.class)) : null;
+        loginPage = hasLoginPage ? config.get("loginPage").as(expression(Boolean.class, heap.getProperties())) : null;
 
         createRequestFilter = (StaticRequestFilter) new StaticRequestFilter.Heaplet()
                 .create(qualified.child("$request-creator"),

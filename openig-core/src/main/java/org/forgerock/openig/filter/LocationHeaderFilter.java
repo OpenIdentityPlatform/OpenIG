@@ -149,7 +149,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
 
             LocationHeaderFilter filter = new LocationHeaderFilter();
-            filter.baseURI = config.get("baseURI").as(expression(String.class));
+            filter.baseURI = config.get("baseURI").as(expression(String.class, heap.getProperties()));
 
             return filter;
         }
