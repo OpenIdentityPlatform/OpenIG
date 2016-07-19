@@ -894,7 +894,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             final Expression<String> clientEndpoint = config.get("clientEndpoint")
                                                             .required()
-                                                            .as(expression(String.class));
+                                                            .as(expression(String.class, heap.getProperties()));
 
             final List<ClientRegistration> clients = new LinkedList<>();
             final JsonValue regs = getWithDeprecation(config, logger, "registrations", "registration");
@@ -943,9 +943,12 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 throw new HeapException("A 'loginHandler' (defining a NASCAR page) is required when there are zero"
                                                 + " or multiple client registrations.");
             }
-            filter.setFailureHandler(config.get("failureHandler").as(requiredHeapObject(heap, Handler.class)));
-            filter.setDefaultLoginGoto(config.get("defaultLoginGoto").as(expression(String.class)));
-            filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto").as(expression(String.class)));
+            filter.setFailureHandler(config.get("failureHandler")
+                                           .as(requiredHeapObject(heap, Handler.class)));
+            filter.setDefaultLoginGoto(config.get("defaultLoginGoto")
+                                             .as(expression(String.class, heap.getProperties())));
+            filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto")
+                                              .as(expression(String.class, heap.getProperties())));
             filter.setRequireHttps(config.get("requireHttps")
                                          .as(evaluatedWithHeapProperties())
                                          .defaultTo(true)

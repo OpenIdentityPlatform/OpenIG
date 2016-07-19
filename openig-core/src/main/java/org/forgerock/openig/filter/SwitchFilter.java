@@ -165,7 +165,7 @@ public class SwitchFilter extends GenericHeapObject implements Filter {
         }
 
         private Case asCase(JsonValue value) throws HeapException {
-            return new Case(value.get("condition").as(expression(Boolean.class)),
+            return new Case(value.get("condition").as(expression(Boolean.class, heap.getProperties())),
                             value.get("handler").as(requiredHeapObject(heap, Handler.class)));
         }
     }

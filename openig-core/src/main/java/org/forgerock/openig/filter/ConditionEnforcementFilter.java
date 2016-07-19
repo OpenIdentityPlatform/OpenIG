@@ -122,7 +122,9 @@ public class ConditionEnforcementFilter extends GenericHeapObject implements Fil
         @Override
         public Object create() throws HeapException {
 
-            final Expression<Boolean> condition = config.get("condition").required().as(expression(Boolean.class));
+            final Expression<Boolean> condition = config.get("condition")
+                                                        .required()
+                                                        .as(expression(Boolean.class, heap.getProperties()));
             if (config.isDefined("failureHandler")) {
                 return new ConditionEnforcementFilter(condition,
                                                       config.get("failureHandler")

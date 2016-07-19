@@ -249,7 +249,7 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
             final String method = config.get("method").as(evaluatedWithHeapProperties()).required().asString();
             StaticRequestFilter filter = new StaticRequestFilter(method);
-            filter.setUri(config.get("uri").required().as(expression(String.class)));
+            filter.setUri(config.get("uri").required().as(expression(String.class, heap.getProperties())));
             filter.setVersion(config.get("version").as(evaluatedWithHeapProperties()).asString());
             if (config.isDefined("entity")
                     && config.isDefined("form")
@@ -257,13 +257,14 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
                 throw new HeapException("Invalid configuration. When \"method\": \"POST\", \"form\" and \"entity\" "
                         + "settings are mutually exclusive because they both determine the request entity.");
             }
-            filter.setEntity(config.get("entity").as(expression(String.class)));
+            filter.setEntity(config.get("entity").as(expression(String.class, heap.getProperties())));
 
             JsonValue headers = config.get("headers").expect(Map.class);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).required().expect(List.class)) {
-                        filter.addHeaderValue(key, value.required().as(expression(String.class)));
+                        filter.addHeaderValue(key,
+                                              value.required().as(expression(String.class, heap.getProperties())));
                     }
                 }
             }
@@ -271,7 +272,8 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
             if (form != null) {
                 for (String key : form.keys()) {
                     for (JsonValue value : form.get(key).required().expect(List.class)) {
-                        filter.addFormParameter(key, value.required().as(expression(String.class)));
+                        filter.addFormParameter(key,
+                                                value.required().as(expression(String.class, heap.getProperties())));
                     }
                 }
             }

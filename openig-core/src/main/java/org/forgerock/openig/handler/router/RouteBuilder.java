@@ -109,7 +109,7 @@ class RouteBuilder {
             routeHeap.init(config.copy(), "handler", "session", "name", "condition", "auditService", "globalDecorators",
                            "monitor", "properties");
 
-            Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class));
+            Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class, heap.getProperties()));
 
             if (!slug.equals(routeId)) {
                 logger.warn("Route name ('{}') has been transformed to a URL-friendly name ('{}') that is "

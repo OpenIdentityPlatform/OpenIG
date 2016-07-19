@@ -134,12 +134,12 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
             Status status = Status.valueOf(code, reason);
             final String version = config.get("version").as(evaluatedWithHeapProperties()).asString();
             final JsonValue headers = config.get("headers").expect(Map.class);
-            final Expression<String> entity = config.get("entity").as(expression(String.class));
+            final Expression<String> entity = config.get("entity").as(expression(String.class, heap.getProperties()));
             final StaticResponseHandler handler = new StaticResponseHandler(status, version, entity);
             if (headers != null) {
                 for (String key : headers.keys()) {
                     for (JsonValue value : headers.get(key).expect(List.class)) {
-                        handler.addHeader(key, value.required().as(expression(String.class)));
+                        handler.addHeader(key, value.required().as(expression(String.class, heap.getProperties())));
                     }
                 }
             }

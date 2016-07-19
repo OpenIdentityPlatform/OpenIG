@@ -148,7 +148,8 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
             DispatchHandler dispatchHandler = new DispatchHandler();
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
-                final Expression<Boolean> expression = jv.get("condition").as(expression(Boolean.class));
+                final Expression<Boolean> expression = jv.get("condition")
+                                                         .as(expression(Boolean.class, heap.getProperties()));
                 final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
                 final URI uri = jv.get("baseURI").as(evaluatedWithHeapProperties()).as(uri());
                 dispatchHandler.addBinding(expression, handler, uri);

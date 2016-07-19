@@ -269,8 +269,12 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
             Handler failureHandler = config.get("failureHandler").as(requiredHeapObject(heap, Handler.class));
 
-            Expression<String> usernameExpr = config.get("username").required().as(expression(String.class));
-            Expression<String> passwordExpr = config.get("password").required().as(expression(String.class));
+            Expression<String> usernameExpr = config.get("username")
+                                                    .required()
+                                                    .as(expression(String.class, heap.getProperties()));
+            Expression<String> passwordExpr = config.get("password")
+                                                    .required()
+                                                    .as(expression(String.class, heap.getProperties()));
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(usernameExpr, passwordExpr, failureHandler);
 
             filter.cacheHeader = config.get("cacheHeader")

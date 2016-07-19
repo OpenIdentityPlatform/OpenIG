@@ -86,7 +86,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
     }
 
     private BaseUriFilter createBaseUriFilter(final JsonValue decoratorConfig, final Context context) {
-        return new BaseUriFilter(decoratorConfig.as(expression(String.class)),
+        return new BaseUriFilter(decoratorConfig.as(expression(String.class, context.getHeap().getProperties())),
                                  getLogger(context));
     }
 

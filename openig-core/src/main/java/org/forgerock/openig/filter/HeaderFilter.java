@@ -138,7 +138,7 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
             JsonValue add = config.get("add").defaultTo(emptyMap()).expect(Map.class);
             for (String key : add.keys()) {
                 for (JsonValue value : add.get(key).required().expect(List.class)) {
-                    filter.addedHeaders.add(key, value.required().as(expression(String.class)));
+                    filter.addedHeaders.add(key, value.required().as(expression(String.class, heap.getProperties())));
                 }
             }
             return filter;

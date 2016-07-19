@@ -422,7 +422,9 @@ public class UmaSharingService {
             return actions.as(listOf(new Function<JsonValue, ShareTemplate.Action, JsonValueException>() {
                 @Override
                 public ShareTemplate.Action apply(final JsonValue value) {
-                    return new ShareTemplate.Action(value.get("condition").required().as(expression(Boolean.class)),
+                    return new ShareTemplate.Action(value.get("condition")
+                                                         .required()
+                                                         .as(expression(Boolean.class, heap.getProperties())),
                                                     value.get("scopes")
                                                          .as(evaluatedWithHeapProperties())
                                                          .asSet(String.class));

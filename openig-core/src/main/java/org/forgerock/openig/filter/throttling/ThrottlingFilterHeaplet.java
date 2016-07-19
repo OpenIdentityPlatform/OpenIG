@@ -117,7 +117,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
 
         final Expression<String> requestGroupingPolicy =
                 getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey")
-                        .defaultTo("").as(expression(String.class));
+                        .defaultTo("").as(expression(String.class, heap.getProperties()));
 
         ThrottlingPolicy throttlingRatePolicy;
         if (config.isDefined("rate")) {

@@ -197,9 +197,13 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             // optional
             JsonValue bindings = config.get("onRequest").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression<Boolean> condition = binding.get("condition").as(expression(Boolean.class));
-                Expression<?> target = binding.get("target").required().as(expression(Object.class));
-                Expression<?> value = binding.get("value").as(expression(Object.class));
+                Expression<Boolean> condition = binding.get("condition")
+                                                       .as(expression(Boolean.class, heap.getProperties()));
+                Expression<?> target = binding.get("target")
+                                              .required()
+                                              .as(expression(Object.class));
+                Expression<?> value = binding.get("value")
+                                             .as(expression(Object.class, heap.getProperties()));
 
                 filter.addRequestBinding(condition, target, value);
             }
@@ -209,9 +213,13 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             // optional
             JsonValue bindings = config.get("onResponse").expect(List.class);
             for (JsonValue binding : bindings) {
-                Expression<Boolean> condition = binding.get("condition").as(expression(Boolean.class));
-                Expression<?> target = binding.get("target").required().as(expression(Object.class));
-                Expression<?> value = binding.get("value").as(expression(Object.class));
+                Expression<Boolean> condition = binding.get("condition")
+                                                       .as(expression(Boolean.class, heap.getProperties()));
+                Expression<?> target = binding.get("target")
+                                              .required()
+                                              .as(expression(Object.class));
+                Expression<?> value = binding.get("value")
+                                             .as(expression(Object.class, heap.getProperties()));
 
                 filter.addResponseBinding(condition, target, value);
             }

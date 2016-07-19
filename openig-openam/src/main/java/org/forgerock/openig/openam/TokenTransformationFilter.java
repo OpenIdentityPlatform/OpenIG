@@ -210,8 +210,12 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                                                                username,
                                                                password);
 
-            Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
-            Expression<String> target = config.get("target").required().as(expression(String.class));
+            Expression<String> idToken = config.get("idToken")
+                                               .required()
+                                               .as(expression(String.class, heap.getProperties()));
+            Expression<String> target = config.get("target")
+                                              .required()
+                                              .as(expression(String.class));
 
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 
