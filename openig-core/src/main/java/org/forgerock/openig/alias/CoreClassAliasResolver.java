@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.openig.audit.monitor.MonitorEndpointHandler;
+import org.forgerock.openig.decoration.DelegateHeaplet;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
@@ -85,6 +86,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
         ALIASES.put("DefaultRateThrottlingPolicy", DefaultRateThrottlingPolicyHeaplet.class);
+        ALIASES.put("Delegate", DelegateHeaplet.class);
         ALIASES.put("DesKeyGenHandler", DesKeyGenHandler.class);
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
