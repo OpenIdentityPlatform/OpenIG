@@ -21,25 +21,49 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
-import static org.mockito.Mockito.mock;
 
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class DelegateHeapletTest {
 
+    private final Name heapName = Name.of(getClass().getName());
+    private HeapImpl heap;
+    private Object object;
+
+    @BeforeMethod
+    public void beforeMethod() throws Exception {
+        heap = buildDefaultHeap();
+        object = new Object();
+        heap.put("myObject", object);
+    }
+
     @Test
     public void shouldReturnTheDelegateObject() throws Exception {
-        HeapImpl heap = buildDefaultHeap();
-        Object object = mock(Object.class);
-        heap.put("myObject", object);
-
         JsonValue config = json(object(field("delegate", "myObject")));
-        Object created = new DelegateHeaplet().create(Name.of("test"), config, heap);
+        Object created = new DelegateHeaplet().create(heapName, config, heap);
 
         assertThat(created).isSameAs(object);
+    }
+
+    @DataProvider
+    public static Object[][] invalidConfigurations() {
+        //@Checkstyle:off
+        return new Object[][]{
+                { json(object(field("delegate", "fooBarQuix"))) },
+                { json(object()) }
+        };
+        //@Checkstyle:on
+    }
+
+    @Test(dataProvider = "invalidConfigurations", expectedExceptions = JsonValueException.class)
+    public void shouldFailOnInvalidConfigurations(JsonValue config) throws Exception {
+        new DelegateHeaplet().create(heapName, config, heap);
     }
 }
