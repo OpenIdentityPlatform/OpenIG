@@ -17,8 +17,12 @@
 package org.forgerock.openig.util;
 
 import static java.util.Collections.unmodifiableList;
+import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.http.util.Loader.loadList;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 
 import org.forgerock.json.JsonValue;
@@ -341,5 +345,17 @@ public final class JsonValues {
                     config.getPointer(),
                     deprecatedName,
                     name);
+    }
+
+    /**
+     * Builds a {@link JsonValue} from the given URL.
+     * @param resource the URL to read the JSON from
+     * @return a {@link JsonValue} built from the resource URL
+     * @throws IOException If an error occurs while trying to read the JSON
+     */
+    public static JsonValue readJson(URL resource) throws IOException {
+        try (InputStream in = resource.openStream()) {
+            return new JsonValue(readJsonLenient(in));
+        }
     }
 }

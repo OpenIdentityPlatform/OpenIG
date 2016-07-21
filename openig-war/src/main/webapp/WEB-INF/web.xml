@@ -13,24 +13,12 @@
   information: "Portions Copyright [year] [name of copyright owner]".
 
   Copyright 2010-2011 ApexIdentity Inc.
-  Portions Copyright 2011-2015 ForgeRock AS.
+  Portions Copyright 2011-2016 ForgeRock AS.
 -->
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
   <display-name>ForgeRock OpenIG</display-name>
-
-  <servlet>
-    <servlet-name>HttpFrameworkServlet</servlet-name>
-    <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
-    <load-on-startup>1</load-on-startup>
-    <async-supported>true</async-supported>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>HttpFrameworkServlet</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
 
 </web-app>
