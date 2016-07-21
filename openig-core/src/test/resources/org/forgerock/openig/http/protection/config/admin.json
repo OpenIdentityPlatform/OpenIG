@@ -4,7 +4,7 @@
     {
       "comment" : "Overwrite the default protection filter with pseudo OAuth 2.0 support",
       "name": "ApiProtectionFilter",
-      "type": "org.forgerock.openig.http.GatewayHttpApplicationTest$PseudoOAuth2Filter"
+      "type": "org.forgerock.openig.http.AdminHttpApplicationTest$PseudoOAuth2Filter"
     }
   ],
   "handler": {

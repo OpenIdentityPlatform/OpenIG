@@ -16,15 +16,14 @@
 
 package org.forgerock.openig.util;
 
-import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValue.set;
 import static org.forgerock.json.JsonValueFunctions.url;
+import static org.forgerock.openig.util.JsonValues.readJson;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 import org.forgerock.json.JsonValue;
@@ -99,12 +98,6 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
             return readJson(url);
         } catch (IOException e) {
             throw new JsonValueException(location, "An error occurred while reading the JSON from " + url, e);
-        }
-    }
-
-    private static JsonValue readJson(URL resource) throws IOException {
-        try (InputStream in = resource.openStream()) {
-            return new JsonValue(readJsonLenient(in));
         }
     }
 }

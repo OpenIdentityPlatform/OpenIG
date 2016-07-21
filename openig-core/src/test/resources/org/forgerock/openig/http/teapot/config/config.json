@@ -1,6 +1,0 @@
-{
-  "comment" : "This configuration creates a Handler that always responds TEAPOT.",
-  "handler": {
-    "type": "org.forgerock.openig.http.TeapotHandler"
-  }
-}
