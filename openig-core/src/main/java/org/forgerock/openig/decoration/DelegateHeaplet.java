@@ -28,7 +28,7 @@ public class DelegateHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        return config.get("delegate").as(requiredHeapObject(heap, Object.class));
+        return config.get("delegate").required().as(requiredHeapObject(heap, Object.class));
     }
 }
 
