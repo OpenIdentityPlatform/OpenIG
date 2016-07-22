@@ -155,7 +155,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                                                   .asString(),
                                             config.get("value")
                                                   .required()
-                                                  .as(expression(String.class, heap.getProperties())),
+                                                  .as(expression(String.class)),
                                             config.get("target")
                                                   .required()
                                                   .as(expression(Map.class)));

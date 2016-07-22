@@ -17,7 +17,6 @@
 package org.forgerock.openig.filter.throttling;
 
 import static org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet.throttlingRate;
-import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,7 +106,7 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
-                                                        .as(expression(String.class, heap.getProperties()));
+                                                        .as(expression(String.class));
 
         Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping")
                                                   .as(ratesMappings(heap.getProperties()));

@@ -198,12 +198,12 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             JsonValue bindings = config.get("onRequest").expect(List.class);
             for (JsonValue binding : bindings) {
                 Expression<Boolean> condition = binding.get("condition")
-                                                       .as(expression(Boolean.class, heap.getProperties()));
+                                                       .as(expression(Boolean.class));
                 Expression<?> target = binding.get("target")
                                               .required()
                                               .as(expression(Object.class));
                 Expression<?> value = binding.get("value")
-                                             .as(expression(Object.class, heap.getProperties()));
+                                             .as(expression(Object.class));
 
                 filter.addRequestBinding(condition, target, value);
             }
@@ -214,12 +214,12 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             JsonValue bindings = config.get("onResponse").expect(List.class);
             for (JsonValue binding : bindings) {
                 Expression<Boolean> condition = binding.get("condition")
-                                                       .as(expression(Boolean.class, heap.getProperties()));
+                                                       .as(expression(Boolean.class));
                 Expression<?> target = binding.get("target")
                                               .required()
                                               .as(expression(Object.class));
                 Expression<?> value = binding.get("value")
-                                             .as(expression(Object.class, heap.getProperties()));
+                                             .as(expression(Object.class));
 
                 filter.addResponseBinding(condition, target, value);
             }

@@ -894,7 +894,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
             final Expression<String> clientEndpoint = config.get("clientEndpoint")
                                                             .required()
-                                                            .as(expression(String.class, heap.getProperties()));
+                                                            .as(expression(String.class));
 
             final List<ClientRegistration> clients = new LinkedList<>();
             final JsonValue regs = getWithDeprecation(config, logger, "registrations", "registration");
@@ -946,9 +946,9 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             filter.setFailureHandler(config.get("failureHandler")
                                            .as(requiredHeapObject(heap, Handler.class)));
             filter.setDefaultLoginGoto(config.get("defaultLoginGoto")
-                                             .as(expression(String.class, heap.getProperties())));
+                                             .as(expression(String.class)));
             filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto")
-                                              .as(expression(String.class, heap.getProperties())));
+                                              .as(expression(String.class)));
             filter.setRequireHttps(config.get("requireHttps")
                                          .as(evaluatedWithHeapProperties())
                                          .defaultTo(true)

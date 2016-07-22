@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.filter;
 
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import org.forgerock.http.Filter;
@@ -72,7 +71,7 @@ public class ConditionalFilterHeaplet extends GenericHeaplet {
         }
 
         final Expression<Boolean> expression = condition.expect(String.class)
-                                                        .as(expression(Boolean.class, heap.getProperties()));
+                                                        .as(expression(Boolean.class));
         return new ConditionalFilter(delegate, new ExpressionRequestAsyncFunction<>(expression));
     }
 }

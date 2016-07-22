@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.handler;
 
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.ArrayDeque;
@@ -127,7 +126,7 @@ public class SequenceHandler extends GenericHeapObject implements Handler {
                 jv.required().expect(Map.class);
                 final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
                 final Expression<Boolean> postcondition = jv.get("postcondition")
-                                                            .as(expression(Boolean.class, heap.getProperties()));
+                                                            .as(expression(Boolean.class));
                 sequenceHandler.addBinding(handler, postcondition);
             }
             return sequenceHandler;

@@ -18,7 +18,6 @@
 package org.forgerock.openig.handler;
 
 import static org.forgerock.json.JsonValueFunctions.uri;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.net.URI;
@@ -149,7 +148,7 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
             for (JsonValue jv : config.get("bindings").expect(List.class)) {
                 jv.required().expect(Map.class);
                 final Expression<Boolean> expression = jv.get("condition")
-                                                         .as(expression(Boolean.class, heap.getProperties()));
+                                                         .as(expression(Boolean.class));
                 final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
                 final URI uri = jv.get("baseURI").as(evaluatedWithHeapProperties()).as(uri());
                 dispatchHandler.addBinding(expression, handler, uri);
