@@ -11,13 +11,16 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.decoration.timer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.mockito.Mockito.when;
 
@@ -27,7 +30,9 @@ import java.util.concurrent.TimeUnit;
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Context;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.mockito.Mock;
@@ -78,6 +83,46 @@ public class TimerDecoratorTest {
     public void shouldDecorateFilter(final TimerDecorator timerDecorator) throws Exception {
         Object decorated = timerDecorator.decorate(filter, json(true), context);
         assertThat(decorated).isInstanceOf(TimerFilter.class);
+    }
+
+    @DataProvider
+    private static Object[][] validConfigurations() {
+        return new Object[][] {
+            { json(object(
+                    field("timeUnit", "nano"))) },
+            { json(object(
+                    field("timeUnit", "nanoseconds"))) },
+            { json(object(
+                    field("timeUnit", "ns"))) },
+            { json(object()) } };
+    }
+
+    @Test(dataProvider = "validConfigurations")
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
+        final TimerDecorator.Heaplet heaplet = new TimerDecorator.Heaplet();
+        final TimerDecorator timerDecorator = (TimerDecorator) heaplet.create(Name.of(name),
+                                                                              config,
+                                                                              buildDefaultHeap());
+        assertThat(timerDecorator).isNotNull();
+    }
+
+    @DataProvider
+    private static Object[][] invalidConfigurations() {
+        return new Object[][] {
+            { json(object(
+                    field("timeUnit", "invalid"))) },
+            { json(object(
+                    field("timeUnit", "0 seconds"))) },
+            { json(object(
+                    field("timeUnit", "ZERO"))) },
+            { json(object(
+                    field("timeUnit", "UNLIMITED"))) } };
+    }
+
+    @Test(dataProvider = "invalidConfigurations", expectedExceptions = HeapException.class)
+    public void shouldFailToCreateHeaplet(final JsonValue config) throws Exception {
+        final TimerDecorator.Heaplet heaplet = new TimerDecorator.Heaplet();
+        heaplet.create(Name.of(name), config, buildDefaultHeap());
     }
 
     @Test
