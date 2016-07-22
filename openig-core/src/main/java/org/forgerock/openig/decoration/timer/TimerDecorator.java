@@ -16,10 +16,12 @@
 
 package org.forgerock.openig.decoration.timer;
 
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.util.Reject.checkNotNull;
+import static org.forgerock.util.time.Duration.duration;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +35,7 @@ import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.time.Duration;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -51,8 +54,27 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  * <p>
+ * If you want to specify the time unit:
+ *
+ * <pre>
+ * {@code
+ * {
+ *   "name": "myTimerDecorator",
+ *   "type": "TimerDecorator"
+ *   "config": {
+ *     "timeUnit": "ms"
+ *   }
+ * }
+ * }
+ * </pre>
+ *
+ * The value of the {@literal timeUnit} is a single string representation of the
+ * elapsed time unit as those supported by {@code Duration}. An invalid string
+ * or non recognized time unit will throw an error.
+ * <p>
  * To decorate a component, just add the decorator declaration next to the
  * {@code config} element:
+ *
  * <pre>
  * {@code
  * {
@@ -63,8 +85,8 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  *
- * There is no special configuration required for this decorator. A default
- * {@literal timer} decorator is automatically created when OpenIG starts.
+ * A default {@literal timer} decorator is automatically created when OpenIG
+ * starts.
  */
 public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
 
@@ -135,7 +157,14 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     public static class Heaplet extends DecoratorHeaplet {
         @Override
         public Decorator create() throws HeapException {
-            return new TimerDecorator(name.getLeaf());
+            final String timeUnit = config.get("timeUnit").defaultTo("milliseconds").asString();
+            final Duration duration;
+            try {
+                duration = duration(format("1 %s", timeUnit));
+            } catch (final IllegalArgumentException iae) {
+                throw new HeapException(iae);
+            }
+            return new TimerDecorator(name.getLeaf(), duration.getUnit());
         }
     }
 }
