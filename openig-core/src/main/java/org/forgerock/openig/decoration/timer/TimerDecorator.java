@@ -36,33 +36,35 @@ import org.forgerock.openig.heap.HeapException;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@literal timer} decorator can decorate both {@link Filter} and {@link Handler} instances.
- * It will log elapsed time within the decorated heap object.
+ * The {@literal timer} decorator can decorate both {@link Filter} and
+ * {@link Handler} instances. It will log elapsed time within the decorated heap
+ * object.
  * <p>
  * It has to be declared inside of the heap objects section:
+ *
  * <pre>
- *     {@code
- *     {
- *       "name": "timer",
- *       "type": "TimerDecorator"
- *     }
- *     }
+ * {@code
+ * {
+ *   "name": "myTimerDecorator",
+ *   "type": "TimerDecorator"
+ * }
+ * }
  * </pre>
  * <p>
- * To decorate a component, just add the decorator declaration next to the {@code config} element:
+ * To decorate a component, just add the decorator declaration next to the
+ * {@code config} element:
  * <pre>
- *     {@code
- *     {
- *       "type": "...",
- *       "timer": true,
- *       "config": { ... }
- *     }
- *     }
+ * {@code
+ * {
+ *   "type": "...",
+ *   "timer": true,
+ *   "config": { ... }
+ * }
+ * }
  * </pre>
  *
- * There is no special configuration required for this decorator.
- *
- * A default {@literal timer} decorator is automatically created when OpenIG starts.
+ * There is no special configuration required for this decorator. A default
+ * {@literal timer} decorator is automatically created when OpenIG starts.
  */
 public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
 
