@@ -36,10 +36,10 @@ import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.annotations.VisibleForTesting;
+import org.slf4j.Logger;
 
 /**
  * Capture a message.
@@ -58,26 +58,27 @@ public class MessageCapture {
     private final boolean captureContext;
 
     /**
-     * Builds a MessageCapture that will prints messages in the provided {@code logger}.
+     * Builds a new MessageCapture.
      *
      * @param logger
-     *         where to write captured messages
+     *            The logger used for displaying messages.
      * @param captureEntity
-     *         capture the entity content (if not binary)
+     *            capture the entity content (if not binary)
      */
     public MessageCapture(final Logger logger, final boolean captureEntity) {
         this(logger, captureEntity, false);
     }
 
     /**
-     * Builds a MessageCapture that will prints messages in the provided {@code logger}.
+     * Builds a new MessageCapture.
      *
      * @param logger
-     *         where to write captured messages
+     *            The logger used for displaying messages.
      * @param captureEntity
-     *         capture the entity content (if not binary)
+     *            capture the entity content (if not binary)
      * @param captureContext
-     *         capture the context content (excluding request and response object) as json
+     *            capture the context content (excluding request and response
+     *            object) as json
      */
     public MessageCapture(final Logger logger, final boolean captureEntity, final boolean captureContext) {
         this.logger = logger;
@@ -155,7 +156,7 @@ public class MessageCapture {
         logger.info(out.toString());
     }
 
-    private void captureContextAsJson(final PrintWriter writer, final Context context) {
+    private static void captureContextAsJson(final PrintWriter writer, final Context context) {
         // TODO we restrict ourselves to attributes only here, we should pretty print the chain of contexts instead
         if (context.containsContext(AttributesContext.class)) {
             AttributesContext attributesContext = context.asContext(AttributesContext.class);
@@ -213,7 +214,7 @@ public class MessageCapture {
         writer.flush();
     }
 
-    private void writeHeaders(final PrintWriter writer, Message message) {
+    private static void writeHeaders(final PrintWriter writer, Message message) {
         for (Map.Entry<String, Header> entry : message.getHeaders().asMapOfHeaders().entrySet()) {
             for (String value : entry.getValue().getValues()) {
                 writer.println(entry.getKey() + ": " + value);
