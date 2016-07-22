@@ -25,7 +25,6 @@ import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 
@@ -424,7 +423,7 @@ public class UmaSharingService {
                 public ShareTemplate.Action apply(final JsonValue value) {
                     return new ShareTemplate.Action(value.get("condition")
                                                          .required()
-                                                         .as(expression(Boolean.class, heap.getProperties())),
+                                                         .as(expression(Boolean.class)),
                                                     value.get("scopes")
                                                          .as(evaluatedWithHeapProperties())
                                                          .asSet(String.class));

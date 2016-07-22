@@ -25,7 +25,6 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -271,10 +270,10 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
 
             Expression<String> usernameExpr = config.get("username")
                                                     .required()
-                                                    .as(expression(String.class, heap.getProperties()));
+                                                    .as(expression(String.class));
             Expression<String> passwordExpr = config.get("password")
                                                     .required()
-                                                    .as(expression(String.class, heap.getProperties()));
+                                                    .as(expression(String.class));
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(usernameExpr, passwordExpr, failureHandler);
 
             filter.cacheHeader = config.get("cacheHeader")

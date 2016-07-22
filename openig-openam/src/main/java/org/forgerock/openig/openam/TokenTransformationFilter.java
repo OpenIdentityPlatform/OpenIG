@@ -212,7 +212,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
 
             Expression<String> idToken = config.get("idToken")
                                                .required()
-                                               .as(expression(String.class, heap.getProperties()));
+                                               .as(expression(String.class));
             Expression<String> target = config.get("target")
                                               .required()
                                               .as(expression(String.class));

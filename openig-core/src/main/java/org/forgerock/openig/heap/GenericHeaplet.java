@@ -34,8 +34,10 @@ import org.forgerock.http.io.Buffer;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.http.EndpointRegistry;
+import org.forgerock.openig.util.JsonValues;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.slf4j.Logger;
@@ -176,5 +178,18 @@ public abstract class GenericHeaplet implements Heaplet {
      */
     protected Function<JsonValue, JsonValue, JsonValueException> evaluatedWithHeapProperties() {
         return evaluated(heap.getProperties());
+    }
+
+    /**
+     * Returns a function that will create an {@link Expression} from the string by the {@link JsonValue} using the
+     * bindings defined in the heap of this Heaplet as initial bindings.
+     *
+     * @param type The expected result type of the {@link Expression}
+     * @param <T> The type of the expression's result.
+     * @return a function that will create an {@link Expression} from the string by the {@link JsonValue} using the
+     * bindings defined in the heap of this Heaplet as initial bindings.
+     */
+    protected <T> Function<JsonValue, Expression<T>, JsonValueException> expression(Class<T> type) {
+        return JsonValues.expression(type, heap.getProperties());
     }
 }

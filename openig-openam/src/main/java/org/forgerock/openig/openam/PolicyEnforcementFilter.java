@@ -500,9 +500,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
                 filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
                 filter.setSsoTokenSubject(config.get("ssoTokenSubject")
-                                                .as(expression(String.class, heap.getProperties())));
+                                                .as(expression(String.class)));
                 filter.setJwtSubject(config.get("jwtSubject")
-                                           .as(expression(String.class, heap.getProperties())));
+                                           .as(expression(String.class)));
                 filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
 
                 if (config.get("ssoTokenSubject").isNull()

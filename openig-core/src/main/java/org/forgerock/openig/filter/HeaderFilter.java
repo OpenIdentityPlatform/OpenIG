@@ -21,7 +21,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.util.List;
 import java.util.Map;
@@ -138,10 +137,11 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
             JsonValue add = config.get("add").defaultTo(emptyMap()).expect(Map.class);
             for (String key : add.keys()) {
                 for (JsonValue value : add.get(key).required().expect(List.class)) {
-                    filter.addedHeaders.add(key, value.required().as(expression(String.class, heap.getProperties())));
+                    filter.addedHeaders.add(key, value.required().as(expression(String.class)));
                 }
             }
             return filter;
         }
+
     }
 }

@@ -23,7 +23,6 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
 import static org.forgerock.util.Utils.closeSilently;
@@ -243,7 +242,7 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
             throw new HeapException("Either 'loginPage' or 'loginPageContentMarker' (or both) must have a value");
         }
 
-        loginPage = hasLoginPage ? config.get("loginPage").as(expression(Boolean.class, heap.getProperties())) : null;
+        loginPage = hasLoginPage ? config.get("loginPage").as(expression(Boolean.class)) : null;
 
         createRequestFilter = (StaticRequestFilter) new StaticRequestFilter.Heaplet()
                 .create(qualified.child("$request-creator"),
