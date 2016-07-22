@@ -11,10 +11,13 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.Semaphore;
 
@@ -25,11 +28,6 @@ import org.forgerock.util.time.TimeService;
  * Only 1 thread at a time can trigger the new scan.
  */
 class PeriodicDirectoryScanner implements DirectoryScanner {
-
-    /**
-     * Default scan interval.
-     */
-    public static final int TEN_SECONDS = 10;
 
     /**
      * Delegate.
@@ -54,7 +52,7 @@ class PeriodicDirectoryScanner implements DirectoryScanner {
     /**
      * Delay between 2 directory scans (expressed in milliseconds).
      */
-    private int scanInterval = TEN_SECONDS * 1000;
+    private long scanInterval = MILLISECONDS.convert(10, SECONDS);
 
     /**
      * Builds a new scanner that will delegates to the given {@link DirectoryScanner}.
@@ -70,7 +68,7 @@ class PeriodicDirectoryScanner implements DirectoryScanner {
      * Sets the delay between 2 directory scans (expressed in milliseconds).
      * @param scanInterval the delay between 2 directory scans (expressed in milliseconds).
      */
-    public void setScanInterval(final int scanInterval) {
+    public void setScanInterval(final long scanInterval) {
         if (scanInterval <= 0) {
             throw new IllegalArgumentException(
                     "interval is expressed in milliseconds and cannot be less or equal to zero"

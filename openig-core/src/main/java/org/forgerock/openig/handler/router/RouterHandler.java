@@ -18,6 +18,7 @@ package org.forgerock.openig.handler.router;
 
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
+import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -37,6 +39,8 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
 import org.forgerock.http.routing.Router;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeapObject;
@@ -48,6 +52,7 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,14 +69,20 @@ import org.slf4j.LoggerFactory;
  *     "config": {
  *       "directory": "/tmp/routes",
  *       "defaultHandler": "404NotFound",
- *       "scanInterval": 2
+ *       "scanInterval": 2 or "2 seconds"
  *     }
  *   }
  *   }
  * </pre>
  *
- * Note that {@literal scanInterval} is defined in seconds. If {@literal -1} (or any negative value) is
- * provided, only an initial scan is performed at startup, synchronously.
+ * Note that {@literal scanInterval} can be defined in 2 ways :
+ * <ul>
+ *     <li>as an integer, which defines the number of seconds. If {@literal -1} (or any negative value) is provided,
+ *     only an initial scan is performed at startup, synchronously.</li>
+ *     <li>as a duration. If "disabled" or "zero" is provided, only an initial scan is performed at startup,
+ *     synchronously.</li>
+ * </ul>
+ * In both cases, the default value is 10 seconds.
  *
  * @since 2.2
  */
@@ -311,7 +322,6 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         @Override
         public Object create() throws HeapException {
-
             // By default, uses the config/routes from the environment
             Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
             File directory = new File(env.getConfigDirectory(), "routes");
@@ -324,17 +334,13 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
             DirectoryScanner scanner = new DirectoryMonitor(directory);
 
-            int period = config.get("scanInterval")
-                               .as(evaluatedWithHeapBindings())
-                               .defaultTo(PeriodicDirectoryScanner.TEN_SECONDS)
-                               .asInteger();
-            if (period > 0) {
+            long scanInterval = scanInterval();
+            if (scanInterval > 0) {
                 TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
                 // Wrap the scanner in another scanner that will trigger scan at given interval
                 PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(scanner, time);
 
-                // configuration values is expressed in seconds, needs to convert it to milliseconds
-                periodic.setScanInterval(period * 1000);
+                periodic.setScanInterval(scanInterval);
                 scanner = periodic;
             } else {
                 // Only scan once when handler.start() is called
@@ -354,6 +360,29 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                                                       scanner);
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
             return handler;
+        }
+
+        private long scanInterval() {
+            JsonValue scanIntervalConfig = config.get("scanInterval")
+                                                 .as(evaluatedWithHeapBindings())
+                                                 .defaultTo("10 seconds");
+            if (scanIntervalConfig.isNumber()) {
+                // Backward compatibility : configuration values is expressed in seconds only
+                Integer scanIntervalSeconds = scanIntervalConfig.asInteger();
+                logger.warn("Prefer to declare to declare the scanInterval configuration setting as a duration "
+                                       + "like this : \"" + scanIntervalSeconds + " seconds\".");
+                if (scanIntervalSeconds == -1) {
+                    return scanIntervalSeconds;
+                }
+                return TimeUnit.MILLISECONDS.convert(scanIntervalSeconds, TimeUnit.SECONDS);
+            } else {
+                Duration scanInterval = scanIntervalConfig.as(duration());
+                if (scanInterval.isUnlimited()) {
+                    throw new JsonValueException(scanIntervalConfig,
+                                                 "unlimited duration is not allowed for the setting scanInterval");
+                }
+                return scanInterval.to(TimeUnit.MILLISECONDS);
+            }
         }
 
         @Override
