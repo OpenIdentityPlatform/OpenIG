@@ -85,13 +85,6 @@
       <groupId>org.forgerock.openig</groupId>
       <artifactId>openig-core</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <!-- Avoid having 2 implementations of SLF4J in the classpath -->
-        <exclusion>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
