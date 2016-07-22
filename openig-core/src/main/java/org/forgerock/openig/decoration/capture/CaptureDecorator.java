@@ -20,10 +20,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.listOf;
-import static org.forgerock.openig.decoration.helper.LazyReference.newReference;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.List;
 import java.util.Set;
@@ -36,12 +33,9 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
-import org.forgerock.openig.decoration.helper.LazyReference;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The capture decorator can decorates both {@link Filter} and {@link Handler} instances. It enables
@@ -74,8 +68,6 @@ import org.forgerock.openig.log.Logger;
  * boolean attribute (default to {@code false}).
  * To capture the context at the capture point as well, use the {@literal captureContext} boolean attribute
  * (default to {@code false}), Note that {@literal captureExchange} is deprecated.
- * The common {@literal logSink} attribute can be used to force message capture in a given sink. By default, messages
- * are sent to the heap object defined LogSink.
  * <p>
  * To decorate a component, just add the decorator declaration next to the {@code config} element:
  * <pre>
@@ -96,28 +88,26 @@ import org.forgerock.openig.log.Logger;
  */
 public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
-    private final LazyReference<LogSink> reference;
+    private final String name;
     private final boolean captureEntity;
     private final boolean captureContext;
 
     /**
-     * Builds a new {@code capture} decorator with the given sink reference (possibly {@code null})
-     * printing (or not) the entity content.
-     * If the {@code sink} is specified (not {@code null}), every message intercepted by this decorator will be
-     * send to the provided sink.
+     * Builds a new {@code capture} decorator.
      *
-     *  @param reference
-     *         Log Sink reference for message capture (may be {@code null})
+     * @param name
+     *            The name of this decorator
      * @param captureEntity
-     *         {@code true} if the decorator needs to capture the entity, {@code false} otherwise
+     *            {@code true} if the decorator needs to capture the entity,
+     *            {@code false} otherwise
      * @param captureContext
-     *         {@code true} if the decorator needs to capture the context,
-     *         {@code false} otherwise
+     *            {@code true} if the decorator needs to capture the context,
+     *            {@code false} otherwise
      */
-    public CaptureDecorator(final LazyReference<LogSink> reference,
+    public CaptureDecorator(final String name,
                             final boolean captureEntity,
                             final boolean captureContext) {
-        this.reference = reference;
+        this.name = name;
         this.captureEntity = captureEntity;
         this.captureContext = captureContext;
     }
@@ -128,7 +118,11 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         Set<CapturePoint> points = getCapturePoints(decoratorConfig, context.getHeap());
         if (!points.isEmpty()) {
             // Only intercept if needed
-            return new CaptureFilter(delegate, buildMessageCapture(context), points);
+            return new CaptureFilter(delegate,
+                                     new MessageCapture(LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                                        captureEntity,
+                                                        captureContext),
+                                     points);
         }
         return delegate;
     }
@@ -139,9 +133,17 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         Set<CapturePoint> points = getCapturePoints(decoratorConfig, context.getHeap());
         if (!points.isEmpty()) {
             // Only intercept if needed
-            return new CaptureHandler(delegate, buildMessageCapture(context), points);
+            return new CaptureHandler(delegate,
+                                      new MessageCapture(LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                                         captureEntity,
+                                                         captureContext),
+                                      points);
         }
         return delegate;
+    }
+
+    private String getDecoratedObjectName(final Context context) {
+        return context.getName().decorated(name).getLeaf();
     }
 
     private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig, final Heap heap) throws HeapException {
@@ -175,38 +177,11 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     }
 
     /**
-     * Builds a new MessageCapture dedicated for the heap object context.
-     *
-     * @param context
-     *         Context of the heap object
-     * @return a new MessageCapture dedicated for the heap object context.
-     * @throws HeapException
-     *         when no logSink can be resolved (very unlikely to happen).
-     */
-    private MessageCapture buildMessageCapture(final Context context) throws HeapException {
-        LogSink sink = (reference == null) ? null : reference.get();
-        if (sink == null) {
-            // Use the sink of the decorated component
-            Heap heap = context.getHeap();
-            sink = context.getConfig()
-                          .get("logSink")
-                          .defaultTo(LOGSINK_HEAP_KEY)
-                          .as(requiredHeapObject(heap, LogSink.class));
-        }
-        Name name = context.getName();
-        return new MessageCapture(new Logger(sink, name.decorated("Capture")), captureEntity, captureContext);
-    }
-
-    /**
      * Creates and initializes a CaptureDecorator in a heap environment.
      */
     public static class Heaplet extends DecoratorHeaplet {
         @Override
         public Decorator create() throws HeapException {
-            LazyReference<LogSink> reference = newReference(heap,
-                                                            config.get("logSink"),
-                                                            LogSink.class,
-                                                            true);
 
             JsonValue evaluated = config.as(evaluated(heap.getBindings()));
             boolean captureEntity = evaluated.get("captureEntity").defaultTo(false).asBoolean();
@@ -219,7 +194,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
             if (evaluated.isDefined("captureContext")) {
                 captureContext = evaluated.get("captureContext").asBoolean();
             }
-            return new CaptureDecorator(reference, captureEntity, captureContext);
+            return new CaptureDecorator(name.getLeaf(), captureEntity, captureContext);
         }
     }
 }
