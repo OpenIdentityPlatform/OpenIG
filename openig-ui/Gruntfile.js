@@ -28,9 +28,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-serve");
 
     var targetDirectory = "target/www",
-        compositionDirectory = "target/composition",
         testTargetDirectory = "target/test",
-        sourceDirectory = "src/main/js",
+        compositionDirectory = "target/compose",
+        testCompositionDirectory = "target/testcompose",
         watchDirs = [
             "src/main/js",
             "src/main/resources"
@@ -41,6 +41,11 @@ module.exports = function (grunt) {
         ],
         transpiledFiles = [
             "**/*.js"
+        ],
+        staticFiles = [
+            "**/*",
+            "!**/*.less",
+            "!**/*.js"
         ];
 
     grunt.initConfig({
@@ -64,11 +69,11 @@ module.exports = function (grunt) {
              */
             compile: {
                 files: [{
-                    src: targetDirectory + "/css/structure.less",
+                    src: compositionDirectory + "/css/structure.less",
                     dest: targetDirectory + "/css/structure.css"
                 },
                 {
-                    src: targetDirectory + "/css/theme.less",
+                    src: compositionDirectory + "/css/theme.less",
                     dest: targetDirectory + "/css/theme.css"
                 }],
                 options: {
@@ -90,8 +95,8 @@ module.exports = function (grunt) {
              */
             compile: {
                 options: {
-                    baseUrl: targetDirectory,
-                    mainConfigFile: sourceDirectory + "/main.js",
+                    baseUrl: compositionDirectory,
+                    mainConfigFile: compositionDirectory + "/main.js",
                     out: targetDirectory + "/main.js",
                     include: ["main"],
                     preserveLicenseComments: false,
@@ -109,49 +114,85 @@ module.exports = function (grunt) {
                 }
             }
         },
-        /* notify_hooks: {
+        notify_hooks: {
             options: {
                 enabled: true,
                 title: "ForgeRock UI QUnit Tests"
             }
-        },*/
+        },
         /**
          * Sync is used during development.
          */
         sync: {
             /**
-             * Copy all the sources and resources from this project and all dependencies into the target directory.
+             * Copy all the sources and resources from this project to compose folder
              */
-            source: {
+            compose: {
                 files: watchDirs.map(function (dir) {
                     return {
                         cwd: dir,
                         src: ["**"],
-                        dest: targetDirectory
-                    };
-                }),
-                verbose: true,
-                compareUsing: "md5"
-            },
-            babel: {
-                files: watchDirs.map(function (dir) {
-                    return {
-                        cwd: dir,
-                        src: transpiledFiles,
                         dest: compositionDirectory
                     };
                 }),
-                verbose: true,
+                verbose: false,
                 compareUsing: "md5"
             },
-            test: {
+            /**
+             * Copy all the test sources and resources from this project to compose folder
+             */
+            composetest: {
                 files: testWatchDirs.map(function (dir) {
                     return {
                         cwd: dir,
                         src: ["**"],
+                        dest: testCompositionDirectory
+                    };
+                }),
+                verbose: false,
+                compareUsing: "md5"
+            },
+            /**
+             * Copy static files from compose folder to target
+             */
+            staticfiles: {
+                files: [{
+                    cwd: compositionDirectory,
+                    src: staticFiles,
+                    dest: targetDirectory
+                }],
+                verbose: true,
+                compareUsing: "md5"
+            },
+             /**
+             * Copy static test files from compose folder to target
+             */
+            test: {
+                files: testWatchDirs.map(function (dir) {
+                    return {
+                        cwd: dir,
+                        src: staticFiles,
                         dest: testTargetDirectory
                     };
                 }),
+                verbose: true,
+                compareUsing: "md5"
+            },
+            transpiledfiles: {
+                files: [{
+                    cwd: compositionDirectory,
+                    src: transpiledFiles,
+                    dest: targetDirectory
+                }],
+                verbose: true,
+                compareUsing: "md5"
+            },
+            transpiledtestfiles: {
+                files: [{
+                    cwd: testCompositionDirectory,
+                    src: transpiledFiles,
+                    dest: testTargetDirectory
+                }],
                 verbose: true,
                 compareUsing: "md5"
             }
@@ -177,27 +218,74 @@ module.exports = function (grunt) {
             options: {
                 livereload: true,
                 serve: {
-                    path: "target/www"
+                    path: targetDirectory
                 },
                 port: 9000
             }
         },
         babel: {
-            transpile: {
-                files: [{
-                    expand: true,
-                    cwd: compositionDirectory,
-                    src: transpiledFiles,
-                    dest: targetDirectory
-                }]
+            options: {
+                env: {
+                    development: {
+                        sourceMaps: true
+                    }
+                },
+                ignore: ["libs/"],
+                presets: ["es2015"]
+            },
+            source: {
+                files: watchDirs.map(function (dir) {
+                    return {
+                        expand: true,
+                        cwd: dir,
+                        src: transpiledFiles,
+                        dest: compositionDirectory
+                    };
+                })
+            },
+            test: {
+                files: testWatchDirs.map(function (dir) {
+                    return {
+                        expand: true,
+                        cwd: dir,
+                        src: transpiledFiles,
+                        dest: testCompositionDirectory
+                    };
+                })
             }
         }
     });
 
-    grunt.registerTask("build", ["eslint", "less", "babel", "requirejs"]);
-    grunt.registerTask("build-dev", ["sync", "less", "babel", "qunit"]);
+    grunt.registerTask("build", [
+        "eslint",
+        "sync:compose",
+        "sync:staticfiles",
+        "less",
+        "sync:test",
+        "sync:composetest",
+        "babel",
+        "sync:transpiledfiles",
+        "sync:transpiledtestfiles",
+        "qunit",
+        "requirejs"
+    ]);
+
+    grunt.registerTask("build-dev", [
+        "eslint",
+        "sync:compose",
+        "sync:staticfiles",
+        "less",
+        "sync:test",
+        "sync:composetest",
+        "babel",
+        "sync:transpiledfiles",
+        "sync:transpiledtestfiles",
+        "qunit"
+    ]);
+
     grunt.registerTask("dev", ["build-dev", "watch"]);
-    grunt.registerTask("dev-web", ["sync", "less", "serve"]);
-    grunt.registerTask("web", "dev-web"); // use Serve module for local development
+    grunt.registerTask("web", ["serve"]); // use Serve module for local development
     grunt.registerTask("default", "dev");
+
+    grunt.task.run("notify_hooks");
 };

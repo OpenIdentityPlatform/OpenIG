@@ -15,7 +15,8 @@
  */
 
 // core files needed during startup
-define([
+// eslint-disable-next-line requirejs/no-named-define
+define("org/forgerock/openig/ui/main", [
     "./common/util/Constants",
     "./common/delegates/SiteConfigurationDelegate",
     "./common/main/MockServer",

@@ -109,7 +109,7 @@
                   <classifier>www</classifier>
                 </artifactItem>
               </artifactItems>
-              <outputDirectory>${project.build.directory}/www</outputDirectory>
+              <outputDirectory>${project.build.directory}/compose</outputDirectory>
             </configuration>
           </execution>
           <execution>
@@ -122,7 +122,7 @@
               <includeGroupIds>org.forgerock.commons.ui.libs</includeGroupIds>
               <excludeArtifactIds>less,qunit,r</excludeArtifactIds>
               <includeTypes>js</includeTypes>
-              <outputDirectory>${project.build.directory}/www/libs</outputDirectory>
+              <outputDirectory>${project.build.directory}/compose/libs</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -138,7 +138,7 @@
               <includeGroupIds>org.forgerock.commons.ui.libs</includeGroupIds>
               <excludeArtifactIds>qunit</excludeArtifactIds>
               <includeTypes>css</includeTypes>
-              <outputDirectory>${project.build.directory}/www/css</outputDirectory>
+              <outputDirectory>${project.build.directory}/compose/css</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>

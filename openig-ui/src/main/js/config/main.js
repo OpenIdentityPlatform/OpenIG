@@ -14,7 +14,8 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define([
+// eslint-disable-next-line requirejs/no-named-define
+define("config/main", [
     "./routes/CommonRoutesConfig",
     "./routes/UserRoutesConfig",
     "./routes/OpenIGRoutesConfig",
