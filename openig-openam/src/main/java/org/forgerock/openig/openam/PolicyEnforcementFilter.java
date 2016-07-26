@@ -147,7 +147,7 @@ import org.forgerock.util.time.Duration;
  *      "config": {
  *          "openamUrl": "http://example.com:8090/openam/",
  *          "pepUsername": "bjensen",
- *          "pepPassword": "${attributes.userpass}",
+ *          "pepPassword": "${system['pep.password']}",
  *          "application": "myApplication",
  *          "ssoTokenSubject": "${attributes.SSOCurrentUser}",
  *          "claimsSubject": "${attributes.claimsSubject}",
