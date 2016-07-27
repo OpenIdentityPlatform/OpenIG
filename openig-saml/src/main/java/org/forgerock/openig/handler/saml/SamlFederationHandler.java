@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -251,13 +250,15 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
      *            SAML assertion content
      */
     private void addAttributesToSession(final Session session, Map<?, ?> assertion) {
-        Map<?, ?> attributeStatement = (Map<?, ?>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
-        if (attributeStatement != null) {
+        @SuppressWarnings("unchecked")
+        Map<String, Set<String>> attributeStatement =
+                (Map<String, Set<String>>) assertion.get(SAML2Constants.ATTRIBUTE_MAP);
+        if (attributeStatement != null && !attributeStatement.isEmpty()) {
             for (String key : attributeMapping.keySet()) {
-                Set<?> t = (HashSet<?>) attributeStatement.get(attributeMapping.get(key));
-                if (t != null) {
-                    String sessionValue = (String) t.iterator().next();
-                    session.put(key, sessionValue);
+                Set<String> values = attributeStatement.get(attributeMapping.get(key));
+                if (values != null && !values.isEmpty()) {
+                    // Add the attribute values as an Array of strings.
+                    session.put(key, new ArrayList<>(values));
                 } else {
                     logger.warn("addAttributesToSession: Warning no assertion attribute found for : {}",
                                 attributeMapping.get(key));
