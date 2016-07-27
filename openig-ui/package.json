@@ -25,6 +25,6 @@
     "requirejs": "2.2.0"
   },
   "dependencies": {
-    "dragula": "3.6.8"
+    "dragula": "3.6.7"
   }
 }
