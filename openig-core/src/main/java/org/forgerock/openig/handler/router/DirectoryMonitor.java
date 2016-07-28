@@ -16,10 +16,18 @@
 
 package org.forgerock.openig.handler.router;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.util.Arrays.asList;
+import static org.forgerock.json.JsonValue.json;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +35,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.forgerock.http.util.Json;
+import org.forgerock.json.JsonValue;
+import org.forgerock.util.annotations.VisibleForTesting;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A {@link DirectoryMonitor} monitors a given directory. It watches the direct content (changes inside
@@ -45,6 +61,12 @@ import java.util.Set;
  */
 class DirectoryMonitor {
 
+    private static final ObjectMapper MAPPER;
+    static {
+        MAPPER = new ObjectMapper().registerModules(new Json.JsonValueModule());
+        MAPPER.configure(INDENT_OUTPUT, true);
+    }
+
     /**
      * Monitored directory.
      */
@@ -55,6 +77,8 @@ class DirectoryMonitor {
      * value. It represents the currently "managed" files.
      */
     private final Map<File, Long> snapshot;
+
+    private Lock lock = new ReentrantLock();
 
     /**
      * Builds a new monitor watching for changes in the given {@literal directory} that will notify the given listener.
@@ -70,23 +94,41 @@ class DirectoryMonitor {
     /**
      * Builds a new monitor watching for changes in the given {@literal directory} that will notify the given listener.
      * This constructor is intended for test cases where it's useful to provide an initial state under control.
-     *
      * @param directory
      *         a non-{@literal null} directory (it may or may not exist) to monitor
      * @param snapshot
-     *         initial state of the snapshot
      */
-    public DirectoryMonitor(final File directory,
-                            final Map<File, Long> snapshot) {
+    public DirectoryMonitor(final File directory, final Map<File, Long> snapshot) {
         this.directory = directory;
         this.snapshot = snapshot;
+    }
+
+    /**
+     * Monitor the directory and notify the listener.
+     * @param listener the listener to notify about the changes
+     */
+    public void monitor(FileChangeListener listener) {
+        if (lock.tryLock()) {
+            try {
+                FileChangeSet fileChangeSet = createFileChangeSet();
+                if (fileChangeSet.isEmpty()) {
+                    // If there is no change to propagate, simply return
+                    return;
+                }
+                // Invoke listeners
+                listener.onChanges(fileChangeSet);
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 
     /**
      * Returns a snapshot of the changes compared to the previous scan.
      * @return a snapshot of the changes compared to the previous scan.
      */
-    public FileChangeSet scan() {
+    @VisibleForTesting
+    FileChangeSet createFileChangeSet() {
         // Take a snapshot of the current directory
         List<File> latest = Collections.emptyList();
         if (directory.isDirectory()) {
@@ -148,5 +190,48 @@ class DirectoryMonitor {
         };
     }
 
+    void store(String routeId, JsonValue routeConfig) throws IOException {
+        lock.lock();
+        try {
+            File routeFile = routeFile(routeId);
+            try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(routeFile),
+                                                                    StandardCharsets.UTF_8)) {
+                writer.write(MAPPER.writeValueAsString(routeConfig.getObject()));
+            }
+            // Update the snapshot so it is not detected during the next scan
+            snapshot.put(routeFile, routeFile.lastModified());
+        } finally {
+            lock.unlock();
+        }
+    }
 
+    void delete(String routeId) {
+        lock.lock();
+        try {
+            File routeFile = routeFile(routeId);
+            if (routeFile.delete()) {
+                // Update the snapshot so it is not detected during the next scan
+                snapshot.remove(routeFile);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    JsonValue read(String routeId) throws IOException {
+        lock.lock();
+        try {
+            File routeFile = routeFile(routeId);
+            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(routeFile),
+                                                                  StandardCharsets.UTF_8)) {
+                return json(MAPPER.readValue(reader, Object.class));
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private File routeFile(String routeId) {
+        return new File(directory, routeId + ".json");
+    }
 }

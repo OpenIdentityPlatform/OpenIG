@@ -16,12 +16,10 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
-import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
@@ -31,12 +29,7 @@ import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
-import static org.forgerock.util.Utils.closeSilently;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,34 +81,15 @@ class RouteBuilder {
     }
 
     /**
-     * Builds a new route from the given resource file.
+     * Builds a new route from the given configuration.
      *
-     * @param resource route definition
+     * @param config the JSON route configuration
      * @return a new configured Route
      * @throws HeapException if the new Route cannot be build
      */
-    Route build(final File resource) throws HeapException {
-        final JsonValue config = readJson(resource);
-        final Name routeHeapName = this.name.child(resource.getPath());
-        final String defaultRouteName = withoutDotJson(resource.getName());
-
-        return build(config, routeHeapName, defaultRouteName);
-    }
-
-    private static String withoutDotJson(final String path) {
-        return path.substring(0, path.length() - ".json".length());
-    }
-
-    /**
-     * Builds a new route from the given resource file.
-     *
-     * @param config route definition
-     * @return a new configured Route
-     * @throws HeapException if the new Route cannot be build
-     */
-    Route build(final JsonValue config, final Name routeHeapName, final String defaultRouteName) throws HeapException {
+    Route build(final String routeId, final String routeName, final JsonValue config) throws HeapException {
+        final Name routeHeapName = this.name.child(routeName);
         final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
-        final String routeName = config.get("name").defaultTo(defaultRouteName).asString();
 
         final Router thisRouteRouter = new Router();
         thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
@@ -123,19 +97,20 @@ class RouteBuilder {
         final Router objects = new Router();
         objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
 
-        final String slug = slug(routeName);
+        final String slug = slug(routeId);
         // Preemptively get the endpoint path, without actually registering the routes/my-route router
         EndpointRegistry routeRegistry = new EndpointRegistry(thisRouteRouter, registry.pathInfo(slug));
         EndpointRegistry.Registration objectsReg = routeRegistry.register("objects", objects);
+
         routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects, objectsReg.getPath()));
 
         try {
-            routeHeap.init(config, "handler", "session", "name", "condition", "auditService", "globalDecorators",
+            routeHeap.init(config.copy(), "handler", "session", "name", "condition", "auditService", "globalDecorators",
                            "monitor", "bindings");
 
             Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class));
 
-            if (!slug.equals(routeName)) {
+            if (!slug.equals(routeId)) {
                 logger.warn("Route name ('{}') has been transformed to a URL-friendly name ('{}') that is "
                                     + "exposed in endpoint URLs. To prevent this message, "
                                     + "consider renaming your route with the transformed name, "
@@ -144,7 +119,8 @@ class RouteBuilder {
                             slug);
             }
 
-            return new Route(setupRouteHandler(routeHeap, config, routeRegistry), routeName, condition) {
+            Handler routeHandler = setupRouteHandler(routeHeap, config, routeRegistry);
+            return new Route(routeHandler, routeId, routeName, config, condition) {
 
                 private EndpointRegistry.Registration registration;
 
@@ -247,29 +223,6 @@ class RouteBuilder {
             mc.setEnabled(evaluatedConfig.defaultTo(false).asBoolean());
         }
         return mc;
-    }
-
-    /**
-     * Reads the raw Json content from the route's definition file.
-     *
-     * @param resource
-     *            The route definition file.
-     * @return Json structure
-     * @throws HeapException
-     *             if there are IO or parsing errors
-     */
-    private JsonValue readJson(final File resource) throws HeapException {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(resource);
-            return new JsonValue(readJsonLenient(fis));
-        } catch (FileNotFoundException e) {
-            throw new HeapException(format("File %s does not exist", resource), e);
-        } catch (IOException e) {
-            throw new HeapException(format("Cannot read/parse content of %s", resource), e);
-        } finally {
-            closeSilently(fis);
-        }
     }
 
     private static class MonitorConfig {

@@ -17,6 +17,8 @@
 package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -99,7 +101,7 @@ public class RouteTest {
     }
 
     private Route createRoute(final Expression<Boolean> condition) {
-        return new Route(handler, ROUTE_NAME, condition) {
+        return new Route(handler, ROUTE_NAME, ROUTE_NAME, json(object()), condition) {
             @Override
             public void start() { }
             @Override
