@@ -109,7 +109,10 @@
             "deleteDialog": "Do you want to delete application '__title__' ?",
             "deployDialog":"Deploy application '__title__' ?",
             "undeployDialog": "Undeploy application '__title__' ?",
-            "duplicateDialog":"Duplicate application '__title__' ?"
+            "duplicateDialog":"Duplicate application '__title__' ?",
+            "changesPending": "Changes pending",
+            "appSettings": "App settings",
+            "moreOptions": "More options"
         },
         "settings":{
             "settingsTitle": "Settings",

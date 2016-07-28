@@ -1,0 +1,198 @@
+/**
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2016 ForgeRock AS.
+ */
+ 
+.right-separator {
+    display: inline-block;
+    border-right: 1px solid #ddd;
+    padding-right: 15px;
+}
+
+.page-header-min.page-header-docked {
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+    background-color: #F9F9F9;
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+.page-header-min {
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+    h3 {
+        border: none;
+        font-size: 18px;
+        /* text-transform: uppercase; */
+        font-weight: 300;
+        letter-spacing: 1px;
+        color: #666;
+        padding: 30px 0 10px;
+        margin-top: 0;
+        margin-bottom: 5px;
+        height: auto;
+    }
+}
+.page-header {
+    border-bottom: none;
+    position: relative;
+    padding-bottom: 0;
+    margin-bottom: 30px;
+}
+
+.page-header-min.page-header-docked h3 {
+    padding: 20px 0 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    float: none;
+}
+
+/* Buttons */
+.btn {
+    -webkit-transition: background-color 0.1s linear;
+    -moz-transition: background-color 0.1s linear;
+    -o-transition: background-color 0.1s linear;
+    transition: background-color 0.1s linear;
+}
+.btn-link,
+.btn.dropdown-toggle {
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.btn-flag .img-thumbnail {
+    border: none;
+}
+.row.no-gutters {
+    margin-right: 0;
+    margin-left: 0;
+}
+.row.no-gutters>.col-xs-1, 
+.row.no-gutters>.col-sm-1, 
+.row.no-gutters>.col-md-1, 
+.row.no-gutters>.col-lg-1, 
+.row.no-gutters>.col-xs-2, 
+.row.no-gutters>.col-sm-2, 
+.row.no-gutters>.col-md-2, 
+.row.no-gutters>.col-lg-2, 
+.row.no-gutters>.col-xs-3, 
+.row.no-gutters>.col-sm-3, 
+.row.no-gutters>.col-md-3, 
+.row.no-gutters>.col-lg-3, 
+.row.no-gutters>.col-xs-4, 
+.row.no-gutters>.col-sm-4, 
+.row.no-gutters>.col-md-4, 
+.row.no-gutters>.col-lg-4, 
+.row.no-gutters>.col-xs-5, 
+.row.no-gutters>.col-sm-5, 
+.row.no-gutters>.col-md-5, 
+.row.no-gutters>.col-lg-5, 
+.row.no-gutters>.col-xs-6, 
+.row.no-gutters>.col-sm-6, 
+.row.no-gutters>.col-md-6, 
+.row.no-gutters>.col-lg-6, 
+.row.no-gutters>.col-xs-7, 
+.row.no-gutters>.col-sm-7, 
+.row.no-gutters>.col-md-7, 
+.row.no-gutters>.col-lg-7, 
+.row.no-gutters>.col-xs-8, 
+.row.no-gutters>.col-sm-8, 
+.row.no-gutters>.col-md-8, 
+.row.no-gutters>.col-lg-8, 
+.row.no-gutters>.col-xs-9, 
+.row.no-gutters>.col-sm-9, 
+.row.no-gutters>.col-md-9, 
+.row.no-gutters>.col-lg-9, 
+.row.no-gutters>.col-xs-10, 
+.row.no-gutters>.col-sm-10, 
+.row.no-gutters>.col-md-10, 
+.row.no-gutters>.col-lg-10, 
+.row.no-gutters>.col-xs-11, 
+.row.no-gutters>.col-sm-11, 
+.row.no-gutters>.col-md-11, 
+.row.no-gutters>.col-lg-11, 
+.row.no-gutters>.col-xs-12, 
+.row.no-gutters>.col-sm-12, 
+.row.no-gutters>.col-md-12, 
+.row.no-gutters>.col-lg-12 {
+    padding: 0;
+}
+.btn-default {
+    background-color: transparent;
+    color: #555;
+}
+.btn-secondary {
+    border-color: #519387;
+    color: #519387;
+    background-color: transparent;
+}
+.btn-secondary.btn-danger {
+    border-color: #d43f3a;
+    color: #a94442;
+}
+.btn-secondary.btn-danger:hover, .btn-secondary.btn-danger:focus {
+    color: #863635;
+    border-color: #ac2925;
+    background-color: #f7f7f7;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+    color: #3f7269;
+    border-color: #3f7269;
+    background-color: #f7f7f7;
+}
+.btn-secondary.disabled, .btn-secondary[disabled], fieldset[disabled] .btn-secondary, .btn-secondary.disabled:hover, .btn-secondary[disabled]:hover, fieldset[disabled] .btn-secondary:hover, .btn-secondary.disabled:focus, .btn-secondary[disabled]:focus, fieldset[disabled] .btn-secondary:focus, .btn-secondary.disabled.focus, .btn-secondary[disabled].focus, fieldset[disabled] .btn-secondary.focus, .btn-secondary.disabled:active, .btn-secondary[disabled]:active, fieldset[disabled] .btn-secondary:active, .btn-secondary.disabled.active, .btn-secondary[disabled].active, fieldset[disabled] .btn-secondary.active {
+    background-color: transparent;
+    border-color: #519387;
+    color: #519385 !important;
+}
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary.focus, .btn-secondary:active, .btn-secondary.active, .open>.dropdown-toggle.btn-secondary {
+    border-color: #325b54;
+    color: #3f7269;
+    background-color: #f7f7f7;
+}
+.btn-sq {
+    border-radius: 0;
+}
+.btn-xl, .btn-group-xl>.btn {
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.3333333;
+    border-radius: 6px;
+}
+
+.page-header-min.page-header-docked .toolbar .btn {
+    border-color: transparent;
+}
+.btn-default {
+    background-color: transparent;
+    color: #555;
+}
+
+.page-header-min.page-header-docked .toolbar {
+    padding: 14px 0;
+    position: absolute;
+    right: 0;
+}
+
+.page-header-min .navbar-toggle {
+    float: left;
+    margin: 12px 6px 0 0;
+}
+
+.page-header-min .navbar-toggle .icon-bar {
+    background-color: #777;
+}
