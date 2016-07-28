@@ -21,8 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.http.MutableUri.uri;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
@@ -31,6 +33,7 @@ import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEF
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +127,8 @@ public class RouteBuilderTest {
     @Test(description = "OPENIG-329")
     public void testHandlerCanBeInlinedWithNoHeap() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("inlined-handler-route.json"));
+        File testResourceFile = getTestResourceFile("inlined-handler-route.json");
+        Route route = buildRoute(builder, testResourceFile);
 
         Context context = new RootContext();
 
@@ -143,21 +147,19 @@ public class RouteBuilderTest {
 
     @Test
     public void testUnnamedRouteLoading() throws Exception {
-        RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("route.json"));
-        assertThat(route.getName()).isEqualTo("route");
+        buildRoute(newRouteBuilder(), getTestResourceFile("route.json"));
     }
 
     @Test(expectedExceptions = JsonValueException.class)
     public void testMissingHandlerRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        builder.build(getTestResourceFile("missing-handler-route.json"));
+        buildRoute(builder, getTestResourceFile("missing-handler-route.json"));
     }
 
     @Test
     public void testConditionalRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("conditional-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("conditional-route.json"));
         route.start();
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -170,7 +172,7 @@ public class RouteBuilderTest {
     @Test
     public void testNamedRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("named-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("named-route.json"));
         route.start();
         assertThat(route.getName()).isEqualTo("my-route");
     }
@@ -181,7 +183,7 @@ public class RouteBuilderTest {
         RouteBuilder builder = newRouteBuilder(router);
 
         try {
-            builder.build(routeConfiguration, Name.of("invalidRoute"), "default");
+            buildRoute(builder, routeConfiguration);
             fail("Must throw an exception");
         } catch (HeapException | RuntimeException ex) {
             // Ensure that the route's heap we tried to load was destroyed
@@ -195,7 +197,7 @@ public class RouteBuilderTest {
     @Test
     public void testRouteDestroy() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(new File(getTestResourceDirectory("routes"), "destroy-test.json"));
+        Route route = buildRoute(builder, new File(getTestResourceDirectory("routes"), "destroy-test.json"));
         route.start();
 
         assertThat(DestroyDetectHandler.destroyed).isFalse();
@@ -206,7 +208,7 @@ public class RouteBuilderTest {
     @Test
     public void testRebaseUriRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("rebase-uri-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("rebase-uri-route.json"));
         route.start();
 
         Context context = new RootContext();
@@ -221,7 +223,7 @@ public class RouteBuilderTest {
     @Test
     public void testSessionRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("session-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("session-route.json"));
         route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -240,7 +242,7 @@ public class RouteBuilderTest {
     @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = builder.build(getTestResourceFile("session-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("session-route.json"));
         route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -265,7 +267,7 @@ public class RouteBuilderTest {
 
         Router router = new Router();
         RouteBuilder builder = newRouteBuilder(router);
-        Route route = builder.build(getTestResourceFile("api-registration.json"));
+        Route route = buildRoute(builder, getTestResourceFile("api-registration.json"));
         route.start();
 
         // Ensure that api endpoint is working
@@ -287,7 +289,7 @@ public class RouteBuilderTest {
     public void testMonitoringIsEnabled() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
-        Route route = builder.build(getTestResourceFile("monitored-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("monitored-route.json"));
         route.start();
 
         Request request = new Request().setMethod("GET").setUri("/monitored/monitoring");
@@ -302,7 +304,7 @@ public class RouteBuilderTest {
     public void testMonitoringIsDisabledByDefault() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
-        Route route = builder.build(getTestResourceFile("not-monitored-route.json"));
+        Route route = buildRoute(builder, getTestResourceFile("not-monitored-route.json"));
         route.start();
 
         Request request = new Request().setMethod("GET").setUri("/not-monitored-route/monitoring");
@@ -316,37 +318,31 @@ public class RouteBuilderTest {
         // @Checkstyle:off
         return new Object[][] {
                 // config, expectations: enabled, percentiles
-                { json(object(field("handler", "Forwarder"))), false, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", true))), true, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", false))), false, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", "${true}"))), true, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", object(field("enabled", true))))), true, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", object(field("enabled", false))))), false, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", object(field("enabled", "${true}"))))), true, DEFAULT_PERCENTILES },
-                { json(object(field("handler", "Forwarder"),
-                              field("monitor", object(field("enabled", true),
-                                                      field("percentiles", array(0.1)))))),
-                  true,
-                  singletonList(0.1d) },
+                { null, false, DEFAULT_PERCENTILES },
+                { true, true, DEFAULT_PERCENTILES },
+                { false, false, DEFAULT_PERCENTILES },
+                { "${true}", true, DEFAULT_PERCENTILES },
+                { object(field("enabled", true)), true, DEFAULT_PERCENTILES },
+                { object(field("enabled", false)), false, DEFAULT_PERCENTILES },
+                { object(field("enabled", "${true}")), true, DEFAULT_PERCENTILES },
+                { object(field("enabled", true),
+                         field("percentiles", array(0.1))), true, singletonList(0.1d) },
         };
         // @Checkstyle:on
     }
 
     @Test(dataProvider = "monitoredRouteConfigs")
-    public void testMonitoringConfiguration(final JsonValue config,
+    public void testMonitoringConfiguration(final Object monitorConfig,
                                             final boolean enabled,
                                             final List<Double> percentiles) throws Exception {
         //Given
+        JsonValue routeConfig = json(object(field("name", "route"),
+                                            field("handler", "Forwarder"),
+                                            fieldIfNotNull("monitor", monitorConfig)));
         Router router = new Router();
         heap.put("Forwarder", new ResponseHandler(Status.ACCEPTED));
         RouteBuilder builder = newRouteBuilder(router);
-        Route route = builder.build(config, Name.of("route"), "route");
+        Route route = buildRoute(builder, routeConfig);
         route.start();
 
         // When
@@ -364,6 +360,23 @@ public class RouteBuilderTest {
         } else {
             assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         }
+    }
+
+    private Route buildRoute(RouteBuilder builder, File testResourceFile) throws HeapException, IOException {
+        try (FileInputStream fis = new FileInputStream(testResourceFile)) {
+            return buildRoute(builder, new JsonValue(readJsonLenient(fis)), testResourceFile.getName());
+        }
+    }
+
+    private Route buildRoute(RouteBuilder builder, JsonValue routeConfig) throws HeapException, IOException {
+        return buildRoute(builder, routeConfig, null);
+    }
+
+    private Route buildRoute(RouteBuilder builder, JsonValue routeConfig, String defaultRouteName)
+            throws HeapException, IOException {
+        JsonValue routeName = routeConfig.get("name");
+        routeName = defaultRouteName != null ? routeName.defaultTo(defaultRouteName) : routeName.required();
+        return builder.build(routeName.asString(), routeName.asString(), routeConfig);
     }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {

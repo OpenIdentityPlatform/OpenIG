@@ -16,7 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -24,23 +24,26 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
@@ -53,6 +56,7 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -63,7 +67,13 @@ public class RouterHandlerTest {
     private HeapImpl heap;
 
     @Mock
-    private DirectoryScanner scanner;
+    private ScheduledExecutorService scheduledExecutorService;
+
+    @Mock
+    private ScheduledFuture scheduledFuture;
+
+    @Mock
+    private Logger logger;
 
     private File routes;
 
@@ -72,6 +82,7 @@ public class RouterHandlerTest {
         MockitoAnnotations.initMocks(this);
         routes = getTestResourceDirectory("routes");
         heap = buildDefaultHeap();
+        heap.put(Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, scheduledExecutorService);
     }
 
     @AfterMethod
@@ -79,17 +90,16 @@ public class RouterHandlerTest {
         DestroyDetectHandler.destroyed = false;
     }
 
-    private RouteBuilder newRouterBuilder() {
+    private RouteBuilder newRouteBuilder() {
         return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(new Router(), "/"));
     }
 
     @Test
     public void testStoppingTheHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(newRouterBuilder());
-        DirectoryMonitor monitor = new DirectoryMonitor(routes);
-        handler.onChanges(monitor.scan());
+        DirectoryMonitor directoryMonitor = new DirectoryMonitor(routes);
+        RouterHandler handler = new RouterHandler(newRouteBuilder(), directoryMonitor);
+        directoryMonitor.monitor(handler);
 
-        // Initial scan
         assertThat(DestroyDetectHandler.destroyed).isFalse();
         handler.stop();
         assertThat(DestroyDetectHandler.destroyed).isTrue();
@@ -97,11 +107,9 @@ public class RouterHandlerTest {
 
     @Test
     public void testDefaultHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(newRouterBuilder());
-        DirectoryMonitor monitor = new DirectoryMonitor(routes);
-
-        // Initial scan
-        handler.onChanges(monitor.scan());
+        DirectoryMonitor directoryMonitor = new DirectoryMonitor(routes);
+        RouterHandler handler = new RouterHandler(newRouteBuilder(), directoryMonitor);
+        directoryMonitor.monitor(handler);
 
         // Verify that the initial route is active
         assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
@@ -130,7 +138,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
-        RouterHandler router = new RouterHandler(newRouterBuilder());
+        RouterHandler router = new RouterHandler(newRouteBuilder(), new DirectoryMonitor(null));
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
@@ -151,34 +159,25 @@ public class RouterHandlerTest {
                                            Collections.singleton(before)));
 
         router.handle(context, new Request()).getOrThrow();
-
     }
 
-    @Test
-    public void testDeploymentOfRouteWithSameNameFailsSecondDeploymentAndOnlyActivateFirstRoute() throws Exception {
-        RouterHandler router = new RouterHandler(newRouterBuilder());
+    @Test(expectedExceptions = RouterHandlerException.class)
+    public void testLoadingOfRouteWithSameNameFailsSecondDeploymentAndOnlyActivateFirstRoute() throws Exception {
+        DirectoryMonitor directoryMonitor = new DirectoryMonitor(routes);
+        RouterHandler handler = new RouterHandler(newRouteBuilder(), directoryMonitor);
+        directoryMonitor.monitor(handler);
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
         File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
 
-        // Register both routes
-        router.onChanges(new FileChangeSet(null,
-                                           new HashSet<>(asList(first, second)),
-                                           Collections.<File>emptySet(),
-                                           Collections.<File>emptySet()));
-    }
+        JsonValue routeConfig = json(object(field("handler",
+                                           object(field("type",
+                                                        "org.forgerock.openig.handler.router.StatusHandler"),
+                                                  field("config", object(field("status", 200)))))));
 
-    @Test
-    public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
-        RouteBuilder builder = spy(newRouterBuilder());
-        RouterHandler router = new RouterHandler(builder);
-
-        doThrow(new NullPointerException()).when(builder).build(any(File.class));
-
-        router.onChanges(new FileChangeSet(null,
-                                           Collections.singleton(new File("/")),
-                                           Collections.<File>emptySet(),
-                                           Collections.<File>emptySet()));
+        // Load both routes
+        handler.load("id1", "route-name", routeConfig.copy());
+        handler.load("id2", "route-name", routeConfig.copy());
     }
 
     @Test
@@ -186,6 +185,7 @@ public class RouterHandlerTest {
         Router router = new Router();
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put(Keys.ENVIRONMENT_HEAP_KEY, new DefaultEnvironment(new File("dont-care")));
+        heap.put(Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, Executors.newScheduledThreadPool(1));
 
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
@@ -197,31 +197,58 @@ public class RouterHandlerTest {
         // Ping the 'routes' and intermediate endpoints
         assertStatusOnUri(router, "/this-router", Status.NO_CONTENT);
         assertStatusOnUri(router, "/this-router/routes", Status.NO_CONTENT);
-        assertStatusOnUri(router, "/this-router/routes/route-with-name", Status.NO_CONTENT);
-        assertStatusOnUri(router, "/this-router/routes/route-with-name/objects", Status.NO_CONTENT);
-        assertStatusOnUri(router, "/this-router/routes/route-with-name/objects/register", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/with-name", Status.OK);
+        assertStatusOnUri(router, "/this-router/routes/with-name/objects", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/with-name/objects/register", Status.NO_CONTENT);
 
         // Ensure that this RouterHandler /routes endpoint is working
-        Request request1 = new Request().setUri("/this-router/routes/route-with-name/objects/register/ping");
-        Response response1 = router.handle(new RootContext(), request1).get();
+        Request request1 = new Request().setUri("/this-router/routes/with-name/objects/register/ping");
+        Response response1 = router.handle(context(), request1).get();
         assertThat(response1.getEntity().getString()).isEqualTo("Pong");
 
         // Here's an URI when no heap object name is provided
         String uri = "/this-router/routes/without-name/objects"
                 + "/orgforgerockopenighandlerrouterroutebuildertestregisterroutehandler-handler/ping";
         Request request2 = new Request().setUri(uri);
-        Response response2 = router.handle(new RootContext(), request2).get();
+        Response response2 = router.handle(context(), request2).get();
         assertThat(response2.getEntity().getString()).isEqualTo("Pong");
+    }
+
+    @Test
+    public void testSchedulePeriodicDirectoryMonitoring() throws Exception {
+        when(scheduledExecutorService.scheduleAtFixedRate(any(Runnable.class),
+                                                          eq(3_000L),
+                                                          eq(3_000L),
+                                                          eq(MILLISECONDS)))
+                .thenReturn(scheduledFuture);
+
+        RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
+        heaplet.create(Name.of("this-router"),
+                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                                   field("scanInterval", "3 seconds"))),
+                       heap);
+        heaplet.destroy();
+
+        verify(scheduledFuture).cancel(eq(true));
+    }
+
+    @Test
+    public void testScheduleOnlyOnceDirectoryMonitoring() throws Exception {
+        RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
+        heaplet.create(Name.of("this-router"),
+                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                                   field("scanInterval", "disabled"))),
+                       heap);
+        heaplet.destroy();
+
+        verifyZeroInteractions(scheduledExecutorService);
     }
 
     private void assertStatusOnUri(Handler router, String uri, Status expected)
             throws URISyntaxException, ExecutionException, InterruptedException {
-        Request ping = new Request();
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri(uri))
-                         .get().getStatus())
+        Request ping = new Request().setMethod("GET");
+        assertThat(router.handle(context(), ping.setUri(uri)).get().getStatus())
                 .isEqualTo(expected);
-
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,
@@ -233,8 +260,12 @@ public class RouterHandlerTest {
 
     private Response handle(final RouterHandler handler, final String value)
             throws Exception {
-        AttributesContext context = new AttributesContext(new RootContext());
+        AttributesContext context = context();
         context.getAttributes().put("name", value);
         return handler.handle(context, new Request()).getOrThrow();
+    }
+
+    private static AttributesContext context() {
+        return new AttributesContext(new RootContext());
     }
 }

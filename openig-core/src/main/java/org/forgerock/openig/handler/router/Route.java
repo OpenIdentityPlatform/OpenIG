@@ -24,6 +24,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.session.SessionManager;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -83,22 +84,46 @@ abstract class Route implements Handler {
     private final Expression<Boolean> condition;
 
     /**
-     * Route's name (may be inferred from the file's name).
+     * Route's identifier (may be inferred from the file's name).
+     */
+    private final String id;
+
+    /**
+     * Route's name (may be inferred from the identifier).
      */
     private final String name;
 
     /**
+     * Route's config.
+     */
+    private final JsonValue config;
+
+    /**
      * Builds a new Route.
      * @param handler main handler of the route.
+     * @param id route's id
      * @param name route's name
+     * @param name route's config
      * @param condition used to dispatch only a subset of incoming request to this route.
      */
     public Route(final Handler handler,
+                 final String id,
                  final String name,
+                 final JsonValue config,
                  final Expression<Boolean> condition) {
         this.handler = handler;
+        this.id = id;
         this.name = name;
+        this.config = config;
         this.condition = condition;
+    }
+
+    /**
+     * Returns the route id.
+     * @return the route id.
+     */
+    public String getId() {
+        return id;
     }
 
     /**
@@ -107,6 +132,14 @@ abstract class Route implements Handler {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the route config.
+     * @return the route config.
+     */
+    public JsonValue getConfig() {
+        return config;
     }
 
     /**
@@ -142,5 +175,16 @@ abstract class Route implements Handler {
                 MDC.clear();
             }
         }
+    }
+
+    /**
+     * Get the route name from the config, defaulting to the route id if no such attribute exists in the given
+     * {@link JsonValue}.
+     * @param routeConfig the route configuration
+     * @param routeId the route identifier
+     * @return the route name from the config, defaulting to the route id if no such attribute exists
+     */
+    static String routeName(JsonValue routeConfig, String routeId) {
+        return routeConfig.get("name").defaultTo(routeId).asString();
     }
 }

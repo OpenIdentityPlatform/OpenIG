@@ -16,21 +16,31 @@
 
 package org.forgerock.openig.handler.router;
 
+import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
+import static org.forgerock.http.util.Json.readJsonLenient;
+import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.file;
+import static org.forgerock.json.resource.Resources.asRequestHandler;
+import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
+import static org.forgerock.openig.handler.router.Route.routeName;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.File;
-import java.util.Comparator;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -51,6 +61,7 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Reject;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -97,14 +108,19 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     private final RouteBuilder builder;
 
     /**
+     * Monitor a given directory and emit notifications on add/remove/update of files.
+     */
+    private final DirectoryMonitor directoryMonitor;
+
+    /**
      * Keep track of managed routes.
      */
-    private final Map<File, Route> routes = new HashMap<>();
+    private final Map<String, Route> routes = new HashMap<>();
 
     /**
      * Ordered set of managed routes.
      */
-    private SortedSet<Route> sorted = new TreeSet<>(new LexicographicalRouteComparator());
+    private final SortedSet<Route> sorted = new TreeSet<>(new LexicographicalRouteComparator());
 
     /**
      * Protect routes access.
@@ -125,27 +141,14 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     /**
      * Builds a router that loads its configuration from the given directory.
      * @param builder route builder
+     * @param directoryMonitor the directory monitor
      */
-    public RouterHandler(final RouteBuilder builder) {
+    public RouterHandler(final RouteBuilder builder, final DirectoryMonitor directoryMonitor) {
         this.builder = builder;
+        this.directoryMonitor = directoryMonitor;
         ReadWriteLock lock = new ReentrantReadWriteLock();
         this.read = lock.readLock();
         this.write = lock.writeLock();
-    }
-
-    /**
-     * Changes the ordering of the managed routes.
-     * @param comparator route comparator
-     */
-    public void setRouteComparator(final Comparator<Route> comparator) {
-        write.lock();
-        try {
-            SortedSet<Route> newSet = new TreeSet<>(comparator);
-            newSet.addAll(sorted);
-            sorted = newSet;
-        } finally {
-            write.unlock();
-        }
     }
 
     /**
@@ -156,7 +159,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
      *            the handler which should be invoked when no routes match the
      *            request
      */
-    public void setDefaultHandler(final Handler handler) {
+    void setDefaultHandler(final Handler handler) {
         write.lock();
         try {
             this.defaultHandler = handler;
@@ -183,88 +186,149 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         }
     }
 
-    @Override
-    public void onChanges(final FileChangeSet changes) {
+    /**
+     * Deploy a route, meaning that it loads it but also stores it in a file.
+     *
+     * @param routeId the id of the route to deploy
+     * @param routeName the name of the route to deploy
+     * @param routeConfig the configuration of the route to deploy
+     *
+     * @throws RouterHandlerException if the given routeConfig is not valid
+     */
+    public void deploy(String routeId, String routeName, JsonValue routeConfig) throws RouterHandlerException {
+        Reject.ifNull(routeName);
         write.lock();
         try {
-
-            for (File file : changes.getRemovedFiles()) {
-                onRemovedFile(file);
-            }
-
-            for (File file : changes.getAddedFiles()) {
-                onAddedFile(file);
-            }
-
-            for (File file : changes.getModifiedFiles()) {
-                onModifiedFile(file);
-            }
-
+            load(routeId, routeName, routeConfig.copy());
+            directoryMonitor.store(routeId, routeConfig);
+            logger.info("Deployed the route with id '{}' named '{}'", routeId, routeName);
+        } catch (IOException e) {
+            throw new RouterHandlerException(format("An error occurred while storing the route '%s'", routeId), e);
         } finally {
             write.unlock();
         }
     }
 
-    private void onAddedFile(final File file) {
-        Route route;
+    /**
+     * Undeploy a route, meaning that it unloads it but also deletes the associated file.
+     * @param routeId the id of the route to remove
+     *
+     * @return  the configuration of the undeployed route
+     * @throws RouterHandlerException if the given routeId is not valid
+     */
+    public JsonValue undeploy(String routeId) throws RouterHandlerException {
+        write.lock();
         try {
-            route = builder.build(file);
-        } catch (Exception e) {
-            logger.error("The route defined in file '{}' cannot be added", file, e);
-            return;
-        }
-        String name = route.getName();
-        if (sorted.contains(route)) {
-            logger.error("The added file '{}' contains a route named '{}' that is already registered by the file '{}'",
-                         file,
-                         name,
-                         lookupRouteFile(name));
-            route.destroy();
-            return;
-        }
-        route.start();
-        sorted.add(route);
-        routes.put(file, route);
-        logger.info("Added route '{}' defined in file '{}'", name, file);
-    }
-
-    private void onRemovedFile(final File file) {
-        Route route = routes.remove(file);
-        if (route != null) {
-            sorted.remove(route);
-            route.destroy();
-            logger.info("Removed route '{}' defined in file '{}'", route.getName(), file);
+            JsonValue routeConfig = unload(routeId);
+            directoryMonitor.delete(routeId);
+            logger.info("Undeployed the route with id '{}'", routeId);
+            return routeConfig;
+        } finally {
+            write.unlock();
         }
     }
 
-    private void onModifiedFile(final File file) {
-        Route newRoute;
+    /**
+     * Update a route.
+     * @param routeId the id of the route to update
+     * @param routeName the name of the route to update
+     * @param routeConfig the new route's configuration
+     *
+     * @throws RouterHandlerException if the given routeConfig is not valid
+     */
+    public void update(String routeId, String routeName, JsonValue routeConfig) throws RouterHandlerException {
+        write.lock();
+        Route previousRoute = routes.get(routeId);
         try {
-            newRoute = builder.build(file);
-        } catch (Exception e) {
-            logger.error("The route defined in file '{}' cannot be modified", file, e);
-            return;
-        }
-        Route oldRoute = routes.get(file);
-        if (oldRoute != null) {
-            // Route did change its name, and the new name is already in use
-            if (!oldRoute.getName().equals(newRoute.getName()) && sorted.contains(newRoute)) {
-                logger.error("The modified file '{}' contains a route named '{}' that is already "
-                                     + "registered by the file '{}'",
-                             file,
-                             newRoute.getName(),
-                             lookupRouteFile(newRoute.getName()));
-                newRoute.destroy();
-                return;
+            Reject.ifNull(routeId, routeName);
+            write.lock();
+            try {
+                unload(routeId);
+                load(routeId, routeName, routeConfig);
+            } finally {
+                write.unlock();
             }
-            routes.remove(file);
-            sorted.remove(oldRoute);
-            oldRoute.destroy();
+            directoryMonitor.store(routeId, routeConfig);
+            logger.info("Updated the route with id '{}'", routeId);
+        } catch (RouterHandlerException e) {
+            // Restore the previous route if the reload failed
+            load(previousRoute.getId(), previousRoute.getName(), previousRoute.getConfig());
+            throw e;
+        } catch (IOException e) {
+            throw new RouterHandlerException(format("An error occurred while storing the route '%s'", routeId), e);
+        } finally {
+            write.unlock();
         }
-        newRoute.start();
-        sorted.add(newRoute);
-        routes.put(file, newRoute);
-        logger.info("Modified route '{}' defined in file '{}'", newRoute.getName(), file);
+    }
+
+    void load(String routeId, String routeName, JsonValue routeConfig) throws RouterHandlerException {
+        Reject.ifNull(routeId, routeName);
+        write.lock();
+        try {
+            for (Route route : sorted) {
+                if (routeId.equals(route.getId())) {
+                    throw new RouterHandlerException(format("A route with the id '%s' is already loaded", routeId));
+                }
+                if (routeName.equals(route.getName())) {
+                    throw new RouterHandlerException(
+                            format("A route with the id '%s' is already loaded with the name '%s'",
+                                   routeId,
+                                   routeName));
+                }
+            }
+            Route route;
+            try {
+                route = builder.build(routeId, routeName, routeConfig);
+            } catch (HeapException e) {
+                throw new RouterHandlerException(
+                        format("An error occurred while loading the route with the '%s'", routeName), e);
+            }
+            route.start();
+            routes.put(routeId, route);
+            sorted.add(route);
+            logger.info("Loaded the route with id '{}' registered with the name '{}'", route.getId(), route.getName());
+        } finally {
+            write.unlock();
+        }
+    }
+
+    JsonValue unload(String routeId) throws RouterHandlerException {
+        Reject.ifNull(routeId);
+        write.lock();
+        try {
+            Route removedRoute = routes.remove(routeId);
+            if (removedRoute == null) {
+                throw new RouterHandlerException(format("No route with id '%s' was loaded : unable to unload it.",
+                                                        routeId));
+            } else {
+                removedRoute.destroy();
+                logger.info("Unloaded the route with id '{}'", routeId);
+            }
+
+            Iterator<Route> iterator = sorted.iterator();
+            while (iterator.hasNext()) {
+                if (removedRoute == iterator.next()) {
+                    iterator.remove();
+                }
+            }
+            return removedRoute.getConfig();
+        } finally {
+            write.unlock();
+        }
+    }
+
+    JsonValue routeConfig(String routeId) throws RouterHandlerException {
+        Reject.ifNull(routeId);
+        read.lock();
+        try {
+            Route route = routes.get(routeId);
+            if (route == null) {
+                throw new RouterHandlerException(format("No route with id '%s' was loaded.", routeId));
+            }
+            return route.getConfig();
+        } finally {
+            read.unlock();
+        }
     }
 
     @Override
@@ -287,68 +351,110 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         }
     }
 
-    private File lookupRouteFile(String routeName) {
-        for (Map.Entry<File, Route> entry : routes.entrySet()) {
-            File file = entry.getKey();
-            Route route = entry.getValue();
-
-            if (route.getName().equals(routeName)) {
-                return file;
+    @Override
+    public void onChanges(FileChangeSet changes) {
+        for (File file : changes.getRemovedFiles()) {
+            try {
+                onRemovedFile(file);
+            } catch (Exception e) {
+                logger.error("An error occurred while handling the removed file '{}'", file.getAbsolutePath(), e);
             }
         }
-        return null;
+
+        for (File file : changes.getAddedFiles()) {
+            try {
+                onAddedFile(file);
+            } catch (Exception e) {
+                logger.error("An error occurred while handling the added file '{}'", file.getAbsolutePath(), e);
+            }
+        }
+
+        for (File file : changes.getModifiedFiles()) {
+            try {
+                onModifiedFile(file);
+            } catch (Exception e) {
+                logger.error("An error occurred while handling the modified file '{}'", file.getAbsolutePath(), e);
+            }
+        }
+    }
+
+    private void onAddedFile(File file) {
+        try (FileReader fileReader = new FileReader(file)) {
+            JsonValue routeConfig = routeConfig(fileReader);
+            String routeId = routeId(file);
+            String routeName = routeName(routeConfig, routeId);
+            load(routeId, routeName, routeConfig);
+        } catch (IOException | JsonValueException e) {
+            logger.error("The file '{}' is not a valid route configuration.", file, e);
+        } catch (RouterHandlerException e) {
+            logger.error("An error occurred while reading the route defined in the file '{}'.", file, e);
+        }
+    }
+
+    private void onRemovedFile(File file) {
+        try {
+            unload(routeId(file));
+        } catch (RouterHandlerException e) {
+            // No route with id routeId was found. Just ignore.
+        }
+    }
+
+    private void onModifiedFile(File file) {
+        onRemovedFile(file);
+        onAddedFile(file);
+    }
+
+    private static JsonValue routeConfig(FileReader fileReader) throws IOException {
+        return json(readJsonLenient(fileReader));
+    }
+
+    private static String routeId(File file) {
+        return withoutDotJson(file.getName());
+    }
+
+    private static String withoutDotJson(final String path) {
+        return path.substring(0, path.length() - ".json".length());
     }
 
     /** Creates and initializes a routing handler in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
         private EndpointRegistry.Registration registration;
-        private DirectoryScanner scanner;
+        private DirectoryMonitor directoryMonitor;
+        private ScheduledFuture<?> scheduledCommand;
+        private Duration scanInterval;
+
 
         @Override
         public Object create() throws HeapException {
+            // Register the /routes/* endpoint
+            Router routes = new Router();
+            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            EndpointRegistry registry = endpointRegistry();
+            registration = registry.register("routes", routes);
+            logger.info("Routes endpoint available at '{}'", registration.getPath());
+
             File directory = config.get("directory").as(evaluatedWithHeapBindings()).as(file());
             if (directory == null) {
                 // By default, uses the config/routes from the environment
                 Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
                 directory = new File(env.getConfigDirectory(), "routes");
             }
-            DirectoryMonitor directoryMonitor = new DirectoryMonitor(directory);
-
-            this.scanner = directoryScanner(directoryMonitor, scanInterval());
-
-            // Register the /routes/* endpoint
-            Router routes = new Router();
-            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-            EndpointRegistry registry = endpointRegistry();
-            registration = registry.register("routes", routes);
+            this.directoryMonitor = new DirectoryMonitor(directory);
+            this.scanInterval = scanInterval();
 
             RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
                                                                        qualified,
                                                                        new EndpointRegistry(routes,
-                                                                                            registration.getPath())));
+                                                                                            registration.getPath())),
+                                                      directoryMonitor);
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
 
-            // The RouterHandler will listen the FileChangeSet notifications
-            scanner.register(handler);
+            routes.addRoute(requestUriMatcher(EQUALS, "{" + RoutesItemRequestHandler.ROUTE_ID + "}"),
+                            newHttpHandler(asRequestHandler(new RoutesItemRequestHandler(handler))));
+            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
 
             return handler;
-        }
-
-        private DirectoryScanner directoryScanner(DirectoryMonitor directoryMonitor, Duration scanInterval)
-                throws HeapException {
-            if (scanInterval != Duration.ZERO) {
-                ScheduledExecutorService scheduledExecutor =
-                        heap.get(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, ScheduledExecutorService.class);
-                // Wrap the scanner in another scanner that will trigger scan at given interval
-                PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(directoryMonitor, scheduledExecutor);
-
-                periodic.setScanInterval(scanInterval.to(TimeUnit.MILLISECONDS));
-                return periodic;
-            } else {
-                // Only scan once when handler.start() is called
-                return new OnlyOnceDirectoryScanner(directoryMonitor);
-            }
         }
 
         private Duration scanInterval() {
@@ -358,11 +464,12 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             if (scanIntervalConfig.isNumber()) {
                 // Backward compatibility : configuration values is expressed in seconds only
                 Integer scanIntervalSeconds = scanIntervalConfig.asInteger();
-                logger.warn("Prefer to declare to declare the scanInterval configuration setting as a duration "
-                                       + "like this : \"" + scanIntervalSeconds + " seconds\".");
-                if (scanIntervalSeconds == -1) {
+                if (scanIntervalSeconds <= 0) {
+                    logger.warn("Prefer to declare to declare the scanInterval as \"disabled\".");
                     return Duration.ZERO;
                 }
+                logger.warn("Prefer to declare to declare the scanInterval configuration setting as a duration "
+                                    + "like this : \"" + scanIntervalSeconds + " seconds\".");
                 return Duration.duration(scanIntervalConfig.asInteger(), TimeUnit.SECONDS);
             } else {
                 Duration scanInterval = scanIntervalConfig.as(duration());
@@ -376,18 +483,43 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         @Override
         public void start() throws HeapException {
-            scanner.start();
+            Runnable command = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        directoryMonitor.monitor((RouterHandler) object);
+                    } catch (Exception e) {
+                        logger.error("An error occurred while scanning the directory", e);
+                    }
+                }
+            };
+
+            // First scan is blocking : ensure everything is correct
+            command.run();
+
+            // If a scanInterval was provided then schedule the next directory scans
+            if (scanInterval != Duration.ZERO) {
+                ScheduledExecutorService scheduledExecutorService =
+                        heap.get(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, ScheduledExecutorService.class);
+
+                scheduledCommand = scheduledExecutorService.scheduleAtFixedRate(command,
+                                                                                scanInterval.to(MILLISECONDS),
+                                                                                scanInterval.to(MILLISECONDS),
+                                                                                MILLISECONDS);
+            }
         }
 
         @Override
         public void destroy() {
+            if (scheduledCommand != null) {
+                scheduledCommand.cancel(true);
+            }
             if (object != null) {
                 ((RouterHandler) object).stop();
             }
             if (registration != null) {
                 registration.unregister();
             }
-            scanner.stop();
             super.destroy();
         }
     }
