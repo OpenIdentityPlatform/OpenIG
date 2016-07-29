@@ -29,6 +29,7 @@ import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -176,12 +177,12 @@ class RouteBuilder {
 
         List<Filter> filters = new ArrayList<>();
 
-        SessionManager sessionManager = routeHeap.resolve(config.get("session"), SessionManager.class, true);
+        SessionManager sessionManager = config.get("session").as(optionalHeapObject(routeHeap, SessionManager.class));
         if (sessionManager != null) {
             filters.add(newSessionFilter(sessionManager));
         }
 
-        AuditService auditService = routeHeap.resolve(config.get("auditService"), AuditService.class, true);
+        AuditService auditService = config.get("auditService").as(optionalHeapObject(routeHeap, AuditService.class));
         if (auditService != null && auditService.isRunning()) {
             filters.add(new HttpAccessAuditFilter(auditService, time));
         }

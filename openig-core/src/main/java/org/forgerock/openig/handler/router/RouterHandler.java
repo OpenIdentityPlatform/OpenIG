@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
@@ -322,14 +323,11 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         @Override
         public Object create() throws HeapException {
-            // By default, uses the config/routes from the environment
-            Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
-            File directory = new File(env.getConfigDirectory(), "routes");
-
-            // Configuration can override that value
-            String evaluation = config.get("directory").as(evaluatedWithHeapBindings()).asString();
-            if (evaluation != null) {
-                directory = new File(evaluation);
+            File directory = config.get("directory").as(evaluatedWithHeapBindings()).as(file());
+            if (directory == null) {
+                // By default, uses the config/routes from the environment
+                Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
+                directory = new File(env.getConfigDirectory(), "routes");
             }
 
             DirectoryScanner scanner = new DirectoryMonitor(directory);
