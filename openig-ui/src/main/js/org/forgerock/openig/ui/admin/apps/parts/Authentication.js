@@ -23,7 +23,7 @@ define([
     _,
     AbstractAppView
     ) {
-    var AuthenticationViewPart = AbstractAppView.extend({
+    return AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Authentication.html",
         events: { },
@@ -33,6 +33,4 @@ define([
             }, this));
         }
     });
-
-    return new AuthenticationViewPart();
 });

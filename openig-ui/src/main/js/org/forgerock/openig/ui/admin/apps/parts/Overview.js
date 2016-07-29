@@ -26,7 +26,7 @@ define([
     form2js,
     AbstractAppView
     ) {
-    var OverViewPart = AbstractAppView.extend({
+    return AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Overview.html",
         events: {
@@ -39,6 +39,4 @@ define([
             }, this));
         }
     });
-
-    return new OverViewPart();
 });

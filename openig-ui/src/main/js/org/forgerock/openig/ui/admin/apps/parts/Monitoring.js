@@ -27,7 +27,7 @@ define([
     dimple,
     AbstractAppView
 ) {
-    var MonitoringViewPart = AbstractAppView.extend({
+    return AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Monitoring.html",
         events: {
@@ -71,6 +71,4 @@ define([
             }, this));
         }
     });
-
-    return new MonitoringViewPart();
 });

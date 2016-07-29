@@ -29,7 +29,7 @@ define([
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/AppsCollection",
     "org/forgerock/openig/ui/admin/models/RoutesCollection"
-], function (
+], (
     $,
     _,
     Backbone,
@@ -44,8 +44,8 @@ define([
     UIUtils,
     AppsCollection,
     RoutesCollection
-) {
-    var AppsListView = AbstractView.extend({
+) => {
+    const AppsListView = AbstractView.extend({
         template: "templates/openig/admin/apps/AppsListViewTemplate.html",
         events: {
             "click .app-export": "exportAppConfig",
@@ -60,7 +60,7 @@ define([
         model: {
 
         },
-        render: function (args, callback) {
+        render (args, callback) {
             var appPromise,
                 routesPromise,
                 appsGrid,
@@ -69,7 +69,7 @@ define([
 
             // Render data attributes for click, context menu and filter
             RenderRow = Backgrid.Row.extend({
-                render: function () {
+                render () {
                     RenderRow.__super__.render.apply(this, arguments);
                     this.$el.attr("data-id", this.model.get("_id"));
                     this.$el.attr("data-url", this.model.get("content/url"));
@@ -93,7 +93,8 @@ define([
                     }, this));
                     this.data.currentApps = apps.models;
 
-                    this.parentRender(_.bind(function () {
+                    this.parentRender(_.bind(() => {
+                        // TODO: use template cell instead of render method
                         appsGrid = new Backgrid.Grid({
                             className: "table backgrid",
                             row: RenderRow,
@@ -103,7 +104,7 @@ define([
                                     sortable: false,
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
-                                        render: function () {
+                                        render () {
                                             var display = '<a class="table-clink" href="#apps/edit/' +
                                                 this.model.get("_id") + '/"><div class="image circle">' +
                                                 '<i class="fa fa-rocket"></i></div>' +
@@ -128,7 +129,7 @@ define([
                                     sortable: false,
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
-                                        render: function () {
+                                        render () {
                                             var display = "";
 
                                             if (this.model.deployed) {
@@ -153,7 +154,7 @@ define([
                                     sortable: false,
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
-                                        render: function () {
+                                        render () {
                                             var display = $('<div class="btn-group pull-right">' +
                                                 '<button type="button" class="btn btn-link fa-lg' +
                                                 'dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
@@ -186,74 +187,55 @@ define([
                 }, this));
         },
 
-        duplicateAppConfig: function (event) {
-            var item = this.getSelectedItem(event),
-                itemTitle = item.selected.data("title"),
-                itemId = item.selected.data("id");
-
-            UIUtils.confirmDialog($.t("templates.apps.duplicateDialog", { title: itemTitle }), "danger",
-                _.bind(function () {
-                    this.data.currentApp = { title: itemId };
-                    router.navigate("apps/duplicate/" + itemId, true);
-                }, this)
-            );
+        duplicateAppConfig (event) {
+            const item = this.getSelectedItem(event);
+            const itemTitle = item.selected.data("title");
+            const itemId = item.selected.data("id");
+            appsUtils.duplicateAppDlg(itemId, itemTitle);
         },
 
-        deployApp: function (event) {
-            var item = this.getSelectedItem(event),
-                itemTitle = item.selected.data("title"),
-                itemId = item.selected.data("id");
-            UIUtils.confirmDialog($.t("templates.apps.deployDialog", { title: itemTitle }), "danger",
-                _.bind(function () {
-                    appsUtils.deployApplication(itemId);
-                }, this)
-            );
+        deployApp (event) {
+            const item = this.getSelectedItem(event);
+            const itemTitle = item.selected.data("title");
+            const itemId = item.selected.data("id");
+            appsUtils.deployApplicationDlg(itemId, itemTitle);
         },
 
-        undeployApp: function (event) {
-            var item = this.getSelectedItem(event),
-                itemTitle = item.selected.data("title"),
-                itemId = item.selected.data("id");
-            UIUtils.confirmDialog($.t("templates.apps.undeployDialog", { title: itemTitle }), "danger",
-                _.bind(function () {
-                    appsUtils.undeployApplication(itemId);
-                }, this)
-            );
+        undeployApp (event) {
+            const item = this.getSelectedItem(event);
+            const itemTitle = item.selected.data("title");
+            const itemId = item.selected.data("id");
+            appsUtils.undeployApplicationDlg(itemId, itemTitle);
         },
 
-        deleteApps: function (event) {
-            var item = this.getSelectedItem(event),
-                itemTitle = item.selected.data("title"),
-                itemId = item.selected.data("id");
-            UIUtils.confirmDialog($.t("templates.apps.deleteDialog", { title: itemTitle }), "danger",
-                _.bind(function () {
-                    AppsCollection.removeById(itemId);
-
+        deleteApps (event) {
+            const item = this.getSelectedItem(event);
+            const itemTitle = item.selected.data("title");
+            const itemId = item.selected.data("id");
+            appsUtils.deleteApplicationDlg(itemId, itemTitle,
+                () => {
                     item.selected.remove();
                     if (item.alternate) {
                         item.alternate.remove();
                     }
-                    eventManager.sendEvent(
-                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                        { key: "deleteAppSuccess", title: itemTitle }
-                    );
-                }, this)
+                }
             );
         },
 
-        exportAppConfig: function (event) {
-            var item = this.getSelectedItem(event),
-                itemId = item.selected.data("id");
-            appsUtils.exportConfig(itemId);
+        exportAppConfig (event) {
+            const item = this.getSelectedItem(event);
+            const itemTitle = item.selected.data("title");
+            const itemId = item.selected.data("id");
+            appsUtils.exportConfigDlg(itemId, itemTitle);
         },
 
         /* Get selected item (card or row) */
-        getSelectedItem: function (event) {
-            var selectedItem = $(event.currentTarget).parents(".card-spacer"),
-                alternateItem;
+        getSelectedItem (event) {
+            let selectedItem = $(event.currentTarget).parents(".card-spacer");
+            let alternateItem;
 
             if (selectedItem.length > 0) {
-                _.each(this.$el.find(".backgrid tbody tr"), function (row) {
+                _.each(this.$el.find(".backgrid tbody tr"), (row) => {
                     if ($(row).attr("data-id") === selectedItem.attr("data-id")) {
                         alternateItem = $(row);
                     }
@@ -261,7 +243,7 @@ define([
             } else {
                 selectedItem = $(event.currentTarget).parents("tr");
 
-                _.each(this.$el.find(".card-spacer"), function (card) {
+                _.each(this.$el.find(".card-spacer"), (card) => {
                     if ($(card).attr("data-id") === selectedItem.attr("data-id")) {
                         alternateItem = $(card);
                     }
@@ -271,8 +253,8 @@ define([
         },
 
         /* switch cards and grid */
-        toggleButtonChange: function (event) {
-            var target = $(event.target);
+        toggleButtonChange (event) {
+            let target = $(event.target);
 
             if (target.hasClass("fa")) {
                 target = target.parents(".btn");
@@ -283,11 +265,11 @@ define([
         },
 
         /* Filter cards and rows */
-        filterApps: function (event) {
-            var search = $(event.target).val().toLowerCase();
+        filterApps (event) {
+            const search = $(event.target).val().toLowerCase();
 
             if (search.length > 0) {
-                _.each(this.$el.find(".card-spacer"), function (card) {
+                _.each(this.$el.find(".card-spacer"), (card) => {
                     if ($(card).attr("data-id").toLowerCase().indexOf(search) > -1 ||
                         $(card).attr("data-url").toLowerCase().indexOf(search) > -1 ||
                         $(card).attr("data-title").toLowerCase().indexOf(search) > -1) {
@@ -297,7 +279,7 @@ define([
                     }
                 }, this);
 
-                _.each(this.$el.find(".backgrid tbody tr"), function (row) {
+                _.each(this.$el.find(".backgrid tbody tr"), (row) => {
                     if ($(row).attr("data-id").toLowerCase().indexOf(search) > -1 ||
                         $(row).attr("data-url").toLowerCase().indexOf(search) > -1 ||
                         $(row).attr("data-title").toLowerCase().indexOf(search) > -1) {

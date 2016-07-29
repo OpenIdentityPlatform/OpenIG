@@ -21,5 +21,6 @@ define("org/forgerock/openig/ui/main", [
     "./common/delegates/SiteConfigurationDelegate",
     "./common/main/MockServer",
     "./user/login/InternalLoginHelper",
-    "org/forgerock/commons/ui/common/LoginView"
+    "org/forgerock/commons/ui/common/LoginView",
+    "./admin/apps/AppsTreeNavigationView"
 ]);
