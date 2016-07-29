@@ -127,7 +127,6 @@ class RouteBuilder {
         // Preemptively get the endpoint path, without actually registering the routes/my-route router
         EndpointRegistry routeRegistry = new EndpointRegistry(thisRouteRouter, registry.pathInfo(slug));
         EndpointRegistry.Registration objectsReg = routeRegistry.register("objects", objects);
-
         routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects, objectsReg.getPath()));
 
         try {

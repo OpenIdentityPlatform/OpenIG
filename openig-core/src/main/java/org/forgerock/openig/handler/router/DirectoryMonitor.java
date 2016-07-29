@@ -11,12 +11,12 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
-import static java.util.Arrays.*;
+import static java.util.Arrays.asList;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -43,7 +43,7 @@ import java.util.Set;
  * @see FileChangeListener
  * @since 2.2
  */
-class DirectoryMonitor implements DirectoryScanner {
+class DirectoryMonitor {
 
     /**
      * Monitored directory.
@@ -82,9 +82,11 @@ class DirectoryMonitor implements DirectoryScanner {
         this.snapshot = snapshot;
     }
 
-    @Override
-    public void scan(final FileChangeListener listener) {
-
+    /**
+     * Returns a snapshot of the changes compared to the previous scan.
+     * @return a snapshot of the changes compared to the previous scan.
+     */
+    public FileChangeSet scan() {
         // Take a snapshot of the current directory
         List<File> latest = Collections.emptyList();
         if (directory.isDirectory()) {
@@ -129,13 +131,7 @@ class DirectoryMonitor implements DirectoryScanner {
             snapshot.put(file, file.lastModified());
         }
 
-        // If there is no change to propagate, simply return
-        if (added.isEmpty() && removed.isEmpty() && modified.isEmpty()) {
-            return;
-        }
-
-        // Invoke listeners
-        listener.onChanges(new FileChangeSet(directory, added, modified, removed));
+        return new FileChangeSet(directory, added, modified, removed);
     }
 
     /**

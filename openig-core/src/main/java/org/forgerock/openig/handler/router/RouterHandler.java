@@ -21,7 +21,7 @@ import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.File;
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -54,7 +55,6 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.Duration;
-import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,11 +97,6 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     private final RouteBuilder builder;
 
     /**
-     * Monitor a given directory and emit notifications on add/remove/update of files.
-     */
-    private final DirectoryScanner directoryScanner;
-
-    /**
      * Keep track of managed routes.
      */
     private final Map<File, Route> routes = new HashMap<>();
@@ -130,11 +125,9 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     /**
      * Builds a router that loads its configuration from the given directory.
      * @param builder route builder
-     * @param scanner {@link DirectoryScanner} that will be invoked at each incoming request
      */
-    public RouterHandler(final RouteBuilder builder, final DirectoryScanner scanner) {
+    public RouterHandler(final RouteBuilder builder) {
         this.builder = builder;
-        this.directoryScanner = scanner;
         ReadWriteLock lock = new ReentrantReadWriteLock();
         this.read = lock.readLock();
         this.write = lock.writeLock();
@@ -170,13 +163,6 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         } finally {
             write.unlock();
         }
-    }
-
-    /**
-     * Starts this handler, executes an initial directory scan.
-     */
-    public void start() {
-        directoryScanner.scan(this);
     }
 
     /**
@@ -220,7 +206,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     }
 
     private void onAddedFile(final File file) {
-        Route route = null;
+        Route route;
         try {
             route = builder.build(file);
         } catch (Exception e) {
@@ -283,9 +269,6 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        // Run the directory scanner
-        directoryScanner.scan(this);
-
         // Traverse the routes
         read.lock();
         try {
@@ -320,6 +303,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
     public static class Heaplet extends GenericHeaplet {
 
         private EndpointRegistry.Registration registration;
+        private DirectoryScanner scanner;
 
         @Override
         public Object create() throws HeapException {
@@ -329,21 +313,9 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                 Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
                 directory = new File(env.getConfigDirectory(), "routes");
             }
+            DirectoryMonitor directoryMonitor = new DirectoryMonitor(directory);
 
-            DirectoryScanner scanner = new DirectoryMonitor(directory);
-
-            long scanInterval = scanInterval();
-            if (scanInterval > 0) {
-                TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-                // Wrap the scanner in another scanner that will trigger scan at given interval
-                PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(scanner, time);
-
-                periodic.setScanInterval(scanInterval);
-                scanner = periodic;
-            } else {
-                // Only scan once when handler.start() is called
-                scanner = new OnlyOnceDirectoryScanner(scanner);
-            }
+            this.scanner = directoryScanner(directoryMonitor, scanInterval());
 
             // Register the /routes/* endpoint
             Router routes = new Router();
@@ -354,13 +326,32 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
                                                                        qualified,
                                                                        new EndpointRegistry(routes,
-                                                                                            registration.getPath())),
-                                                      scanner);
+                                                                                            registration.getPath())));
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
+
+            // The RouterHandler will listen the FileChangeSet notifications
+            scanner.register(handler);
+
             return handler;
         }
 
-        private long scanInterval() {
+        private DirectoryScanner directoryScanner(DirectoryMonitor directoryMonitor, Duration scanInterval)
+                throws HeapException {
+            if (scanInterval != Duration.ZERO) {
+                ScheduledExecutorService scheduledExecutor =
+                        heap.get(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, ScheduledExecutorService.class);
+                // Wrap the scanner in another scanner that will trigger scan at given interval
+                PeriodicDirectoryScanner periodic = new PeriodicDirectoryScanner(directoryMonitor, scheduledExecutor);
+
+                periodic.setScanInterval(scanInterval.to(TimeUnit.MILLISECONDS));
+                return periodic;
+            } else {
+                // Only scan once when handler.start() is called
+                return new OnlyOnceDirectoryScanner(directoryMonitor);
+            }
+        }
+
+        private Duration scanInterval() {
             JsonValue scanIntervalConfig = config.get("scanInterval")
                                                  .as(evaluatedWithHeapBindings())
                                                  .defaultTo("10 seconds");
@@ -370,22 +361,22 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                 logger.warn("Prefer to declare to declare the scanInterval configuration setting as a duration "
                                        + "like this : \"" + scanIntervalSeconds + " seconds\".");
                 if (scanIntervalSeconds == -1) {
-                    return scanIntervalSeconds;
+                    return Duration.ZERO;
                 }
-                return TimeUnit.MILLISECONDS.convert(scanIntervalSeconds, TimeUnit.SECONDS);
+                return Duration.duration(scanIntervalConfig.asInteger(), TimeUnit.SECONDS);
             } else {
                 Duration scanInterval = scanIntervalConfig.as(duration());
                 if (scanInterval.isUnlimited()) {
                     throw new JsonValueException(scanIntervalConfig,
                                                  "unlimited duration is not allowed for the setting scanInterval");
                 }
-                return scanInterval.to(TimeUnit.MILLISECONDS);
+                return scanInterval;
             }
         }
 
         @Override
         public void start() throws HeapException {
-            ((RouterHandler) object).start();
+            scanner.start();
         }
 
         @Override
@@ -396,6 +387,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             if (registration != null) {
                 registration.unregister();
             }
+            scanner.stop();
             super.destroy();
         }
     }

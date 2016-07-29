@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -19,36 +19,45 @@ package org.forgerock.openig.handler.router;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Ensure that the delegate {@link DirectoryScanner} will be executed only once.
+ * Ensure that the directoryMonitor {@link DirectoryScanner} will be executed only once.
  *
  * @since 2.2
  */
 class OnlyOnceDirectoryScanner implements DirectoryScanner {
 
-    /**
-     * Delegate.
-     */
-    private final DirectoryScanner delegate;
+    private final DirectoryMonitor directoryMonitor;
 
     /**
-     * Contains {@literal false} if the delegate has never been executed before.
+     * Contains {@literal false} if it has never been executed before.
      * Its value is set to {@literal true} at first execution.
      */
     private final AtomicBoolean executed = new AtomicBoolean(false);
+    private FileChangeListener listener;
 
     /**
      * Builds a OnlyOnceDirectoryScanner wrapping the given scanner.
-     * @param delegate delegate scanner
+     * @param directoryMonitor the directoryMonitor to scan
      */
-    public OnlyOnceDirectoryScanner(final DirectoryScanner delegate) {
-        this.delegate = delegate;
+    public OnlyOnceDirectoryScanner(final DirectoryMonitor directoryMonitor) {
+        this.directoryMonitor = directoryMonitor;
     }
 
     @Override
-    public void scan(final FileChangeListener listener) {
+    public void register(final FileChangeListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void start() {
         // If it has not already been executed
         if (executed.compareAndSet(false, true)) {
-            delegate.scan(listener);
+            if (listener != null) {
+                listener.onChanges(directoryMonitor.scan());
+            }
         }
+    }
+
+    @Override
+    public void stop() {
     }
 }

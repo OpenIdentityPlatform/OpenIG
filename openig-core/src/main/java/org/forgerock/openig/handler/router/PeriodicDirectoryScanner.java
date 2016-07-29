@@ -19,9 +19,11 @@ package org.forgerock.openig.handler.router;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
-import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Trigger a directory scan if a given amount of time has elapsed since last scan.
@@ -29,39 +31,35 @@ import org.forgerock.util.time.TimeService;
  */
 class PeriodicDirectoryScanner implements DirectoryScanner {
 
+    private static final Logger logger = LoggerFactory.getLogger(PeriodicDirectoryScanner.class);
+
     /**
      * Delegate.
      */
-    private final DirectoryScanner delegate;
+    private final DirectoryMonitor directoryMonitor;
 
     /**
-     * Used to ensure that only 1 thread can trigger the scan.
+     * Scheduled Executor Service.
      */
-    private final Semaphore semaphore = new Semaphore(1);
-
-    /**
-     * Timestamp at which the directory scan was last triggered.
-     */
-    private volatile long lastScan;
-
-    /**
-     * Time service.
-     */
-    private final TimeService time;
+    private final ScheduledExecutorService scheduledExecutorService;
 
     /**
      * Delay between 2 directory scans (expressed in milliseconds).
      */
     private long scanInterval = MILLISECONDS.convert(10, SECONDS);
 
+    private ScheduledFuture<?> scheduledCommand;
+    private FileChangeListener listener;
+
     /**
      * Builds a new scanner that will delegates to the given {@link DirectoryScanner}.
-     * @param delegate real scanner
-     * @param time time service
+     * @param directoryMonitor real scanner
+     * @param scheduledExecutorService executor to schedule scans
      */
-    public PeriodicDirectoryScanner(final DirectoryScanner delegate, final TimeService time) {
-        this.delegate = delegate;
-        this.time = time;
+    public PeriodicDirectoryScanner(final DirectoryMonitor directoryMonitor,
+                                    final ScheduledExecutorService scheduledExecutorService) {
+        this.directoryMonitor = directoryMonitor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     /**
@@ -71,24 +69,40 @@ class PeriodicDirectoryScanner implements DirectoryScanner {
     public void setScanInterval(final long scanInterval) {
         if (scanInterval <= 0) {
             throw new IllegalArgumentException(
-                    "interval is expressed in milliseconds and cannot be less or equal to zero"
-            );
+                    "interval is expressed in milliseconds and cannot be less or equal to zero");
         }
         this.scanInterval = scanInterval;
     }
 
     @Override
-    public void scan(final FileChangeListener listener) {
-        if (time.since(lastScan) >= scanInterval) {
-            // Ensure only 1 Thread enter that block at a given time
-            if (semaphore.tryAcquire()) {
+    public void register(final FileChangeListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void start() {
+        Runnable command = new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    lastScan = time.now();
-                    delegate.scan(listener);
-                } finally {
-                    semaphore.release();
+                    FileChangeSet fileChangeSet = directoryMonitor.scan();
+                    if (fileChangeSet == null || fileChangeSet.isEmpty()) {
+                        return;
+                    }
+                    listener.onChanges(fileChangeSet);
+                } catch (Exception e) {
+                    logger.error("An error occurred while scanning periodically", e);
                 }
             }
-        }
+        };
+        scheduledCommand = scheduledExecutorService.scheduleAtFixedRate(command,
+                                                                        0,
+                                                                        scanInterval,
+                                                                        MILLISECONDS);
+    }
+
+    @Override
+    public void stop() {
+        scheduledCommand.cancel(true);
     }
 }
