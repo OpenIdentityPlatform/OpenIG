@@ -23,7 +23,6 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
-import static org.forgerock.util.Utils.closeSilently;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,16 +31,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -56,7 +51,6 @@ import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.PromiseImpl;
-import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
@@ -69,19 +63,14 @@ public class RouterHandlerTest {
     private HeapImpl heap;
 
     @Mock
-    private TimeService time;
-
-    @Mock
     private DirectoryScanner scanner;
 
     private File routes;
-    private File supply;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         routes = getTestResourceDirectory("routes");
-        supply = getTestResourceDirectory("supply");
         heap = buildDefaultHeap();
     }
 
@@ -90,65 +79,29 @@ public class RouterHandlerTest {
         DestroyDetectHandler.destroyed = false;
     }
 
-    @Test
-    public void testReactionsToDirectoryContentChanges() throws Exception {
-
-        RouterHandler handler = new RouterHandler(newRouterBuilder(),
-                                                  new DirectoryMonitor(routes));
-
-        // Initial scan
-        handler.start();
-
-        // Verify that the initial route is active
-        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
-
-        // Copy the 2nd route into the monitored directory
-        File destination = copyFileFromSupplyToRoutes("addition.json");
-
-        // Verify that both routes are active
-        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
-        assertStatusAfterHandle(handler, "OpenAM", Status.NOT_FOUND);
-
-        // Delete the additional file
-        assertThat(destination.delete()).isTrue();
-
-        // Verify that the first route is still active
-        assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
-
-        // Verify that the second route is inactive
-        AttributesContext context = new AttributesContext(new RootContext());
-        context.getAttributes().put("name", "OpenAM");
-        Response response = handler.handle(context, new Request()).get();
-        assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
-        assertThat(response.getEntity().getString()).isEmpty();
-
-        handler.stop();
-    }
-
     private RouteBuilder newRouterBuilder() {
         return new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(new Router(), "/"));
     }
 
     @Test
     public void testStoppingTheHandler() throws Exception {
-        RouterHandler handler = new RouterHandler(newRouterBuilder(),
-                                                  new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(newRouterBuilder());
+        DirectoryMonitor monitor = new DirectoryMonitor(routes);
+        handler.onChanges(monitor.scan());
 
         // Initial scan
-        handler.start();
         assertThat(DestroyDetectHandler.destroyed).isFalse();
-
         handler.stop();
         assertThat(DestroyDetectHandler.destroyed).isTrue();
     }
 
     @Test
     public void testDefaultHandler() throws Exception {
-        RouterHandler handler =
-                new RouterHandler(newRouterBuilder(), new DirectoryMonitor(routes));
+        RouterHandler handler = new RouterHandler(newRouterBuilder());
+        DirectoryMonitor monitor = new DirectoryMonitor(routes);
 
         // Initial scan
-        handler.start();
+        handler.onChanges(monitor.scan());
 
         // Verify that the initial route is active
         assertStatusAfterHandle(handler, "OpenIG", Status.TEAPOT);
@@ -175,26 +128,9 @@ public class RouterHandlerTest {
         return defaultHandler;
     }
 
-    private File copyFileFromSupplyToRoutes(final String filename) throws IOException {
-        File destination;
-        Reader reader = null;
-        Writer writer = null;
-        try {
-            reader = new FileReader(new File(supply, filename));
-            destination = new File(routes, filename);
-            destination.deleteOnExit();
-            writer = new FileWriter(destination);
-            IO.stream(reader, writer);
-            writer.flush();
-        } finally {
-            closeSilently(reader, writer);
-        }
-        return destination;
-    }
-
     @Test
     public void testRouteFileRenamingKeepingTheSameRouteName() throws Exception {
-        RouterHandler router = new RouterHandler(newRouterBuilder(), scanner);
+        RouterHandler router = new RouterHandler(newRouterBuilder());
 
         File before = Files.getRelativeFile(RouterHandlerTest.class, "clash/01-default.json");
         File after = Files.getRelativeFile(RouterHandlerTest.class, "clash/default.json");
@@ -220,7 +156,7 @@ public class RouterHandlerTest {
 
     @Test
     public void testDeploymentOfRouteWithSameNameFailsSecondDeploymentAndOnlyActivateFirstRoute() throws Exception {
-        RouterHandler router = new RouterHandler(newRouterBuilder(), scanner);
+        RouterHandler router = new RouterHandler(newRouterBuilder());
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
         File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
@@ -235,7 +171,7 @@ public class RouterHandlerTest {
     @Test
     public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
         RouteBuilder builder = spy(newRouterBuilder());
-        RouterHandler router = new RouterHandler(builder, scanner);
+        RouterHandler router = new RouterHandler(builder);
 
         doThrow(new NullPointerException()).when(builder).build(any(File.class));
 
@@ -250,36 +186,20 @@ public class RouterHandlerTest {
         Router router = new Router();
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put(Keys.ENVIRONMENT_HEAP_KEY, new DefaultEnvironment(new File("dont-care")));
-        heap.put(Keys.TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
 
-        RouterHandler handler = (RouterHandler) new RouterHandler.Heaplet()
-                .create(Name.of("this-router"),
-                        json(object(field("directory", getTestResourceDirectory("endpoints").getPath()))),
-                        heap);
-        handler.start();
+        RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
+        heaplet.create(Name.of("this-router"),
+                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                                   field("scanInterval", "disabled"))),
+                       heap);
+        heaplet.start();
 
         // Ping the 'routes' and intermediate endpoints
-        Request ping = new Request();
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri("/this-router"))
-                         .get().getStatus())
-                .isEqualTo(Status.NO_CONTENT);
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri("/this-router/routes/"))
-                         .get().getStatus())
-                .isEqualTo(Status.NO_CONTENT);
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri("/this-router/routes/route-with-name"))
-                         .get().getStatus())
-                .isEqualTo(Status.NO_CONTENT);
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri("/this-router/routes/route-with-name/objects"))
-                         .get().getStatus())
-                .isEqualTo(Status.NO_CONTENT);
-        assertThat(router.handle(new RootContext(),
-                                 ping.setUri("/this-router/routes/route-with-name/objects/register"))
-                         .get().getStatus())
-                .isEqualTo(Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/route-with-name", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/route-with-name/objects", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/route-with-name/objects/register", Status.NO_CONTENT);
 
         // Ensure that this RouterHandler /routes endpoint is working
         Request request1 = new Request().setUri("/this-router/routes/route-with-name/objects/register/ping");
@@ -292,6 +212,16 @@ public class RouterHandlerTest {
         Request request2 = new Request().setUri(uri);
         Response response2 = router.handle(new RootContext(), request2).get();
         assertThat(response2.getEntity().getString()).isEqualTo("Pong");
+    }
+
+    private void assertStatusOnUri(Handler router, String uri, Status expected)
+            throws URISyntaxException, ExecutionException, InterruptedException {
+        Request ping = new Request();
+        assertThat(router.handle(new RootContext(),
+                                 ping.setUri(uri))
+                         .get().getStatus())
+                .isEqualTo(expected);
+
     }
 
     private void assertStatusAfterHandle(final RouterHandler handler,

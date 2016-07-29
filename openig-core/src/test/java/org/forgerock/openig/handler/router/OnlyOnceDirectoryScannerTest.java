@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 public class OnlyOnceDirectoryScannerTest {
 
     @Mock
-    private DirectoryScanner delegate;
+    private DirectoryMonitor directoryMonitor;
 
     @Mock
     private FileChangeListener listener;
@@ -39,12 +39,15 @@ public class OnlyOnceDirectoryScannerTest {
 
     @Test
     public void testSubsequentInvocationsDoNotCallTheDelegate() throws Exception {
-        OnlyOnceDirectoryScanner scanner = new OnlyOnceDirectoryScanner(delegate);
+        FileChangeSet fileChangeSet = mock(FileChangeSet.class);
+        when(directoryMonitor.scan()).thenReturn(fileChangeSet);
+        OnlyOnceDirectoryScanner scanner = new OnlyOnceDirectoryScanner(directoryMonitor);
+        scanner.register(listener);
 
-        scanner.scan(listener);
-        scanner.scan(listener);
-        scanner.scan(listener);
+        scanner.start();
+        scanner.start();
+        scanner.start();
 
-        verify(delegate).scan(listener);
+        verify(listener).onChanges(same(fileChangeSet));
     }
 }

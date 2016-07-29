@@ -11,14 +11,22 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler.router;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.forgerock.util.time.TimeService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -29,10 +37,10 @@ import org.testng.annotations.Test;
 public class PeriodicDirectoryScannerTest {
 
     @Mock
-    private DirectoryScanner delegate;
+    private DirectoryMonitor directoryMonitor;
 
     @Mock
-    private TimeService time;
+    private ScheduledExecutorService scheduledExecutorService;
 
     @Mock
     private FileChangeListener listener;
@@ -57,55 +65,32 @@ public class PeriodicDirectoryScannerTest {
     @Test(dataProvider = "invalidPeriods",
           expectedExceptions = IllegalArgumentException.class)
     public void testInvalidPeriod(int period) throws Exception {
-        PeriodicDirectoryScanner scanner = new PeriodicDirectoryScanner(delegate, time);
+        PeriodicDirectoryScanner scanner = new PeriodicDirectoryScanner(directoryMonitor, null);
         scanner.setScanInterval(period);
     }
 
-    @DataProvider
-    public Object[][] intervalBelowThreshold() {
-        // @Checkstyle:off
-        return new Object[][] {
-                { 0L },
-                { 40L },
-                { 99L }
-        };
-        // @Checkstyle:on
-    }
+    @Test
+    public void testScheduling() throws Exception {
+        // The goal is not to test that the ScheduledExecutorService is launching at fixed intervals a scan,
+        // but just to ensure that we use the ScheduledExecutorService correctly : i.e. scheduling the task
+        // and cancelling it.
+        ScheduledFuture scheduledFuture = mock(ScheduledFuture.class);
+        when(scheduledExecutorService.scheduleAtFixedRate(any(Runnable.class),
+                                                          eq(0L),
+                                                          eq(100L),
+                                                          eq(TimeUnit.MILLISECONDS)))
+                .thenReturn(scheduledFuture);
 
-    @Test(dataProvider = "intervalBelowThreshold")
-    public void testScannerInvocationIsFiltered(long interval) throws Exception {
-        when(time.since(anyLong())).thenReturn(interval);
-
-        PeriodicDirectoryScanner scanner = new PeriodicDirectoryScanner(delegate, time);
+        PeriodicDirectoryScanner scanner = new PeriodicDirectoryScanner(directoryMonitor, scheduledExecutorService);
         scanner.setScanInterval(100);
+        scanner.start();
 
-        scanner.scan(listener);
+        verify(scheduledExecutorService).scheduleAtFixedRate(any(Runnable.class),
+                                                             eq(0L),
+                                                             eq(100L),
+                                                             eq(TimeUnit.MILLISECONDS));
 
-        // Verify the delegate is not called
-        verifyZeroInteractions(delegate);
-    }
-
-    @DataProvider
-    public Object[][] intervalAboveOrEqualToThreshold() {
-        // @Checkstyle:off
-        return new Object[][] {
-                { 100L },
-                { 101L },
-                { 400L }
-        };
-        // @Checkstyle:on
-    }
-
-    @Test(dataProvider = "intervalAboveOrEqualToThreshold")
-    public void testScannerInvocationIsPropagated(long interval) throws Exception {
-        when(time.since(anyLong())).thenReturn(interval);
-
-        PeriodicDirectoryScanner scanner = new PeriodicDirectoryScanner(delegate, time);
-        scanner.setScanInterval(100);
-
-        scanner.scan(listener);
-
-        // Verify the delegate is called
-        verify(delegate).scan(listener);
+        scanner.stop();
+        verify(scheduledFuture).cancel(anyBoolean());
     }
 }
