@@ -23,7 +23,7 @@ define([
     _,
     AbstractAppView
 ) {
-    var TransformationViewPart = AbstractAppView.extend({
+    return AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Transformation.html",
         events: {
@@ -36,6 +36,4 @@ define([
             }, this));
         }
     });
-
-    return new TransformationViewPart();
 });

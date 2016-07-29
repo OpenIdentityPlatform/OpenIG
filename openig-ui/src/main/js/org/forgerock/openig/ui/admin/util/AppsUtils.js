@@ -17,83 +17,83 @@
 define([
     "jquery",
     "underscore",
-    "org/forgerock/openig/ui/admin/delegates/AppDelegate"
-], function (
+    "org/forgerock/openig/ui/admin/delegates/AppDelegate",
+    "org/forgerock/openig/ui/admin/util/AppsUtils",
+    "org/forgerock/commons/ui/common/util/UIUtils",
+    "org/forgerock/openig/ui/admin/models/AppsCollection",
+    "org/forgerock/commons/ui/common/main/EventManager",
+    "org/forgerock/commons/ui/common/util/Constants",
+    "org/forgerock/commons/ui/common/main/Router"
+], (
     $,
     _,
-    AppDelegate
-) {
-    var obj = {};
-
-    obj.configPromise = null;
-
-    obj.cleanAppName = function (name) {
+    AppDelegate,
+    appsUtils,
+    UIUtils,
+    AppsCollection,
+    eventManager,
+    constants,
+    router
+) => ({
+    cleanAppNamen (name) {
         // TODO: add some checks, fixes
-        var clearName = name;
+        const clearName = name;
         return clearName;
-    };
+    },
 
-    obj.getMappingDetails = function (sourceName, targetName) {
-        var iconList = obj.getIconList(),
-            currentConnectors = AppDelegate.currentApps(),
-            deferred = $.Deferred(),
-            details = null;
-
-        $.when(iconList, currentConnectors).then(function (icons, connectors) {
-            details = {};
-
-            if (targetName !== "managed") {
-                details.targetConnector = _.find(connectors, function (connector) {
-                    return connector.name === targetName;
-                }, this);
-
-                details.targetIcon = obj.getIcon(details.targetConnector.connectorRef.connectorName, icons);
-            } else {
-                details.targetConnector = null;
-                details.targetIcon = obj.getIcon("managedobject", icons);
-            }
-
-            if (sourceName !== "managed") {
-                details.sourceConnector = _.find(connectors, function (connector) {
-                    return connector.name === sourceName;
-                }, this);
-
-                details.sourceIcon = obj.getIcon(details.sourceConnector.connectorRef.connectorName, icons);
-            } else {
-                details.sourceConnector = null;
-                details.sourceIcon = obj.getIcon("managedobject", icons);
-            }
-
-            details.sourceName = sourceName;
-            details.targetName = targetName;
-
-            deferred.resolve(details);
-        });
-
-        return deferred;
-    };
-
-    obj.toggleValue = function (e) {
-        var toggle = this.$el.find(e.target);
+    toggleValue (e) {
+        const toggle = this.$el.find(e.target);
         if (toggle.val() === "true") {
             toggle.val(false);
         } else {
             toggle.val(true);
         }
-    };
+    },
 
-    obj.exportConfig = function (/*appId*/) {
+    duplicateAppDlg (appId, appTitle) {
+        UIUtils.confirmDialog($.t("templates.apps.duplicateDialog", { title: appTitle }), "danger",
+            () => {
+                router.navigate(`apps/duplicate/${appId}`, true);
+            }
+        );
+    },
+
+    exportConfigDlg (/*appId*/) {
         // TODO: call export function
-    };
+    },
 
-    obj.deployApplication = function (/*appId*/) {
-        // TODO: call app config to real config conversion
-        // TODO: send real config to router endpoint
-    };
+    deployApplicationDlg (appId, appTitle) {
+        UIUtils.confirmDialog($.t("templates.apps.deployDialog", { title: appTitle }), "danger",
+            () => {
+                    // TODO: call app config to real config conversion
+                    // TODO: send real config to router endpoint
+            }
+        );
+    },
 
-    obj.undeployApplication = function (/*appId*/) {
-        // TODO: call router endpoint
-    };
+    undeployApplicationDlg (appId, appTitle) {
+        UIUtils.confirmDialog($.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
+            () => {
+                // TODO: undeploy
+            }
+        );
+    },
 
-    return obj;
-});
+    deleteApplicationDlg (appId, appTitle, deletedCallback) {
+        UIUtils.confirmDialog($.t("templates.apps.deleteDialog", { title: appTitle }), "danger",
+            () => {
+                AppsCollection.removeById(appId);
+
+                eventManager.sendEvent(
+                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                    { key: "deleteAppSuccess", title: appTitle }
+                );
+
+                if (deletedCallback) {
+                    deletedCallback();
+                }
+            }
+        );
+    }
+})
+);

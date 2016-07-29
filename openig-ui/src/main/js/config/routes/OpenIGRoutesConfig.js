@@ -34,7 +34,8 @@ define([],
                 pattern: "apps/duplicate/?"
             },
             "editAppView": {
-                view: "org/forgerock/openig/ui/admin/apps/EditAppView",
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
                 role: "ui-admin",
                 defaults: ["", ""],
                 url: /^apps\/edit\/(.+?)\/(.*)$/,
@@ -44,6 +45,51 @@ define([],
                 view: "org/forgerock/openig/ui/admin/settings/SettingsView",
                 role: "ui-admin",
                 url: "settings/"
+            },
+            "appsOverview": {
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
+                url: /^apps\/edit\/(.+?)\/overview$/,
+                pattern: "apps/edit/?/overview",
+                role: "ui-admin",
+                navGroup: "admin",
+                forceUpdate: true
+            },
+            "appsThrottling": {
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",
+                url: /^apps\/edit\/(.+?)\/throttling$/,
+                pattern: "apps/edit/?/throttling",
+                role: "ui-admin",
+                navGroup: "admin",
+                forceUpdate: true
+            },
+            "appsAuthentication": {
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Authentication",
+                url: /^apps\/edit\/(.+?)\/authentication$/,
+                pattern: "apps/edit/?/authentication",
+                role: "ui-admin",
+                navGroup: "admin",
+                forceUpdate: true
+            },
+            "appsTransformation": {
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Transformation",
+                url: /^apps\/edit\/(.+?)\/transformation$/,
+                pattern: "apps/edit/?/transformation",
+                role: "ui-admin",
+                navGroup: "admin",
+                forceUpdate: true
+            },
+            "appsMonitoring": {
+                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+                page: "org/forgerock/openig/ui/admin/apps/parts/Monitoring",
+                url: /^apps\/edit\/(.+?)\/monitoring$/,
+                pattern: "apps/edit/?/monitoring",
+                role: "ui-admin",
+                navGroup: "admin",
+                forceUpdate: true
             }
         };
     });

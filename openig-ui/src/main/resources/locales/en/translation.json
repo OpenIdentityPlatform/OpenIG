@@ -47,6 +47,13 @@
                     "dashboard": "Dashboards",
                     "apps": "Apps / APIs",
                     "settings": "Settings"
+                },
+                "appsSideMenu": {
+                    "overview": "Overview",
+                    "throttling": "Throttling",
+                    "authentication":"Authentication",
+                    "transformation": "Transformation",
+                    "monitoring": "Monitoring"                    
                 }
             }
         }

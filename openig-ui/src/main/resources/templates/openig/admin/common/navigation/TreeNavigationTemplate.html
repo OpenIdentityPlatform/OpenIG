@@ -1,0 +1,45 @@
+<div id="menu" class="menubar"></div>
+<div class="page-header page-header-min page-header-docked clearfix">
+    <div class="container">
+        <div class="row">
+            <div class="navbar-header col-xs-7 col-sm-5">
+                <button type="button" class="navbar-toggle navbar-left-side collapsed" data-toggle="collapse" data-target="#breadcrumbNavBar" aria-expanded="false" aria-controls="navbar">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                </button>
+                <div class="ellipsis">
+                    <h3 class="navbar-brand">
+                            <i class="fa fa-rocket"></i> <a href="{{home}}">{{{title}}}</a>
+                        </h3>
+                </div>
+            </div>
+
+            <div class="col-xs-5 col-sm-7">
+                {{> templates/openig/admin/apps/AppTopBar }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="breadcrumbNavBar" class="navbar-collapse collapse">
+    <nav class="block-sidenav sidenav visible-xs-block">
+        <ol class="list-unstyled">
+            {{#each this.treeNavigation}} {{> templates/openig/admin/common/navigation/_TreeNavigationLeaf identifier="side"}} {{/each}}
+        </ol>
+    </nav>
+</div>
+
+<div class="container tree-view-container">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 col-lg-2 hidden-xs">
+            <nav class="block-sidenav sidenav">
+                <ol class="list-unstyled">
+                    {{#each this.treeNavigation}} {{> templates/openig/admin/common/navigation/_TreeNavigationLeaf identifier="top"}} {{/each}}
+                </ol>
+            </nav>
+        </div>
+
+        <div id="sidePageContent" class="col-sm-9 col-md-9 col-lg-10"></div>
+    </div>
+</div>
