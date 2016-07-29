@@ -22,6 +22,7 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/EventManager",
     "../test/tests/OpenIGValidatorsTests",
+    "../test/tests/TransformServiceTests",
     "../test/tests/getLoggedUser"
 ], function (
     $,
@@ -29,6 +30,7 @@ define([
     constants,
     eventManager,
     openIGValidatorsTests,
+    transformServiceTests,
     getLoggedUser) {
 
     $.doTimeout = function (name, time, func) {
@@ -57,6 +59,7 @@ define([
                 _.delay(function () {
                     QUnit.start();
                     openIGValidatorsTests.executeAll(server, getLoggedUser());
+                    transformServiceTests.executeAll(server);
                 }, 500);
 
                 QUnit.done(function () {
