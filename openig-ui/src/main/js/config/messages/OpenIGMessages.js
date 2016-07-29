@@ -31,6 +31,14 @@ define([], function () {
         "settingsFailed": {
             msg: "config.messages.OpenIGMessages.settingsFailed",
             type: "error"
+        },
+        "invalidModel": {
+            msg: "config.messages.OpenIGMessages.invalidModel",
+            type: "error"
+        },
+        "unknownFilterType": {
+            msg: "config.messages.OpenIGMessages.unknownFilterType",
+            type: "error"
         }
     };
 });

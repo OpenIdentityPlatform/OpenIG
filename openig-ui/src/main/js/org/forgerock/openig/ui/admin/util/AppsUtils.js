@@ -23,6 +23,7 @@ define([
     "org/forgerock/openig/ui/admin/models/AppsCollection",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/TransformService",
     "org/forgerock/commons/ui/common/main/Router"
 ], (
     $,
@@ -33,6 +34,7 @@ define([
     AppsCollection,
     eventManager,
     constants,
+    transformService,
     router
 ) => ({
     cleanAppNamen (name) {
@@ -65,8 +67,18 @@ define([
     deployApplicationDlg (appId, appTitle) {
         UIUtils.confirmDialog($.t("templates.apps.deployDialog", { title: appTitle }), "danger",
             () => {
-                    // TODO: call app config to real config conversion
-                    // TODO: send real config to router endpoint
+                AppsCollection.byId(appId).then((appData) => {
+                    if (appData) {
+                        try {
+                            transformService.transformApplication(appData);
+                            // TODO: send real config to router endpoint
+                        } catch (e) {
+                            eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
+                                key: e.errorType, filter: e.message
+                            });
+                        }
+                    }
+                });
             }
         );
     },

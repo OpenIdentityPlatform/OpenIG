@@ -38,7 +38,9 @@
                 "deleteAppSuccess": "Aplication '__title__' was removed.",
                 "deleteAppFailed": "Application removing failed.",
                 "settingsFailed": "Settings has failed",
-                "settingsSuccess": "Settings successfully saved"
+                "settingsSuccess": "Settings successfully saved",
+                "invalidModel": "Cannot create config file due to invalid model",
+                "unknownFilterType": "Unknown filter type: '__filter__'"
             }
         },
         "AppConfiguration": {
