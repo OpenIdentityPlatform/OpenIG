@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * The capture decorator can be configured to globally enable entity capture using the {@literal captureEntity}
  * boolean attribute (default to {@code false}).
  * To capture the context at the capture point as well, use the {@literal captureContext} boolean attribute
- * (default to {@code false}), Note that {@literal captureExchange} is deprecated.
+ * (default to {@code false}).
  * <p>
  * To decorate a component, just add the decorator declaration next to the {@code config} element:
  * <pre>
@@ -185,15 +185,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
             JsonValue evaluated = config.as(evaluated(heap.getBindings()));
             boolean captureEntity = evaluated.get("captureEntity").defaultTo(false).asBoolean();
-
-            // captureExchange is deprecated
-            boolean captureContext = false;
-            if (evaluated.isDefined("captureExchange")) {
-                captureContext = evaluated.get("captureExchange").asBoolean();
-            }
-            if (evaluated.isDefined("captureContext")) {
-                captureContext = evaluated.get("captureContext").asBoolean();
-            }
+            boolean captureContext = evaluated.get("captureContext").defaultTo(false).asBoolean();
             return new CaptureDecorator(name.getLeaf(), captureEntity, captureContext);
         }
     }
