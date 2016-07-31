@@ -49,6 +49,8 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extracts regular expression patterns from a message entity. Extraction occurs either
@@ -65,6 +67,8 @@ import org.forgerock.util.promise.ResultHandler;
  * @see PatternTemplate
  */
 public class EntityExtractFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(EntityExtractFilter.class);
 
     /** Extracts regular expression patterns from entities. */
     private final StreamPatternExtractor extractor = new StreamPatternExtractor();
@@ -129,7 +133,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
                     }
                 }
             } catch (IOException ioe) {
-                logger.trace(ioe);
+                logger.trace("An error occurred while reading the entity's message", ioe);
                 // may yield partial or unresolved attributes
             }
         }

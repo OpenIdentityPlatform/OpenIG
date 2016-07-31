@@ -15,13 +15,12 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static java.lang.String.format;
-
 import java.util.List;
 
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class extends the {@link ClientRegistrationRepository} to ensure
@@ -34,15 +33,14 @@ import org.forgerock.openig.log.Logger;
  */
 class HeapClientRegistrationRepository extends ClientRegistrationRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(HeapClientRegistrationRepository.class);
+
     private final Heap heap;
-    private final Logger logger;
 
     HeapClientRegistrationRepository(final List<ClientRegistration> registrations,
-                                     final Heap heap,
-                                     final Logger logger) {
+                                     final Heap heap) {
         super(registrations);
         this.heap = heap;
-        this.logger = logger;
     }
 
     @Override
@@ -53,15 +51,14 @@ class HeapClientRegistrationRepository extends ClientRegistrationRepository {
         }
         try {
             reg = heap.get(name, ClientRegistration.class);
-            logger.warning(format("The ClientRegistration '%s' needs to be declared in the OAuth2ClientFilter"
-                                  + " 'registrations' attribute. Lookups in the heap will be deprecated in 5.0", name));
+            logger.warn("The ClientRegistration '{}' needs to be declared in the OAuth2ClientFilter"
+                                + " 'registrations' attribute. Lookups in the heap will be deprecated in 5.0", name);
             if (reg != null) {
                 add(reg);
             }
             return reg;
         } catch (HeapException ex) {
-            logger.warning("Unable to extract the client registration from the heap");
-            logger.warning(ex);
+            logger.warn("Unable to extract the client registration from the heap", ex);
             return null;
         }
     }

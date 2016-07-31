@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.forgerock.http.Handler;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.log.Logger;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -45,9 +44,6 @@ public class HeapClientRegistrationRepositoryTest {
 
     private HeapImpl heap;
     private List<ClientRegistration> registrations;
-
-    @Mock
-    private Logger logger;
 
     @Mock
     private Handler registrationHandler;
@@ -70,12 +66,12 @@ public class HeapClientRegistrationRepositoryTest {
     @SuppressWarnings("unused")
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldNotAllowNullListOfClientRegistrations() {
-        new HeapClientRegistrationRepository(null, heap, logger);
+        new HeapClientRegistrationRepository(null, heap);
     }
 
     @Test
     public void shouldFindByName() throws Exception {
-        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap, logger);
+        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap);
         assertThat(registry.findByName(FORGESHOP_CLIENT_NAME)).isSameAs(forgeShopClientRegistration);
         verify(heap, never()).get(FORGESHOP_CLIENT_NAME, ClientRegistration.class);
     }
@@ -83,7 +79,7 @@ public class HeapClientRegistrationRepositoryTest {
     @Test
     public void shouldFindByNameSearchesInHeap() throws Exception {
         // Given
-        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap, logger);
+        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap);
 
         // When
         final ClientRegistration heapShopClient = registry.findByName(HEAPSHOP_CLIENT_NAME);
@@ -96,7 +92,7 @@ public class HeapClientRegistrationRepositoryTest {
     @Test
     public void shouldFindByNameCallsHeapOnlyOnce() throws Exception {
         // Given
-        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap, logger);
+        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap);
 
         // When
         assertThat(registry.findByName(HEAPSHOP_CLIENT_NAME))
@@ -109,7 +105,7 @@ public class HeapClientRegistrationRepositoryTest {
 
     @Test
     public void shouldFindByNameNotFoundReturnsNull() throws Exception {
-        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap, logger);
+        final ClientRegistrationRepository registry = new HeapClientRegistrationRepository(registrations, heap);
 
         assertThat(registry.findByName("unknown")).isNull();
         verify(heap).get("unknown", ClientRegistration.class);

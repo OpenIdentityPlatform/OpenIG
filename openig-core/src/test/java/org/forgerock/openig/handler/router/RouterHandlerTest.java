@@ -25,8 +25,6 @@ import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -53,8 +51,6 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -63,7 +59,6 @@ import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -78,9 +73,6 @@ public class RouterHandlerTest {
 
     @Mock
     private DirectoryScanner scanner;
-
-    @Spy
-    private Logger logger = new Logger(new NullLogSink(), Name.of("source"));
 
     private File routes;
     private File supply;
@@ -103,7 +95,6 @@ public class RouterHandlerTest {
 
         RouterHandler handler = new RouterHandler(newRouterBuilder(),
                                                   new DirectoryMonitor(routes));
-        handler.setLogger(logger);
 
         // Initial scan
         handler.start();
@@ -130,7 +121,6 @@ public class RouterHandlerTest {
         Response response = handler.handle(context, new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.getEntity().getString()).isEmpty();
-        verify(logger).error("no handler to dispatch to");
 
         handler.stop();
     }
@@ -229,9 +219,8 @@ public class RouterHandlerTest {
     }
 
     @Test
-    public void testDuplicatedRouteNamesAreGeneratingErrors() throws Exception {
+    public void testDeploymentOfRouteWithSameNameFailsSecondDeploymentAndOnlyActivateFirstRoute() throws Exception {
         RouterHandler router = new RouterHandler(newRouterBuilder(), scanner);
-        router.setLogger(logger);
 
         File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
         File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
@@ -241,16 +230,12 @@ public class RouterHandlerTest {
                                            new HashSet<>(asList(first, second)),
                                            Collections.<File>emptySet(),
                                            Collections.<File>emptySet()));
-
-        // Should have an error log statement
-        verify(logger).error(anyString());
     }
 
     @Test
     public void testUncheckedExceptionSupportForAddedFiles() throws Exception {
         RouteBuilder builder = spy(newRouterBuilder());
         RouterHandler router = new RouterHandler(builder, scanner);
-        router.setLogger(logger);
 
         doThrow(new NullPointerException()).when(builder).build(any(File.class));
 
@@ -258,8 +243,6 @@ public class RouterHandlerTest {
                                            Collections.singleton(new File("/")),
                                            Collections.<File>emptySet(),
                                            Collections.<File>emptySet()));
-
-        verify(logger).error(matches("The route defined in file '.*' cannot be added"));
     }
 
     @Test

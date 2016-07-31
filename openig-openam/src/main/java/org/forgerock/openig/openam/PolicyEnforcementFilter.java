@@ -80,6 +80,8 @@ import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This filter requests policy decisions from OpenAM which evaluates the
@@ -166,6 +168,8 @@ import org.forgerock.util.time.Duration;
  *      Requesting Policy Decisions in OpenAM</a>
  */
 public class PolicyEnforcementFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(PolicyEnforcementFilter.class);
 
     /** The expression which will be used for storing policy decision extra attributes in the context. */
     public static final String DEFAULT_POLICY_KEY = "policy";
@@ -284,8 +288,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
 
                 @Override
                 public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
-                    logger.debug("Cannot get the policy evaluation");
-                    logger.debug(exception);
+                    logger.debug("Cannot get the policy evaluation", exception);
                     final Response response = new Response(INTERNAL_SERVER_ERROR);
                     response.setCause(exception);
                     return newResponsePromise(response);
@@ -315,8 +318,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         try {
             resources = buildResources(context, request);
         } catch (NotSupportedException | ExpressionException ex) {
-            logger.error("Unable to build the resources content");
-            logger.error(ex);
+            logger.error("Unable to build the resources content", ex);
             return new InternalServerErrorException(ex).asPromise();
         }
         actionRequest.setContent(resources);
@@ -487,8 +489,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                                          pepRealm,
                                                                          ssoTokenHeader,
                                                                          pepUsername,
-                                                                         pepPassword,
-                                                                         logger);
+                                                                         pepPassword);
 
                 final PolicyEnforcementFilter filter =
                         new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl, realm),

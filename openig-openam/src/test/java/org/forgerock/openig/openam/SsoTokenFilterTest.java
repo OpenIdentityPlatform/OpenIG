@@ -39,7 +39,6 @@ import java.util.concurrent.ExecutorService;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
@@ -65,9 +64,6 @@ public class SsoTokenFilterTest {
     @Mock
     static Handler authenticate, next;
 
-    @Mock
-    static Logger logger;
-
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -90,8 +86,7 @@ public class SsoTokenFilterTest {
                            "   >>invalid<<    ",
                            DEFAULT_HEADER_NAME,
                            "bjensen",
-                           "hifalutin",
-                           logger);
+                           "hifalutin");
     }
 
     @DataProvider
@@ -109,8 +104,7 @@ public class SsoTokenFilterTest {
                            "/",
                            DEFAULT_HEADER_NAME,
                            "bjensen",
-                           "hifalutin",
-                           logger);
+                           "hifalutin");
     }
 
     @DataProvider
@@ -176,7 +170,6 @@ public class SsoTokenFilterTest {
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
-        verify(logger).error("Unable to retrieve SSO Token");
     }
 
     @Test(timeOut = 1000)
@@ -293,7 +286,6 @@ public class SsoTokenFilterTest {
                                   null,
                                   headerName,
                                   "bjensen",
-                                  "hifalutin",
-                                  logger);
+                                  "hifalutin");
     }
 }

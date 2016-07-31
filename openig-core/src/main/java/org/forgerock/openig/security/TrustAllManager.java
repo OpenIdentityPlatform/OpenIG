@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
@@ -23,11 +23,15 @@ import javax.net.ssl.X509TrustManager;
 
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Trust all certificates that this class is asked to check.
  */
 public class TrustAllManager implements X509TrustManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(TrustAllManager.class);
 
     @Override
     public void checkClientTrusted(final X509Certificate[] certificates, final String authType)
@@ -48,8 +52,8 @@ public class TrustAllManager implements X509TrustManager {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            logger.warning("Using TrustAllManager is not safe when deployed in production. "
-                                   + "Declare the appropriate KeyStore and linked TrustManager(s) instead.");
+            logger.warn("Using TrustAllManager is not safe when deployed in production. "
+                                + "Declare the appropriate KeyStore and linked TrustManager(s) instead.");
             return new TrustAllManager();
         }
     }

@@ -31,12 +31,11 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -72,8 +71,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.ConsoleLogSink;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -118,9 +115,6 @@ public class PolicyEnforcementFilterTest {
 
     @Mock
     private Handler amHandler;
-
-    @Mock
-    private Logger logger;
 
     @Captor
     private ArgumentCaptor<Runnable> captor;
@@ -359,7 +353,6 @@ public class PolicyEnforcementFilterTest {
         errorResponse.setStatus(GATEWAY_TIMEOUT);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
-        filter.setLogger(logger);
 
         when(amHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(errorResponse));
@@ -372,7 +365,6 @@ public class PolicyEnforcementFilterTest {
         verify(amHandler).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
-        verify(logger).debug(any(Exception.class));
     }
 
     @DataProvider
@@ -710,7 +702,6 @@ public class PolicyEnforcementFilterTest {
     public HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(FORGEROCK_CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
         heap.put("amHandler", amHandler);

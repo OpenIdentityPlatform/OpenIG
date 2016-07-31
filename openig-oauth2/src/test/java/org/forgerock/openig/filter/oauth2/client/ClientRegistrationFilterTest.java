@@ -33,7 +33,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -43,7 +42,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
@@ -70,9 +68,6 @@ public class ClientRegistrationFilterTest {
     @Mock
     private Handler next;
 
-    @Mock
-    private Logger logger;
-
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
@@ -96,7 +91,6 @@ public class ClientRegistrationFilterTest {
         final Exception cause = response.getCause();
         assertThat(cause).isInstanceOf(RegistrationException.class);
         assertThat(cause.getMessage()).contains("Cannot retrieve issuer from the context");
-        verify(logger).error(any(String.class));
     }
 
     @Test
@@ -109,8 +103,8 @@ public class ClientRegistrationFilterTest {
 
         final ClientRegistrationFilter crf = new ClientRegistrationFilter(registrations,
                                                                           handler,
-                                                                          invalidConfig,
-                                                                          logger);
+                                                                          invalidConfig
+        );
 
         // when
         final Response response = crf.filter(context, new Request(), next).get();
@@ -119,7 +113,6 @@ public class ClientRegistrationFilterTest {
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
         assertThat(response.getCause().getMessage()).contains("'redirect_uris' should be defined");
-        verify(logger).error(any(String.class));
     }
 
     @Test
@@ -137,7 +130,6 @@ public class ClientRegistrationFilterTest {
         Exception cause = response.getCause();
         assertThat(cause).isInstanceOf(RegistrationException.class);
         assertThat(cause.getMessage()).contains("Registration is not supported by the issuer");
-        verify(logger).error(any(String.class));
     }
 
     @Test
@@ -210,7 +202,6 @@ public class ClientRegistrationFilterTest {
         // Then, the client registration has created an oauth2-openid client in the OpenID Provider.
         verify(handler).handle(eq(context), any(Request.class));
         verify(next).handle(eq(context), any(Request.class));
-        verifyZeroInteractions(logger);
         assertThat(response.getStatus()).isEqualTo(OK);
         assertThat(context.getAttributes().get(CLIENT_REG_KEY))
             .isInstanceOf(ClientRegistration.class).isEqualTo(registrations.findDefault());
@@ -220,13 +211,13 @@ public class ClientRegistrationFilterTest {
 
         // Then, the client registration is not created but reused instead.
         verify(next, times(2)).handle(eq(context), any(Request.class));
-        verifyNoMoreInteractions(handler, logger);
+        verifyNoMoreInteractions(handler);
         assertThat(response.getStatus()).isEqualTo(OK);
         verify(registrations).add(any(ClientRegistration.class));
     }
 
     private ClientRegistrationFilter buildClientRegistrationFilter() throws Exception {
-        return new ClientRegistrationFilter(registrations, handler, getMetadata(), logger);
+        return new ClientRegistrationFilter(registrations, handler, getMetadata());
     }
 
     private JsonValue getMetadata() {

@@ -35,13 +35,14 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The client registration filter is the way to dynamically register an OpenID
@@ -66,14 +67,15 @@ import org.forgerock.util.promise.Promise;
  *      OAuth 2.0 Dynamic Client Registration Protocol </a>
  */
 public class ClientRegistrationFilter implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClientRegistrationFilter.class);
+
     private final ClientRegistrationRepository registrations;
     private final Handler registrationHandler;
     private final JsonValue config;
-    private final Logger logger;
 
     /**
      * Creates a new dynamic registration filter.
-     *
      * @param repository
      *            The {@link ClientRegistrationRepository} holding the
      *            registrations values.
@@ -84,17 +86,13 @@ public class ClientRegistrationFilter implements Filter {
      *            Can contain any client metadata attributes that the client
      *            chooses to specify for itself during the registration. Must
      *            contains the 'redirect_uris' attributes.
-     * @param logger
-     *            For logging activities.
      */
     public ClientRegistrationFilter(final ClientRegistrationRepository repository,
                                     final Handler registrationHandler,
-                                    final JsonValue config,
-                                    final Logger logger) {
+                                    final JsonValue config) {
         this.registrations = checkNotNull(repository);
         this.registrationHandler = registrationHandler;
         this.config = config;
-        this.logger = logger;
     }
 
     @Override

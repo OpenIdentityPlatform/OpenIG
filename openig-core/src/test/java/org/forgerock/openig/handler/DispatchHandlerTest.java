@@ -29,7 +29,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -53,9 +52,6 @@ public class DispatchHandlerTest {
 
     @Mock
     private Handler nextHandler;
-
-    @Mock
-    private Logger logger;
 
     @Mock
     private Promise<Response, NeverThrowsException> promise;
@@ -204,10 +200,8 @@ public class DispatchHandlerTest {
     @Test
     public void testDispatchNoHandlerToDispatch() throws Exception {
         final DispatchHandler handler = new DispatchHandler();
-        handler.setLogger(logger);
         Response response = handler.handle(new RootContext(), new Request()).get();
         assertThat(response.getStatus()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.getEntity().getString()).isEmpty();
-        verify(logger).error("no handler to dispatch to");
     }
 }

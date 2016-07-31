@@ -51,6 +51,8 @@ import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link UmaResourceServerFilter} implements a PEP (Policy Enforcement Point) and is responsible to ensure the
@@ -69,6 +71,8 @@ import org.forgerock.util.promise.ResultHandler;
  * </pre>
  */
 public class UmaResourceServerFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(UmaResourceServerFilter.class);
 
     private final UmaSharingService umaService;
     private final Handler protectionApiHandler;
@@ -113,7 +117,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
             return ticket(context, share, request);
 
         } catch (UmaException e) {
-            logger.error(e);
+            logger.error("An error occurred while looking for a UMA share", e);
             // No share found
             // Make sure we return a 404
             return newResponsePromise(e.getResponse().setStatus(Status.NOT_FOUND));
@@ -221,8 +225,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                 try {
                     value = json(token.getEntity().getJson());
                 } catch (IOException e) {
-                    logger.debug("Cannot extract JSON from token introspection response, possibly malformed JSON");
-                    logger.debug(e);
+                    logger.debug("Cannot extract JSON from token introspection response, possibly malformed JSON", e);
                     return newResponsePromise(newInternalServerError(e));
                 }
                 if (value.get("active").asBoolean()) {
@@ -288,13 +291,12 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                     } catch (IOException e) {
                         // JSON parsing exception
                         // Do not process them here, handle them in the later catch-all block
-                        logger.debug("Cannot extract JSON from ticket response, possibly malformed JSON");
-                        logger.debug(e);
+                        logger.debug("Cannot extract JSON from ticket response, possibly malformed JSON", e);
                     }
                 } else {
-                    logger.debug(format("Got a %s Response from '%s', was expecting a 201 Created.",
-                                        response.getStatus(),
-                                        umaService.getTicketEndpoint()));
+                    logger.debug("Got a {} Response from '{}', was expecting a 201 Created.",
+                                 response.getStatus(),
+                                 umaService.getTicketEndpoint());
                 }
 
                 // Properly handle 400 errors and UMA error codes

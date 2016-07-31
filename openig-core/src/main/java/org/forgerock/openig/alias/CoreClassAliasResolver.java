@@ -55,10 +55,6 @@ import org.forgerock.openig.handler.router.AuditServiceObjectHeaplet;
 import org.forgerock.openig.handler.router.RouterHandler;
 import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.jwt.JwtSessionManager;
-import org.forgerock.openig.log.ConsoleLogSink;
-import org.forgerock.openig.log.FileLogSink;
-import org.forgerock.openig.log.NullLogSink;
-import org.forgerock.openig.log.Slf4jLogSink;
 import org.forgerock.openig.security.KeyManagerHeaplet;
 import org.forgerock.openig.security.KeyStoreHeaplet;
 import org.forgerock.openig.security.TrustAllManager;
@@ -81,7 +77,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ClientHandler", ClientHandler.class);
         ALIASES.put("ConditionalFilter", ConditionalFilterHeaplet.class);
         ALIASES.put("ConditionEnforcementFilter", ConditionEnforcementFilter.class);
-        ALIASES.put("ConsoleLogSink", ConsoleLogSink.class);
         ALIASES.put("CookieFilter", CookieFilter.class);
         ALIASES.put("CryptoHeaderFilter", CryptoHeaderFilter.class);
         ALIASES.put("DefaultRateThrottlingPolicy", DefaultRateThrottlingPolicyHeaplet.class);
@@ -90,7 +85,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("DispatchHandler", DispatchHandler.class);
         ALIASES.put("EntityExtractFilter", EntityExtractFilter.class);
         ALIASES.put("FileAttributesFilter", FileAttributesFilter.class);
-        ALIASES.put("FileLogSink", FileLogSink.class);
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
         ALIASES.put("JwtSessionFactory", JwtSessionManager.class);
@@ -99,7 +93,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("KeyStore", KeyStoreHeaplet.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MappedThrottlingPolicy", MappedThrottlingPolicyHeaplet.class);
-        ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("PasswordReplayFilter", PasswordReplayFilterHeaplet.class);
         ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
         ALIASES.put("Router", RouterHandler.class);
@@ -109,7 +102,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("ScriptableHandler", ScriptableHandler.class);
         ALIASES.put("ScriptableThrottlingPolicy", ScriptableThrottlingPolicy.class);
         ALIASES.put("SequenceHandler", SequenceHandler.class);
-        ALIASES.put("Slf4jLogSink", Slf4jLogSink.class);
         ALIASES.put("SqlAttributesFilter", SqlAttributesFilter.class);
         ALIASES.put("StaticRequestFilter", StaticRequestFilter.class);
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);

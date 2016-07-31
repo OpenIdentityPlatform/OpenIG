@@ -43,6 +43,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.util.Function;
 import org.forgerock.util.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates and initializes a throttling filter in a heap environment.
@@ -76,6 +78,8 @@ import org.forgerock.util.time.Duration;
  * </pre>
  */
 public class ThrottlingFilterHeaplet extends GenericHeaplet {
+
+    private static final Logger logger = LoggerFactory.getLogger(ThrottlingFilterHeaplet.class);
 
     static Function<JsonValue, ThrottlingRate, JsonValueException> throttlingRate(final Bindings bindings) {
         return new Function<JsonValue, ThrottlingRate, JsonValueException>() {

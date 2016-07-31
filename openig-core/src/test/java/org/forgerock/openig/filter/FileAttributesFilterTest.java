@@ -17,8 +17,6 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -27,7 +25,6 @@ import java.util.Map;
 import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
@@ -41,9 +38,6 @@ public class FileAttributesFilterTest {
 
     @Mock
     private SeparatedValuesFile file;
-
-    @Mock
-    private Logger logger;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -73,12 +67,10 @@ public class FileAttributesFilterTest {
         Expression<String> value = Expression.valueOf("joe", String.class);
         Expression<Map> target = Expression.valueOf("${attributes.result}", Map.class);
         FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
-        filter.setLogger(logger);
 
         AttributesContext context = new AttributesContext(new RootContext());
         filter.filter(context, null, new ResponseHandler(Status.OK)).get();
 
         assertThat((Map) context.getAttributes().get("result")).isEmpty();
-        verify(logger).debug(anyString());
     }
 }

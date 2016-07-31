@@ -53,6 +53,8 @@ import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Validates a {@link Request} that contains an OAuth 2.0 access token.
@@ -111,6 +113,8 @@ import org.forgerock.util.time.TimeService;
  * @see Duration
  */
 public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
+
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2ResourceServerFilterHeaplet.class);
 
     /**
      * Name of the realm when none is specified in the heaplet.

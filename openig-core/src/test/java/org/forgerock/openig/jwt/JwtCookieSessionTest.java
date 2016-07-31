@@ -25,10 +25,7 @@ import static org.forgerock.openig.jwt.JwtCookieSession.OPENIG_JWT_SESSION;
 import static org.forgerock.openig.jwt.JwtSessionManager.DEFAULT_SESSION_TIMEOUT;
 import static org.forgerock.openig.jwt.JwtSessionManager.MAX_SESSION_TIMEOUT;
 import static org.forgerock.util.time.Duration.duration;
-import static org.mockito.Mockito.matches;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -52,9 +49,6 @@ import org.forgerock.json.jose.jws.SignedEncryptedJwt;
 import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
-import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
 import org.testng.annotations.BeforeMethod;
@@ -111,11 +105,6 @@ public class JwtCookieSessionTest {
             new HmacSigningHandler("HelloWorld".getBytes(StandardCharsets.UTF_8));
 
     /**
-     * Default logger.
-     */
-    private Logger logger = new Logger(new NullLogSink(), Name.of("Test"));
-
-    /**
      * Static key pair used for test encryption/decryption.
      */
     private KeyPair keyPair;
@@ -163,7 +152,7 @@ public class JwtCookieSessionTest {
         Duration sessionTimeout = duration("30 minutes");
         long expiredBy = sessionTimeout.to(MILLISECONDS);
 
-        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, sessionTimeout);
+        JwtCookieSession session = newJwtSession(new Request(), timeService, sessionTimeout);
         session.put("a-value", "ForgeRock OpenIG");
         Response response = new Response();
         session.save(response);
@@ -176,7 +165,7 @@ public class JwtCookieSessionTest {
 
         Request request = new Request();
         setRequestCookie(request, jwtCookie.getValue());
-        session = newJwtSession(request, logger, timeService, sessionTimeout);
+        session = newJwtSession(request, timeService, sessionTimeout);
         response = new Response();
         // Unless we add another value, the session won't be seen as dirty and the JWT cookie won't be returned
         session.put("b-value", "ForgeRock OpenIG");
@@ -187,15 +176,13 @@ public class JwtCookieSessionTest {
         assertThat(jwtCookie.getExpires().getTime()).isEqualTo(expectedTime);
 
         // The last timeService.now() call will be after expiry time, assert that the JWT cookie has now expired
-        Logger spied = spy(logger);
         request = new Request();
         setRequestCookie(request, jwtCookie.getValue());
-        session = newJwtSession(request, spied, timeService, sessionTimeout);
+        session = newJwtSession(request, timeService, sessionTimeout);
         response = new Response();
         session.save(response);
         jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
-        verify(spied).debug(matches("The JWT Session Cookie has expired"));
         // With no session values we should be returned an expired cookie
         assertThat(jwtCookie.getExpires().getTime()).isEqualTo(0L);
     }
@@ -206,7 +193,7 @@ public class JwtCookieSessionTest {
         TimeService timeService = mock(TimeService.class);
         when(timeService.now()).thenReturn(0L);
 
-        JwtCookieSession session = newJwtSession(new Request(), logger, timeService, Duration.UNLIMITED);
+        JwtCookieSession session = newJwtSession(new Request(), timeService, Duration.UNLIMITED);
         session.put("a-value", "ForgeRock OpenIG");
         Response response = new Response();
         session.save(response);
@@ -327,19 +314,15 @@ public class JwtCookieSessionTest {
     @Test
     public void shouldWarnTheUserAboutGettingCloseToTheThreshold() throws Exception {
         Request request = new Request();
-        Logger spied = spy(logger);
         JwtCookieSession session = new JwtCookieSession(
                 request,
                 keyPair,
                 "Test",
-                spied,
                 TimeService.SYSTEM,
                 duration(DEFAULT_SESSION_TIMEOUT),
                 SIGNING_HANDLER);
         session.put("in-between-3KB-and-4KB", generateMessageOf(2000));
         session.save(new Response());
-
-        verify(spied).warning(matches("Current JWT session's size \\(.* chars\\) is quite close to the 4KB limit.*"));
     }
 
     private static Object generateMessageOf(final int size) {
@@ -351,17 +334,15 @@ public class JwtCookieSessionTest {
     }
 
     private JwtCookieSession newJwtSession(final Request request) {
-        return newJwtSession(request, logger, TimeService.SYSTEM, duration(DEFAULT_SESSION_TIMEOUT));
+        return newJwtSession(request, TimeService.SYSTEM, duration(DEFAULT_SESSION_TIMEOUT));
     }
 
     private JwtCookieSession newJwtSession(final Request request,
-                                           final Logger logger,
                                            final TimeService timeService,
                                            final Duration sessionTimeout) {
         return new JwtCookieSession(request,
                                     keyPair,
                                     OPENIG_JWT_SESSION,
-                                    logger,
                                     timeService,
                                     sessionTimeout,
                                     SIGNING_HANDLER);

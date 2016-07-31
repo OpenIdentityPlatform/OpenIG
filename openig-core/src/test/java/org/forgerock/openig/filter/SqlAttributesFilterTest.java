@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -119,7 +119,6 @@ public class SqlAttributesFilterTest {
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
                 Expression.valueOf("${attributes.result}", Map.class), null);
-        filter.setLogger(spy(filter.getLogger()));
 
         // Generate an SQLException when getConnection() is called
         when(source.getConnection()).thenThrow(new SQLException("Unexpected"));
@@ -132,14 +131,12 @@ public class SqlAttributesFilterTest {
         @SuppressWarnings("unchecked")
         Map<String, String> result = (Map<String, String>) context.getAttributes().get("result");
         assertThat(result).isEmpty();
-        verify(filter.getLogger()).error(any(SQLException.class));
     }
 
     @Test
     public void testTooMuchParametersProvided() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
                 Expression.valueOf("${attributes.result}", Map.class), null);
-        filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -152,14 +149,12 @@ public class SqlAttributesFilterTest {
 
         // Trigger the lazy map instantiation
         context.getAttributes().get("result").hashCode();
-        verify(filter.getLogger()).warning(matches(" All parameters with index >= 0 are ignored.*"));
     }
 
     @Test
     public void testNotEnoughParameters() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
                 Expression.valueOf("${attributes.result}", Map.class), null);
-        filter.setLogger(spy(filter.getLogger()));
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -172,7 +167,6 @@ public class SqlAttributesFilterTest {
 
         // Trigger the lazy map instantiation
         context.getAttributes().get("result").hashCode();
-        verify(filter.getLogger()).warning(matches(" Placeholder 3 has no provided value as parameter"));
     }
 
     private void mockDatabaseInteractions() throws Exception {

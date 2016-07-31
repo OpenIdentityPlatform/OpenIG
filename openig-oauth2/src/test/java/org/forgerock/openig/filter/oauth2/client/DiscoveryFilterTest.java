@@ -25,7 +25,6 @@ import static org.forgerock.openig.filter.oauth2.client.DiscoveryFilter.OPENID_S
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -39,7 +38,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.filter.oauth2.client.DiscoveryFilter.AccountIdentifier;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.ArgumentCaptor;
@@ -64,9 +62,6 @@ public class DiscoveryFilterTest {
 
     @Mock
     private Handler handler;
-
-    @Mock
-    private Logger logger;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -159,7 +154,7 @@ public class DiscoveryFilterTest {
     @Test(dataProvider = "userInputAndFinalWebfingerProducedUri")
     public void shouldReturnWebfingerUri(final String input, final String expected) throws Exception {
         final AccountIdentifier account = DiscoveryFilter.extractFromInput(input);
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
         assertThat(df.buildWebFingerRequest(account).getUri().toString()).isEqualTo(expected);
     }
 
@@ -184,7 +179,7 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
         final URI openIdWellKnownUri = df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
 
         // then
@@ -193,7 +188,6 @@ public class DiscoveryFilterTest {
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getUri().toString()).isEqualTo(givenWebFingerUri);
         assertThat(openIdWellKnownUri.toString()).endsWith("/.well-known/openid-configuration");
-        verifyZeroInteractions(logger);
     }
 
     @Test(expectedExceptions = DiscoveryException.class)
@@ -211,7 +205,7 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
         df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 
@@ -226,7 +220,7 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
         df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 
@@ -241,7 +235,7 @@ public class DiscoveryFilterTest {
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
-        final DiscoveryFilter df = new DiscoveryFilter(handler, heap, logger);
+        final DiscoveryFilter df = new DiscoveryFilter(handler, heap);
         df.performOpenIdIssuerDiscovery(context, account).getOrThrow();
     }
 }

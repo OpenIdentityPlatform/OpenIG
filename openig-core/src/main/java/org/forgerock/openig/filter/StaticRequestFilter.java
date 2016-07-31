@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.filter;
 
-import static java.lang.String.format;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.expression;
@@ -43,6 +42,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates a new request and send it down the next handler (effectively replacing the previous request).
@@ -92,6 +93,8 @@ import org.forgerock.util.promise.Promise;
  * </pre>
  */
 public class StaticRequestFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(StaticRequestFilter.class);
 
     /** The message entity expression. */
     private Expression<String> entity;
@@ -196,13 +199,11 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
             try {
                 newRequest.setUri(value);
             } catch (URISyntaxException e) {
-                logger.error(format("The URI %s was not valid", value));
-                logger.error(e);
+                logger.error("The URI {} was not valid", value, e);
                 return newResultPromise(newInternalServerError(e));
             }
         } else {
-            String message = format("The URI expression '%s' could not be resolved", uri.toString());
-            logger.error(message);
+            logger.error("The URI expression '{}' could not be resolved", uri);
             return newResultPromise(newInternalServerError());
         }
 

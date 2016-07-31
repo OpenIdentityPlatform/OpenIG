@@ -17,19 +17,19 @@ package org.forgerock.openig.filter;
 
 
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
-import static org.forgerock.util.Reject.checkNotNull;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
 import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.promise.RuntimeExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This filter aims to guarantee the caller that it will always get a Response to process, even if the {@literal next}
@@ -37,15 +37,7 @@ import org.forgerock.util.promise.RuntimeExceptionHandler;
  */
 public class RuntimeExceptionFilter implements Filter {
 
-    private final Logger logger;
-
-    /**
-     * Constructs a new {@link RuntimeExceptionFilter} and logs some traces through the speficied {@code logger}.
-     * @param logger the logger to use for tracing the caught {@link RuntimeException}
-     */
-    public RuntimeExceptionFilter(Logger logger) {
-        this.logger = checkNotNull(logger);
-    }
+    private static final Logger logger = LoggerFactory.getLogger(RuntimeExceptionFilter.class);
 
     @Override
     public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
@@ -74,8 +66,7 @@ public class RuntimeExceptionFilter implements Filter {
         return new RuntimeExceptionHandler() {
             @Override
             public void handleRuntimeException(RuntimeException exception) {
-                logger.trace("The following RuntimeException was caught : ");
-                logger.trace(exception);
+                logger.trace("The following RuntimeException was caught : ", exception);
                 promise.handleResult(errorResponse(exception));
             }
         };

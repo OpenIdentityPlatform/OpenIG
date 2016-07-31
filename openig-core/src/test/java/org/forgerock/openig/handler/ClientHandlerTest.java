@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -29,10 +29,6 @@ import static com.xebialabs.restito.semantics.Condition.withPostBodyContaining;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.util.Options.defaultOptions;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,8 +38,6 @@ import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -129,22 +123,5 @@ public class ClientHandlerTest {
             assertThat(handler.handle(new RootContext(), request).get()
                               .getStatus()).isEqualTo(Status.OK);
         }
-    }
-
-    @Test
-    public void shouldLogException() throws Exception {
-        Exception cause = new Exception("Boom");
-        Response response = new Response(Status.INTERNAL_SERVER_ERROR).setCause(cause);
-
-        when(delegate.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Response.newResponsePromise(response));
-
-        ClientHandler handler = new ClientHandler(delegate);
-
-        Logger logger = mock(Logger.class);
-        handler.setLogger(logger);
-        handler.handle(new RootContext(), new Request());
-
-        verify(logger).warning(cause);
     }
 }

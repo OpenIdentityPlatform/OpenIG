@@ -40,6 +40,8 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rewrites Location headers on responses that generate a redirect that would
@@ -71,6 +73,8 @@ import org.forgerock.util.promise.Promise;
  */
 public class LocationHeaderFilter extends GenericHeapObject implements Filter {
 
+    private static final Logger logger = LoggerFactory.getLogger(LocationHeaderFilter.class);
+
     /** The base URI of the OpenIG instance, used to rewrite Location headers. */
     private Expression<String> baseURI;
 
@@ -100,7 +104,7 @@ public class LocationHeaderFilter extends GenericHeapObject implements Filter {
                     response.getHeaders().put(LocationHeader.NAME, rebasedURI.toString());
                 }
             } catch (URISyntaxException | ResponseException ex) {
-                logger.error(ex);
+                logger.error("Cannot rebase 'Location' URI", ex);
                 return newInternalServerError(ex);
             }
         }

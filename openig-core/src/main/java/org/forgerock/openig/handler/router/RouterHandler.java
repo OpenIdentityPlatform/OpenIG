@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.handler.router;
 
-import static java.lang.String.format;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
@@ -50,6 +49,8 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Auto-configured {@link org.forgerock.openig.handler.DispatchHandler}.
@@ -75,6 +76,8 @@ import org.forgerock.util.time.TimeService;
  * @since 2.2
  */
 public class RouterHandler extends GenericHeapObject implements FileChangeListener, Handler {
+
+    private static final Logger logger = LoggerFactory.getLogger(RouterHandler.class);
 
     /**
      * Toolkit to load Routes from monitored files.
@@ -209,25 +212,22 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         try {
             route = builder.build(file);
         } catch (Exception e) {
-            logger.error(format("The route defined in file '%s' cannot be added",
-                                file));
-            logger.error(e);
+            logger.error("The route defined in file '{}' cannot be added", file, e);
             return;
         }
         String name = route.getName();
         if (sorted.contains(route)) {
-            logger.error(format("The added file '%s' contains a route named '%s' that is already "
-                    + "registered by the file '%s'",
-                                file,
-                                name,
-                                lookupRouteFile(name)));
+            logger.error("The added file '{}' contains a route named '{}' that is already registered by the file '{}'",
+                         file,
+                         name,
+                         lookupRouteFile(name));
             route.destroy();
             return;
         }
         route.start();
         sorted.add(route);
         routes.put(file, route);
-        logger.info(format("Added route '%s' defined in file '%s'", name, file));
+        logger.info("Added route '{}' defined in file '{}'", name, file);
     }
 
     private void onRemovedFile(final File file) {
@@ -235,7 +235,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         if (route != null) {
             sorted.remove(route);
             route.destroy();
-            logger.info(format("Removed route '%s' defined in file '%s'", route.getName(), file));
+            logger.info("Removed route '{}' defined in file '{}'", route.getName(), file);
         }
     }
 
@@ -244,20 +244,18 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         try {
             newRoute = builder.build(file);
         } catch (Exception e) {
-            logger.error(format("The route defined in file '%s' cannot be modified",
-                                  file));
-            logger.error(e);
+            logger.error("The route defined in file '{}' cannot be modified", file, e);
             return;
         }
         Route oldRoute = routes.get(file);
         if (oldRoute != null) {
             // Route did change its name, and the new name is already in use
             if (!oldRoute.getName().equals(newRoute.getName()) && sorted.contains(newRoute)) {
-                logger.error(format("The modified file '%s' contains a route named '%s' that is already "
-                        + "registered by the file '%s'",
-                                    file,
-                                    newRoute.getName(),
-                                    lookupRouteFile(newRoute.getName())));
+                logger.error("The modified file '{}' contains a route named '{}' that is already "
+                                     + "registered by the file '{}'",
+                             file,
+                             newRoute.getName(),
+                             lookupRouteFile(newRoute.getName()));
                 newRoute.destroy();
                 return;
             }
@@ -268,7 +266,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
         newRoute.start();
         sorted.add(newRoute);
         routes.put(file, newRoute);
-        logger.info(format("Modified route '%s' defined in file '%s'", newRoute.getName(), file));
+        logger.info("Modified route '{}' defined in file '{}'", newRoute.getName(), file);
     }
 
     @Override

@@ -21,11 +21,9 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -41,8 +39,6 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.ConsoleLogSink;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
@@ -60,9 +56,6 @@ public class ConditionEnforcementFilterTest {
 
     @Mock
     private Handler next;
-
-    @Mock
-    private Logger logger;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -119,7 +112,6 @@ public class ConditionEnforcementFilterTest {
                                                                                                     Boolean.class));
         filter.filter(context, null, next);
         verify(next).handle(any(Context.class), any(Request.class));
-        verifyZeroInteractions(logger);
     }
 
     @DataProvider
@@ -137,13 +129,11 @@ public class ConditionEnforcementFilterTest {
         // Given
         final ConditionEnforcementFilter filter = new ConditionEnforcementFilter(Expression.valueOf(condition,
                                                                                                     Boolean.class));
-        filter.setLogger(logger);
         // When
         final Response response = filter.filter(context, null, next).get();
         // Then
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN);
         assertThat(response.getCause()).isNull();
-        verify(logger).debug(anyString());
         verifyZeroInteractions(next);
     }
 
@@ -154,18 +144,15 @@ public class ConditionEnforcementFilterTest {
         final ConditionEnforcementFilter filter = new ConditionEnforcementFilter(Expression.valueOf(condition,
                                                                                                     Boolean.class),
                                                                                  failureHandler);
-        filter.setLogger(logger);
         // When
         filter.filter(context, null, next);
         // Then
         verify(failureHandler).handle(any(Context.class), any(Request.class));
-        verify(logger).debug(anyString());
     }
 
     private HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         heap.put("failureHandler", failureHandler);
         return heap;

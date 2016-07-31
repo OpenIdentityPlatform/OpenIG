@@ -26,7 +26,6 @@ import static org.forgerock.json.resource.Resources.newSingleton;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
@@ -55,9 +54,9 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Builder for new {@link Route}s.
@@ -65,6 +64,8 @@ import org.forgerock.util.time.TimeService;
  * @since 2.2
  */
 class RouteBuilder {
+
+    private static final Logger logger = LoggerFactory.getLogger(RouteBuilder.class);
 
     /**
      * Heap to be used as parent for routes built from this builder.
@@ -129,24 +130,21 @@ class RouteBuilder {
         routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects, objectsReg.getPath()));
 
         try {
-            routeHeap.init(config, "handler", "session", "name", "condition", "logSink", "auditService",
-                           "globalDecorators", "monitor", "bindings");
+            routeHeap.init(config, "handler", "session", "name", "condition", "auditService", "globalDecorators",
+                           "monitor", "bindings");
 
             Expression<Boolean> condition = config.get("condition").as(expression(Boolean.class));
 
-            final LogSink logSink = routeHeap.resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY), LogSink.class);
-            final Logger logger = new Logger(logSink, routeHeapName);
-
             if (!slug.equals(routeName)) {
-                logger.warning(format("Route name ('%s') has been transformed to a URL-friendly name ('%s') that is "
-                                      + "exposed in endpoint URLs. To prevent this message, "
-                                      + "consider renaming your route with the transformed name, "
-                                      + "or provide your own appropriate value.",
-                                      routeName,
-                                      slug));
+                logger.warn("Route name ('{}') has been transformed to a URL-friendly name ('{}') that is "
+                                    + "exposed in endpoint URLs. To prevent this message, "
+                                    + "consider renaming your route with the transformed name, "
+                                    + "or provide your own appropriate value.",
+                            routeName,
+                            slug);
             }
 
-            return new Route(setupRouteHandler(routeHeap, config, routeRegistry, logger), routeName, condition) {
+            return new Route(setupRouteHandler(routeHeap, config, routeRegistry), routeName, condition) {
 
                 private EndpointRegistry.Registration registration;
 
@@ -172,8 +170,7 @@ class RouteBuilder {
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
                                       final JsonValue config,
-                                      final EndpointRegistry routeRegistry,
-                                      final Logger logger) throws HeapException {
+                                      final EndpointRegistry routeRegistry) throws HeapException {
 
         TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
@@ -196,14 +193,14 @@ class RouteBuilder {
             RequestHandler singleton = newSingleton(new MonitoringResourceProvider(metrics,
                                                                                    mc.getPercentiles()));
             EndpointRegistry.Registration monitoring = routeRegistry.register("monitoring", newHttpHandler(singleton));
-            logger.info(format("Monitoring endpoint available at '%s'", monitoring.getPath()));
+            logger.info("Monitoring endpoint available at '{}'", monitoring.getPath());
         }
 
         // Ensure we always get a Response even in case of RuntimeException
-        filters.add(new RuntimeExceptionFilter(logger));
+        filters.add(new RuntimeExceptionFilter());
 
         // Log a message if the response is null
-        filters.add(new NullResponseFilter(logger));
+        filters.add(new NullResponseFilter());
 
         return chainOf(routeHeap.getHandler(), filters);
     }

@@ -29,6 +29,8 @@ import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A scriptable throttling datasource. This throttling datasource acts as a simple wrapper around the
@@ -37,6 +39,8 @@ import org.forgerock.util.promise.Promise;
 public class ScriptableThrottlingPolicy
         extends AbstractScriptableHeapObject<ThrottlingRate>
         implements ThrottlingPolicy {
+
+    private static final Logger logger = LoggerFactory.getLogger(ScriptableThrottlingPolicy.class);
 
     ScriptableThrottlingPolicy(final Script compiledScript, final Heap heap) {
         super(compiledScript, heap);
@@ -52,7 +56,7 @@ public class ScriptableThrottlingPolicy
         return new Function<ScriptException, ThrottlingRate, Exception>() {
             @Override
             public ThrottlingRate apply(ScriptException e) throws Exception {
-                logger.warning(e);
+                logger.warn("An error occurred in a throttling policy script", e);
                 throw new Exception(e);
             }
         };

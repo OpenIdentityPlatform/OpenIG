@@ -49,11 +49,12 @@ import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.jwt.dirty.DirtyCollection;
 import org.forgerock.openig.jwt.dirty.DirtyListener;
 import org.forgerock.openig.jwt.dirty.DirtySet;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.util.MapDecorator;
 import org.forgerock.util.Reject;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents an OpenIG {@link Session} that will be stored as an encrypted JSON Web Token in a Cookie.
@@ -61,6 +62,8 @@ import org.forgerock.util.time.TimeService;
  * EncryptionMethod#A128CBC_HS256} method.
  */
 public class JwtCookieSession extends MapDecorator<String, Object> implements Session, DirtyListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtCookieSession.class);
 
     /**
      * Name of the cookie that will store the JWT session.
@@ -100,11 +103,6 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private final String cookieName;
 
     /**
-     * Logger used to output warnings about session's size.
-     */
-    private final Logger logger;
-
-    /**
      * Used for decryption/encryption of session's content.
      */
     private final KeyPair pair;
@@ -133,8 +131,6 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      *         Secret key used to sign the JWT payload.
      * @param cookieName
      *         Name to be used for the JWT Cookie.
-     * @param logger
-     *         Logger
      * @param timeService
      *         TimeService to use when dealing with cookie sessions
      * @param sessionTimeout
@@ -145,14 +141,12 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     public JwtCookieSession(final Request request,
                             final KeyPair pair,
                             final String cookieName,
-                            final Logger logger,
                             final TimeService timeService,
                             final Duration sessionTimeout,
                             final SigningHandler signingHandler) {
         super(new LinkedHashMap<String, Object>());
         this.pair = pair;
         this.cookieName = cookieName;
-        this.logger = logger;
         this.timeService = timeService;
         this.signingHandler = signingHandler;
 
@@ -181,9 +175,9 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                 if (!jwt.verify(signingHandler)) {
                     // Force cookie expiration / overwrite.
                     dirty = true;
-                    logger.warning(format("The session content will be discarded because OpenIG cannot verify "
-                                                  + "the JWT signature from Cookie '%s'.  The incoming session might "
-                                                  + "be forged or come from an older version of OpenIG.", cookieName));
+                    logger.warn("The session content will be discarded because OpenIG cannot verify "
+                                        + "the JWT signature from Cookie '{}'.  The incoming session might "
+                                        + "be forged or come from an older version of OpenIG.", cookieName);
                     return;
                 }
 
@@ -207,15 +201,13 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                 }
             } catch (JweDecryptionException e) {
                 dirty = true; // Force cookie expiration / overwrite.
-                logger.warning(format("The JWT Session Cookie '%s' could not be decrypted. This "
-                        + "may be because temporary encryption keys have been used or if the "
-                        + "configured encryption keys have changed since the JWT Session Cookie "
-                        + "was created", cookieName));
-                logger.debug(e);
+                logger.warn("The JWT Session Cookie '{}' could not be decrypted. This "
+                                    + "may be because temporary encryption keys have been used or if the "
+                                    + "configured encryption keys have changed since the JWT Session Cookie "
+                                    + "was created", cookieName, e);
             } catch (Exception e) {
                 dirty = true; // Force cookie expiration / overwrite.
-                logger.warning(format("Cannot rebuild JWT Session from Cookie '%s'", cookieName));
-                logger.debug(e);
+                logger.warn("Cannot rebuild JWT Session from Cookie '{}'", cookieName, e);
             }
         }
     }
@@ -295,10 +287,9 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                                     + "(Http Cookie limitation)", value.length()));
                 }
                 if (value.length() > 3072) {
-                    logger.warning(format(
-                            "Current JWT session's size (%d chars) is quite close to the 4KB limit. Maybe "
-                                    + "consider using the traditional Http-based session (the default), or place"
-                                    + "less objects in the session", value.length()));
+                    logger.warn("Current JWT session's size ({} chars) is quite close to the 4KB limit. Maybe "
+                                        + "consider using the traditional Http-based session (the default), "
+                                        + "or place less objects in the session", value.length());
                 }
             }
             response.getHeaders().add(new SetCookieHeader(singletonList(jwtCookie)));

@@ -17,7 +17,6 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
@@ -27,7 +26,6 @@ import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.ConsoleLogSink;
 
 /** Utility class for tests usage. */
 @SuppressWarnings("javadoc")
@@ -39,7 +37,6 @@ public final class HeapUtilsTest {
     public static HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         return heap;

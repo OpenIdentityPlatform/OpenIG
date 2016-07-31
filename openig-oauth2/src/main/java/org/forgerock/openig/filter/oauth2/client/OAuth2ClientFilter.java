@@ -79,6 +79,8 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A filter which is responsible for authenticating the end-user using OAuth 2.0
@@ -242,6 +244,8 @@ import org.forgerock.util.time.TimeService;
  * </pre>
  */
 public final class OAuth2ClientFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2ClientFilter.class);
 
     /** The expression which will be used for storing authorization information in the context. */
     public static final String DEFAULT_TOKEN_KEY = "openid";
@@ -563,8 +567,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                                                         authorizedSession,
                                                                         buildUri(context, request, clientEndpoint));
                                                         } catch (ResponseException e) {
-                                                            logger.error("Unable to save the session on redirect");
-                                                            logger.error(e);
+                                                            logger.error("Unable to save the session on redirect", e);
                                                             return e.getResponse();
                                                         }
                                                         return response;
@@ -581,7 +584,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         return new AsyncFunction<OAuth2ErrorException, Response, NeverThrowsException>() {
             @Override
             public Promise<Response, NeverThrowsException> apply(OAuth2ErrorException e) {
-                logger.error(e);
+                logger.error("An error occurred in the OAuth2 process", e);
                 return handleException(context, request, e);
             }
         };
@@ -683,7 +686,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                 }
 
                 // At this point, we only react once to try to refresh the access token.
-                logger.debug(format("The access token may have expired: %s", error.getErrorDescription()));
+                logger.debug("The access token may have expired: {}", error.getErrorDescription());
                 return refreshAccessTokenAndSaveSession(context, request, session, clientRegistration)
                         .thenAsync(new AsyncFunction<Void, Response, NeverThrowsException>() {
 
@@ -753,8 +756,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                         try {
                             removeSession(context, request, clientEndpoint);
                         } catch (ResponseException e) {
-                            logger.error("Cannot remove the session on redirect");
-                            logger.error(e);
+                            logger.error("Cannot remove the session on redirect", e);
                             return e.getResponse();
                         }
                         return response;
@@ -791,8 +793,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
         }
         return new AuthorizationRedirectHandler(time,
                                                 clientEndpoint,
-                                                cr != null ? cr : registrations.findDefault(),
-                                                logger)
+                                                cr != null ? cr : registrations.findDefault())
                                     .handle(context, request);
     }
 
@@ -868,13 +869,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             return userInfoCache.getValue(session.getAccessToken(),
                                           new LoadUserInfoCallable(session, clientRegistration, context, request));
         } catch (InterruptedException e) {
-            logger.error(format("Interrupted when calling UserInfo Endpoint from client registration '%s'",
-                                clientRegistration.getName()));
-            logger.error(e);
+            logger.error("Interrupted when calling UserInfo Endpoint from client registration '{}'",
+                         clientRegistration.getName(),
+                         e);
         } catch (ExecutionException e) {
-            logger.error(format("Unable to call UserInfo Endpoint from client registration '%s'",
-                                clientRegistration.getName()));
-            logger.error(e);
+            logger.error("Unable to call UserInfo Endpoint from client registration '{}'",
+                         clientRegistration.getName(),
+                         e);
         }
         return null;
     }
@@ -907,16 +908,13 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                                             + "of the client registration's object(s) linked to this client");
                 }
             }
-            final ClientRegistrationRepository registrations = new HeapClientRegistrationRepository(clients,
-                                                                                                    heap,
-                                                                                                    logger);
+            final ClientRegistrationRepository registrations = new HeapClientRegistrationRepository(clients, heap);
             final Handler discoveryAndDynamicRegistrationChain = chainOf(
-                    new AuthorizationRedirectHandler(time, clientEndpoint, logger),
-                    new DiscoveryFilter(discoveryHandler, heap, logger),
+                    new AuthorizationRedirectHandler(time, clientEndpoint),
+                    new DiscoveryFilter(discoveryHandler, heap),
                     new ClientRegistrationFilter(registrations,
                                                  discoveryHandler,
-                                                 config.as(evaluatedWithHeapBindings()).get("metadata"),
-                                                 logger));
+                                                 config.as(evaluatedWithHeapBindings()).get("metadata")));
 
             // Build the cache of user-info
             final Duration expiration = config.get("cacheExpiration")
@@ -1094,8 +1092,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
                         @Override
                         public Promise<JsonValue, OAuth2ErrorException> apply(OAuth2ErrorException ex) {
-                            logger.error("Fail to refresh OAuth2 Access Token");
-                            logger.error(ex);
+                            logger.error("Fail to refresh OAuth2 Access Token", ex);
                             session = OAuth2Session.stateNew(time);
                             saveSession(context, session, uri);
                             return newExceptionPromise(ex);
