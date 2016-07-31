@@ -19,7 +19,6 @@ package org.forgerock.openig.alias;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.forgerock.openig.audit.monitor.MonitorEndpointHandler;
 import org.forgerock.openig.decoration.DelegateHeaplet;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
@@ -100,7 +99,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("KeyStore", KeyStoreHeaplet.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MappedThrottlingPolicy", MappedThrottlingPolicyHeaplet.class);
-        ALIASES.put("MonitorEndpointHandler", MonitorEndpointHandler.class);
         ALIASES.put("NullLogSink", NullLogSink.class);
         ALIASES.put("PasswordReplayFilter", PasswordReplayFilterHeaplet.class);
         ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
