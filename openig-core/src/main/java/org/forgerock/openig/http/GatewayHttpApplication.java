@@ -30,8 +30,6 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.API_PROTECTION_FILTER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.AUDIT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.AUDIT_SYSTEM_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
@@ -74,9 +72,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.http.session.SessionManager;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.audit.AuditSystem;
-import org.forgerock.openig.audit.decoration.AuditDecorator;
-import org.forgerock.openig.audit.internal.ForwardingAuditSystem;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
@@ -208,16 +203,12 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
             heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
 
-            AuditSystem auditSystem = new ForwardingAuditSystem();
-
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
-            heap.put(AUDIT_HEAP_KEY, new AuditDecorator(auditSystem));
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
-            heap.put(AUDIT_SYSTEM_HEAP_KEY, auditSystem);
             heap.put(TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY, new TransactionIdOutboundFilter());
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
             heap.addDefaultDeclaration(FORGEROCK_CLIENT_HANDLER);

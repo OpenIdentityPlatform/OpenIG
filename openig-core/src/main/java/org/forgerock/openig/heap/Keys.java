@@ -41,22 +41,6 @@ public final class Keys {
     public static final String API_PROTECTION_FILTER_HEAP_KEY = "ApiProtectionFilter";
 
     /**
-     * Key to retrieve a
-     * {@link org.forgerock.openig.audit.decoration.AuditDecorator} instance
-     * from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    @Deprecated
-    public static final String AUDIT_HEAP_KEY = "audit";
-
-    /**
-     * Key to retrieve a default
-     * {@link org.forgerock.openig.audit.AuditSystem} instance from
-     * the {@link org.forgerock.openig.heap.Heap}.
-     */
-    @Deprecated
-    public static final String AUDIT_SYSTEM_HEAP_KEY = "AuditSystem";
-
-    /**
      * Key to retrieve a {@link BaseUriDecorator} instance from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String BASEURI_HEAP_KEY = "baseURI";
