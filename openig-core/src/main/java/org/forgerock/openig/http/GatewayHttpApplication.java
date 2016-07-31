@@ -36,7 +36,6 @@ import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -45,7 +44,6 @@ import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
 import static org.forgerock.openig.http.GatewayEnvironment.BASE_SYSTEM_PROPERTY;
-import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.io.File;
@@ -80,15 +78,13 @@ import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.ConsoleLogSink;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -103,10 +99,8 @@ import ch.qos.logback.core.util.StatusPrinter;
  */
 @SuppressWarnings("deprecation")
 public final class GatewayHttpApplication implements HttpApplication {
-    /**
-     * {@link Logger} instance for the openig-war module.
-     */
-    static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GatewayHttpApplication.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(GatewayHttpApplication.class);
 
     private static final JsonValue DEFAULT_CLIENT_HANDLER =
                                         json(object(field("name", CLIENT_HANDLER_HEAP_KEY),
@@ -184,7 +178,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap = new HeapImpl(Name.of(configurationURL.toString()));
 
             // Provide the base tree:
-            // /openig/api/system/objects
+            // /api/system/objects
             Router openigRouter = new Router();
             Router apiRouter = new Router();
             Router systemRouter = new Router();
@@ -205,7 +199,6 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-            heap.put(LOGSINK_HEAP_KEY, new ConsoleLogSink());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
@@ -213,15 +206,10 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
             heap.addDefaultDeclaration(FORGEROCK_CLIENT_HANDLER);
             heap.addDefaultDeclaration(DEFAULT_SCHEDULED_THREAD_POOL);
-            heap.init(config, "logSink", "temporaryStorage", "handler", "handlerObject", "globalDecorators",
-                      "bindings");
+            heap.init(config, "temporaryStorage", "handler", "handlerObject", "globalDecorators", "bindings");
 
-            // As all heaplets can specify their own storage and logger,
-            // these two lines provide custom logger or storage available.
-            LogSink logSink = config.get("logSink")
-                                    .defaultTo(LOGSINK_HEAP_KEY)
-                                    .as(optionalHeapObject(heap, LogSink.class));
-            final Logger logger = new Logger(logSink, Name.of(GatewayHttpApplication.class));
+            // As all heaplets can specify their own storage,
+            // the following line provide custom storage available.
             storage = config.get("temporaryStorage")
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
                             .as(requiredHeapObject(heap, TemporaryStorage.class));
@@ -229,7 +217,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             // Protect the /openig namespace
             Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);
             if (protector == null) {
-                protector = new LoopbackAddressOnlyFilter(logger);
+                protector = new LoopbackAddressOnlyFilter();
             }
             Handler restricted = chainOf(openigRouter, protector);
 
@@ -251,7 +239,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
             return router;
         } catch (Exception e) {
-            LOG.error("Failed to initialise Http Application", e);
+            logger.error("Failed to initialise Http Application", e);
             // Release resources
             stop();
             throw new HttpApplicationException("Unable to start OpenIG", e);
@@ -259,15 +247,15 @@ public final class GatewayHttpApplication implements HttpApplication {
     }
 
     private URL selectConfigurationUrl() throws MalformedURLException {
-        LOG.info("OpenIG base directory : {}", environment.getBaseDirectory());
+        logger.info("OpenIG base directory : {}", environment.getBaseDirectory());
 
         final File configuration = new File(environment.getConfigDirectory(), "config.json");
         final URL configurationURL;
         if (configuration.canRead()) {
-            LOG.info("Reading the configuration from {}", configuration.getAbsolutePath());
+            logger.info("Reading the configuration from {}", configuration.getAbsolutePath());
             configurationURL = configuration.toURI().toURL();
         } else {
-            LOG.info("{} not readable, using OpenIG default configuration", configuration.getAbsolutePath());
+            logger.info("{} not readable, using OpenIG default configuration", configuration.getAbsolutePath());
             configurationURL = getClass().getResource("default-config.json");
         }
         return configurationURL;
@@ -304,11 +292,8 @@ public final class GatewayHttpApplication implements HttpApplication {
      * Permits only local clients to access /openig endpoint.
      */
     private static class LoopbackAddressOnlyFilter implements Filter {
-        private final Logger logger;
 
-        public LoopbackAddressOnlyFilter(final Logger logger) {
-            this.logger = logger;
-        }
+        private static final Logger logger = LoggerFactory.getLogger(LoopbackAddressOnlyFilter.class);
 
         @Override
         public Promise<Response, NeverThrowsException> filter(final Context context,
@@ -325,7 +310,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                     }
                 }
             } catch (UnknownHostException e) {
-                logger.trace(format("Cannot resolve host '%s' when accessing '/openig'", remoteAddr));
+                logger.trace("Cannot resolve host '{}' when accessing '/openig'", remoteAddr);
             }
             return newResponsePromise(new Response(Status.FORBIDDEN));
         }

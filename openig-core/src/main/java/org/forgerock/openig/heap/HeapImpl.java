@@ -25,7 +25,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.GLOBAL_DECORATOR_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asClass;
 import static org.forgerock.openig.util.JsonValues.bindings;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -52,8 +51,8 @@ import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
 import org.forgerock.openig.el.Bindings;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The concrete implementation of a heap. Provides methods to initialize and destroy a heap.
@@ -61,6 +60,8 @@ import org.forgerock.openig.log.Logger;
  * the parent will be queried (and this, recursively until there is no parent anymore).
  */
 public class HeapImpl implements Heap {
+
+    private static final Logger logger = LoggerFactory.getLogger(HeapImpl.class);
 
     /**
      * List of attributes that should be ignored when looking for decorator's configuration.
@@ -103,11 +104,6 @@ public class HeapImpl implements Heap {
      * Top-level 'handler' reference decorations (effectively the root node of configuration).
      */
     private JsonValue config;
-
-    /**
-     * Heap logger.
-     */
-    private Logger logger;
 
     /**
      * Keep track of objects being resolved, used to avoid recursive issues.
@@ -197,9 +193,9 @@ public class HeapImpl implements Heap {
              * compatibility.
              */
             heap = heap.get("objects").required();
-
-            // We cannot log anything just yet because the heap is not initialized.
-            logDeprecationWarning = true;
+            logger.warn("The configuration field heap/objects has been deprecated. Heap objects "
+                                + "should now be listed directly in the top level \"heap\" field, "
+                                + "e.g. { \"heap\" : [ objects... ] }.");
         }
 
         for (JsonValue object : heap.expect(List.class)) {
@@ -232,16 +228,6 @@ public class HeapImpl implements Heap {
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<>(heaplets.keySet())) {
             get(name, Object.class);
-        }
-
-        // We can log a warning now that the heap is initialized.
-        logger = new Logger(resolve(config.get("logSink").defaultTo(LOGSINK_HEAP_KEY),
-                                           LogSink.class,
-                                           true), name);
-        if (logDeprecationWarning) {
-            logger.warning("The configuration field heap/objects has been deprecated. Heap objects "
-                                   + "should now be listed directly in the top level \"heap\" field, "
-                                   + "e.g. { \"heap\" : [ objects... ] }.");
         }
     }
 

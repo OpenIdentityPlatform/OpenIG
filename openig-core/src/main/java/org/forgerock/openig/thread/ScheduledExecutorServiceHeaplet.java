@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.thread;
 
-import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.duration;
 
 import java.util.List;
@@ -27,6 +26,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Heaplet for building {@literal ScheduledExecutorService} instances.
@@ -97,6 +98,8 @@ import org.forgerock.util.time.Duration;
  */
 public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
 
+    private static final Logger logger = LoggerFactory.getLogger(ScheduledExecutorServiceHeaplet.class);
+
     private JsonValue evaluated;
     private Duration gracePeriod;
     private boolean gracefulStop;
@@ -157,7 +160,7 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
             // * Does not wait for termination
             List<Runnable> jobs = service.shutdownNow();
             if (!jobs.isEmpty()) {
-                logger.debug(format("%d submitted jobs will not be executed", jobs.size()));
+                logger.debug("{} submitted jobs will not be executed", jobs.size());
             }
         }
     }

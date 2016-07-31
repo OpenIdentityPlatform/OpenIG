@@ -26,16 +26,11 @@ import static org.forgerock.openig.filter.CryptoHeaderFilter.DEFAULT_ALGORITHM;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.DECRYPT;
 import static org.forgerock.openig.filter.CryptoHeaderFilter.Operation.ENCRYPT;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.util.MessageType.REQUEST;
 import static org.forgerock.openig.util.MessageType.RESPONSE;
 import static org.forgerock.util.encode.Base64.decode;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -50,13 +45,10 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promises;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -94,9 +86,6 @@ public class CryptoHeaderFilterTest {
     @Mock
     private Handler terminalHandler;
 
-    @Spy
-    private Logger logger = new Logger(new NullLogSink(), Name.of("source"));
-
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -116,7 +105,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, request, terminalHandler);
 
-        verify(logger).error(any(GeneralSecurityException.class));
         assertThat(request.getHeaders().getFirst(HEADER_NAME)).isEmpty();
     }
 
@@ -134,7 +122,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, request, terminalHandler);
 
-        verify(logger).error(any(GeneralSecurityException.class));
         assertThat(request.getHeaders().getFirst(HEADER_NAME)).isEmpty();
     }
 
@@ -151,7 +138,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, request, terminalHandler);
 
-        verifyZeroInteractions(logger);
         assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
@@ -170,7 +156,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, request, terminalHandler);
 
-        verifyZeroInteractions(logger);
         assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
@@ -188,7 +173,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, null, terminalHandler);
 
-        verifyZeroInteractions(logger);
         assertThat(response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(ENCRYPTED_VALUE);
     }
@@ -207,7 +191,6 @@ public class CryptoHeaderFilterTest {
 
         filter.filter(null, null, terminalHandler);
 
-        verifyZeroInteractions(logger);
         assertThat(response.getHeaders().getFirst(HEADER_NAME))
                 .isEqualTo(CLEAR_TEXT_VALUE);
     }
@@ -221,14 +204,12 @@ public class CryptoHeaderFilterTest {
 
         filter.setKey(buildKey(algorithm));
         filter.getHeaders().add(HEADER_NAME);
-        filter.setLogger(logger);
 
         Request request = new Request();
         request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         filter.filter(null, request, terminalHandler);
 
-        verifyZeroInteractions(logger);
         assertThat(request.getHeaders().getFirst(HEADER_NAME))
                 .isNotNull()
                 .isNotEmpty()
@@ -242,7 +223,7 @@ public class CryptoHeaderFilterTest {
                                        field("operation", "DECRYPT"),
                                        field("key", "DESKEY"))); // Not a valid key format
 
-        heaplet.create(Name.of(LOGSINK_HEAP_KEY), config, buildDefaultHeap());
+        heaplet.create(Name.of("CryptoHeaderFilterTest"), config, buildDefaultHeap());
     }
 
     private CryptoHeaderFilter buildDefaultCryptoHeader() {
@@ -252,7 +233,6 @@ public class CryptoHeaderFilterTest {
         filter.getHeaders().add(HEADER_NAME);
         filter.setKey(buildKey(DEFAULT_ALGORITHM));
         filter.setCharset(UTF_8);
-        filter.setLogger(logger);
         return filter;
     }
 

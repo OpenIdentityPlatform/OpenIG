@@ -49,6 +49,8 @@ import org.forgerock.util.encode.Base64;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encrypts and decrypts header fields.
@@ -58,6 +60,8 @@ import org.forgerock.util.promise.ResultHandler;
  * therefore, the CryptoHeader can not decrypt cipher algorithm using IV.
  */
 public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(CryptoHeaderFilter.class);
 
     /**
      * Default cipher algorithm to be used when none is specified.
@@ -190,7 +194,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
             byte[] plaintext = cipher.doFinal(ciphertext);
             result = new String(plaintext, charset).trim();
         } catch (GeneralSecurityException gse) {
-            logger.error(gse);
+            logger.error("Unable to decrypt header", gse);
         }
         return result;
     }
@@ -209,7 +213,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
             byte[] ciphertext = cipher.doFinal(in.getBytes(Charset.defaultCharset()));
             result = Base64.encode(ciphertext).trim();
         } catch (GeneralSecurityException gse) {
-            logger.error(gse);
+            logger.error("Unable to encrypt header", gse);
         }
         return result;
     }

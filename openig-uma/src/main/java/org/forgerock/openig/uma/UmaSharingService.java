@@ -56,6 +56,8 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link UmaSharingService} provides core UMA features to OpenIG when acting as an UMA Resource Server.
@@ -379,6 +381,8 @@ public class UmaSharingService {
      */
     public static class Heaplet extends GenericHeaplet {
 
+        private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
+
         @Override
         public Object create() throws HeapException {
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
@@ -394,7 +398,7 @@ public class UmaSharingService {
                 // register admin endpoint
                 Handler httpHandler = newHttpHandler(newCollection(new ShareCollectionProvider(service)));
                 EndpointRegistry.Registration share = endpointRegistry().register("share", httpHandler);
-                logger.info(format("UMA Share endpoint available at '%s'", share.getPath()));
+                logger.info("UMA Share endpoint available at '{}'", share.getPath());
 
                 return service;
             } catch (URISyntaxException e) {

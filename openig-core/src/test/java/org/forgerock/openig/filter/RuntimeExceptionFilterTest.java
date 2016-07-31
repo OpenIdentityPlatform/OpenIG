@@ -23,9 +23,6 @@ import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
@@ -37,15 +34,13 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class RuntimeExceptionFilterTest {
 
-    private Logger logger = new Logger(new NullLogSink(), Name.of("logger"));
-
     @Test
     public void shouldReturnTheSameResponse() throws Exception {
         final Response response = new Response(Status.OK);
 
         Handler next = new ResponseHandler(response);
 
-        RuntimeExceptionFilter filter = new RuntimeExceptionFilter(logger);
+        RuntimeExceptionFilter filter = new RuntimeExceptionFilter();
         Promise<Response, NeverThrowsException> promise = filter.filter(new RootContext(), new Request(), next);
 
         assertThat(promise.get()).isSameAs(response);
@@ -61,7 +56,7 @@ public class RuntimeExceptionFilterTest {
             }
         };
 
-        RuntimeExceptionFilter filter = new RuntimeExceptionFilter(logger);
+        RuntimeExceptionFilter filter = new RuntimeExceptionFilter();
         Promise<Response, NeverThrowsException> promise = filter.filter(new RootContext(), new Request(), next);
         final Response response = promise.get();
 
@@ -80,7 +75,7 @@ public class RuntimeExceptionFilterTest {
             }
         };
 
-        RuntimeExceptionFilter filter = new RuntimeExceptionFilter(logger);
+        RuntimeExceptionFilter filter = new RuntimeExceptionFilter();
         Promise<Response, NeverThrowsException> promise = filter.filter(new RootContext(), new Request(), next);
         final Response response = promise.get();
 

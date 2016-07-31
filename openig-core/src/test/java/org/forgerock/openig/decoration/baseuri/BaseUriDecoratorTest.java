@@ -144,9 +144,4 @@ public class BaseUriDecoratorTest {
     public void shouldNotDecorateUnsupportedTypes(Object o) throws Exception {
         assertThat(new BaseUriDecorator(name).decorate(o, null, context)).isSameAs(o);
     }
-
-    @Test
-    public void shouldSupportNullLogSinkReference() throws Exception {
-        new BaseUriDecorator(name).decorate(filter, json("all"), context);
-    }
 }

@@ -16,7 +16,6 @@
 package org.forgerock.openig.filter;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -35,6 +34,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link ConditionEnforcementFilter} makes sure that the handled {@link Request} verifies
@@ -70,6 +71,8 @@ import org.forgerock.util.promise.Promise;
  */
 public class ConditionEnforcementFilter extends GenericHeapObject implements Filter {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConditionEnforcementFilter.class);
+
     private final Expression<Boolean> condition;
     private final Handler failureHandler;
 
@@ -104,7 +107,7 @@ public class ConditionEnforcementFilter extends GenericHeapObject implements Fil
                                                           final Request request,
                                                           final Handler next) {
         if (!isConditionVerified(bindings(context, request))) {
-            logger.debug(format("Cannot satisfy the enforcement's condition expression '%s'", condition.toString()));
+            logger.debug("Cannot satisfy the enforcement's condition expression '{}'", condition);
             return failureHandler.handle(context, request);
         }
         return next.handle(context, request);

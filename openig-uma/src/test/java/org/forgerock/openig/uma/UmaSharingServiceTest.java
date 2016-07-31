@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -44,7 +44,6 @@ import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -191,7 +190,6 @@ public class UmaSharingServiceTest {
     public void shouldRegisterUmaShareEndpoint() throws Exception {
         Router router = new Router();
         HeapImpl heap = new HeapImpl(Name.of("this"));
-        heap.put(Keys.LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put("#mock-handler", handler);

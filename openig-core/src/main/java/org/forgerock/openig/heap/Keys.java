@@ -26,7 +26,6 @@ import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -82,11 +81,6 @@ public final class Keys {
      * {@link Handler} is used by audit to forward custom audit header.
      */
     public static final String FORGEROCK_CLIENT_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
-
-    /**
-     * Key to retrieve a {@link LogSink} instance from the {@link org.forgerock.openig.heap.Heap}.
-     */
-    public static final String LOGSINK_HEAP_KEY = "LogSink";
 
     /**
      * Key to retrieve the default {@link java.util.concurrent.ScheduledExecutorService} instance from the

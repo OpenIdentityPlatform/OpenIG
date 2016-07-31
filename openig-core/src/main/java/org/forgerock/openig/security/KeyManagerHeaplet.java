@@ -27,6 +27,8 @@ import javax.net.ssl.KeyManagerFactory;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents an SSL Java {@link KeyManager}.
@@ -52,6 +54,8 @@ import org.forgerock.openig.heap.HeapException;
  */
 public class KeyManagerHeaplet extends GenericHeaplet {
 
+    private static final Logger logger = LoggerFactory.getLogger(KeyManagerHeaplet.class);
+
     @Override
     public Object create() throws HeapException {
         JsonValue storeRef = config.get("keystore").required();
@@ -76,7 +80,7 @@ public class KeyManagerHeaplet extends GenericHeaplet {
         if (managers.length == 1) {
             return managers[0];
         } else if (managers.length > 1) {
-            logger.warning("Only the first KeyManager will be selected");
+            logger.warn("Only the first KeyManager will be selected");
             return managers[0];
         }
         throw new HeapException(loadingError(algorithm, storeRef));

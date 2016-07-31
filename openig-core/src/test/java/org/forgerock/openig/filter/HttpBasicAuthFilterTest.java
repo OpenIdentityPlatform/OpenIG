@@ -33,7 +33,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -63,9 +62,6 @@ public class HttpBasicAuthFilterTest {
 
     @Mock
     private Handler failureHandler;
-
-    @Mock
-    private Logger logger;
 
     @Mock
     private Session session;
@@ -241,7 +237,6 @@ public class HttpBasicAuthFilterTest {
         HttpBasicAuthFilter filter = new HttpBasicAuthFilter(Expression.valueOf(username, String.class),
                                                              Expression.valueOf("dont-care", String.class),
                                                              failureHandler);
-        filter.setLogger(logger);
         filter.setCacheHeader(false);
 
         basicAuthServerAnswersUnauthorizedThenSuccess(INITIAL_CREDENTIALS);
@@ -249,7 +244,6 @@ public class HttpBasicAuthFilterTest {
         Response response = filter.filter(newContextChain(), newRequest(), terminalHandler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
-        verify(logger).error("username must not contain a colon ':' character");
     }
 
     @DataProvider

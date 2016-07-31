@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.security;
@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -29,21 +28,16 @@ import javax.net.ssl.X509KeyManager;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.HeapUtilsTest;
 import org.forgerock.openig.heap.Name;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class KeyManagerHeapletTest {
 
-    /**
-     * Use a special heap object name to avoid the heaplet complaining about missing LogSink and TemporaryStorage heap
-     * objects.
-     */
-    public static final String OBJECT_NAME = LOGSINK_HEAP_KEY;
-
     @Test
     public void shouldLoadKeyManagerFactoryWithDefaultAlgorithm() throws Exception {
-        HeapImpl heap = new HeapImpl(Name.of("anonymous"));
+        HeapImpl heap = HeapUtilsTest.buildDefaultHeap();
         heap.put("KeyStore", loadKeyStore("jks", "/x509cert-keystore.jks", "changeit"));
 
         JsonValue config = json(object(
@@ -51,7 +45,7 @@ public class KeyManagerHeapletTest {
                 field("password", "changeit")
         ));
         KeyManagerHeaplet heaplet = new KeyManagerHeaplet();
-        X509KeyManager manager = (X509KeyManager) heaplet.create(Name.of(OBJECT_NAME), config, heap);
+        X509KeyManager manager = (X509KeyManager) heaplet.create(Name.of("KeyManagerHeapletTest"), config, heap);
 
         assertThat(manager.getPrivateKey("cert")).isNotNull();
         assertThat(manager.getPrivateKey("cert").getFormat()).isEqualTo("PKCS#8");

@@ -52,6 +52,8 @@ import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Performs authentication through the HTTP Basic authentication scheme. For more information,
@@ -70,6 +72,8 @@ import org.forgerock.util.promise.Promise;
  * to the authentication failure handler.
  */
 public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthFilter.class);
 
     /** Headers that are suppressed from incoming request. */
     private static final CaseInsensitiveSet SUPPRESS_REQUEST_HEADERS =

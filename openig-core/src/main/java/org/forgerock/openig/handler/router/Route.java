@@ -40,13 +40,6 @@ import org.slf4j.MDC;
  * {
  *   "heap": [
  *     {
- *       "name": "LogSink",
- *       "type": "ConsoleLogSink",
- *       "config": {
- *         "level": "DEBUG"
- *       }
- *     },
- *     {
  *       "name": "MyJwtSession",
  *       "type": "JwtSession",
  *       "config": {

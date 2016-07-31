@@ -17,10 +17,8 @@
 
 package org.forgerock.openig.filter;
 
-import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.log.LogLevel.DEBUG;
 import static org.forgerock.openig.util.JsonValues.expression;
 
 import java.sql.Connection;
@@ -54,6 +52,8 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Executes a SQL query through a prepared statement and exposes its first result. Parameters
@@ -69,6 +69,8 @@ import org.forgerock.util.promise.Promise;
  * @see PreparedStatement
  */
 public class SqlAttributesFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(SqlAttributesFilter.class);
 
     /** Expression that yields the target object that will contain the mapped results. */
     @SuppressWarnings("rawtypes")
@@ -121,43 +123,27 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
             @Override
             public Map<String, Object> newInstance() {
                 Map<String, Object> result = new HashMap<>();
-                Connection c = null;
-                try {
-                    c = dataSource.getConnection();
-
-                    PreparedStatement ps = createPreparedStatement(c);
-
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        ResultSetMetaData rsmd = rs.getMetaData();
-                        int columns = rsmd.getColumnCount();
-                        for (int n = 1; n <= columns; n++) {
-                            result.put(rsmd.getColumnLabel(n), rs.getObject(n));
+                try (Connection c = dataSource.getConnection()) {
+                    try (PreparedStatement ps = createPreparedStatement(c)) {
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                ResultSetMetaData rsmd = rs.getMetaData();
+                                int columns = rsmd.getColumnCount();
+                                for (int n = 1; n <= columns; n++) {
+                                    result.put(rsmd.getColumnLabel(n), rs.getObject(n));
+                                }
+                            }
+                            logger.debug("Result: {}", result);
                         }
                     }
-                    if (logger.isLoggable(DEBUG)) {
-                        logger.debug("Result: " + result);
-                    }
-                    rs.close();
-                    ps.close();
                 } catch (SQLException sqle) {
-                    // probably a config issue
-                    logger.error(sqle);
-                } finally {
-                    if (c != null) {
-                        try {
-                            c.close();
-                        } catch (SQLException sqle) {
-                            // probably a network issue
-                            logger.error(sqle);
-                        }
-                    }
+                    logger.error("Configuration issue", sqle);
                 }
                 return result;
             }
 
             private PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
-                logger.debug(format("PreparedStatement %s", preparedStatement));
+                logger.debug("PreparedStatement {}", preparedStatement);
 
                 // probably cached in connection pool
                 PreparedStatement ps = connection.prepareStatement(preparedStatement);
@@ -171,21 +157,21 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 for (int i = 0; i < count; i++) {
                     if (!expressions.hasNext()) {
                         // Got a statement parameter, but no expression to evaluate
-                        logger.warning(format(" Placeholder %d has no provided value as parameter", i + 1));
+                        logger.warn(" Placeholder {} has no provided value as parameter", i + 1);
                         continue;
                     }
                     Object eval = expressions.next().eval(bindings);
                     ps.setObject(i + 1, eval);
-                    logger.debug(format(" Placeholder #%d -> %s", i + 1, eval));
+                    logger.debug(" Placeholder {} -> {}", i + 1, eval);
                 }
 
                 // Output a warning if there are too many expressions compared to the number
                 // of parameters/placeholders in the prepared statement
                 if (expressions.hasNext()) {
-                    logger.warning(format(" All parameters with index >= %d are ignored because there are "
-                                          + "no placeholders for them in the configured prepared statement (%s)",
-                                          count,
-                                          preparedStatement));
+                    logger.warn(" All parameters with index >= {} are ignored because there are no placeholders for "
+                                        + "them in the configured prepared statement ({})",
+                                count,
+                                preparedStatement);
                 }
                 return ps;
             }

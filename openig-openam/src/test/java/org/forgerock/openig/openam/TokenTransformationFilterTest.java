@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
@@ -46,7 +46,6 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -94,7 +93,6 @@ public class TokenTransformationFilterTest {
         context = attributesContext;
         attributesContext.getAttributes().put("id_token", ID_TOKEN_JWT);
         heap = new HeapImpl(Name.of("heap"));
-        heap.put(Keys.LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
         heap.put("#mock-handler", transformationHandler);
     }

@@ -47,6 +47,8 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link TokenTransformationFilter} is responsible to transform a token issued by OpenAM
@@ -96,6 +98,8 @@ import org.forgerock.util.promise.Promise;
  */
 public class TokenTransformationFilter extends GenericHeapObject implements Filter {
 
+    private static final Logger logger = LoggerFactory.getLogger(TokenTransformationFilter.class);
+
     private final Handler handler;
     private final URI endpoint;
     private final Expression<String> idToken;
@@ -127,7 +131,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
 
         final String resolvedIdToken = idToken.eval(bindings(context, request));
         if (resolvedIdToken == null) {
-            logger.error(format("OpenID Connect id_token expression (%s) has evaluated to null", idToken));
+            logger.error("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
             return newResponsePromise(newInternalServerError());
         }
 
@@ -144,10 +148,10 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                 try {
                     Map<String, Object> json = parseJsonObject(response);
                     if (response.getStatus() != Status.OK) {
-                        logger.error(format("Server side error (%s, %s) while transforming id_token:%s",
-                                            response.getStatus(),
-                                            json.get("reason"),
-                                            json.get("message")));
+                        logger.error("Server side error ({}, {}) while transforming id_token:{}",
+                                     response.getStatus(),
+                                     json.get("reason"),
+                                     json.get("message"));
                         return newResponsePromise(new Response(Status.BAD_GATEWAY));
                     }
 
@@ -162,8 +166,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                     // Forward the initial request
                     return next.handle(context, request);
                 } catch (IOException e) {
-                    logger.error(format("Can't get JSON back from %s", endpoint));
-                    logger.error(e);
+                    logger.error("Can't get JSON back from {}", endpoint, e);
                     return newResponsePromise(newInternalServerError(e));
                 }
             }
@@ -205,8 +208,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                                                                realm,
                                                                ssoTokenHeader,
                                                                username,
-                                                               password,
-                                                               logger);
+                                                               password);
 
             Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
             Expression<String> target = config.get("target").required().as(expression(String.class));

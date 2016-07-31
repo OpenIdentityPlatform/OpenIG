@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.filter.throttling;
 
-import static java.lang.String.format;
 import static org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet.throttlingRate;
 import static org.forgerock.openig.util.JsonValues.expression;
 
@@ -34,6 +33,8 @@ import org.forgerock.openig.el.ExpressionRequestAsyncFunction;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates and initializes a {@link MappedThrottlingPolicy} in a heap environment.
@@ -101,6 +102,8 @@ import org.forgerock.util.Function;
  */
 public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
 
+    private static final Logger logger = LoggerFactory.getLogger(MappedThrottlingPolicyHeaplet.class);
+
     @Override
     public Object create() throws HeapException {
         Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
@@ -114,7 +117,7 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
         }
 
         if (rates.isEmpty() && defaultRate == null) {
-            logger.warning(format("No throttling rates defined for %s", name));
+            logger.warn("No throttling rates defined for {}", name);
         }
 
         return new MappedThrottlingPolicy(new ExpressionRequestAsyncFunction<>(throttlingRateMapper),

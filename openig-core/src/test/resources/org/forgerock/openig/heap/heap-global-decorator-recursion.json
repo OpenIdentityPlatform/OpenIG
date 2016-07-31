@@ -1,13 +1,6 @@
 {
     "heap": [
         {
-            "name": "LogSink",
-            "type": "ConsoleLogSink",
-            "config": {
-                "level": "DEBUG"
-            }
-        },
-        {
             "name": "Filter",
             "type": "StaticRequestFilter",
             "config": {
@@ -17,10 +10,7 @@
         },
         {
             "name": "capture",
-            "type": "CaptureDecorator",
-            "config": {
-                "logSink": "LogSink"
-            }
+            "type": "CaptureDecorator"
         }
     ],
     "globalDecorators": {

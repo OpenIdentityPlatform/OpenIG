@@ -41,13 +41,14 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This terminal Handler has the responsibility to produce a 302 response for
@@ -74,25 +75,23 @@ import org.forgerock.util.time.TimeService;
  */
 class AuthorizationRedirectHandler implements Handler {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthorizationRedirectHandler.class);
+
     private final ClientRegistration registration;
     private final Expression<String> endpoint;
     private final TimeService timeService;
-    private final Logger logger;
 
     AuthorizationRedirectHandler(final TimeService timeService,
-                                 final Expression<String> endpoint,
-                                 final Logger logger) {
-        this(timeService, endpoint, null, logger);
+                                 final Expression<String> endpoint) {
+        this(timeService, endpoint, null);
     }
 
     AuthorizationRedirectHandler(final TimeService timeService,
                                  final Expression<String> endpoint,
-                                 final ClientRegistration registration,
-                                 final Logger logger) {
+                                 final ClientRegistration registration) {
         this.timeService = timeService;
         this.endpoint = checkNotNull(endpoint);
         this.registration = registration;
-        this.logger = logger;
     }
 
     @Override
@@ -101,8 +100,7 @@ class AuthorizationRedirectHandler implements Handler {
         try {
             clientEndpoint = buildUri(context, request, endpoint);
         } catch (ResponseException e) {
-            logger.error("Unable to build the client endpoint");
-            logger.error(e);
+            logger.error("Unable to build the client endpoint", e);
             return newResultPromise(e.getResponse());
         }
         String gotoUri = request.getForm().getFirst("goto");

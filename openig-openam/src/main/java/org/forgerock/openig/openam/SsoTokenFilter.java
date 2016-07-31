@@ -31,13 +31,14 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides an OpenAM SSO Token in the given header name for downstream components.
@@ -49,13 +50,14 @@ import org.forgerock.util.promise.Promise;
  */
 public class SsoTokenFilter implements Filter {
 
+    private static final Logger logger = LoggerFactory.getLogger(SsoTokenFilter.class);
+
     static final String SSO_TOKEN_KEY = "SSOToken";
     static final String BASE_ENDPOINT = "json";
     static final String AUTHENTICATION_ENDPOINT = "/authenticate";
     static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
 
     private final String headerName;
-    private final Logger logger;
     private final SsoTokenHolder ssoTokenHolder;
 
     SsoTokenFilter(final Handler ssoClientHandler,
@@ -63,10 +65,8 @@ public class SsoTokenFilter implements Filter {
                    final String realm,
                    final String headerName,
                    final String username,
-                   final String password,
-                   final Logger logger) {
+                   final String password) {
         this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
-        this.logger = logger;
         final Factory<Request> requestFactory = new Factory<Request>() {
             final URI authenticateEndpoint = openamUrl.resolve(BASE_ENDPOINT + startsWithSlash(realm)
                                                                + AUTHENTICATION_ENDPOINT);
@@ -193,8 +193,7 @@ public class SsoTokenFilter implements Filter {
                         final Map<String, String> result = (Map<String, String>) response.getEntity().getJson();
                         return result.get("tokenId");
                     } catch (IOException e) {
-                        logger.warning("Couldn't parse as JSON the OpenAM authentication response");
-                        logger.warning(e);
+                        logger.warn("Couldn't parse as JSON the OpenAM authentication response", e);
                     }
                     return null;
                 }

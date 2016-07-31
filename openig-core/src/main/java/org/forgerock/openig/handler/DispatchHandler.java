@@ -40,6 +40,8 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Dispatches to one of a list of handlers. When a request is handled, each handler's
@@ -51,6 +53,8 @@ import org.forgerock.util.promise.Promises;
  * with no condition (unconditional) to handle otherwise un-dispatched requests.
  */
 public class DispatchHandler extends GenericHeapObject implements Handler {
+
+    private static final Logger logger = LoggerFactory.getLogger(DispatchHandler.class);
 
     /** Expressions to evaluate against request and context, bound to handlers to dispatch to. */
     private final List<Binding> bindings = new ArrayList<>();

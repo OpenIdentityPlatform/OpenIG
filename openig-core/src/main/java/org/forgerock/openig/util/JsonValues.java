@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.util;
 
-import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
 import static org.forgerock.http.util.Loader.loadList;
 
@@ -30,8 +29,8 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Function;
+import org.slf4j.Logger;
 
 /**
  * Provides additional functionality to {@link JsonValue}.
@@ -302,7 +301,7 @@ public final class JsonValues {
      * @return The request property.
      */
     public static JsonValue getWithDeprecation(JsonValue config, Logger logger, String name,
-            String... deprecatedNames) {
+                                               String... deprecatedNames) {
         String found = config.isDefined(name) ? name : null;
         for (String deprecatedName : deprecatedNames) {
             if (config.isDefined(deprecatedName)) {
@@ -310,9 +309,12 @@ public final class JsonValues {
                     found = deprecatedName;
                     warnForDeprecation(config, logger, name, found);
                 } else {
-                    logger.warning("Cannot use both '" + deprecatedName + "' and '" + found
-                            + "' attributes, " + "will use configuration from '" + found
-                            + "' attribute");
+                    logger.warn("[{}] Cannot use both '{}' and '{}' attributes, will use configuration "
+                                        + "from '{}' attribute",
+                                config.getPointer(),
+                                deprecatedName,
+                                found,
+                                found);
                     break;
                 }
             }
@@ -335,7 +337,9 @@ public final class JsonValues {
      */
     public static void warnForDeprecation(final JsonValue config, final Logger logger,
             final String name, final String deprecatedName) {
-        logger.warning(format("[%s] The '%s' attribute is deprecated, please use '%s' instead",
-                config.getPointer(), deprecatedName, name));
+        logger.warn("[{}] The '{}' attribute is deprecated, please use '{}' instead",
+                    config.getPointer(),
+                    deprecatedName,
+                    name);
     }
 }

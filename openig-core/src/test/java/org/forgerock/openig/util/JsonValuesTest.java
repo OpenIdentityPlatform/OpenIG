@@ -31,17 +31,17 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonException;
+import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.heap.Heap;
-import org.forgerock.openig.log.Logger;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -49,6 +49,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -193,23 +194,21 @@ public class JsonValuesTest {
     public void getWithDeprecationReturnsDeprecatedValue1() {
         JsonValue config = json(object(field("old", "value")));
         assertThat(getWithDeprecation(config, logger, "new", "old").asString()).isEqualTo("value");
-        verify(logger).warning(anyString());
+        verify(logger).warn(anyString(), any(JsonPointer.class), eq("old"), eq("new"));
     }
 
     @Test
     public void getWithDeprecationReturnsDeprecatedValue2() {
         JsonValue config = json(object(field("older", "value")));
-        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
-                "value");
-        verify(logger).warning(anyString());
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo("value");
+        verify(logger).warn(anyString(), any(JsonPointer.class), eq("older"), eq("new"));
     }
 
     @Test
     public void getWithDeprecationReturnsMostRecentValue1() {
         JsonValue config = json(object(field("new", "value1"), field("old", "value2")));
-        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
-                "value1");
-        verify(logger).warning(anyString());
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo("value1");
+        verify(logger).warn(anyString(), any(JsonPointer.class), eq("old"), eq("new"), eq("new"));
     }
 
     @Test
@@ -252,9 +251,10 @@ public class JsonValuesTest {
     @Test
     public void getWithDeprecationReturnsMostRecentValue2() {
         JsonValue config = json(object(field("old", "value1"), field("older", "value2")));
-        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo(
-                "value1");
-        verify(logger, times(2)).warning(anyString());
+        assertThat(getWithDeprecation(config, logger, "new", "old", "older").asString()).isEqualTo("value1");
+        verify(logger).warn(anyString(), any(JsonPointer.class), eq("older"), eq("old"), eq("old"));
+        verify(logger).warn(anyString(), any(JsonPointer.class), eq("old"), eq("new"));
+        verifyNoMoreInteractions(logger);
     }
 
     private static Matcher<JsonValue> hasValue(final Object value) {

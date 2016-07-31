@@ -44,6 +44,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.ldap.LdapClient;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract scriptable heap object acts as a simple wrapper around the scripting engine. This class is a base class
@@ -57,7 +59,6 @@ import org.forgerock.util.promise.Promise;
  * <li>{@link Client http} - an HTTP client which may be used for performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
- * <li>{@link org.forgerock.openig.log.Logger logger} - the OpenIG logger
  * <li>{@link Heap heap} - the heap.
  * </ul>
  * <p>
@@ -67,6 +68,8 @@ import org.forgerock.util.promise.Promise;
  * be returned from the script, and will wrap it into a {@link Promise}.
  */
 public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractScriptableHeapObject.class);
 
     /** Creates and initializes a capture filter in a heap environment. */
     protected abstract static class AbstractScriptableHeaplet extends GenericHeaplet {
@@ -88,10 +91,9 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
             }
 
             if (config.isDefined("httpClient")) {
-                String message = format("'%s no longer uses a 'httpClient' attribute: 'clientHandler' "
-                                                + "has to be used instead with a reference to a Handler",
-                                        name);
-                logger.warning(message);
+                logger.warn("'{}' no longer uses a 'httpClient' attribute: 'clientHandler' "
+                                    + "has to be used instead with a reference to a Handler",
+                            name);
             }
 
             return component;
@@ -207,8 +209,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
         try {
             o = compiledScript.run(enrichBindings(bindings, context));
         } catch (ScriptException e) {
-            logger.warning("Cannot execute script");
-            logger.warning(e);
+            logger.warn("Cannot execute script", e);
             return newExceptionPromise(e);
         }
         if (o == null) {

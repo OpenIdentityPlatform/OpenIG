@@ -29,10 +29,8 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -77,8 +75,6 @@ import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.Logger;
-import org.forgerock.openig.log.NullLogSink;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -600,17 +596,6 @@ public class GroovyScriptableFilterTest {
     }
 
     @Test
-    public void testLogging() throws Exception {
-        final ScriptableFilter filter = newGroovyFilter("logger.error('test')",
-                                                        "next.handle(context, request)");
-        Context context = new RootContext();
-        filter.setLogger(mock(Logger.class));
-        Response response = filter.filter(context, new Request(), successHandler).get();
-        assertThat(response.getStatus()).isEqualTo(Status.OK);
-        verify(filter.getLogger()).error("test");
-    }
-
-    @Test
     public void testNextHandlerCanBeInvoked() throws Exception {
         final ScriptableFilter filter = newGroovyFilter("next.handle(context, request)");
         Context context = new RootContext();
@@ -767,12 +752,9 @@ public class GroovyScriptableFilterTest {
     @Test(dataProvider = "failingScripts")
     public void testRunTimeFailure(String script) throws Exception {
         final ScriptableFilter filter = newGroovyFilter(script);
-        final Logger logger = mock(Logger.class);
-        filter.setLogger(logger);
         Response response = filter.filter(new RootContext(), null, null).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);
         assertThat(response.getEntity().getString()).isEmpty();
-        verify(logger).warning(anyString());
     }
 
     @DataProvider
@@ -880,7 +862,6 @@ public class GroovyScriptableFilterTest {
     private HeapImpl getHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("anonymous"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
-        heap.put(LOGSINK_HEAP_KEY, new NullLogSink());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         return heap;

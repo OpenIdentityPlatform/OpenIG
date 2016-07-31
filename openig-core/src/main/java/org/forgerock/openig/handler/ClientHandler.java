@@ -59,6 +59,8 @@ import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Submits requests to remote servers. In this implementation, requests are
@@ -139,6 +141,8 @@ import org.forgerock.util.time.Duration;
  */
 public class ClientHandler extends GenericHeapObject implements Handler {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+
     private final Handler delegate;
 
     /**
@@ -158,7 +162,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
                            @Override
                            public void handleResult(final Response response) {
                                if (response.getCause() != null) {
-                                   logger.warning(response.getCause());
+                                   logger.warn("An error occurred while processing the request", response.getCause());
                                }
                            }
                        });
@@ -166,6 +170,8 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
     /** Creates and initializes a client handler in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
+
+        private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
 
         private HttpClientHandler httpClientHandler;
 
@@ -227,7 +233,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
                 String message = format("%s no longer uses a 'httpClient' attribute. All former 'HttpClient' "
                                                 + "config attributes must now be set in 'ClientHandler' instead.",
                                         name);
-                logger.warning(message);
+                logger.warn(message);
             }
 
             try {

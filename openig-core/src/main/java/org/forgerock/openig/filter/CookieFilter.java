@@ -54,6 +54,8 @@ import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Suppresses, relays and manages cookies. The names of filtered cookies are stored in one of
@@ -70,6 +72,8 @@ import org.forgerock.util.promise.Promises;
  * can be changed to others as appropriate.
  */
 public class CookieFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(CookieFilter.class);
 
     /** Action to be performed for a cookie. */
     public enum Action {
@@ -193,7 +197,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                                                                   null,
                                                                   null).relativize(uri));
             } catch (URISyntaxException use) {
-                logger.trace(use);
+                logger.trace("An error occurred while resolving an URI", use);
                 // swallow exception
             }
         }
@@ -244,8 +248,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         try {
             addRequestCookies(manager, resolved, request);
         } catch (IOException e) {
-            logger.error("Can't add request cookies");
-            logger.error(e);
+            logger.error("Can't add request cookies", e);
             return Promises.newResultPromise(newInternalServerError(e));
         }
 
@@ -258,8 +261,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
                         try {
                             manager.put(resolved.asURI(), value.getHeaders().copyAsMultiMapOfStrings());
                         } catch (IOException e) {
-                            logger.error("Can't process managed cookies in response");
-                            logger.error(e);
+                            logger.error("Can't process managed cookies in response", e);
                             return newInternalServerError(e);
                         }
                         // remove cookies that are suppressed or managed

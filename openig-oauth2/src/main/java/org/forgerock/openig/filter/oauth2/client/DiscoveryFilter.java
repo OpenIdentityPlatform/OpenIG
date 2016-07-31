@@ -43,13 +43,14 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * In order for an OpenID Connect Relying Party to utilize OpenID Connect
@@ -88,13 +89,15 @@ import org.forgerock.util.promise.Promise;
  * @see <a href="https://tools.ietf.org/html/rfc7033">WebFinger</a>
  */
 public class DiscoveryFilter implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(DiscoveryFilter.class);
+
     static final String OPENID_SERVICE = "http://openid.net/specs/connect/1.0/issuer";
     private static final String WELLKNOWN_WEBFINGER = ".well-known/webfinger";
     private static final String WELLKNOWN_OPENID_CONFIGURATION = ".well-known/openid-configuration";
 
     private final Handler discoveryHandler;
     private final Heap heap;
-    private final Logger logger;
 
     /**
      * Creates a discovery filter.
@@ -102,13 +105,10 @@ public class DiscoveryFilter implements Filter {
      *            The handler to perform the queries.
      * @param heap
      *            A reference to the current heap.
-     * @param logger
-     *            For logging activities.
      */
-    DiscoveryFilter(final Handler handler, final Heap heap, final Logger logger) {
+    DiscoveryFilter(final Handler handler, final Heap heap) {
         this.discoveryHandler = handler;
         this.heap = heap;
-        this.logger = logger;
     }
 
     @Override
@@ -127,7 +127,7 @@ public class DiscoveryFilter implements Filter {
                 }, new AsyncFunction<DiscoveryException, Response, NeverThrowsException>() {
                     @Override
                     public Promise<Response, NeverThrowsException> apply(DiscoveryException e) {
-                        logger.error(e);
+                        logger.error("An error occurred while retrieving the issuer", e);
                         return newResultPromise(newInternalServerError(e));
                     }
                 });
@@ -170,8 +170,7 @@ public class DiscoveryFilter implements Filter {
                         } catch (HeapException e) {
                             String message = format("Cannot resolve the issuerDeclaration '%s'",
                                                     issuerDeclaration.toString());
-                            logger.error(message);
-                            logger.error(e);
+                            logger.error(message, e);
                             throw new DiscoveryException(message, e);
                         }
                     }

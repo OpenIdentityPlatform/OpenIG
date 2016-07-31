@@ -17,14 +17,11 @@
 
 package org.forgerock.openig.heap;
 
-import static java.lang.String.format;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.LOGSINK_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
 
@@ -39,9 +36,9 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.io.TemporaryStorage;
-import org.forgerock.openig.log.LogSink;
-import org.forgerock.openig.log.Logger;
 import org.forgerock.util.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A generic base class for heaplets with automatically injected fields.
@@ -51,9 +48,11 @@ import org.forgerock.util.Function;
  */
 public abstract class GenericHeaplet implements Heaplet {
 
+    private static final Logger logger = LoggerFactory.getLogger(GenericHeaplet.class);
+
     /** Heap objects to avoid dependency injection (prevents circular dependencies). */
     private static final Set<String> SPECIAL_OBJECTS =
-            new HashSet<>(Arrays.asList(LOGSINK_HEAP_KEY, TEMPORARY_STORAGE_HEAP_KEY));
+            new HashSet<>(Arrays.asList(TEMPORARY_STORAGE_HEAP_KEY));
 
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;
@@ -66,9 +65,6 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /** Where objects should be put and where object dependencies should be retrieved. */
     protected Heap heap;
-
-    /** Provides methods for logging activities. */
-    protected Logger logger;
 
     /** Allocates temporary buffers for caching streamed content during processing. */
     protected TemporaryStorage storage;
@@ -85,10 +81,6 @@ public abstract class GenericHeaplet implements Heaplet {
         this.config = config.required().expect(Map.class);
         this.heap = heap;
         if (!SPECIAL_OBJECTS.contains(this.name)) {
-            this.logger = new Logger(config.get("logSink")
-                                           .defaultTo(LOGSINK_HEAP_KEY)
-                                           .as(optionalHeapObject(heap, LogSink.class)),
-                                     name);
             this.storage = config.get("temporaryStorage")
                                  .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
                                  .as(requiredHeapObject(heap, TemporaryStorage.class));
@@ -97,7 +89,6 @@ public abstract class GenericHeaplet implements Heaplet {
         if (this.object instanceof GenericHeapObject) {
             // instrument object if possible
             GenericHeapObject ghObject = (GenericHeapObject) this.object;
-            ghObject.logger = this.logger;
             ghObject.storage = this.storage;
         }
         start();
@@ -120,12 +111,12 @@ public abstract class GenericHeaplet implements Heaplet {
             String objectName = qualified.getLeaf();
             String slug = slug(objectName);
             if (!slug.equals(objectName)) {
-                logger.warning(format("The heap object name ('%s') has been transformed to a URL-friendly name ('%s') "
-                                      + "that is exposed in endpoint URLs. To prevent this message, "
-                                      + "consider renaming your heap object with the transformed name, "
-                                      + "or provide your own appropriate value.",
-                                      objectName,
-                                      slug));
+                logger.warn("The heap object name ('{}') has been transformed to a URL-friendly name ('{}') "
+                                    + "that is exposed in endpoint URLs. To prevent this message, "
+                                    + "consider renaming your heap object with the transformed name, "
+                                    + "or provide your own appropriate value.",
+                            objectName,
+                            slug);
             }
             registration = parent.register(slug, router);
             registry = new EndpointRegistry(router, registration.getPath());

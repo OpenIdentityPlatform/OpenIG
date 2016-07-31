@@ -17,7 +17,6 @@
 
 package org.forgerock.openig.filter;
 
-import static java.lang.String.format;
 import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.file;
@@ -44,6 +43,8 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.LazyMap;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Retrieves and exposes a record from a delimiter-separated file. Lookup of the record is
@@ -60,6 +61,8 @@ import org.forgerock.util.promise.Promise;
  * @see SeparatedValuesFile
  */
 public class FileAttributesFilter extends GenericHeapObject implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileAttributesFilter.class);
 
     /** Expression that yields the target object that will contain the record. */
     @SuppressWarnings("rawtypes") // Can't find the correct syntax to write Expression<Map<String, String>>
@@ -104,17 +107,17 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
         target.set(bindings, new LazyMap<>(new Factory<Map<String, String>>() {
             @Override
             public Map<String, String> newInstance() {
+                String eval = value.eval(bindings);
                 try {
-                    String eval = value.eval(bindings);
                     Map<String, String> record = file.getRecord(key, eval);
                     if (record == null) {
-                        logger.debug(format("Couldn't select a row where column %s value is equal to %s", key, eval));
+                        logger.debug("Couldn't select a row where column {} value is equal to {}", key, eval);
                         return Collections.emptyMap();
                     } else {
                         return record;
                     }
                 } catch (IOException ioe) {
-                    logger.warning(ioe);
+                    logger.warn("Unable to retrieve a row where column {} value is equal to {}", key, eval, ioe);
                     // results in an empty map
                     return Collections.emptyMap();
                 }

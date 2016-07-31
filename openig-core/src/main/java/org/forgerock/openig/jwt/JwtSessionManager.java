@@ -50,6 +50,8 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.encode.Base64;
 import org.forgerock.util.time.Duration;
 import org.forgerock.util.time.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A JwtSessionManager is responsible to configure and create a {@link JwtCookieSession}.
@@ -164,7 +166,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
     @Override
     public Session load(final Request request) {
-        return new JwtCookieSession(request, keyPair, cookieName, logger, timeService, sessionTimeout, signingHandler);
+        return new JwtCookieSession(request, keyPair, cookieName, timeService, sessionTimeout, signingHandler);
     }
 
     @Override
@@ -176,6 +178,8 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
     /** Creates and initializes a jwt-session in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
+
+        private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
 
         /** RSA needs at least a 512 key length.*/
         private static final int KEY_SIZE = 1024;
@@ -256,11 +260,11 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
             } catch (NoSuchAlgorithmException e) {
                 throw new HeapException("Cannot build a random KeyPair", e);
             }
-            logger.warning("JWT session support has been enabled but no encryption keys have "
-                                   + "been configured. A temporary key pair will be used but this means that "
-                                   + "OpenIG will not be able to decrypt any JWT session cookies after a "
-                                   + "configuration change, a server restart, nor will it be able to decrypt "
-                                   + "JWT session cookies encrypted by another OpenIG server.");
+            logger.warn("JWT session support has been enabled but no encryption keys have "
+                                + "been configured. A temporary key pair will be used but this means that "
+                                + "OpenIG will not be able to decrypt any JWT session cookies after a "
+                                + "configuration change, a server restart, nor will it be able to decrypt "
+                                + "JWT session cookies encrypted by another OpenIG server.");
             return keyPair;
         }
 
@@ -268,11 +272,11 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
             byte[] secret;
             if (!evaluated.isDefined("sharedSecret")) {
                 // No shared secret, generate one
-                logger.warning("No shared secret have been configured for JWT session authenticity verification."
-                                       + "A temporary key will be used but this means that OpenIG will not be able "
-                                       + "to verify any JWT session cookies after a configuration change, a server "
-                                       + "restart, nor will it be able to verify JWT session cookies signed by "
-                                       + "another OpenIG server.");
+                logger.warn("No shared secret have been configured for JWT session authenticity verification."
+                                    + "A temporary key will be used but this means that OpenIG will not be able "
+                                    + "to verify any JWT session cookies after a configuration change, a server "
+                                    + "restart, nor will it be able to verify JWT session cookies signed by "
+                                    + "another OpenIG server.");
                 secret = new byte[32];
                 new SecureRandom().nextBytes(secret);
             } else {
