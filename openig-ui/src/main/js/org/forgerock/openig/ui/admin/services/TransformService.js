@@ -124,6 +124,6 @@ define(["lodash"], (_) => ({
         // Create the main "handler" attribute with the configured chain
         const handlerType = "ClientHandler";
         route.handler = _.size(chain.filters) === 0 ? handlerType : chain.build(handlerType);
-        return JSON.stringify(route);
+        return route;
     }
 }));
