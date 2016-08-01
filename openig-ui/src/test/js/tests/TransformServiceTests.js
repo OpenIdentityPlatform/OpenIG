@@ -127,12 +127,12 @@ define([
             });
 
             assert.deepEqual(transformService.transformApplication(app),
-                JSON.stringify ({
-                    name: "modelID",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path == '/'}",
-                    handler: "ClientHandler"
-                }),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path == '/'}",
+                    "handler": "ClientHandler"
+                },
                 "Wrong top level properties"
             );
             QUnit.start();
@@ -144,12 +144,12 @@ define([
                 duration: "1 minute"
             }),
                 {
-                    name: "Throttling",
-                    type: "ThrottlingFilter",
-                    config: {
-                        rate: {
-                            numberOfRequests: 60,
-                            duration: "1 minute"
+                    "name": "Throttling",
+                    "type": "ThrottlingFilter",
+                    "config": {
+                        "rate": {
+                            "numberOfRequests": 60,
+                            "duration": "1 minute"
                         }
                     }
                 },
@@ -188,12 +188,12 @@ define([
             });
 
             assert.deepEqual(transformService.transformApplication(app),
-                JSON.stringify ({
-                    name: "modelID",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    handler: "ClientHandler"
-                }),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler"
+                },
                 "Wrong number of filters when all of them are disabled"
             );
             QUnit.start();
@@ -219,27 +219,27 @@ define([
             });
 
             assert.deepEqual(transformService.transformApplication(app),
-                JSON.stringify ({
-                    name: "modelID",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    handler: {
-                        type: "Chain",
-                        config: {
-                            filters: [{
-                                type: "ThrottlingFilter",
-                                name: "Throttling",
-                                config: {
-                                    rate: {
-                                        numberOfRequests: 60,
-                                        duration: "1 minute"
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": {
+                        "type": "Chain",
+                        "config": {
+                            "filters": [{
+                                "type": "ThrottlingFilter",
+                                "name": "Throttling",
+                                "config": {
+                                    "rate": {
+                                        "numberOfRequests": 60,
+                                        "duration": "1 minute"
                                     }
                                 }
                             }],
-                            handler: "ClientHandler"
+                            "handler": "ClientHandler"
                         }
                     }
-                }),
+                },
                 "Wrong number of filters when all of them are disabled"
             );
             QUnit.start();
