@@ -78,7 +78,7 @@
       <dependency>
         <groupId>org.forgerock.commons</groupId>
         <artifactId>commons-bom</artifactId>
-        <version>20.1.0</version>
+        <version>21.0.0-alpha-6</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
