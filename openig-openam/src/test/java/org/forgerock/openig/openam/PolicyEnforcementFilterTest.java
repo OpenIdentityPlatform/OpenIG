@@ -78,10 +78,13 @@ import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.PerItemEvictionStrategyCache;
+import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -141,7 +144,15 @@ public class PolicyEnforcementFilterTest {
         target = Expression.valueOf("${attributes.policy}", Map.class);
 
         when(amHandler.handle(any(Context.class), any(Request.class)))
-            .thenReturn(newResponsePromise(policyDecisionResponse()));
+                .thenAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
+                    @Override
+                    public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation)
+                            throws Throwable {
+                        // Create a new reponse for each call as the Response will be automatically closed
+                        // by the CrestAdapter
+                        return newResponsePromise(policyDecisionResponse());
+                    }
+                });
 
         resourceRequest = new Request();
         resourceRequest.setMethod("GET").setUri(RESOURCE_URI);
@@ -430,6 +441,8 @@ public class PolicyEnforcementFilterTest {
                       next).get();
 
         verify(next, times(2)).handle(attributesContext, resourceRequest);
+        // No other call to the amHandler has to be done here
+        verify(amHandler).handle(any(Context.class), any(Request.class));
 
         // Mimic cache expiration
         captor.getValue().run();
