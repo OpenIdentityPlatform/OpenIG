@@ -14,14 +14,16 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-// core files needed during startup
-// eslint-disable-next-line requirejs/no-named-define
-define("org/forgerock/openig/ui/main", [
-    "./common/util/Constants",
-    "./common/util/ExternalLinks",
-    "./common/delegates/SiteConfigurationDelegate",
-    "./common/main/MockServer",
-    "./user/login/InternalLoginHelper",
-    "org/forgerock/commons/ui/common/LoginView",
-    "./admin/apps/AppsTreeNavigationView"
-]);
+define([
+    "lodash",
+    "org/forgerock/openig/ui/common/util/Constants"
+], (_, Constants) => (
+    {
+        // TODO: Add relevant paths
+        backstage: {
+            admin: _.mapValues({
+                appsList: "#configure-apps"
+            }, (hash) => `${Constants.DOC_URL}${hash}`)
+        }
+    }
+));

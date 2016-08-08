@@ -16,10 +16,10 @@
 
 define([
     "org/forgerock/commons/ui/common/util/Constants"
-], function (commonConstants) {
+], (commonConstants) => {
     commonConstants.context = "openig";
 
-    commonConstants.DOC_URL = "https://forgerock.org/openig/doc/bootstrap/";
+    commonConstants.DOC_URL = "https://backstage.forgerock.com/#!/docs/openig/5.0/";
 
     return commonConstants;
 });
