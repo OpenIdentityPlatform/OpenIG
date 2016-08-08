@@ -22,6 +22,7 @@ define([
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
+    "org/forgerock/openig/ui/common/util/ExternalLinks",
     "org/forgerock/commons/ui/common/main/Router",
     "org/forgerock/openig/ui/admin/util/AppsUtils",
     "backgrid",
@@ -37,6 +38,7 @@ define([
     AbstractView,
     eventManager,
     constants,
+    externalLinks,
     router,
     appsUtils,
     Backgrid,
@@ -78,7 +80,7 @@ define([
                 }
             });
 
-            this.data.docHelpUrl = constants.DOC_URL;
+            this.data.docHelpUrl = externalLinks.backstage.admin.appsList;
 
             // Get Apps
             appPromise = AppsCollection.availableApps();
