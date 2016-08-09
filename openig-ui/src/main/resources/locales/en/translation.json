@@ -208,6 +208,11 @@
                 "baseURIContainsPath": "Cannot contain path"
             }
         },
+        "modalWindow": {
+            "title": {
+                "configExport": "Generated config file"
+            }
+        },
         "grid": {
             "pagination": {
                 "first": "First",

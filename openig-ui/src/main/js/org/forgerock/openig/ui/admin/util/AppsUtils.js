@@ -21,6 +21,7 @@ define([
     "org/forgerock/openig/ui/admin/util/AppsUtils",
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/AppsCollection",
+    "org/forgerock/commons/ui/common/components/BootstrapDialogView",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/openig/ui/admin/services/TransformService",
@@ -32,6 +33,7 @@ define([
     appsUtils,
     UIUtils,
     AppsCollection,
+    BootstrapDialogView,
     eventManager,
     constants,
     transformService,
@@ -60,8 +62,27 @@ define([
         );
     },
 
-    exportConfigDlg (/*appId*/) {
+    exportConfigDlg (appId) {
         // TODO: call export function
+        AppsCollection.byId(appId).then((appData) => {
+            if (appData) {
+                try {
+                    const modal = new BootstrapDialogView();
+                    modal.contentTemplate = "templates/openig/admin/modals/ModalMessageTemplate.html";
+                    modal.data.jsonContent = JSON.stringify(transformService.transformApplication(appData), null, 2);
+                    modal.closeByBackdrop = false;
+                    modal.draggable = true;
+                    modal.setTitle($.t("common.modalWindow.title.configExport"));
+                    modal.loadContent().then(() => {
+                        modal.show();
+                    });
+                } catch (e) {
+                    eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
+                        key: e.errorType, filter: e.message
+                    });
+                }
+            }
+        });
     },
 
     deployApplicationDlg (appId, appTitle) {
