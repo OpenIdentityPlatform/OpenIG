@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -46,8 +46,7 @@ public class WelcomeHandler extends GenericHeapObject implements Handler {
         Response response = new Response();
         response.setStatus(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
-        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream(
-                "welcome.html"), getStorage()));
+        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream("welcome.html"), getStorage()));
         return Promises.newResultPromise(response);
     }
 

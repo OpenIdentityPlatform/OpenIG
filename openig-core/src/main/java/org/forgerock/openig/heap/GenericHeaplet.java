@@ -89,7 +89,7 @@ public abstract class GenericHeaplet implements Heaplet {
         if (this.object instanceof GenericHeapObject) {
             // instrument object if possible
             GenericHeapObject ghObject = (GenericHeapObject) this.object;
-            ghObject.storage = this.storage;
+            ghObject.setStorage(this.storage);
         }
         start();
         return object;

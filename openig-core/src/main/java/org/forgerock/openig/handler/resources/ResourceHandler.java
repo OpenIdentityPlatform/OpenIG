@@ -131,7 +131,7 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
             // not cached, need to send the content back
             response.setStatus(OK);
             try {
-                response.getEntity().setRawContentInputStream(newBranchingInputStream(resource.open(), storage));
+                response.getEntity().setRawContentInputStream(newBranchingInputStream(resource.open(), getStorage()));
             } catch (IOException e) {
                 return newResponsePromise(newInternalServerError(e));
             }
