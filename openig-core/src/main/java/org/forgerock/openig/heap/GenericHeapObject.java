@@ -17,7 +17,9 @@
 
 package org.forgerock.openig.heap;
 
-import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.http.io.Buffer;
+import org.forgerock.http.io.IO;
+import org.forgerock.util.Factory;
 
 /**
  * A generic base class for heap objects with handy injected heap objects. This
@@ -30,13 +32,13 @@ public class GenericHeapObject {
      * Allocates temporary buffers for caching streamed content during
      * processing.
      */
-    protected TemporaryStorage storage = new TemporaryStorage();
+    private Factory<Buffer> storage = IO.newTemporaryStorage();
 
     /**
      * Returns the storage.
      * @return the storage
      */
-    public TemporaryStorage getStorage() {
+    protected Factory<Buffer> getStorage() {
         return storage;
     }
 
@@ -44,7 +46,7 @@ public class GenericHeapObject {
      * Sets the storage.
      * @param storage the storage to set.
      */
-    public void setStorage(TemporaryStorage storage) {
+    void setStorage(Factory<Buffer> storage) {
         this.storage = storage;
     }
 }
