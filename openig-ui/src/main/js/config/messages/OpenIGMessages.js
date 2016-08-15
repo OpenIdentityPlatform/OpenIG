@@ -14,31 +14,29 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define([], function () {
-    return {
-        "deleteAppSuccess": {
-            msg: "config.messages.OpenIGMessages.deleteAppSuccess",
-            type: "info"
-        },
-        "deleteAppFailed": {
-            msg: "config.messages.OpenIGMessages.deleteAppFailed",
-            type: "error"
-        },
-        "settingsSuccess": {
-            msg: "config.messages.OpenIGMessages.settingsSuccess",
-            type: "info"
-        },
-        "settingsFailed": {
-            msg: "config.messages.OpenIGMessages.settingsFailed",
-            type: "error"
-        },
-        "invalidModel": {
-            msg: "config.messages.OpenIGMessages.invalidModel",
-            type: "error"
-        },
-        "unknownFilterType": {
-            msg: "config.messages.OpenIGMessages.unknownFilterType",
-            type: "error"
-        }
-    };
-});
+define([], () => ({
+    "deleteAppSuccess": {
+        msg: "config.messages.OpenIGMessages.deleteAppSuccess",
+        type: "info"
+    },
+    "deleteAppFailed": {
+        msg: "config.messages.OpenIGMessages.deleteAppFailed",
+        type: "error"
+    },
+    "settingsSuccess": {
+        msg: "config.messages.OpenIGMessages.settingsSuccess",
+        type: "info"
+    },
+    "settingsFailed": {
+        msg: "config.messages.OpenIGMessages.settingsFailed",
+        type: "error"
+    },
+    "invalidModel": {
+        msg: "config.messages.OpenIGMessages.invalidModel",
+        type: "error"
+    },
+    "unknownFilterType": {
+        msg: "config.messages.OpenIGMessages.unknownFilterType",
+        type: "error"
+    }
+}));

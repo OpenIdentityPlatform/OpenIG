@@ -14,82 +14,79 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define([],
-    function () {
-        return {
-            "appsPage": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsListView",
-                role: "ui-admin",
-                url: "apps/"
-            },
-            "addAppView": {
-                view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-                role: "ui-admin",
-                url: "apps/add/"
-            },
-            "duplicateAppView": {
-                view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-                role: "ui-admin",
-                url: /^apps\/duplicate\/(.+?)$/,
-                pattern: "apps/duplicate/?"
-            },
-            "editAppView": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
-                role: "ui-admin",
-                defaults: ["", ""],
-                url: /^apps\/edit\/(.+?)\/(.*)$/,
-                pattern: "apps/edit/?/?"
-            },
-            "settings": {
-                view: "org/forgerock/openig/ui/admin/settings/SettingsView",
-                role: "ui-admin",
-                url: "settings/"
-            },
-            "appsOverview": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
-                url: /^apps\/edit\/(.+?)\/overview$/,
-                pattern: "apps/edit/?/overview",
-                role: "ui-admin",
-                navGroup: "admin",
-                forceUpdate: true
-            },
-            "appsThrottling": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",
-                url: /^apps\/edit\/(.+?)\/throttling$/,
-                pattern: "apps/edit/?/throttling",
-                role: "ui-admin",
-                navGroup: "admin",
-                forceUpdate: true
-            },
-            "appsAuthentication": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Authentication",
-                url: /^apps\/edit\/(.+?)\/authentication$/,
-                pattern: "apps/edit/?/authentication",
-                role: "ui-admin",
-                navGroup: "admin",
-                forceUpdate: true
-            },
-            "appsTransformation": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Transformation",
-                url: /^apps\/edit\/(.+?)\/transformation$/,
-                pattern: "apps/edit/?/transformation",
-                role: "ui-admin",
-                navGroup: "admin",
-                forceUpdate: true
-            },
-            "appsMonitoring": {
-                view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-                page: "org/forgerock/openig/ui/admin/apps/parts/Monitoring",
-                url: /^apps\/edit\/(.+?)\/monitoring$/,
-                pattern: "apps/edit/?/monitoring",
-                role: "ui-admin",
-                navGroup: "admin",
-                forceUpdate: true
-            }
-        };
-    });
+define([], () => ({
+    "appsPage": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsListView",
+        role: "ui-admin",
+        url: "apps/"
+    },
+    "addAppView": {
+        view: "org/forgerock/openig/ui/admin/apps/AddAppView",
+        role: "ui-admin",
+        url: "apps/add/"
+    },
+    "duplicateAppView": {
+        view: "org/forgerock/openig/ui/admin/apps/AddAppView",
+        role: "ui-admin",
+        url: /^apps\/duplicate\/(.+?)$/,
+        pattern: "apps/duplicate/?"
+    },
+    "editAppView": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
+        role: "ui-admin",
+        defaults: ["", ""],
+        url: /^apps\/edit\/(.+?)\/(.*)$/,
+        pattern: "apps/edit/?/?"
+    },
+    "settings": {
+        view: "org/forgerock/openig/ui/admin/settings/SettingsView",
+        role: "ui-admin",
+        url: "settings/"
+    },
+    "appsOverview": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
+        url: /^apps\/edit\/(.+?)\/overview$/,
+        pattern: "apps/edit/?/overview",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    },
+    "appsThrottling": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",
+        url: /^apps\/edit\/(.+?)\/throttling$/,
+        pattern: "apps/edit/?/throttling",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    },
+    "appsAuthentication": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Authentication",
+        url: /^apps\/edit\/(.+?)\/authentication$/,
+        pattern: "apps/edit/?/authentication",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    },
+    "appsTransformation": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Transformation",
+        url: /^apps\/edit\/(.+?)\/transformation$/,
+        pattern: "apps/edit/?/transformation",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    },
+    "appsMonitoring": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Monitoring",
+        url: /^apps\/edit\/(.+?)\/monitoring$/,
+        pattern: "apps/edit/?/monitoring",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    }
+}));

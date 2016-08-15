@@ -63,14 +63,10 @@ define([
 
         },
         render (args, callback) {
-            var appPromise,
-                routesPromise,
-                appsGrid,
-                RenderRow = null,
-                _this = this;
+           // const _this = this;
 
             // Render data attributes for click, context menu and filter
-            RenderRow = Backgrid.Row.extend({
+            const RenderRow = Backgrid.Row.extend({
                 render () {
                     RenderRow.__super__.render.apply(this, arguments);
                     this.$el.attr("data-id", this.model.get("_id"));
@@ -83,21 +79,21 @@ define([
             this.data.docHelpUrl = externalLinks.backstage.admin.appsList;
 
             // Get Apps
-            appPromise = AppsCollection.availableApps();
-            routesPromise = RoutesCollection.fetch();
+            const appPromise = AppsCollection.availableApps();
+            const routesPromise = RoutesCollection.fetch();
             this.data.routesCollection = RoutesCollection;
 
             $.when(appPromise, routesPromise).then(
-                _.bind(function (apps) {
+                (apps) => {
                     this.routesList = this.data.routesCollection.models;
-                    _.each(apps.models, _.bind(function (app) {
+                    _.each(apps.models, (app) => {
                         app.deployed = this.data.routesCollection.isDeployed(app.id);
-                    }, this));
+                    });
                     this.data.currentApps = apps.models;
 
-                    this.parentRender(_.bind(() => {
+                    this.parentRender(() => {
                         // TODO: use template cell instead of render method
-                        appsGrid = new Backgrid.Grid({
+                        const appsGrid = new Backgrid.Grid({
                             className: "table backgrid",
                             row: RenderRow,
                             columns: BackgridUtils.addSmallScreenCell([
@@ -107,7 +103,7 @@ define([
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
                                         render () {
-                                            var display = '<a class="table-clink" href="#apps/edit/' +
+                                            const display = '<a class="table-clink" href="#apps/edit/' +
                                                 this.model.get("_id") + '/"><div class="image circle">' +
                                                 '<i class="fa fa-rocket"></i></div>' +
                                                 this.model.get("content/name") +
@@ -132,7 +128,7 @@ define([
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
                                         render () {
-                                            var display = "";
+                                            let display = "";
 
                                             if (this.model.deployed) {
                                                 display = '<span class="text-success">' +
@@ -157,15 +153,15 @@ define([
                                     editable: false,
                                     cell: Backgrid.Cell.extend({
                                         render () {
-                                            var display = $('<div class="btn-group pull-right">' +
+                                            const display = $('<div class="btn-group pull-right">' +
                                                 '<button type="button" class="btn btn-link fa-lg' +
                                                 'dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
                                                 '<i class="fa fa-ellipsis-v"></i>' +
                                                 "</button></div>");
 
                                             $(display).append(
-                                                _this.$el.find(
-                                                    "[data-id='" + this.model.get("_id") + "'] .dropdown-menu"
+                                                this.$el.find(
+                                                    `[data-id='${this.model.get("_id")}'] .dropdown-menu`
                                                 ).clone());
 
                                             this.$el.html(display);
@@ -185,8 +181,8 @@ define([
                             callback();
                         }
 
-                    }, this));
-                }, this));
+                    });
+                });
         },
 
         duplicateAppConfig (event) {

@@ -16,24 +16,21 @@
 
 define([
     "jquery"
-], function (
+], (
     $
-) {
-    return {
-        "baseURI": {
-            "name": "Base URI field",
-            "dependencies": [],
-            "validator": function (el, input, callback) {
-                var v = input.val();
-                if (!/^(http|https):\/\/[^ "]+$/.test(v)) {
-                    callback([$.t("common.form.validation.baseURINotValid")]);
-                } else if (!/^(http|https):\/\/[^ "\/]+$/.test(v)) {
-                    callback([$.t("common.form.validation.baseURIContainsPath")]);
-                } else {
-                    callback();
-                }
-
+) => ({
+    "baseURI": {
+        "name": "Base URI field",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const v = input.val();
+            if (!/^(http|https):\/\/[^ "]+$/.test(v)) {
+                callback([$.t("common.form.validation.baseURINotValid")]);
+            } else if (!/^(http|https):\/\/[^ "\/]+$/.test(v)) {
+                callback([$.t("common.form.validation.baseURIContainsPath")]);
+            } else {
+                callback();
             }
         }
-    };
-});
+    }
+}));

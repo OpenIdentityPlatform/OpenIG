@@ -155,7 +155,7 @@ require([
     "handlebars",
     "i18next",
     "spin"
-], function (EventManager, Constants, CookieHelper, LocalStorage) {
+], (EventManager, Constants, CookieHelper, LocalStorage) => {
 
     // Mock project is run without server. Framework requires cookies to be enabled in order to be able to login.
     // Default CookieHelper.cookiesEnabled() implementation will always return false as cookies cannot be set from local

@@ -36,14 +36,13 @@ define([
         appsCache: {},
         // Get all apps from server and save in local cache
         availableApps () {
-            var deferred = $.Deferred(),
-                promise = deferred.promise(),
-                appPromise;
+            const deferred = $.Deferred();
+            const promise = deferred.promise();
 
             if (this.appsCache.currentApps) {
                 deferred.resolve(this.appsCache.currentApps);
             } else {
-                appPromise = this.fetch();
+                const appPromise = this.fetch();
                 appPromise.then(() => {
                     this.appsCache.currentApps = this;
                     deferred.resolve(this);

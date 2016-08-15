@@ -18,8 +18,8 @@ define([
     "lodash",
     "org/forgerock/commons/ui/common/main/Configuration",
     "org/forgerock/openig/ui/common/main/LocalStorage"
-], function () {
-    return function (server) {
+], () => (
+    (server) => {
         server.respondWith(
             "GET",
             "/openig/api/system/objects/config?_pageSize=10",
@@ -175,5 +175,5 @@ define([
             ]
         );
 
-    };
-});
+    }
+));

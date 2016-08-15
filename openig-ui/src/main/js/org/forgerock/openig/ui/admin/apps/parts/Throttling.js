@@ -18,12 +18,12 @@ define([
     "jquery",
     "underscore",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView"
-], function (
+], (
     $,
     _,
     AbstractAppView
-    ) {
-    return AbstractAppView.extend({
+) => (
+    AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Throttling.html",
         events: {
@@ -31,8 +31,9 @@ define([
         data: {
 
         },
-        render: function () {
-            this.parentRender(_.bind(function () { }, this));
+        render () {
+            this.parentRender(() => {
+            });
         }
-    });
-});
+    })
+));

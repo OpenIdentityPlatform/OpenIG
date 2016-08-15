@@ -20,13 +20,13 @@ define([
     "form2js",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView",
     "org/forgerock/openig/ui/admin/util/AppsUtils"
-], function (
+], (
     $,
     _,
     form2js,
     AbstractAppView
-    ) {
-    return AbstractAppView.extend({
+) => (
+    AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Overview.html",
         events: {
@@ -34,9 +34,9 @@ define([
         data: {
 
         },
-        render: function () {
-            this.parentRender(_.bind(function () {
-            }, this));
+        render () {
+            this.parentRender(() => {
+            });
         }
-    });
-});
+    })
+));

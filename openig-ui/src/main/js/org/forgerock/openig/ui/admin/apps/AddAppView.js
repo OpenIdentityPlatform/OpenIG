@@ -27,7 +27,7 @@ define([
     "org/forgerock/commons/ui/common/main/Router",
     "org/forgerock/openig/ui/admin/models/AppModel",
     "org/forgerock/openig/ui/admin/models/AppsCollection"
-], function (
+], (
     $,
     _,
     form2js,
@@ -39,8 +39,8 @@ define([
     appsUtils,
     router,
     AppModel,
-    AppsCollection) {
-    var AddEditAppView = AbstractAppView.extend({
+    AppsCollection) => {
+    const AddEditAppView = AbstractAppView.extend({
         template: "templates/openig/admin/apps/AddAppTemplate.html",
         events: {
             "click #submitApp": "appFormSubmit",
@@ -51,11 +51,10 @@ define([
         },
         app: null,
 
-        render: function (args, callback) {
-            var appId;
+        render (args, callback) {
+            const appId = args[0];
             this.data = {};
             this.data.docHelpUrl = constants.DOC_URL;
-            appId = args[0];
 
             // editState true for readonly
             this.data.editState = false;
@@ -63,42 +62,39 @@ define([
             this.app = new AppModel();
             // TODO: check duplicate from url/router
             if (appId !== undefined) {
-                AppsCollection.byId(appId).then(_.bind(function (parentApp) {
+                AppsCollection.byId(appId).then((parentApp) => {
                     this.data.appName = parentApp.get("content/name");
                     this.data.appUrl = parentApp.get("content/url");
                     this.data.appCondition = parentApp.get("content/condition");
                     this.app.attributes.content = JSON.parse(JSON.stringify(parentApp.attributes.content));
 
-                    this.parentRender(_.bind(function () {
+                    this.parentRender(() => {
                         validatorsManager.bindValidators(this.$el);
                         this.loadAppTemplate(callback);
-                    }, this));
+                    });
 
-                }, this));
+                });
             } else {
                 this.data.appName = "";
                 this.data.appUrl = "";
                 this.data.appCondition = "";
 
-                this.parentRender(_.bind(function () {
+                this.parentRender(() => {
                     validatorsManager.bindValidators(this.$el);
                     this.loadAppTemplate(callback);
-                }, this));
+                });
             }
         },
 
-        appFormSubmit: function (event) {
-            var newAppId,
-                form = this.$el.find("#appForm")[0],
-                formVal;
-
+        appFormSubmit (event) {
             event.preventDefault();
 
             if (this.app && this.app !== null) {
+                const form = this.$el.find("#appForm")[0];
                 // Parse Form values
-                formVal = form2js(form, ".", true);
+                const formVal = form2js(form, ".", true);
                 // Create simple content + fake id
-                newAppId = formVal.name + Date.now();
+                const newAppId = formVal.name + Date.now();
 
                 _.extend(formVal, { id: newAppId });
                 this.app.set({
@@ -117,7 +113,7 @@ define([
                     this.app
                 ]);
 
-                router.navigate("apps/edit/" + newAppId + "/", true);
+                router.navigate(`apps/edit/${newAppId}/`, true);
 
             }
         }

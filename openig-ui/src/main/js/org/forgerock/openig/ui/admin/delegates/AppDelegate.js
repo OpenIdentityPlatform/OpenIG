@@ -20,9 +20,9 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/AbstractDelegate",
     "org/forgerock/commons/ui/common/main/EventManager"
-], function ($, _, constants, AbstractDelegate) {
+], ($, _, constants, AbstractDelegate) => {
 
-    var obj = new AbstractDelegate(constants.host + "/" + constants.context + "/api/system/objects/config");
+    const obj = new AbstractDelegate(`${constants.host}/${constants.context}/api/system/objects/config`);
 
     obj.appsDelegateCache = {};
 
@@ -42,8 +42,8 @@ define([
     };
 
     obj.currentApps = function () {
-        var deferred = $.Deferred(),
-            promise = deferred.promise();
+        const deferred = $.Deferred();
+        const promise = deferred.promise();
 
         if (obj.appsDelegateCache.currentApps) {
             deferred.resolve(_.clone(obj.appsDelegateCache.currentApps));
@@ -51,9 +51,8 @@ define([
             obj.serviceCall({
                 url: "",
                 type: "POST"
-            }).then(function (result) {
+            }).then((result) => {
                 obj.appsDelegateCache.currentApps = result;
-
                 deferred.resolve(result);
             });
         }
@@ -63,7 +62,7 @@ define([
 
     obj.queryApps = function (name) {
         return obj.serviceCall({
-            url: "/" + name + "?_queryId=query-all-ids",
+            url: `/${name}?_queryId=query-all-ids`,
             type: "GET"
         });
     };

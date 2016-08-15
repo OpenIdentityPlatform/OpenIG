@@ -24,14 +24,14 @@ define([
     "../test/tests/OpenIGValidatorsTests",
     "../test/tests/TransformServiceTests",
     "../test/tests/getLoggedUser"
-], function (
+], (
     $,
     doTimeout,
     constants,
     eventManager,
     openIGValidatorsTests,
     transformServiceTests,
-    getLoggedUser) {
+    getLoggedUser) => {
 
     $.doTimeout = function (name, time, func) {
         func(); // run the function immediately rather than delayed.
@@ -39,13 +39,12 @@ define([
 
     return function (server) {
 
-        eventManager.registerListener(constants.EVENT_APP_INITIALIZED, function () {
-            require("ThemeManager").getTheme().then(function () {
-                QUnit.testStart(function (testDetails) {
-                    console.log("Starting " + testDetails.module +
-                        ":" + testDetails.name + "(" + testDetails.testNumber + ")");
+        eventManager.registerListener(constants.EVENT_APP_INITIALIZED, () => {
+            require("ThemeManager").getTheme().then(() => {
+                QUnit.testStart((testDetails) => {
+                    console.log(`Starting ${testDetails.module}":"${testDetails.name}(${testDetails.testNumber})`);
 
-                    var vm = require("org/forgerock/commons/ui/common/main/ViewManager");
+                    const vm = require("org/forgerock/commons/ui/common/main/ViewManager");
 
                     vm.currentView = null;
                     vm.currentDialog = null;
@@ -56,13 +55,13 @@ define([
                 });
 
 
-                _.delay(function () {
+                _.delay(() => {
                     QUnit.start();
                     openIGValidatorsTests.executeAll(server, getLoggedUser());
                     transformServiceTests.executeAll(server);
                 }, 500);
 
-                QUnit.done(function () {
+                QUnit.done(() => {
                     localStorage.clear();
                     Backbone.history.stop();
                     window.location.hash = "";

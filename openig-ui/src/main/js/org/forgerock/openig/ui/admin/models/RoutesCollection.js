@@ -20,27 +20,24 @@ define([
     "backbone",
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/AbstractCollection"
-], function (
+], (
     $,
     _,
     Backbone,
     Constants,
     AbstractCollection
-) {
+) => {
     /* Get routes from default router(TODO: different routers)*/
-    var routesCollection,
-        routeModel = Backbone.Model.extend({}),
-        RoutesCollection = AbstractCollection.extend({
-            model: routeModel,
-            url: "/openig/api/system/objects/router-handler/routes"
-        });
+    const routeModel = Backbone.Model.extend({});
+    const RoutesCollection = AbstractCollection.extend({
+        model: routeModel,
+        url: "/openig/api/system/objects/router-handler/routes"
+    });
 
-    routesCollection = new RoutesCollection();
+    const routesCollection = new RoutesCollection();
 
     routesCollection.isDeployed = function (appId) {
-        return _.find(this.models, function (route) {
-            return route.get("_id") === appId;
-        }) !== undefined;
+        return _.find(this.models, (route) => (route.get("_id") === appId)) !== undefined;
     };
 
     return routesCollection;

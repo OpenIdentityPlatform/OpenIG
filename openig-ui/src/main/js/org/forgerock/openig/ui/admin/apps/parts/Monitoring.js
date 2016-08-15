@@ -20,14 +20,14 @@ define([
     "form2js",
     "dimple",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView"
-], function (
+], (
     $,
     _,
     form2js,
     dimple,
     AbstractAppView
-) {
-    return AbstractAppView.extend({
+) => (
+    AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Monitoring.html",
         events: {
@@ -35,12 +35,12 @@ define([
         data: {
 
         },
-        render: function () {
+        render () {
             var svg,
                 data,
                 myChart;
 
-            this.parentRender(_.bind(function () {
+            this.parentRender(() => {
                 var x;
 
                 this.model = {};
@@ -68,7 +68,7 @@ define([
                 myChart.draw();
 
 
-            }, this));
+            });
         }
-    });
-});
+    })
+));

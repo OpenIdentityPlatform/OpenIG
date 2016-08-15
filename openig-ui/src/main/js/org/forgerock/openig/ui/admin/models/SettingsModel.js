@@ -19,16 +19,16 @@ define([
     "underscore",
     "backbone",
     "org/forgerock/commons/ui/common/main/AbstractModel"
-], function (
+], (
     $,
     _,
     Backbone,
     AbstractModel
-) {
+) => {
     /* Define Settings structure */
 
     //var mockPrefix = "mock/repo/internal/AppModel/";
-    var SettingsModel = AbstractModel.extend({
+    const SettingsModel = AbstractModel.extend({
         defaults: {
             _id: "",
             admin: {
@@ -41,7 +41,7 @@ define([
             }
         },
 
-        validate: function (attrs) {
+        validate (attrs) {
             if (!attrs._id || attrs._id.trim() === "") {
                 return "errorNoId";
             }
@@ -61,7 +61,7 @@ define([
 
         // sync has to be overridden to work with localstorage; products using CREST backend shouldn't need to do so
         // TODO: solve Sync method
-        sync: function (method) {
+        sync (method) {
             switch (method) {
                 case "read":
                     //model.set(LocalStorage.get(mockPrefix + model.id));

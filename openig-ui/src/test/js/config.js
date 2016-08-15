@@ -42,11 +42,11 @@ require.config({
 require([
     "jquery",
     "org/forgerock/openig/ui/common/main/MockServer"
-], function ($, MockServer) {
+], ($, MockServer) => {
 
     $("head", document).append("<base href='../www/' />");
 
-    require(["main", "../test/run"], function (appMain, run) {
+    require(["main", "../test/run"], (appMain, run) => {
         run(MockServer.instance);
     });
 
