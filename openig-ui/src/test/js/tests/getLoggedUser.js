@@ -17,10 +17,11 @@
 define([
     "org/forgerock/openig/ui/common/main/LocalStorage",
     "org/forgerock/openig/ui/user/UserModel"
-], function (LocalStorage, UserModel) {
-    return function () {
+], (LocalStorage, UserModel) => (
+    function () {
         UserModel.set(LocalStorage.get("mock/repo/internal/user/test"));
         UserModel.hideAttribute("password");
         return UserModel;
-    };
-});
+    }
+
+));

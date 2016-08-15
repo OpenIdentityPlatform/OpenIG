@@ -22,37 +22,36 @@ define([
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/openig/ui/common/main/LocalStorage",
     "org/forgerock/commons/ui/common/util/ObjectUtil"
-], function (
+], (
     $,
     _,
     AbstractModel,
     Constants,
     EventManager,
     LocalStorage,
-    ObjectUtil) {
-    var mockPrefix = "mock/repo/internal/user/",
-        UserModel;
-    UserModel = AbstractModel.extend({
+    ObjectUtil) => {
+    const mockPrefix = "mock/repo/internal/user/";
+    const UserModel = AbstractModel.extend({
         // sync has to be overridden to work with localstorage; products using CREST backend shouldn't need to do so
-        sync: function (method, model) {
+        sync (method, model) {
             switch (method) {
                 case "read":
                     model.set(LocalStorage.get(mockPrefix + model.id));
                     return $.Deferred().resolve(model.toJSON());
 
                 case "patch":
-                    var deferred = $.Deferred(),
-                        previous;
+                    const deferred = $.Deferred();
 
                     // if any protected attributes have changed, but the current password is incorrect...
-                    if (_.any(model.getProtectedAttributes(), function (protectedAttribute) {
-                        return _.has(model.changedAttributes(), protectedAttribute);
+                    if (_.any(model.getProtectedAttributes(), (protectedAttribute) => {
+                        const hasAttr = _.has(model.changedAttributes(), protectedAttribute);
+                        return hasAttr;
                     }) &&
                         // normally this 'currentPassword' check would be done on the backend, of course.
                         // In the mock we do it in memory
                         (!_.has(model, "currentPassword") || model.currentPassword !== model.hidden.password)
                     ) { // then reset the model and display the failure message
-                        previous = model.previousAttributes();
+                        const previous = model.previousAttributes();
                         model.clear();
                         model.set(previous);
                         EventManager.sendEvent(Constants.EVENT_DISPLAY_MESSAGE_REQUEST, "userProfileIncorrectPassword");
@@ -78,15 +77,15 @@ define([
         },
         protectedAttributeList: ["password"],
         hidden: {},
-        hideAttribute: function (attr) {
+        hideAttribute (attr) {
             if (this.has(attr)) {
                 this.hidden[attr] = this.get(attr);
             }
             this.unset(attr);
         },
-        getProfile: function (username, password) {
+        getProfile (username, password) {
             this.id = username;
-            return this.fetch().then(_.bind(function () {
+            return this.fetch().then(() => {
                 this.uiroles = this.get("roles");
                 if (this.get("password") === password) {
                     this.hideAttribute("password");
@@ -94,12 +93,12 @@ define([
                 } else {
                     return $.Deferred().reject();
                 }
-            }, this));
+            });
         },
-        getProtectedAttributes: function () {
+        getProtectedAttributes () {
             return this.protectedAttributeList;
         },
-        setCurrentPassword: function (currentPassword) {
+        setCurrentPassword (currentPassword) {
             this.currentPassword = currentPassword;
         }
     });

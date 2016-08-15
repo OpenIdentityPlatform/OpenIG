@@ -16,18 +16,18 @@
 
 define([
     "org/forgerock/openig/ui/common/util/Constants"
-], function (Constants) {
-    return [
+], (Constants) => (
+    [
         {
             startEvent: Constants.EVENT_HANDLE_DEFAULT_ROUTE,
             description: "",
             dependencies: [
                 "org/forgerock/commons/ui/common/main/Router"
             ],
-            processDescription: function (event, router) {
+            processDescription (event, router) {
                 // Default route to Apps page - temporary, should be dashboard later
                 router.routeTo(router.configuration.routes.appsPage, { trigger: true });
             }
         }
-    ];
-});
+    ]
+));

@@ -14,10 +14,8 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define([], function () {
-    var obj = {};
-
-    obj.getConfiguration = function (successCallback) {
+define([], () => ({
+    getConfiguration (successCallback) {
         // Redirect ot Apps List view instead of user profile
 
         require.config({
@@ -35,6 +33,5 @@ define([], function () {
             "passwordReset": true,
             "lang": "en"
         });
-    };
-    return obj;
-});
+    }
+}));

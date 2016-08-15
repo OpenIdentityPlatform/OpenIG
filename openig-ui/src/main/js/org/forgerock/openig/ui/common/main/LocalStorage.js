@@ -22,8 +22,8 @@
 
 define([
     "underscore"
-], function (_) {
-    var mockPrefix = "forgerock-openig-";
+], (_) => {
+    const mockPrefix = "forgerock-openig-";
 
     function isLocalStorageSupported () {
         return typeof localStorage !== "undefined";
@@ -38,9 +38,9 @@ define([
              * @param {string} data data
              * @returns {Object} newly added data
              */
-            add: function (key, data) {
+            add (key, data) {
                 if (!this.get(key)) {
-                    console.log("Adding item to localStorage: " + data);
+                    console.log(`Adding item to localStorage: ${data}`);
                     localStorage.setItem(mockPrefix + key, JSON.stringify(data));
                     return key;
                 }
@@ -55,22 +55,17 @@ define([
              * @param {string} data data
              * @returns {Object} patched data
              */
-            patch: function (key, data) {
-                var item = this.get(key),
-                    node,
-                    pathParts;
-
+            patch (key, data) {
+                const item = this.get(key);
                 if (item) {
 
-                    _.each(data, function (patchEntry) {
+                    _.each(data, (patchEntry) => {
 
-                        pathParts = _.filter(patchEntry.field.split("/"), function (part) {
-                            return part.length > 0;
-                        });
+                        const pathParts = _.filter(patchEntry.field.split("/"), (part) => (part.length > 0));
 
-                        node = item;
+                        let node = item;
 
-                        _.each(pathParts, function (part, index) {
+                        _.each(pathParts, (part, index) => {
                             if (index !== (pathParts.length - 1)) {
                                 if (node[part] === undefined) {
                                     node[part] = {};
@@ -102,7 +97,7 @@ define([
              * @param {string} key key
              * @returns {Object} data
              */
-            get: function (key) {
+            get (key) {
                 return JSON.parse(localStorage.getItem(mockPrefix + key));
             },
 
@@ -112,7 +107,7 @@ define([
              * @param {string} key key
              * @returns {boolean} whether data was removed
              */
-            remove: function (key) {
+            remove (key) {
                 return delete localStorage[mockPrefix + key];
             }
         };
@@ -120,23 +115,21 @@ define([
     } else {
 
         return {
-            add: function () {
+            add () {
                 console.log("LocalStorage is not supported");
             },
 
-            patch: function () {
+            patch () {
                 console.log("LocalStorage is not supported");
             },
 
-            get: function () {
+            get () {
                 console.log("LocalStorage is not supported");
             },
 
-            remove: function () {
+            remove () {
                 console.log("LocalStorage is not supported");
             }
         };
-
     }
-
 });

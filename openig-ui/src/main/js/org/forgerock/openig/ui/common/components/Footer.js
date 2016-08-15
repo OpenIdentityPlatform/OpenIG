@@ -16,6 +16,6 @@
 
 define([
     "org/forgerock/commons/ui/common/components/Footer"
-], function (Footer) {
-    return new Footer();
-});
+], (Footer) => (
+     new Footer()
+));

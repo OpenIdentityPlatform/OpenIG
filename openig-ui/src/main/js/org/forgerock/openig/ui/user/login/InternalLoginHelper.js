@@ -22,8 +22,8 @@ define([
     "org/forgerock/commons/ui/common/main/AbstractConfigurationAware",
     "org/forgerock/commons/ui/common/main/ServiceInvoker",
     "org/forgerock/commons/ui/common/main/Configuration"
-], function ($, UserModel, eventManager, constants, AbstractConfigurationAware, serviceInvoker, conf) {
-    var obj = new AbstractConfigurationAware();
+], ($, UserModel, eventManager, constants, AbstractConfigurationAware, serviceInvoker, conf) => {
+    const obj = new AbstractConfigurationAware();
 
     obj.login = function (params, successCallback, errorCallback) {
         return UserModel.getProfile(params.userName, params.password).then(successCallback, errorCallback);

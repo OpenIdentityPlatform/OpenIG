@@ -19,78 +19,77 @@ define([
     "underscore",
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/Configuration"
-], function ($, _, constants, conf) {
-    var obj = {},
-        themePromise;
+], ($, _, constants, conf) => {
+    let themePromise;
 
-    obj.loadThemeCSS = function (theme) {
-        $("head").find("link[href*=favicon]").remove();
+    return {
+        loadThemeCSS (theme) {
+            $("head").find("link[href*=favicon]").remove();
 
-        $("<link/>", {
-            rel: "icon",
-            type: "image/x-icon",
-            href: theme.path + theme.icon
-        }).appendTo("head");
-
-        $("<link/>", {
-            rel: "shortcut icon",
-            type: "image/x-icon",
-            href: theme.path + theme.icon
-        }).appendTo("head");
-
-        _.forEach(theme.stylesheets, function (stylesheet) {
             $("<link/>", {
-                rel: "stylesheet",
-                type: "text/css",
-                href: stylesheet
+                rel: "icon",
+                type: "image/x-icon",
+                href: theme.path + theme.icon
             }).appendTo("head");
-        });
-    };
 
+            $("<link/>", {
+                rel: "shortcut icon",
+                type: "image/x-icon",
+                href: theme.path + theme.icon
+            }).appendTo("head");
 
-    obj.loadThemeConfig = function () {
-        var prom = $.Deferred();
-        //check to see if the config file has been loaded already
-        //if so use what is already there if not load it
-        if (conf.globalData.themeConfig) {
-            prom.resolve(conf.globalData.themeConfig);
-            return prom;
-        } else {
-            return $.Deferred().resolve({
-                "path": "",
-                "icon": "favicon.ico",
-                "stylesheets": ["css/bootstrap-3.3.5-custom.css", "css/structure.css", "css/theme.css"],
-                "settings": {
-                    "logo": {
-                        "src": "images/logo-horizontal.png",
-                        "title": "ForgeRock",
-                        "alt": "ForgeRock"
-                    },
-                    "loginLogo": {
-                        "src": "images/login-logo.png",
-                        "title": "ForgeRock",
-                        "alt": "ForgeRock",
-                        "height": "104px",
-                        "width": "210px"
-                    },
-                    "footer": {
-                        "mailto": "info@forgerock.com"
+            _.forEach(theme.stylesheets, (stylesheet) => {
+                $("<link/>", {
+                    rel: "stylesheet",
+                    type: "text/css",
+                    href: stylesheet
+                }).appendTo("head");
+            });
+        },
+
+        loadThemeConfig () {
+            const prom = $.Deferred();
+            //check to see if the config file has been loaded already
+            //if so use what is already there if not load it
+            if (conf.globalData.themeConfig) {
+                prom.resolve(conf.globalData.themeConfig);
+                return prom;
+            } else {
+                return $.Deferred().resolve({
+                    "path": "",
+                    "icon": "favicon.ico",
+                    "stylesheets": ["css/bootstrap-3.3.5-custom.css", "css/structure.css", "css/theme.css"],
+                    "settings": {
+                        "logo": {
+                            "src": "images/logo-horizontal.png",
+                            "title": "ForgeRock",
+                            "alt": "ForgeRock"
+                        },
+                        "loginLogo": {
+                            "src": "images/login-logo.png",
+                            "title": "ForgeRock",
+                            "alt": "ForgeRock",
+                            "height": "104px",
+                            "width": "210px"
+                        },
+                        "footer": {
+                            "mailto": "info@forgerock.com"
+                        }
                     }
-                }
-            });
-        }
-    };
+                });
+            }
+        },
 
-    obj.getTheme = function () {
-        if (themePromise === undefined) {
-            themePromise = obj.loadThemeConfig().then(function (themeConfig) {
-                conf.globalData.theme = themeConfig;
-                obj.loadThemeCSS(themeConfig);
-                return themeConfig;
-            });
+        getTheme () {
+            if (themePromise === undefined) {
+                themePromise = this.loadThemeConfig().then((themeConfig) => {
+                    conf.globalData.theme = themeConfig;
+                    this.loadThemeCSS(themeConfig);
+                    return themeConfig;
+                });
+            }
+            return themePromise;
         }
-        return themePromise;
-    };
 
-    return obj;
+    };
 });

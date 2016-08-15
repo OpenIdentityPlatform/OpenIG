@@ -23,16 +23,16 @@
 define([
     "mock/Data",
     "sinon"
-], function (mockData, sinon) {
+], (mockData, sinon) => {
     var instance = null,
         server;
 
     function init () {
 
         sinon.FakeXMLHttpRequest.useFilters = true;
-        sinon.FakeXMLHttpRequest.addFilter(function (method, url) {
-            return (/((\.html)|(\.css)|(\.less)|(\.json))$/).test(url);
-        });
+        sinon.FakeXMLHttpRequest.addFilter((method, url) => (
+             (/((\.html)|(\.css)|(\.less)|(\.json))$/).test(url)
+        ));
 
         server = sinon.fakeServer.create();
         server.autoRespond = true;
@@ -42,12 +42,12 @@ define([
     }
 
     return {
-        instance: (function () {
+        instance: (() => {
             if (!instance) {
                 instance = init();
             }
 
             return instance;
-        } ())
+        })()
     };
 });

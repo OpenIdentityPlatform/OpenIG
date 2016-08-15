@@ -18,11 +18,11 @@ define([
     "jquery",
     "underscore",
     "org/forgerock/commons/ui/common/main/AbstractView"
-], function ($, _, AbstractView) {
-    var AddEditAppView = AbstractView.extend({
+], ($, _, AbstractView) => {
+    const AddEditAppView = AbstractView.extend({
         data: {
         },
-        loadAppTemplate: function () {
+        loadAppTemplate () {
                 // TODO: init view
             return;
         }

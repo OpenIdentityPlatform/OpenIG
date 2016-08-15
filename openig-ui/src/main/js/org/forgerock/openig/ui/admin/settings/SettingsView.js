@@ -24,7 +24,7 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/Router",
     "org/forgerock/openig/ui/admin/models/SettingsModel"
-], function (
+], (
     $,
     _,
     form2js,
@@ -33,9 +33,9 @@ define([
     validatorsManager,
     constants,
     router,
-    SettingsModel) {
+    SettingsModel) => {
 
-    var SettingsView = AbstractView.extend({
+    const SettingsView = AbstractView.extend({
         template: "templates/openig/admin/settings/SettingsTemplate.html",
         events: {
             "click #submitSettings": "settingsFormSubmit",
@@ -47,26 +47,23 @@ define([
         appTypeRef: null,
         settings: null,
 
-        render: function () {
+        render () {
             this.data = {};
             this.data.docHelpUrl = constants.DOC_URL;
             this.settings = new SettingsModel();
             this.data.editState = false;
 
-            this.parentRender(_.bind(function () {
+            this.parentRender(() => {
                 validatorsManager.bindValidators(this.$el);
-            }, this));
+            });
         },
 
-        settingsFormSubmit: function (event) {
-            var formVal,
-                invalidItem,
-                tabName;
+        settingsFormSubmit (event) {
             event.preventDefault();
 
             if (this.settings && this.settings !== null) {
                 // Parse Form values and creates simple content
-                formVal = form2js(this.$el.find("#settings")[0], ".", true);
+                const formVal = form2js(this.$el.find("#settings")[0], ".", true);
 
                 // Sets Form values into model
                 this.settings.set({
@@ -81,9 +78,9 @@ define([
 
                     eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, "settingsFailed");
 
-                    invalidItem = _.first(this.$el.find("input[data-validation-status=error]"));
-                    tabName = invalidItem.closest(".tab-pane").id;
-                    $('.nav-tabs a[href="#' + tabName + '"]').tab("show");
+                    const invalidItem = _.first(this.$el.find("input[data-validation-status=error]"));
+                    const tabName = invalidItem.closest(".tab-pane").id;
+                    $(`.nav-tabs a[href="#${tabName}"]`).tab("show");
                     return;
                 }
 
