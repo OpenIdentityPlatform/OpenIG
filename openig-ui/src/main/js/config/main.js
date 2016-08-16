@@ -16,11 +16,9 @@
 
 // eslint-disable-next-line requirejs/no-named-define
 define("config/main", [
-    "./routes/CommonRoutesConfig",
     "./routes/UserRoutesConfig",
     "./routes/OpenIGRoutesConfig",
     "./messages/CommonMessages",
-    "./messages/UserMessages",
     "./messages/OpenIGMessages",
     "./validators/CommonValidators",
     "./AppConfiguration",

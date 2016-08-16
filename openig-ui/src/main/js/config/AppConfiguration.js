@@ -146,7 +146,6 @@ define([], () => ({
                 },
                 loader: [
                     { "messages": "config/messages/CommonMessages" },
-                    { "messages": "config/messages/UserMessages" },
                     { "messages": "config/messages/OpenIGMessages" }
                 ]
             }
