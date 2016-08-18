@@ -72,6 +72,7 @@ define([
                     this.$el.attr("data-id", this.model.get("_id"));
                     this.$el.attr("data-url", this.model.get("content/url"));
                     this.$el.attr("data-title", this.model.get("content/name"));
+                    this.$el.attr("data-deployed", this.model.deployed);
                     return this;
                 }
             });
@@ -268,9 +269,12 @@ define([
 
             if (search.length > 0) {
                 _.each(this.$el.find(".card-spacer"), (card) => {
+                    const deployedText = $(card).attr("data-deployed") === "true"
+                        ? $.t("templates.apps.deployedState") : $.t("templates.apps.undeployedState");
                     if ($(card).attr("data-id").toLowerCase().indexOf(search) > -1 ||
                         $(card).attr("data-url").toLowerCase().indexOf(search) > -1 ||
-                        $(card).attr("data-title").toLowerCase().indexOf(search) > -1) {
+                        $(card).attr("data-title").toLowerCase().indexOf(search) > -1 ||
+                        deployedText.toLowerCase().indexOf(search) > -1) {
                         $(card).fadeIn();
                     } else {
                         $(card).fadeOut();
@@ -278,9 +282,12 @@ define([
                 }, this);
 
                 _.each(this.$el.find(".backgrid tbody tr"), (row) => {
+                    const deployedText = $(row).attr("data-deployed") === "true"
+                         ? $.t("templates.apps.deployedState") : $.t("templates.apps.undeployedState");
                     if ($(row).attr("data-id").toLowerCase().indexOf(search) > -1 ||
                         $(row).attr("data-url").toLowerCase().indexOf(search) > -1 ||
-                        $(row).attr("data-title").toLowerCase().indexOf(search) > -1) {
+                        $(row).attr("data-title").toLowerCase().indexOf(search) > -1 ||
+                        deployedText.toLowerCase().indexOf(search) > -1) {
                         $(row).fadeIn();
                     } else {
                         $(row).fadeOut();
