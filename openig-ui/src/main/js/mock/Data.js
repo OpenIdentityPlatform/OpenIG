@@ -41,7 +41,7 @@ define([
                             "content": {
                                 "id": "legacyapp",
                                 "name": "Legacy Web App",
-                                "url": "www.legacyapp.com:8080",
+                                "url": "http://www.legacyapp.com:8080",
                                 "condition": "/lego",
                                 "router": "",
                                 "route": "",
@@ -91,7 +91,7 @@ define([
                             },
                             "content": {
                                 "name": "weatherAPI",
-                                "url": "www.weather.com:8081/latest",
+                                "url": "http://www.weather.com:8081",
                                 "condition": "",
                                 "deployedDate": new Date(),
                                 "pendingChanges": false
@@ -116,8 +116,8 @@ define([
                 JSON.stringify([
                     {
                         "name": "Legacy Web App2",
-                        "url": "www.legacyapp.com:8080",
-                        "condition": "",
+                        "url": "http://www.legacyapp.com:8080",
+                        "condition": "/something222",
                         "status": "undeployed"
                     }
                 ])
@@ -135,8 +135,8 @@ define([
                 JSON.stringify([
                     {
                         "name": "weatherAPI",
-                        "url": "www.weather.com:8081/latest",
-                        "condition": "",
+                        "url": "http://www.weather.com:8081",
+                        "condition": "/something1",
                         "status": "deployed"
                     }
                 ])

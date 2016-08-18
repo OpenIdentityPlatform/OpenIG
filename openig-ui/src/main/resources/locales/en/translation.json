@@ -122,7 +122,10 @@
             "duplicateDialog":"Duplicate application '__title__' ?",
             "changesPending": "Changes pending",
             "appSettings": "App settings",
-            "moreOptions": "More options"
+            "moreOptions": "More options",
+            "editAppDetails": "Edit App Details",
+            "duplicateNameError": "Duplicate name detected. Please provide a unique name."
+
         },
         "settings":{
             "settingsTitle": "Settings",
@@ -172,6 +175,7 @@
             "reloadGrid": "Reload Grid",
             "clearFilters": "Clear Filters",
             "passwordPlaceholder": "••••••••••••",
+            "warning" : "Warning!",
             "validation": {
                 "VALID_PHONE_FORMAT": "Must be a valid phone number",
                 "VALID_NAME_FORMAT": "Must have valid name characters",

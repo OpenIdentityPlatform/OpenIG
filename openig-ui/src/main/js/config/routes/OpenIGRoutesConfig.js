@@ -88,5 +88,14 @@ define([], () => ({
         role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
+    },
+    "appsSettings": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Settings",
+        url: /^apps\/edit\/(.+?)\/settings$/,
+        pattern: "apps/edit/?/settings",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
     }
 }));
