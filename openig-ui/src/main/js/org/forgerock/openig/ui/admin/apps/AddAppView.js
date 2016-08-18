@@ -19,105 +19,27 @@ define([
     "underscore",
     "form2js",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView",
-    "org/forgerock/commons/ui/common/main/EventManager",
-    "org/forgerock/commons/ui/common/main/ValidatorsManager",
-    "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/openig/ui/admin/delegates/AppDelegate",
-    "org/forgerock/openig/ui/admin/util/AppsUtils",
-    "org/forgerock/commons/ui/common/main/Router",
-    "org/forgerock/openig/ui/admin/models/AppModel",
-    "org/forgerock/openig/ui/admin/models/AppsCollection"
+    "org/forgerock/openig/ui/admin/apps/parts/Settings"
 ], (
     $,
     _,
     form2js,
     AbstractAppView,
-    eventManager,
-    validatorsManager,
-    constants,
-    AppDelegate,
-    appsUtils,
-    router,
-    AppModel,
-    AppsCollection) => {
+    Settings) => {
     const AddEditAppView = AbstractAppView.extend({
         template: "templates/openig/admin/apps/AddAppTemplate.html",
         events: {
-            "click #submitApp": "appFormSubmit",
-            "onValidate": "onValidate"
         },
         data: {
-
         },
-        app: null,
-
         render (args, callback) {
-            const appId = args[0];
-            this.data = {};
-            this.data.docHelpUrl = constants.DOC_URL;
-
-            // editState true for readonly
-            this.data.editState = false;
-
-            this.app = new AppModel();
-            // TODO: check duplicate from url/router
-            if (appId !== undefined) {
-                AppsCollection.byId(appId).then((parentApp) => {
-                    this.data.appName = parentApp.get("content/name");
-                    this.data.appUrl = parentApp.get("content/url");
-                    this.data.appCondition = parentApp.get("content/condition");
-                    this.app.attributes.content = JSON.parse(JSON.stringify(parentApp.attributes.content));
-
-                    this.parentRender(() => {
-                        validatorsManager.bindValidators(this.$el);
-                        this.loadAppTemplate(callback);
-                    });
-
-                });
-            } else {
-                this.data.appName = "";
-                this.data.appUrl = "";
-                this.data.appCondition = "";
-
-                this.parentRender(() => {
-                    validatorsManager.bindValidators(this.$el);
-                    this.loadAppTemplate(callback);
-                });
-            }
-        },
-
-        appFormSubmit (event) {
-            event.preventDefault();
-
-            if (this.app && this.app !== null) {
-                const form = this.$el.find("#appForm")[0];
-                // Parse Form values
-                const formVal = form2js(form, ".", true);
-                // Create simple content + fake id
-                const newAppId = formVal.name + Date.now();
-
-                _.extend(formVal, { id: newAppId });
-                this.app.set({
-                    _id: newAppId,
-                    content: _.extend(this.app.get("content"), formVal)
-                });
-
-                if (!this.app.isValid()) {
-                    $(form).find("input").trigger("validate");
-                    return;
-
-                }
-
-                this.app.save();
-                AppsCollection.add([
-                    this.app
-                ]);
-
-                router.navigate(`apps/edit/${newAppId}/`, true);
-
-            }
+            this.parentRender(() => {
+                const addPage = new Settings();
+                addPage.element = "#addSettings";
+                addPage.render(args, callback);
+                this.delegateEvents();
+            });
         }
-
     });
 
     return new AddEditAppView();

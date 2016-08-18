@@ -45,6 +45,23 @@ define([
         return clearName;
     },
 
+    checkName (app) {
+        const promise = $.Deferred();
+        AppsCollection.availableApps().then((apps) => {
+            const foundApp = _.find(apps.models, (a) => (
+                a.get("content/name") === app.get("content/name")) &&
+                a.get("_id") !== app.get("_id")
+            );
+
+            if (foundApp) {
+                promise.resolve("templates.apps.duplicateNameError");
+            } else {
+                promise.resolve(true);
+            }
+        });
+        return promise;
+    },
+
     toggleValue (e) {
         const toggle = this.$el.find(e.target);
         if (toggle.val() === "true") {
