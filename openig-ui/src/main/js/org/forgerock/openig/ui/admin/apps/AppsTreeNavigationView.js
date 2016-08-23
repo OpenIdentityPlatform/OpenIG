@@ -73,6 +73,7 @@ define([
 
             AppsCollection.byId(this.data.appPath).then(_.bind(function (appData) {
                 if (appData) {
+                    this.data.appData = appData;
                     this.data.appName = appData.get("_id");
                     this.data.deployed = RoutesCollection.isDeployed(this.data.appName);
                     this.data.deployedDate = appData.get("content/deployedDate");

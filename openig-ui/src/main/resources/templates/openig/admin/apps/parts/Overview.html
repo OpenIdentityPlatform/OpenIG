@@ -2,108 +2,20 @@
 	License terms: https://forgerock.org/cddlv1-0/ -->
 
 <div class="page-header">
-
-    <h1>weatherapi</h1>
-    <h4 class="page-type">
-		<span class="status ">
-	    	<span class="text-success">
-    	    	<i class="fa fa-check-circle"></i>Deployed
-            </span> 
-	    </span>
-	    <span class="meta">
-	    	<i class="fa fa-globe"></i> www.weather.com:8081
-	    	<a href="#" class="hidden">
-		    	<i class="fa fa-plus-circle"></i> Add alias
-        	</a>
-	   	</span>
-	</h4>
-    <div class="btn-toolbar hidden">
-        <div class="btn-group">
-            <a href="#" class="btn btn-primary">
-                <i class="fa fa-ban"></i>Undeploy
-            </a>
-        </div>
-        <div class="btn-group hidden">
-            <button type="button" class="btn btn-secondary dropdown-toggle btn-actions" data-toggle="dropdown" aria-expanded="false">
-			    <i class="fa fa-ellipsis-v "></i>
-            </button>
-            <ul class="dropdown-menu pull-right" role="menu">
-                <li><a href="#"><i class="fa fa-external-link"></i>Export JSON</a></li>
-                <li><a href="#"><i class="fa fa-copy"></i>Duplicate</a></li>
-                <li class="divider"></li>
-                <li><a href="#"><i class="fa fa-times"></i>Delete</a></li>
-            </ul>
-        </div>
+    <div class="pull-left">
+        <h1>{{title}}</h1>
+    </div>
+    <div class="page-description">
+        <ul class="list-inline fr-list-inline-piped">
+            <li class="text-muted right-separator">
+                <i class="fa fa-globe"></i> {{baseURI}}
+            </li>
+            <li class="text-muted">
+                <i class="fa fa-file-o"></i> {{condition}}
+            </li>
+        </ul>
     </div>
 </div>
-<div class="panel panel-default panel-details hidden" style="margin: 40px 0 20px;">
-    <div class="panel-body">
-        <a href="app-details.php" class="media">
-            <div class="media-body">
-                <h4 class="panel-label">Details</h4>
-                <h3 class="panel-title">weatherapi</h3>
-                <div class="meta">
-                    <span class="status text-success">
-                        <i class="fa fa-check-circle"></i> Deployed
-                    </span>
-                    <span class="location">
-					  	<i class="fa fa-globe"></i> www.weather.com:8081
-					</span>
-                </div>
-            </div>
-            <div class="media-right media-middle">
-                <i class="fa fa-angle-right fa-lg pull-right"></i>
-            </div>
-        </a>
-    </div>
-</div>
-<div class="list-group list-group-directory">
-    <a href="app-throttling.php" class="list-group-item">
-        <span class="pull-right">
-							      	<span class="status">Off</span>
-        <i class="fa fa-angle-right fa-lg pull-right"></i>
-        </span>
-        <div class="media">
-            <div class="media-left media-middle">
-                <div class="circle-icon circle-icon-xs">
-                    <i class="fa fa-filter"></i>
-                </div>
-            </div>
-            <div class="media-body">
-                <h4 class="list-group-item-heading" style="margin-bottom: 0;">Throttling</h4>
-            </div>
-        </div>
-    </a>
-    <a href="app-authentication.php" class="list-group-item">
-        <span class="pull-right">
-            <span class="status">OpenID Connect</span>
-            <i class="fa fa-angle-right fa-lg pull-right"></i>
-        </span>
-        <div class="media">
-            <div class="media-left media-middle">
-                <div class="circle-icon circle-icon-xs">
-                    <i class="fa fa-user"></i>
-                </div>
-            </div>
-            <div class="media-body">
-                <h4 class="list-group-item-heading" style="margin-bottom: 0;">Authentication</h4>
-            </div>
-        </div>
-    </a>
-    <a href="app-transformation.php" class="list-group-item">
-        <span class="pull-right">
-	      	<span class="status">Off</span>
-            <i class="fa fa-angle-right fa-lg pull-right"></i>
-        </span>
-        <div class="media">
-            <div class="media-left media-middle">
-                <div class="circle-icon circle-icon-xs">
-                    <i class="fa fa-random"></i>
-                </div>
-            </div>
-            <div class="media-body">
-                <h4 class="list-group-item-heading" style="margin-bottom: 0;">Transformation</h4>
-            </div>
-        </div>
-    </a>
+<div class="list-group">
+    {{#each overviewItems}} {{> templates/openig/admin/apps/components/OverviewItem }} {{/each}}
 </div>
