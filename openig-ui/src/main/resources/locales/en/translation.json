@@ -124,8 +124,13 @@
             "appSettings": "App settings",
             "moreOptions": "More options",
             "editAppDetails": "Edit App Details",
-            "duplicateNameError": "Duplicate name detected. Please provide a unique name."
-
+            "duplicateNameError": "Duplicate name detected. Please provide a unique name.",
+            "filters":{
+                "Off": "Off",
+                "OAuth2ClientFilter": "OpenID Connect",
+                "PasswordReplayFilter":"Password Replay",
+                "ThrottlingFilter": "__numberOfRequests__ requests/__duration__"
+            }
         },
         "settings":{
             "settingsTitle": "Settings",

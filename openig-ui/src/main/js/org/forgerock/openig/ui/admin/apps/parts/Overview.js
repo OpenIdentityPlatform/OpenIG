@@ -19,24 +19,92 @@ define([
     "underscore",
     "form2js",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView",
-    "org/forgerock/openig/ui/admin/util/AppsUtils"
+    "org/forgerock/commons/ui/common/main/Router"
 ], (
     $,
     _,
     form2js,
-    AbstractAppView
+    AbstractAppView,
+    Router
 ) => (
     AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Overview.html",
-        events: {
+        partials: [
+            "templates/openig/admin/apps/components/OverviewItem.html"
+        ],
+        initialize (options) {
+            this.data = options.parentData;
+            this.data.title = this.data.appData.get("content/name");
+            this.data.baseURI = this.data.appData.get("content/url");
+            this.data.condition = this.data.appData.get("content/condition");
+            this.data.overviewItems = [
+                {
+                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.throttling"),
+                    route: "appsThrottling",
+                    icon: "fa-filter"
+                },
+                {
+                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.authentication"),
+                    route: "appsAuthentication",
+                    icon: "fa-user"
+                },
+                {
+                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.transformation"),
+                    route: "appsTransformation",
+                    icon: "fa-random"
+                }
+            ];
         },
         data: {
-
         },
-        render () {
-            this.parentRender(() => {
+        render (args) {
+            _.forEach(this.data.overviewItems, (item) => {
+                item.href = `#${Router.getLink(Router.configuration.routes[item.route], args)}`;
+                item.status = this.getStatus(item.route);
             });
+
+            this.parentRender();
+        },
+        getStatus (route) {
+            const filters = this.data.appData.get("content/filters");
+            let status = $.t("templates.apps.filters.Off");
+            let filter;
+            switch (route) {
+                case "appsThrottling":
+                    filter = _.find(filters, {
+                        "type": "ThrottlingFilter",
+                        "enabled": true
+                    });
+                    if (filter) {
+                        status = $.t("templates.apps.filters.ThrottlingFilter", {
+                            numberOfRequests: filter.numberOfRequests,
+                            duration: filter.duration
+                        });
+                    }
+                    break;
+                case "appsAuthentication":
+                    filter = _.find(filters, {
+                        "type": "OAuth2ClientFilter",
+                        "enabled": true
+                    });
+                    if (filter) {
+                        status = $.t("templates.apps.filters.OAuth2ClientFilter");
+                    }
+                    break;
+                case "appsTransformation":
+                    filter = _.find(filters, {
+                        "type": "PasswordReplayFilter",
+                        "enabled": true
+                    });
+                    if (filter) {
+                        status = $.t("templates.apps.filters.PasswordReplayFilter");
+                    }
+                    break;
+            }
+            return status;
         }
+
+
     })
 ));

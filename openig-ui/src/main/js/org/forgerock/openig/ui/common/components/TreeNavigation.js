@@ -79,7 +79,7 @@ define([
             });
         },
         renderPage (Module, args, callback) {
-            const page = new Module();
+            const page = new Module({ parentData: this.data });
             this.nextRenderPage = false;
             page.element = "#sidePageContent";
             page.render(args, callback);
