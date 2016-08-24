@@ -23,7 +23,7 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -40,6 +40,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -103,7 +104,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
     private final Handler handler;
     private final URI endpoint;
     private final Expression<String> idToken;
-    private final Expression<String> target;
+    private final LeftValueExpression<String> target;
 
     /**
      * Constructs a new TokenTransformationFilter transforming the OpenID Connect id_token from {@code idToken}
@@ -117,7 +118,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
     public TokenTransformationFilter(final Handler handler,
                                      final URI endpoint,
                                      final Expression<String> idToken,
-                                     final Expression<String> target) {
+                                     final LeftValueExpression<String> target) {
         this.handler = checkNotNull(handler);
         this.endpoint = checkNotNull(endpoint);
         this.idToken = checkNotNull(idToken);
@@ -210,12 +211,8 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
                                                                username,
                                                                password);
 
-            Expression<String> idToken = config.get("idToken")
-                                               .required()
-                                               .as(expression(String.class));
-            Expression<String> target = config.get("target")
-                                              .required()
-                                              .as(expression(String.class));
+            Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
+            LeftValueExpression<String> target = config.get("target").required().as(leftValueExpression(String.class));
 
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 

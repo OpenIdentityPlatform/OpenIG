@@ -31,6 +31,7 @@ import org.forgerock.openig.alias.ClassAliasResolver;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.Function;
@@ -214,6 +215,27 @@ public final class JsonValues {
             }
         }
         return new JsonValue(null);
+    }
+
+    /**
+     * Returns a function for transforming JsonValues to left-value expressions.
+     *
+     * @param <T> expected result type
+     * @param type The expected result type of the expression.
+     * @return A function for transforming JsonValues to left-value expressions.
+     */
+    public static <T> Function<JsonValue, LeftValueExpression<T>, JsonValueException>
+    leftValueExpression(final Class<T> type) {
+        return new Function<JsonValue, LeftValueExpression<T>, JsonValueException>() {
+            @Override
+            public LeftValueExpression<T> apply(final JsonValue value) {
+                try {
+                    return value == null || value.isNull() ? null : LeftValueExpression.valueOf(value.asString(), type);
+                } catch (ExpressionException ee) {
+                    throw new JsonValueException(value, ee);
+                }
+            }
+        };
     }
 
     /**

@@ -39,6 +39,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.regex.PatternTemplate;
@@ -433,7 +434,7 @@ public class PasswordReplayFilterHeaplet extends GenericHeaplet {
 
     private EntityExtractFilter createEntityExtractFilter() throws HeapException {
         try {
-            Expression<Object> target = Expression.valueOf("${attributes.extracted}",
+            LeftValueExpression<Object> target = LeftValueExpression.valueOf("${attributes.extracted}",
                                                            Object.class);
             return new EntityExtractFilter(RESPONSE, target);
         } catch (ExpressionException e) {

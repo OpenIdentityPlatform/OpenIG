@@ -21,7 +21,7 @@ import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -39,6 +39,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -80,7 +81,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
     private final Charset charset;
 
     /** Expression that yields the target object that will contain the mapped extraction results. */
-    private final Expression<?> target;
+    private final LeftValueExpression<?> target;
 
     /**
      * Builds an EntityExtractFilter that will act either on {@link MessageType#REQUEST} or {@link MessageType#RESPONSE}
@@ -92,7 +93,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
      * @param target
      *         Expression that yields the target object that will contain the mapped extraction results
      */
-    public EntityExtractFilter(final MessageType type, final Expression<?> target) {
+    public EntityExtractFilter(final MessageType type, final LeftValueExpression<?> target) {
         this(type, target, null);
     }
 
@@ -108,7 +109,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
      * @param charset
      *         Overrides the character set encoding specified in message. If {@code null}, the message encoding is used
      */
-    public EntityExtractFilter(final MessageType type, final Expression<?> target, final Charset charset) {
+    public EntityExtractFilter(final MessageType type, final LeftValueExpression<?> target, final Charset charset) {
         this.messageType = type;
         this.target = target;
         this.charset = charset;
@@ -169,7 +170,7 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
                           .as(evaluatedWithHeapProperties())
                           .required()
                           .as(enumConstant(MessageType.class)),
-                    config.get("target").required().as(expression(Object.class)),
+                    config.get("target").required().as(leftValueExpression(Object.class)),
                     config.get("charset").as(evaluatedWithHeapProperties()).as(charset()));
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {

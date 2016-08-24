@@ -18,7 +18,7 @@
 package org.forgerock.openig.filter;
 
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -49,11 +50,13 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
          * unconditional. */
         private Expression<Boolean> condition;
         /** Expression that yields the target object whose value is to be set. */
-        private Expression<?> target;
+        private LeftValueExpression<?> target;
         /** Expression that yields the value to be set in the target. */
         private Expression<?> value;
 
-        private Binding(final Expression<Boolean> condition, final Expression<?> target, final Expression<?> value) {
+        private Binding(final Expression<Boolean> condition,
+                        final LeftValueExpression<?> target,
+                        final Expression<?> value) {
             this.condition = condition;
             this.target = target;
             this.value = value;
@@ -74,7 +77,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      *         Expression that yields the target object whose value is to be set
      * @return this object for fluent usage
      */
-    public AssignmentFilter addRequestBinding(final Expression<?> target) {
+    public AssignmentFilter addRequestBinding(final LeftValueExpression<?> target) {
         return this.addRequestBinding(target, null);
     }
 
@@ -88,7 +91,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addRequestBinding(final Expression<?> target, final Expression<?> value) {
+    public AssignmentFilter addRequestBinding(final LeftValueExpression<?> target, final Expression<?> value) {
         return this.addRequestBinding(null, target, value);
     }
 
@@ -106,7 +109,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addRequestBinding(final Expression<Boolean> condition,
-                                              final Expression<?> target,
+                                              final LeftValueExpression<?> target,
                                               final Expression<?> value) {
         this.onRequest.add(new Binding(condition, target, value));
         return this;
@@ -120,7 +123,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      *         Expression that yields the target object whose value is to be set
      * @return this object for fluent usage
      */
-    public AssignmentFilter addResponseBinding(final Expression<?> target) {
+    public AssignmentFilter addResponseBinding(final LeftValueExpression<?> target) {
         return this.addResponseBinding(target, null);
     }
 
@@ -134,7 +137,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      *         Expression that yields the value to be set in the target (may be {@literal null})
      * @return this object for fluent usage
      */
-    public AssignmentFilter addResponseBinding(final Expression<?> target, final Expression<?> value) {
+    public AssignmentFilter addResponseBinding(final LeftValueExpression<?> target, final Expression<?> value) {
         return this.addResponseBinding(null, target, value);
     }
 
@@ -152,7 +155,7 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
      * @return this object for fluent usage
      */
     public AssignmentFilter addResponseBinding(final Expression<Boolean> condition,
-                                               final Expression<?> target,
+                                               final LeftValueExpression<?> target,
                                                final Expression<?> value) {
         this.onResponse.add(new Binding(condition, target, value));
         return this;
@@ -199,9 +202,9 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             for (JsonValue binding : bindings) {
                 Expression<Boolean> condition = binding.get("condition")
                                                        .as(expression(Boolean.class));
-                Expression<?> target = binding.get("target")
-                                              .required()
-                                              .as(expression(Object.class));
+                LeftValueExpression<?> target = binding.get("target")
+                                                       .required()
+                                                       .as(leftValueExpression(Object.class));
                 Expression<?> value = binding.get("value")
                                              .as(expression(Object.class));
 
@@ -215,9 +218,9 @@ public class AssignmentFilter extends GenericHeapObject implements Filter {
             for (JsonValue binding : bindings) {
                 Expression<Boolean> condition = binding.get("condition")
                                                        .as(expression(Boolean.class));
-                Expression<?> target = binding.get("target")
-                                              .required()
-                                              .as(expression(Object.class));
+                LeftValueExpression<?> target = binding.get("target")
+                                                       .required()
+                                                       .as(leftValueExpression(Object.class));
                 Expression<?> value = binding.get("value")
                                              .as(expression(Object.class));
 

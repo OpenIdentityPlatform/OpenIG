@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.SecretKeySpec;

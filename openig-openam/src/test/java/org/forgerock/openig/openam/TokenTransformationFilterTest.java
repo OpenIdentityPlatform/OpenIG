@@ -43,6 +43,7 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
@@ -163,8 +164,8 @@ public class TokenTransformationFilterTest {
                                               new URI("http://openam.example.com/"),
                                               Expression.valueOf("${attributes.id_token}",
                                                                  String.class),
-                                              Expression.valueOf("${attributes.saml_token}",
-                                                                 String.class));
+                                              LeftValueExpression.valueOf("${attributes.saml_token}",
+                                                                          String.class));
 
         Request request = new Request();
         filter.filter(context, request, next);
@@ -190,7 +191,7 @@ public class TokenTransformationFilterTest {
                                               new URI("http://openam.example.com/"),
                                               Expression.valueOf("${attributes.id_token}",
                                                                  String.class),
-                                              Expression.valueOf("${attributes.saml_token}",
+                                              LeftValueExpression.valueOf("${attributes.saml_token}",
                                                                  String.class));
 
         Request request = new Request();

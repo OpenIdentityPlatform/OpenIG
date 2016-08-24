@@ -18,7 +18,9 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
@@ -34,6 +36,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -79,7 +82,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSqlResultRowIsStoredInAMapAndInAttributesContextProperty() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${attributes.result}", Map.class), null);
+                LeftValueExpression.valueOf("${attributes.result}", Map.class), null);
 
         mockDatabaseInteractions();
 
@@ -95,7 +98,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testParametersAreAssignedToTheRightPlaceholders() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${attributes.result}", Map.class), null);
+                LeftValueExpression.valueOf("${attributes.result}", Map.class), null);
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -118,7 +121,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testSomethingBadHappenDuringSqlInteraction() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${attributes.result}", Map.class), null);
+                LeftValueExpression.valueOf("${attributes.result}", Map.class), null);
 
         // Generate an SQLException when getConnection() is called
         when(source.getConnection()).thenThrow(new SQLException("Unexpected"));
@@ -136,7 +139,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testTooMuchParametersProvided() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${attributes.result}", Map.class), null);
+                LeftValueExpression.valueOf("${attributes.result}", Map.class), null);
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
@@ -154,7 +157,7 @@ public class SqlAttributesFilterTest {
     @Test
     public void testNotEnoughParameters() throws Exception {
         SqlAttributesFilter filter = new SqlAttributesFilter(source,
-                Expression.valueOf("${attributes.result}", Map.class), null);
+                LeftValueExpression.valueOf("${attributes.result}", Map.class), null);
 
         filter.getParameters().add(Expression.valueOf("${true}", Boolean.class));
         filter.getParameters().add(Expression.valueOf("${false}", Boolean.class));
