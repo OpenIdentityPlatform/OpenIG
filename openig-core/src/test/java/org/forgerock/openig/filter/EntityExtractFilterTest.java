@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.MessageType;
 import org.forgerock.services.context.AttributesContext;
@@ -54,7 +54,7 @@ public class EntityExtractFilterTest {
     public void testEntityExtractionFromRequestWithTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${attributes.result}", Map.class));
+                                        LeftValueExpression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
         filter.getExtractor().getTemplates().put("hello", new PatternTemplate("$1"));
@@ -77,7 +77,7 @@ public class EntityExtractFilterTest {
     public void testEntityExtractionFromRequestWithNoTemplates() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.REQUEST,
-                                        Expression.valueOf("${attributes.result}", Map.class));
+                                        LeftValueExpression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
         filter.getExtractor().getPatterns().put("none", Pattern.compile("Cannot match"));
 
@@ -100,7 +100,7 @@ public class EntityExtractFilterTest {
     public void testResultMapIsEmptyWhenThereIsNoEntity() throws Exception {
         EntityExtractFilter filter =
                 new EntityExtractFilter(MessageType.RESPONSE,
-                                        Expression.valueOf("${attributes.result}", Map.class));
+                                        LeftValueExpression.valueOf("${attributes.result}", Map.class));
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         AttributesContext context = new AttributesContext(new RootContext());

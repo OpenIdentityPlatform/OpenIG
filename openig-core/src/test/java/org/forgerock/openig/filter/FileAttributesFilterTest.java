@@ -25,6 +25,7 @@ import java.util.Map;
 import org.forgerock.http.filter.ResponseHandler;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.text.SeparatedValuesFile;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
@@ -50,7 +51,7 @@ public class FileAttributesFilterTest {
         when(file.getRecord("username", "joe")).thenThrow(new IOException());
 
         Expression<String> value = Expression.valueOf("joe", String.class);
-        Expression<Map> target = Expression.valueOf("${attributes.result}", Map.class);
+        LeftValueExpression<Map> target = LeftValueExpression.valueOf("${attributes.result}", Map.class);
         FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -65,7 +66,7 @@ public class FileAttributesFilterTest {
         when(file.getRecord("username", "joe")).thenReturn(null);
 
         Expression<String> value = Expression.valueOf("joe", String.class);
-        Expression<Map> target = Expression.valueOf("${attributes.result}", Map.class);
+        LeftValueExpression<Map> target = LeftValueExpression.valueOf("${attributes.result}", Map.class);
         FileAttributesFilter filter = new FileAttributesFilter(file, "username", value, target);
 
         AttributesContext context = new AttributesContext(new RootContext());

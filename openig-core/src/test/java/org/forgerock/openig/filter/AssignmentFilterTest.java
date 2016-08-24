@@ -36,6 +36,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
@@ -104,7 +105,7 @@ public class AssignmentFilterTest {
     @Test
     public void shouldSucceedToUnsetVar() throws Exception {
         final AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${attributes.target}", String.class);
+        final LeftValueExpression<String> target = LeftValueExpression .valueOf("${attributes.target}", String.class);
         filter.addRequestBinding(target, null);
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -121,7 +122,7 @@ public class AssignmentFilterTest {
     @Test
     public void onRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${attributes.newAttr}", String.class);
+        final LeftValueExpression<String> target = LeftValueExpression.valueOf("${attributes.newAttr}", String.class);
         filter.addRequestBinding(target,
                                  Expression.valueOf("${request.method}", String.class));
 
@@ -137,7 +138,7 @@ public class AssignmentFilterTest {
     @Test
     public void shouldChangeUriOnRequest() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        filter.addRequestBinding(Expression.valueOf("${request.uri}", String.class),
+        filter.addRequestBinding(LeftValueExpression.valueOf("${request.uri}", String.class),
                                  Expression.valueOf("www.forgerock.com", String.class));
 
         Context context = new RootContext();
@@ -153,7 +154,7 @@ public class AssignmentFilterTest {
     @Test
     public void onResponse() throws Exception {
         AssignmentFilter filter = new AssignmentFilter();
-        final Expression<String> target = Expression.valueOf("${attributes.newAttr}", String.class);
+        final LeftValueExpression<String> target = LeftValueExpression.valueOf("${attributes.newAttr}", String.class);
         filter.addResponseBinding(target,
                                   Expression.valueOf("${response.status.code}", Integer.class));
 

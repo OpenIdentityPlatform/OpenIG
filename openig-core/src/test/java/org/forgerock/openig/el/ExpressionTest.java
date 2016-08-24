@@ -17,11 +17,8 @@
 
 package org.forgerock.openig.el;
 
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.forgerock.json.JsonValue.field;
-import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.IOException;
@@ -34,7 +31,6 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -137,18 +133,6 @@ public class ExpressionTest {
     }
 
     @Test
-    public void setAttribute() throws ExpressionException {
-        AttributesContext context = new AttributesContext(new RootContext());
-        Bindings bindings = bindings(context, null);
-        @SuppressWarnings("rawtypes")
-        Expression<Map> expr = Expression.valueOf("${contexts.attributes.attributes.testmap}", Map.class);
-        expr.set(bindings, singletonMap("foo", "bar"));
-        Expression<String> foo = Expression.valueOf("${contexts.attributes.attributes.testmap.foo}", String.class);
-        Expression<String> easyAccess = Expression.valueOf("${attributes.testmap.foo}", String.class);
-        assertThat(foo.eval(bindings)).isEqualTo(easyAccess.eval(bindings)).isEqualTo("bar");
-    }
-
-    @Test
     public void setSessionAttribute() throws ExpressionException {
         final SessionContext context = new SessionContext(new RootContext(), new SimpleMapSession());
         final Session session = context.asContext(SessionContext.class).getSession();
@@ -223,18 +207,6 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testUsingIntermediateBean() throws Exception {
-        ExternalBean bean = new ExternalBean(new InternalBean("Hello World"));
-
-        Bindings bindings = bindings("bean", bean);
-        assertThat(Expression.valueOf("${bean.internal.value}", String.class)
-                             .eval(bindings))
-                .isEqualTo("Hello World");
-        Expression.valueOf("${bean.internal.value}", String.class).set(bindings, "ForgeRock OpenIG");
-        assertThat(bean.getInternal().getValue()).isEqualTo("ForgeRock OpenIG");
-    }
-
-    @Test
     public void testRealBeanProperties() throws Exception {
         InternalBean myBean = new InternalBean("foo");
         Expression<Integer> expr = Expression.valueOf("${bean.bar}", Integer.class);
@@ -283,25 +255,6 @@ public class ExpressionTest {
         Integer i = Expression.valueOf("${request.entity.json.int}", Integer.class)
                               .eval(bindings("request", request));
         assertThat(i).isEqualTo(12345);
-    }
-
-    @Test
-    public void setRequestEntityAsJson() throws Exception {
-        Request request = new Request();
-        Expression.valueOf("${request.entity.json}", Map.class)
-                  .set(bindings("request", request), object(field("k1", "v1"), field("k2", 123)));
-        assertThat(request.getEntity()).isNotNull();
-        assertThat(request.getEntity().getString())
-                .isEqualTo("{\"k1\":\"v1\",\"k2\":123}");
-    }
-
-    @Test
-    public void setRequestEntityAsString() throws Exception {
-        Request request = new Request();
-        Expression.valueOf("${request.entity.string}", String.class)
-                  .set(bindings("request", request), "mary mary quite contrary");
-        assertThat(request.getEntity()).isNotNull();
-        assertThat(request.getEntity().getString()).isEqualTo("mary mary quite contrary");
     }
 
     @Test
@@ -410,10 +363,10 @@ public class ExpressionTest {
         }
     }
 
-    private static class InternalBean {
+    static class InternalBean {
         private String value;
 
-        private InternalBean(final String value) {
+        InternalBean(final String value) {
             this.value = value;
         }
 

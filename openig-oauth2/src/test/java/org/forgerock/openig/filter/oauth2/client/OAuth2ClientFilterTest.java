@@ -68,6 +68,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -948,7 +949,7 @@ public class OAuth2ClientFilterTest {
                                                                  Expression.valueOf(DEFAULT_CLIENT_ENDPOINT,
                                                                                     String.class));
         filter.setFailureHandler(failureHandler);
-        filter.setTarget(Expression.valueOf("${attributes.openid}", Object.class));
+        filter.setTarget(LeftValueExpression.valueOf("${attributes.openid}", Object.class));
         return filter;
     }
 

@@ -23,7 +23,6 @@ import java.beans.FeatureDescriptor;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -35,7 +34,6 @@ import javax.el.VariableMapper;
 import org.forgerock.http.util.Loader;
 import org.forgerock.openig.resolver.Resolver;
 import org.forgerock.openig.resolver.Resolvers;
-import org.forgerock.util.Reject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +46,12 @@ import de.odysseus.el.ExpressionFactoryImpl;
  *
  * @param <T> expected result type
  */
-public final class Expression<T> {
+public class Expression<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(Expression.class);
 
     /** The underlying EL expression that this object represents. */
-    private final ValueExpression valueExpression;
+    protected final ValueExpression valueExpression;
 
     /** The original string used to create this expression. */
     private final String original;
@@ -106,7 +104,8 @@ public final class Expression<T> {
      * @param initialBindings The initial bindings used when evaluated this expression
      * @throws ExpressionException if the expression was not syntactically correct.
      */
-    private Expression(String expression, Class<T> expectedType, Bindings initialBindings) throws ExpressionException {
+    protected Expression(String expression, Class<T> expectedType, Bindings initialBindings)
+            throws ExpressionException {
         original = expression;
         this.expectedType = expectedType;
         this.initialBindings = initialBindings;
@@ -171,31 +170,10 @@ public final class Expression<T> {
         return eval(bindings());
     }
 
-    /**
-     * Sets the result of an evaluated expression to a specified value. The expression is
-     * treated as an <em>lvalue</em>, the expression resolves to an object whose value will be
-     * set. If the expression does not resolve to an object or cannot otherwise be written to
-     * (e.g. read-only), then this method will have no effect.
-     *
-     * @param bindings the bindings to evaluate the expression within.
-     * @param value the value to set in the result of the expression evaluation.
-     */
-    public void set(Bindings bindings, Object value) {
-        Reject.ifNull(bindings);
-        try {
-            valueExpression.setValue(new XLContext(bindings.asMap()), value);
-        } catch (ELException ele) {
-            logger.warn("An error occurred setting the result of the expression {}",
-                         valueExpression.getExpressionString(),
-                         ele);
-            // unresolved elements are simply ignored
-        }
-    }
-
-    private static class XLContext extends ELContext {
+    static class XLContext extends ELContext {
         private final ELResolver elResolver;
 
-        public XLContext(Object scope) {
+        XLContext(Object scope) {
             elResolver = new XLResolver(scope);
         }
 
@@ -219,7 +197,7 @@ public final class Expression<T> {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
 
-        public XLResolver(final Object scope) {
+        XLResolver(final Object scope) {
             // Resolvers.get() don't support null value
             this.scope = (scope == null) ? new Object() : scope;
         }

@@ -67,6 +67,7 @@ import org.forgerock.json.resource.ResourceException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -108,7 +109,7 @@ public class PolicyEnforcementFilterTest {
     private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache;
     private Request resourceRequest;
     @SuppressWarnings("rawtypes")
-    private Expression<Map> target;
+    private LeftValueExpression<Map> target;
 
     @Mock
     private Handler next;
@@ -129,13 +130,15 @@ public class PolicyEnforcementFilterTest {
         attributesContext.getAttributes().put("client_id", "OpenIG");
         bindings = bindings(attributesContext, null);
         @SuppressWarnings("rawtypes")
-        final Expression<Map> claimsSubject = Expression.valueOf("${attributes.claimsSubject}", Map.class);
+        final LeftValueExpression<Map> claimsSubject = LeftValueExpression.valueOf("${attributes.claimsSubject}",
+                                                                                   Map.class);
         claimsSubject.set(bindings, singletonMap("iss", "jwt-bearer-client"));
         @SuppressWarnings("rawtypes")
-        final Expression<Map> environmentMap = Expression.valueOf("${attributes.environmentMap}", Map.class);
+        final LeftValueExpression<Map> environmentMap = LeftValueExpression.valueOf("${attributes.environmentMap}",
+                                                                                    Map.class);
         environmentMap.set(bindings, singletonMap("IP", IP_LIST));
         cache = new PerItemEvictionStrategyCache<>(newSingleThreadScheduledExecutor(), duration(1, TimeUnit.MINUTES));
-        target = Expression.valueOf("${attributes.policy}", Map.class);
+        target = LeftValueExpression.valueOf("${attributes.policy}", Map.class);
 
         when(amHandler.handle(any(Context.class), any(Request.class)))
                 .thenAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
@@ -262,15 +265,15 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private static Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
-            { null, Expression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
-            { URI.create(OPENAM_URI), Expression.valueOf("${attributes.policy}", Map.class), null },
+            { null, LeftValueExpression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
+            { URI.create(OPENAM_URI), LeftValueExpression.valueOf("${attributes.policy}", Map.class), null },
             { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
     }
 
     @SuppressWarnings("rawtypes")
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
     public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri,
-                                                          final Expression<Map> target,
+                                                          final LeftValueExpression<Map> target,
                                                           final Handler amHandler)
             throws Exception {
         new PolicyEnforcementFilter(baseUri, target, amHandler);

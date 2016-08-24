@@ -38,8 +38,8 @@ import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.openig.oauth2.OAuth2Error.E_SERVER_ERROR;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -66,6 +66,7 @@ import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -257,7 +258,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
     private Handler loginHandler;
     private boolean requireHttps = true;
     private boolean requireLogin = true;
-    private Expression<?> target;
+    private LeftValueExpression<?> target;
     private final TimeService time;
     private PerItemEvictionStrategyCache<String, Promise<Map<String, Object>, OAuth2ErrorException>> userInfoCache;
     private final Handler discoveryAndDynamicRegistrationChain;
@@ -462,7 +463,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
      *            information in the context.
      * @return This filter.
      */
-    public OAuth2ClientFilter setTarget(final Expression<?> target) {
+    public OAuth2ClientFilter setTarget(final LeftValueExpression<?> target) {
         this.target = target;
         return this;
     }
@@ -934,7 +935,7 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
 
             filter.setTarget(config.get("target")
                                    .defaultTo(format("${attributes.%s}", DEFAULT_TOKEN_KEY))
-                                   .as(expression(Object.class)));
+                                   .as(leftValueExpression(Object.class)));
 
             final Handler loginHandler = config.get("loginHandler").as(optionalHeapObject(heap, Handler.class));
             filter.setLoginHandler(loginHandler);

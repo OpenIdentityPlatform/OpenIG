@@ -21,7 +21,7 @@ import static org.forgerock.json.JsonValueFunctions.charset;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -33,6 +33,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -66,7 +67,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
 
     /** Expression that yields the target object that will contain the record. */
     @SuppressWarnings("rawtypes") // Can't find the correct syntax to write Expression<Map<String, String>>
-    private final Expression<Map> target;
+    private final LeftValueExpression<Map> target;
 
     /** The file to read separated values from. */
     private final SeparatedValuesFile file;
@@ -92,7 +93,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
     public FileAttributesFilter(final SeparatedValuesFile file,
                                 final String key,
                                 final Expression<String> value,
-                                @SuppressWarnings("rawtypes") final Expression<Map> target) {
+                                @SuppressWarnings("rawtypes") final LeftValueExpression<Map> target) {
         this.file = file;
         this.key = key;
         this.value = value;
@@ -131,7 +132,10 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             SeparatedValuesFile sources =
-                    new SeparatedValuesFile(config.get("file").as(evaluatedWithHeapProperties()).required().as(file()),
+                    new SeparatedValuesFile(config.get("file")
+                                                  .as(evaluatedWithHeapProperties())
+                                                  .required()
+                                                  .as(file()),
                                             config.get("charset")
                                                   .as(evaluatedWithHeapProperties())
                                                   .defaultTo("UTF-8").as(charset()),
@@ -146,7 +150,9 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                                                   .asBoolean());
 
             if (config.isDefined("fields")) {
-                sources.getFields().addAll(config.get("fields").as(evaluatedWithHeapProperties()).asList(String.class));
+                sources.getFields().addAll(config.get("fields")
+                                                 .as(evaluatedWithHeapProperties())
+                                                 .asList(String.class));
             }
             return new FileAttributesFilter(sources,
                                             config.get("key")
@@ -158,7 +164,7 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
                                                   .as(expression(String.class)),
                                             config.get("target")
                                                   .required()
-                                                  .as(expression(Map.class)));
+                                                  .as(leftValueExpression(Map.class)));
         }
     }
 }

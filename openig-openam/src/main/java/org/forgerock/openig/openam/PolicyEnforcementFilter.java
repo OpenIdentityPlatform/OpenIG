@@ -32,8 +32,8 @@ import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -69,9 +69,11 @@ import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.Expressions;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.openig.util.JsonValues;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
@@ -186,7 +188,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
     private Expression<String> jwtSubject;
     private Function<Bindings, Map<String, Object>, ExpressionException> claimsSubject;
     @SuppressWarnings("rawtypes")
-    private final Expression<Map> target;
+    private final LeftValueExpression<Map> target;
     private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment;
 
     /**
@@ -202,7 +204,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
      *            The handler used to get perform policies requests, not {@code null}.
      */
     public PolicyEnforcementFilter(final URI baseUri,
-                                   @SuppressWarnings("rawtypes") final Expression<Map> target,
+                                   @SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
                                    final Handler amHandler) {
         this.target = checkNotNull(target);
         this.requestHandler = CrestHttp.newRequestHandler(amHandler, baseUri);
@@ -479,9 +481,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
 
             @SuppressWarnings("rawtypes")
-            final Expression<Map> target = config.get("target")
+            final LeftValueExpression<Map> target = config.get("target")
                                                  .defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY))
-                                                 .as(expression(Map.class));
+                                                 .as(leftValueExpression(Map.class));
 
             try {
                 final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
@@ -541,9 +543,8 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
             return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class, heapBindings);
         }
 
-        private static <T> Function<Bindings, Map<String, T>, ExpressionException>
+        private <T> Function<Bindings, Map<String, T>, ExpressionException>
         asFunction(final JsonValue node, final Class<T> expectedType, final Bindings initialBindings) {
-
             if (node.isNull()) {
                 return null;
             } else if (node.isString()) {
@@ -552,7 +553,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                     @SuppressWarnings("unchecked")
                     @Override
                     public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return node.as(expression(Map.class, initialBindings)).eval(bindings);
+                        return node.as(JsonValues.expression(Map.class, initialBindings)).eval(bindings);
                     }
                 };
             } else if (node.isMap()) {

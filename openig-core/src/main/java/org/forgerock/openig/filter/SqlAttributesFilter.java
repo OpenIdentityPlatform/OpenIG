@@ -19,7 +19,7 @@ package org.forgerock.openig.filter;
 
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.util.JsonValues.expression;
+import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -44,6 +43,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -74,7 +74,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
 
     /** Expression that yields the target object that will contain the mapped results. */
     @SuppressWarnings("rawtypes")
-    private final Expression<Map> target;
+    private final LeftValueExpression<Map> target;
 
     /** The factory for connections to the physical data source. */
     private final DataSource dataSource;
@@ -97,7 +97,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
      *         The parameterized SQL query to execute, with ? parameter placeholders
      */
     public SqlAttributesFilter(final DataSource dataSource,
-                               @SuppressWarnings("rawtypes") final Expression<Map> target,
+                               @SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
                                final String preparedStatement) {
         this.dataSource = dataSource;
         this.target = target;
@@ -200,7 +200,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
             }
 
             @SuppressWarnings("rawtypes")
-            Expression<Map> targetExpr = config.get("target").required().as(expression(Map.class));
+            LeftValueExpression<Map> targetExpr = config.get("target").required().as(leftValueExpression(Map.class));
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
                                                                  targetExpr,
                                                                  config.get("preparedStatement")
