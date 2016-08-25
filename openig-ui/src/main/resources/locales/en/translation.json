@@ -125,11 +125,17 @@
             "moreOptions": "More options",
             "editAppDetails": "Edit App Details",
             "duplicateNameError": "Duplicate name detected. Please provide a unique name.",
+            "noAppItems": "You haven't configured any apps or APIs yet.",
             "filters":{
                 "Off": "Off",
                 "OAuth2ClientFilter": "OpenID Connect",
                 "PasswordReplayFilter":"Password Replay",
                 "ThrottlingFilter": "__numberOfRequests__ requests/__duration__"
+            },
+            "tableColumns":{
+                "name": "Name",
+                "url": "Url",
+                "status": "Status"
             }
         },
         "settings":{
