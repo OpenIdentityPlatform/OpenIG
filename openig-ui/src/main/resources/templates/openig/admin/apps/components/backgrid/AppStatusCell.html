@@ -1,0 +1,20 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+{{#if deployed}}
+    {{#if pendingChanges}}
+<span class="text-danger resource-unavailable">
+    <i class="fa fa-exclamation-circle"></i>
+    {{t "templates.apps.changesPending" }}
+</span>
+    {{else}}
+<span class="text-success">
+    <i class="fa fa-check-circle"></i>
+    {{t "templates.apps.deployedState" }}
+</span>
+    {{/if}}
+{{else}}
+<span class="text-danger resource-unavailable">
+    <i class="fa fa-exclamation-circle"></i>
+    {{t "templates.apps.undeployedState" }}
+</span>
+{{/if}}
