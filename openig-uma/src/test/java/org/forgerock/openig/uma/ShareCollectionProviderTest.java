@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -25,14 +25,13 @@ import static org.forgerock.json.resource.Requests.newCreateRequest;
 import static org.forgerock.json.resource.Requests.newDeleteRequest;
 import static org.forgerock.json.resource.Requests.newQueryRequest;
 import static org.forgerock.json.resource.Requests.newReadRequest;
-import static org.forgerock.json.resource.Resources.newCollection;
+import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.Resources.newInternalConnection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.regex.Pattern;
 
-import org.forgerock.services.context.Context;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.Connection;
@@ -42,6 +41,7 @@ import org.forgerock.json.resource.QueryResourceHandler;
 import org.forgerock.json.resource.QueryResponse;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ResourceResponse;
+import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.Promises;
 import org.forgerock.util.query.QueryFilter;
 import org.mockito.ArgumentCaptor;
@@ -75,7 +75,7 @@ public class ShareCollectionProviderTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        connection = newInternalConnection(newCollection(new ShareCollectionProvider(service)));
+        connection = newInternalConnection(newHandler(new ShareCollectionProvider(service)));
     }
 
     @Test

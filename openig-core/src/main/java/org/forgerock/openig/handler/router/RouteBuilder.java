@@ -22,7 +22,7 @@ import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.util.Json.readJsonLenient;
-import static org.forgerock.json.resource.Resources.newSingleton;
+import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
@@ -190,8 +190,7 @@ class RouteBuilder {
         if (mc.isEnabled()) {
             MonitoringMetrics metrics = new MonitoringMetrics();
             filters.add(new MetricsFilter(metrics));
-            RequestHandler singleton = newSingleton(new MonitoringResourceProvider(metrics,
-                                                                                   mc.getPercentiles()));
+            RequestHandler singleton = newHandler(new MonitoringResourceProvider(metrics, mc.getPercentiles()));
             EndpointRegistry.Registration monitoring = routeRegistry.register("monitoring", newHttpHandler(singleton));
             logger.info("Monitoring endpoint available at '{}'", monitoring.getPath());
         }

@@ -45,7 +45,7 @@ import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
-import org.forgerock.json.jose.jws.SignedEncryptedJwt;
+import org.forgerock.json.jose.jws.EncryptedThenSignedJwt;
 import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
@@ -208,7 +208,7 @@ public class JwtCookieSessionTest {
 
     private JwtClaimsSet decryptClaimsSet(final String cookieValue) {
         JwtBuilderFactory factory = new JwtBuilderFactory();
-        SignedEncryptedJwt jwt = factory.reconstruct(cookieValue, SignedEncryptedJwt.class);
+        EncryptedThenSignedJwt jwt = factory.reconstruct(cookieValue, EncryptedThenSignedJwt.class);
         jwt.decrypt(keyPair.getPrivate());
         return jwt.getClaimsSet();
     }
