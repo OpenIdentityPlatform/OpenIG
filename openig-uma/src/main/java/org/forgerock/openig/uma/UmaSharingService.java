@@ -23,7 +23,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.json.JsonValueFunctions.pattern;
 import static org.forgerock.json.JsonValueFunctions.uri;
-import static org.forgerock.json.resource.Resources.newCollection;
+import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -396,7 +396,7 @@ public class UmaSharingService {
                                                                   clientId,
                                                                   clientSecret);
                 // register admin endpoint
-                Handler httpHandler = newHttpHandler(newCollection(new ShareCollectionProvider(service)));
+                Handler httpHandler = newHttpHandler(newHandler(new ShareCollectionProvider(service)));
                 EndpointRegistry.Registration share = endpointRegistry().register("share", httpHandler);
                 logger.info("UMA Share endpoint available at '{}'", share.getPath());
 

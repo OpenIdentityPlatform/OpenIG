@@ -42,8 +42,8 @@ import org.forgerock.json.jose.builders.JwtClaimsSetBuilder;
 import org.forgerock.json.jose.exceptions.JweDecryptionException;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweAlgorithm;
+import org.forgerock.json.jose.jws.EncryptedThenSignedJwt;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
-import org.forgerock.json.jose.jws.SignedEncryptedJwt;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.openig.jwt.dirty.DirtyCollection;
@@ -171,7 +171,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         Cookie cookie = findJwtSessionCookie(request);
         if (cookie != null) {
             try {
-                SignedEncryptedJwt jwt = factory.reconstruct(cookie.getValue(), SignedEncryptedJwt.class);
+                EncryptedThenSignedJwt jwt = factory.reconstruct(cookie.getValue(), EncryptedThenSignedJwt.class);
                 if (!jwt.verify(signingHandler)) {
                     // Force cookie expiration / overwrite.
                     dirty = true;
@@ -339,7 +339,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
                       .enc(EncryptionMethod.A128CBC_HS256)
                       .done()
                       .claims(claimsBuilder.build())
-                      .sign(signingHandler, JwsAlgorithm.HS256)
+                      .signedWith(signingHandler, JwsAlgorithm.HS256)
                       .build();
     }
 
