@@ -167,7 +167,7 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.forgerock.openig.doc.SampleServer</mainClass>
+                  <mainClass>org.forgerock.openig.doc.SampleApplication</mainClass>
                 </manifest>
               </archive>
             </configuration>

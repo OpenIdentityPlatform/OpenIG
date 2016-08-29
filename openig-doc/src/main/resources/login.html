@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions Copyright [year] [name of copyright owner]".
+
+  Copyright 2014-2016 ForgeRock AS.
+-->
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Howdy, Anonymous User</title>
+    <!-- OpenAM (Login) -->
+    <!-- loginToken value="fake-nonce" -->
+    <style type="text/css">
+        body {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            line-height: 1.42857;
+            color: #2A2F32;
+            background-color: #F7F7F7;
+        }
+        .main {
+            text-align: center;
+            margin: auto;
+            width: 25%;
+        }
+        .logo {
+            margin: 60px auto 40px;
+        }
+        .content {
+            padding-top: 15px;
+        }
+        h1 {
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 20px;
+            letter-spacing: 1px;
+            word-wrap: break-word;
+            font-weight: 300;
+        }
+        form {
+            color: #999;
+            opacity: 1;
+        }
+        form input {
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 18px;
+            padding: 7px 12px;
+            line-height: 1.42857;
+            color: #555;
+            background-color: #FFF;
+            background-image: none;
+            border: 1px solid #CCC;
+            border-radius: 6px;
+            box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
+            transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+            width: 100%;
+        }
+        input:focus {
+            -webkit-box-shadow: 0px 0px 4px #4195fc;
+            -moz-box-shadow: 0px 0px 4px #4195fc;
+            box-shadow: 0px 0px 4px #4195fc;
+        }
+        input#login {
+            color: #FFF;
+            background-color: #519387;
+            border-color: #488378;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+<section class="main">
+    <section class="logo">
+        <img src="data:image/png;base64,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">
+    </section>
+    <section class="content">
+        <h1>Welcome to the Sample Application</h1>
+    </section>
+    <section class="login">
+        <form method="POST">
+            <input id="username" name="username" type="text" placeholder="User Name" autofocus="autofocus"/>
+            <input id="password" name="password" type="password" placeholder="Password"/>
+            <input id="login" name="submit" type="submit" value="Log In"/>
+        </form>
+    </section>
+</section>
+</body>
+</html>

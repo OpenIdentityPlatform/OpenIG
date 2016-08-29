@@ -39,13 +39,13 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 
 /**
- * Simple servlet allowing user-agents to get a home page,
- * and to post form-based login to access a protected profile page.
+ * Simple servlet allowing user-agents to get a login page,
+ * and to post form-based to access a protected profile page.
  */
-public final class SampleServer {
+public final class SampleApplication {
 
     private static final String EOL = System.getProperty("line.separator");
-    private static final Logger LOGGER = Logger.getLogger(SampleServer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SampleApplication.class.getName());
     private static final int DEFAULT_PORT = 8081;
     private static final int DEFAULT_SSL_PORT = 8444;
     /** Name of fake OpenAM cookie. */
@@ -106,7 +106,7 @@ public final class SampleServer {
     /**
      * Run the HTTP server, listening on the chosen port.
      * <p>
-     * On HTTP GET the server returns a home page with a login form.
+     * On HTTP GET the server returns a page with a login form.
      * <p>
      * On HTTP PUT with valid credentials, the server returns a profile page.
      *
@@ -250,7 +250,7 @@ public final class SampleServer {
      * @throws IOException  Failed to read {@code keystore.jks}.
      */
     private static byte[] getKeyStore() throws IOException {
-        InputStream inputStream = SampleServer.class.getResourceAsStream("/keystore.jks");
+        InputStream inputStream = SampleApplication.class.getResourceAsStream("/keystore.jks");
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int read;
         byte[] data = new byte[4096];
@@ -276,9 +276,9 @@ public final class SampleServer {
                 // If there is a need to serve more files in the future,
                 // consider a CLStaticHttpHandler.
                 final String file = request.getHttpHandlerPath();
-                String content = SampleServer.getResourceAsString(file);
+                String content = SampleApplication.getResourceAsString(file);
                 if (isNullOrEmpty(content)) {
-                    content = SampleServer.getResourceAsString("/uma/index.html");
+                    content = SampleApplication.getResourceAsString("/uma/index.html");
                 }
 
                 if (file.endsWith("css")) {
@@ -341,12 +341,11 @@ public final class SampleServer {
             }
 
             if (Method.GET == request.getMethod()) {
-                String homePage = getResourceAsString("/home.html");
-
+                String loginPage = getResourceAsString("/login.html");
                 response.setContentType("text/html");
                 response.setStatus(200, "OK");
-                response.setContentLength(homePage.length());
-                response.getWriter().write(homePage);
+                response.setContentLength(loginPage.length());
+                response.getWriter().write(loginPage);
             }
 
             if (Method.POST == request.getMethod()) {
@@ -540,6 +539,6 @@ public final class SampleServer {
     /**
      * Not used.
      */
-    private SampleServer() {
+    private SampleApplication() {
     }
 }
