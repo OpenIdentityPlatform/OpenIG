@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.doc;
@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @SuppressWarnings("javadoc")
-public class SampleServerTest {
+public class SampleApplicationTest {
 
     private static WebClient webClient;
     private static URL serverUrl;
     private static URL httpsServerUrl;
-    private static final Logger logger = Logger.getLogger(SampleServerTest.class.getName());
+    private static final Logger logger = Logger.getLogger(SampleApplicationTest.class.getName());
     private static String port;
     private static String sslPort;
     private static HttpServer httpServer;
@@ -50,7 +50,7 @@ public class SampleServerTest {
         port = System.getProperty("serverPort");
         sslPort = System.getProperty("serverSslPort");
         logger.info("Port: " +  port + ", SSL Port: " + sslPort);
-        httpServer = SampleServer.start(Integer.parseInt(port), Integer.parseInt(sslPort));
+        httpServer = SampleApplication.start(Integer.parseInt(port), Integer.parseInt(sslPort));
 
         webClient = new WebClient();
         webClient.setUseInsecureSSL(true);
@@ -66,13 +66,13 @@ public class SampleServerTest {
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         logger.info("Shutting down server");
-        SampleServer.stop(httpServer);
+        SampleApplication.stop(httpServer);
     }
 
     @Test
-    public void testGetHomePage() throws Exception {
+    public void testGetLoginPage() throws Exception {
 
-        // Check for HTTP 200 OK and the home page in the body of the response
+        // Check for HTTP 200 OK and the Login page in the body of the response
         logger.info("Testing equivalent of "
                 + "curl --verbose http://localhost:" + port);
 
@@ -84,7 +84,7 @@ public class SampleServerTest {
     }
 
     @Test
-    public void testGetHomePageHttps() throws Exception {
+    public void testGetLoginPageHttps() throws Exception {
         logger.info("Testing the equivalent of curl --verbose " + httpsServerUrl);
 
         final WebRequest webRequest = new WebRequest(httpsServerUrl, HttpMethod.GET);
