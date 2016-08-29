@@ -1,41 +1,19 @@
-<!-- Copyright 2016 ForgeRock AS.
-	License terms: https://forgerock.org/cddlv1-0/ -->
-
+{{! Copyright 2016 ForgeRock AS.
+	License terms: https://forgerock.org/cddlv1-0/ }}
 <div class="page-header">
-
-    <h1>Authentication</h1>
-    <p class="panel-description">Description of this category.</p>
-
+    <h1>{{t "templates.apps.parts.authentication.title"}}</h1>
+    <p class="panel-description">{{t "templates.apps.parts.authentication.description"}}</p>
 </div>
-
-<div class="panel panel-default">
-    <div class="configuration-options radio-list">
-        <form class="form-inline">
-            <ul class="list-unstyled panels panel-switch-group">
-                <li>
-                    <div class="panel panel-default panel-card panel-switch">
-                        <div class="panel-heading">
-                            <div class="checkbox checkbox-slider-md checkbox-slider--b-flat checkbox-slider-primary">
-                                <label><input type="checkbox" checked=""><span></span></label>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            <a class="media" data-target="#editOpenIDConnectModal" data-toggle="modal" href="#">
-                                <div class="media-body">
-                                    <h3 class="media-heading">OpenID Connect</h3>
-                                    <p class="status text-muted">Authenticate users to your app using OAuth 2.0/OpenID Connect.</p>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="panel-footer">
-                            <div class="btn-group">
-
-                                <button class="btn btn-link" data-target="#editOpenIDConnectModal" data-toggle="modal" type="button"><i class="fa fa-pencil"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </form>
+<form class="panel panel-default" id="authForm" role="form">
+    <div class="panel-body">
+    {{#each controls}}
+        {{> (control) }}
+    {{/each}}
     </div>
-</div>
+    <div class="panel-footer clearfix">
+        <div class="pull-right">
+            <input id="cancelAuth" class="btn btn-default" type="button" value="{{t 'common.form.reset'}}" />
+            <input id="submitAuth" name="submitAuth" disabled="true" class="btn btn-primary" type="submit" value="{{t 'common.form.save'}}" />
+        </div>
+    </div>
+</form>

@@ -38,5 +38,9 @@ define([], () => ({
     "unknownFilterType": {
         msg: "config.messages.OpenIGMessages.unknownFilterType",
         type: "error"
+    },
+    "appSettingsSaveSuccess": {
+        msg: "config.messages.OpenIGMessages.appSettingsSaveSuccess",
+        type: "info"
     }
 }));

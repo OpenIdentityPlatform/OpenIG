@@ -32,5 +32,17 @@ define([
                 callback();
             }
         }
+    },
+    "uri": {
+        "name": "URI field",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const v = input.val();
+            if (v.length > 0 && !/^(http|https):\/\/[^ "]+$/.test(v)) {
+                callback([$.t("common.form.validation.URINotValid")]);
+                return;
+            }
+            callback();
+        }
     }
 }));

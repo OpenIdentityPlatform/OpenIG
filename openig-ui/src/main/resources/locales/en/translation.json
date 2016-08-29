@@ -40,7 +40,8 @@
                 "settingsFailed": "Settings has failed",
                 "settingsSuccess": "Settings successfully saved",
                 "invalidModel": "Cannot create config file due to invalid model",
-                "unknownFilterType": "Unknown filter type: '__filter__'"
+                "unknownFilterType": "Unknown filter type: '__filter__'",
+                "appSettingsSaveSuccess": "__filter__ settings successfully saved"
             }
         },
         "AppConfiguration": {
@@ -136,6 +137,27 @@
                 "name": "Name",
                 "url": "Url",
                 "status": "Status"
+            },
+            "parts":{
+                "authentication":{
+                    "title": "Authentication",
+                    "description": "Authenticate users to your app using OpenID Connect.",
+                    "fields":{
+                        "enabled": "Enable authentication",
+                        "clientEndpoint": "Client Endpoint",
+                        "clientEndpointHint": "Base URI for OpenID services.",
+                         "clientId": "Client Id",
+                         "clientIdHint": "Client identifier",
+                         "clientSecret": "Client secret",
+                         "clientSecretHint": "Client secret",
+                         "scopes": "Scopes",
+                         "scopesHint": "The specific scopes to use for this client",
+                         "tokenEndpointUseBasicAuth": "Basic authentication",
+                         "tokenEndpointUseBasicAuthHint": "Enable if token endpoint requires Basic Authentication",
+                         "issuerWellKnownEndpoint": "OpenID configuration",
+                         "issuerWellKnownEndpointHint": "OpenID configuration"
+                    }
+                }
             }
         },
         "settings":{
@@ -220,7 +242,8 @@
                 "shouldBeLong": "Should be long value",
                 "wrongDateFormat": "Wrong format",
                 "baseURINotValid": "Not a valid uri",
-                "baseURIContainsPath": "Cannot contain path"
+                "baseURIContainsPath": "Cannot contain path",
+                "URINotValid": "Not a valid uri"
             }
         },
         "modalWindow": {
