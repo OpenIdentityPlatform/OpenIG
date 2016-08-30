@@ -84,12 +84,12 @@ define(["lodash"], (_) => ({
         switch (filter.type) {
             case "ThrottlingFilter":
                 return this.throttlingFilter(filter);
-            // TODO: Not needed filters in this commit;
-            // Will be uncommented (amended) in next sprints
             case "OAuth2ClientFilter":
-                // return this.oAuth2ClientFilter(filter);
-                break;
+                return this.oAuth2ClientFilter(filter);
             case "PasswordReplayFilter":
+                // TODO: Not needed filters in this commit;
+                // Will be uncommented (amended) in next sprints
+
                 // return this.passwordReplayFilter(filter);
                 break;
             default:
