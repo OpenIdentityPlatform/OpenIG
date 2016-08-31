@@ -27,5 +27,16 @@ define([
         PolicyEnforcementFilter: 200,
         Unknown: 10000
     };
+
+    commonConstants.timeSlot = {
+        NANOSECOND: "ns",
+        MICROSECOND: "us",
+        MILLISECOND: "ms",
+        SECOND: "s",
+        MINUTE: "m",
+        HOUR: "h",
+        DAY: "d"
+    };
+
     return commonConstants;
 });

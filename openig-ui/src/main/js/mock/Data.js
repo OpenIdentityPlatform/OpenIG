@@ -53,7 +53,8 @@ define([
                                         "enabled": true,
                                         "type": "ThrottlingFilter",
                                         "numberOfRequests": 60,
-                                        "duration": "1 minute"
+                                        "durationValue": 1,
+                                        "durationRange": "m"
                                     },
                                     {
                                         //Authentication

@@ -44,5 +44,19 @@ define([
             }
             callback();
         }
+    },
+    "greaterThanOrEqualMin": {
+        "name": "Greater than or equal min field value",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const min = input[0].min;
+            if (min <= input.val()) {
+                callback();
+                return;
+            }
+            callback([$.t("common.form.validation.numberGreaterThanOrEqual", {
+                minAttr: min
+            })]);
+        }
     }
 }));

@@ -45,7 +45,7 @@ define(["lodash"], (_) => ({
             config: {
                 rate: {
                     numberOfRequests: filter.numberOfRequests,
-                    duration: filter.duration
+                    duration: `${filter.durationValue} ${filter.durationRange}`
                 }
             }
         };

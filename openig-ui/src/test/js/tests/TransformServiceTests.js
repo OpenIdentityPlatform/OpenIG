@@ -18,12 +18,14 @@ define([
     "jquery",
     "underscore",
     "org/forgerock/openig/ui/admin/services/TransformService",
-    "org/forgerock/openig/ui/admin/models/AppModel"
+    "org/forgerock/openig/ui/admin/models/AppModel",
+    "org/forgerock/openig/ui/common/util/Constants"
 ], (
     $,
     _,
     transformService,
-    AppModel
+    AppModel,
+    Constants
 ) => ({
     executeAll () {
         QUnit.module("TransformService TestSuite");
@@ -141,7 +143,8 @@ define([
         QUnit.asyncTest("Should transform ThrottlingFilter", (assert) => {
             assert.deepEqual(transformService.throttlingFilter({
                 numberOfRequests: 60,
-                duration: "1 minute"
+                durationValue: 1,
+                durationRange: Constants.timeSlot.MINUTE
             }),
                 {
                     "name": "Throttling",
@@ -149,7 +152,7 @@ define([
                     "config": {
                         "rate": {
                             "numberOfRequests": 60,
-                            "duration": "1 minute"
+                            "duration": "1 m"
                         }
                     }
                 },
@@ -181,7 +184,8 @@ define([
                             enabled: false,
                             type: "ThrottlingFilter",
                             numberOfRequests: 60,
-                            duration: "1 minute"
+                            durationValue: 1,
+                            durationRange: Constants.timeSlot.MINUTE
                         }
                     ]
                 }
@@ -212,7 +216,8 @@ define([
                             enabled: true,
                             type: "ThrottlingFilter",
                             numberOfRequests: 60,
-                            duration: "1 minute"
+                            durationValue: 1,
+                            durationRange: Constants.timeSlot.MINUTE
                         }
                     ]
                 }
@@ -232,7 +237,7 @@ define([
                                 "config": {
                                     "rate": {
                                         "numberOfRequests": 60,
-                                        "duration": "1 minute"
+                                        "duration": "1 m"
                                     }
                                 }
                             }],
