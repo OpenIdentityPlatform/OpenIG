@@ -97,7 +97,6 @@ import ch.qos.logback.core.util.StatusPrinter;
  *
  * @since 3.1.0
  */
-@SuppressWarnings("deprecation")
 public final class GatewayHttpApplication implements HttpApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayHttpApplication.class);
