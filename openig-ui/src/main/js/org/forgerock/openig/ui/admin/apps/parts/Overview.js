@@ -84,7 +84,8 @@ define([
                     if (filter) {
                         status = $.t("templates.apps.filters.ThrottlingFilter", {
                             numberOfRequests: filter.numberOfRequests,
-                            duration: filter.duration
+                            duration: filter.durationValue,
+                            durationRange: $.t(`common.timeSlot.${filter.durationRange}`)
                         });
                     }
                     break;

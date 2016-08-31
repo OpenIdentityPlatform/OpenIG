@@ -18,12 +18,14 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "org/forgerock/commons/ui/common/main/AbstractModel"
+    "org/forgerock/commons/ui/common/main/AbstractModel",
+    "org/forgerock/openig/ui/common/util/Constants"
 ], (
     $,
     _,
     Backbone,
-    AbstractModel
+    AbstractModel,
+    Constants
     ) => {
         /* Define App structure + add defaults, constants, orders */
 
@@ -47,9 +49,10 @@ define([
                     {
                         //Throttling
                         enabled: true,
-                        type: "ThrottlingFilterDefault",
+                        type: "ThrottlingFilter",
                         numberOfRequests: 60,
-                        duration: "1 minute"
+                        durationValue: 1,
+                        durationRange: Constants.timeSlot.MINUTE
                     }
                 ]
             }

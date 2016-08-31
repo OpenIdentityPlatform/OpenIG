@@ -133,7 +133,7 @@
                 "OAuth2ClientFilter": "OpenID Connect",
                 "PolicyEnforcementFilter":"OpenAM Policy Enforcement",
                 "PasswordReplayFilter":"Password Replay",
-                "ThrottlingFilter": "__numberOfRequests__ requests/__duration__"
+                "ThrottlingFilter": "__numberOfRequests__ requests/__duration__ __durationRange__"
             },
             "tableColumns":{
                 "name": "Name",
@@ -186,6 +186,13 @@
                         "application": "Policy Set",
                         "applicationHint": "OpenAM application to use when requesting policy decisions"
                     }
+                },
+                "throttling":{
+                    "title": "Throttling",
+                    "description": "Limit the rate of operations on your api.",
+                    "btnEnableTitle": "Enable Throttling",
+                    "lblAllow": "Allow",
+                    "lblPer": "requests per"
                 }
             }
         },
@@ -272,7 +279,8 @@
                 "wrongDateFormat": "Wrong format",
                 "baseURINotValid": "Not a valid uri",
                 "baseURIContainsPath": "Cannot contain path",
-                "URINotValid": "Not a valid uri"
+                "URINotValid": "Not a valid uri",
+                "numberGreaterThanOrEqual": "Value must be greater than or equal to __minAttr__" 
             }
         },
         "modalWindow": {
@@ -287,6 +295,15 @@
                 "next": "Next",
                 "last": "Last"
             }
+        },
+        "timeSlot":{
+            "ns": "Nanosecond",
+            "us": "Microsecond",
+            "ms": "Millisecond",
+            "s": "Second",
+            "m": "Minute",
+            "h": "Hour",
+            "d": "Day"
         },
         "user": {
             "userQuery": {
