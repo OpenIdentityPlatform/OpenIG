@@ -36,7 +36,6 @@ import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.time.Duration;
-import org.slf4j.LoggerFactory;
 
 /**
  * The {@literal timer} decorator can decorate both {@link Filter} and
@@ -91,7 +90,6 @@ import org.slf4j.LoggerFactory;
 public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
 
     private final TimeUnit timeUnit;
-    private final String name;
 
     /**
      * Builds a new {@code TimerDecorator} where the elapsed time unit is
@@ -115,7 +113,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
      *            The {@code TimeUnit} of the elapsed time.
      */
     public TimerDecorator(final String name, final TimeUnit timeUnit) {
-        this.name = name;
+        super(name);
         this.timeUnit = checkNotNull(timeUnit, "The time unit must be set");
     }
 
@@ -124,7 +122,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
             throws HeapException {
         if (decoratorConfig.as(evaluated(context.getHeap().getProperties())).asBoolean()) {
             return new TimerFilter(delegate,
-                                   LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                   getLogger(context),
                                    lookupTicker(context.getHeap()),
                                    timeUnit);
         }
@@ -136,15 +134,11 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
             throws HeapException {
         if (decoratorConfig.as(evaluated(context.getHeap().getProperties())).asBoolean()) {
             return new TimerHandler(delegate,
-                                    LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                    getLogger(context),
                                     lookupTicker(context.getHeap()),
                                     timeUnit);
         }
         return delegate;
-    }
-
-    private String getDecoratedObjectName(final Context context) {
-        return context.getName().decorated(name).getLeaf();
     }
 
     private static Ticker lookupTicker(final Heap heap) throws HeapException {
