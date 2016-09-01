@@ -35,7 +35,6 @@ import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
-import org.slf4j.LoggerFactory;
 
 /**
  * The capture decorator can decorates both {@link Filter} and {@link Handler} instances. It enables
@@ -88,7 +87,6 @@ import org.slf4j.LoggerFactory;
  */
 public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
 
-    private final String name;
     private final boolean captureEntity;
     private final boolean captureContext;
 
@@ -107,7 +105,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
     public CaptureDecorator(final String name,
                             final boolean captureEntity,
                             final boolean captureContext) {
-        this.name = name;
+        super(name);
         this.captureEntity = captureEntity;
         this.captureContext = captureContext;
     }
@@ -119,7 +117,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         if (!points.isEmpty()) {
             // Only intercept if needed
             return new CaptureFilter(delegate,
-                                     new MessageCapture(LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                     new MessageCapture(getLogger(context),
                                                         captureEntity,
                                                         captureContext),
                                      points);
@@ -134,16 +132,12 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         if (!points.isEmpty()) {
             // Only intercept if needed
             return new CaptureHandler(delegate,
-                                      new MessageCapture(LoggerFactory.getLogger(getDecoratedObjectName(context)),
+                                      new MessageCapture(getLogger(context),
                                                          captureEntity,
                                                          captureContext),
                                       points);
         }
         return delegate;
-    }
-
-    private String getDecoratedObjectName(final Context context) {
-        return context.getName().decorated(name).getLeaf();
     }
 
     private Set<CapturePoint> getCapturePoints(final JsonValue decoratorConfig, final Heap heap) throws HeapException {

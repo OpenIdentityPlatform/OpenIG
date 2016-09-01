@@ -20,7 +20,6 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.decoration.Context;
-import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.heap.HeapException;
 
 /**
@@ -30,7 +29,17 @@ import org.forgerock.openig.heap.HeapException;
  * Implementors just have to implement the dedicated {@link #decorateFilter(Filter, JsonValue, Context)} and {@link
  * #decorateHandler(Handler, JsonValue, Context)} for decorating Filter and Handler respectively.
  */
-public abstract class AbstractHandlerAndFilterDecorator implements Decorator {
+public abstract class AbstractHandlerAndFilterDecorator extends AbstractDecorator {
+
+    /**
+     * Forces to give the name of the decorator.
+     *
+     * @param name
+     *            The name of the decorator.
+     */
+    protected AbstractHandlerAndFilterDecorator(String name) {
+        super(name);
+    }
 
     @Override
     public boolean accepts(final Class<?> type) {

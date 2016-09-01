@@ -28,7 +28,6 @@ import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.helper.AbstractHandlerAndFilterDecorator;
 import org.forgerock.openig.decoration.helper.DecoratorHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.slf4j.LoggerFactory;
 
 /**
  * The {@literal baseURI} decorator can decorate both {@link Filter} and {@link Handler} instances.
@@ -59,8 +58,6 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
 
-    private final String name;
-
     /**
      * Builds a new {@code BaseUriDecorator}.
      *
@@ -68,7 +65,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
      *            The name of this decorator.
      */
     public BaseUriDecorator(final String name) {
-        this.name = name;
+        super(name);
     }
 
     @Override
@@ -90,11 +87,7 @@ public class BaseUriDecorator extends AbstractHandlerAndFilterDecorator {
 
     private BaseUriFilter createBaseUriFilter(final JsonValue decoratorConfig, final Context context) {
         return new BaseUriFilter(decoratorConfig.as(expression(String.class)),
-                                 LoggerFactory.getLogger(getDecoratedObjectName(context)));
-    }
-
-    private String getDecoratedObjectName(final Context context) {
-        return context.getName().decorated(name).getLeaf();
+                                 getLogger(context));
     }
 
     /** Creates and initializes a baseUri in a heap environment. */
