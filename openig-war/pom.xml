@@ -101,6 +101,13 @@
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.forgerock.openig</groupId>
+      <artifactId>openig-ui</artifactId>
+      <version>${project.version}</version>
+      <!-- Use provided in order to exclude that file from being placed in WEB-INF/lib -->
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>OpenIG-${project.version}</finalName>
@@ -115,6 +122,24 @@
             <contextPath>/</contextPath>
           </webAppConfig>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-ui-resources</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <includeArtifactIds>openig-ui</includeArtifactIds>
+              <stripVersion>true</stripVersion>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

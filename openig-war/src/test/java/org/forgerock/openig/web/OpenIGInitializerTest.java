@@ -39,7 +39,7 @@ public class OpenIGInitializerTest {
     }
 
     // Copied from Files (in openig-core/src/test/java)
-    private static File getRelative(final Class<?> base, final String name) {
+    static File getRelative(final Class<?> base, final String name) {
         final URL url = base.getResource(base.getSimpleName() + ".class");
         File f;
         try {
