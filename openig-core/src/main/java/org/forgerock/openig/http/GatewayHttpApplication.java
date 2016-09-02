@@ -206,7 +206,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.addDefaultDeclaration(DEFAULT_CLIENT_HANDLER);
             heap.addDefaultDeclaration(FORGEROCK_CLIENT_HANDLER);
             heap.addDefaultDeclaration(DEFAULT_SCHEDULED_THREAD_POOL);
-            heap.init(config, "temporaryStorage", "handler", "handlerObject", "globalDecorators", "bindings");
+            heap.init(config, "temporaryStorage", "handler", "handlerObject", "globalDecorators", "properties");
 
             // As all heaplets can specify their own storage,
             // the following line provide custom storage available.

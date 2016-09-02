@@ -600,7 +600,7 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+            final JsonValue evaluated = config.as(evaluatedWithHeapProperties());
             final Map<String, String> attributeMapping = new HashMap<>();
             JsonValue mappings = evaluated.get("assertionMapping").expect(Map.class);
             if (mappings != null) {

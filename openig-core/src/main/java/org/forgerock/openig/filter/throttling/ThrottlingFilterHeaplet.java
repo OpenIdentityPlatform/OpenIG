@@ -111,7 +111,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
     public Object create() throws HeapException {
         Ticker ticker = heap.get(Keys.TICKER_HEAP_KEY, Ticker.class);
         Duration cleaningInterval = config.get("cleaningInterval")
-                                          .as(evaluatedWithHeapBindings())
+                                          .as(evaluatedWithHeapProperties())
                                           .defaultTo("5 seconds")
                                           .as(duration());
 
@@ -124,7 +124,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
             // Backward compatibility and ease of use : for fixed throttling rate we still allow to declare them easily
             // in the configuration
             throttlingRatePolicy = new FixedRateThrottlingPolicy(config.get("rate")
-                                                                       .as(throttlingRate(heap.getBindings())));
+                                                                       .as(throttlingRate(heap.getProperties())));
         } else {
             throttlingRatePolicy = config.get("throttlingRatePolicy")
                                          .required()
@@ -136,7 +136,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
 
         ThrottlingStrategy throttlingStrategy = throttlingStrategy(config.get("strategy")
-                                                                         .as(evaluatedWithHeapBindings())
+                                                                         .as(evaluatedWithHeapProperties())
                                                                          .defaultTo("bursty")
                                                                          .asString()
                                                                          .toLowerCase(Locale.ROOT),

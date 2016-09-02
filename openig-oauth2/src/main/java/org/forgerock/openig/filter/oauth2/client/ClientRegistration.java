@@ -388,7 +388,7 @@ public final class ClientRegistration {
                                                       .as(requiredHeapObject(heap, Handler.class));
             final Issuer issuer = config.get("issuer").as(requiredHeapObject(heap, Issuer.class));
             return new ClientRegistration(this.name,
-                                          config.as(evaluatedWithHeapBindings()),
+                                          config.as(evaluatedWithHeapProperties()),
                                           issuer,
                                           registrationHandler);
         }

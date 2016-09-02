@@ -138,7 +138,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
                     );
                 }
             } else if (config.isDefined(CONFIG_OPTION_FILE)) {
-                final String script = config.get(CONFIG_OPTION_FILE).as(evaluatedWithHeapBindings()).asString();
+                final String script = config.get(CONFIG_OPTION_FILE).as(evaluatedWithHeapProperties()).asString();
                 try {
                     return Script.fromFile(environment, mimeType, script);
                 } catch (final ScriptException e) {

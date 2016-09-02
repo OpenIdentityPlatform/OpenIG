@@ -128,12 +128,12 @@ public class HeaderFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             HeaderFilter filter = new HeaderFilter(config.get("messageType")
-                                                         .as(evaluatedWithHeapBindings())
+                                                         .as(evaluatedWithHeapProperties())
                                                          .required()
                                                          .as(enumConstant(MessageType.class)));
             filter.removedHeaders.addAll(config.get("remove")
                                                .defaultTo(emptyList())
-                                               .as(evaluatedWithHeapBindings())
+                                               .as(evaluatedWithHeapProperties())
                                                .asList(String.class));
             JsonValue add = config.get("add").defaultTo(emptyMap()).expect(Map.class);
             for (String key : add.keys()) {

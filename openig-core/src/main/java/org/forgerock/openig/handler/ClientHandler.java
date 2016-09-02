@@ -178,7 +178,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
         @Override
         public Object create() throws HeapException {
             final Options options = Options.defaultOptions();
-            final JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+            final JsonValue evaluated = config.as(evaluatedWithHeapProperties());
 
             if (evaluated.isDefined("connections")) {
                 options.set(OPTION_MAX_CONNECTIONS, evaluated.get("connections").asInteger());

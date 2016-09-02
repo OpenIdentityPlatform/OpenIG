@@ -188,7 +188,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
         public Object create() throws HeapException {
             TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
-            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+            JsonValue evaluated = config.as(evaluatedWithHeapProperties());
             final Duration sessionTimeout = evaluated.get("sessionTimeout")
                                                      .defaultTo(DEFAULT_SESSION_TIMEOUT)
                                                      .as(duration());
@@ -209,8 +209,8 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
         private KeyPair keyPair() throws HeapException {
             KeyStore keyStore = config.get("keystore").as(optionalHeapObject(heap, KeyStore.class));
             if (keyStore != null) {
-                String alias = config.get("alias").as(evaluatedWithHeapBindings()).required().asString();
-                String password = config.get("password").as(evaluatedWithHeapBindings()).required().asString();
+                String alias = config.get("alias").as(evaluatedWithHeapProperties()).required().asString();
+                String password = config.get("password").as(evaluatedWithHeapProperties()).required().asString();
                 return keyPairFromKeyStore(keyStore, alias, password);
             } else {
                 return keyPairFromScratch();

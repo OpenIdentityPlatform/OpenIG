@@ -153,10 +153,10 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         }
         if (decoratorConfig.isString()) {
             // Single value
-            modes.add(decoratorConfig.as(evaluated(heap.getBindings())).as(enumConstant(CapturePoint.class)));
+            modes.add(decoratorConfig.as(evaluated(heap.getProperties())).as(enumConstant(CapturePoint.class)));
         } else if (decoratorConfig.isList()) {
             // Array values
-            List<CapturePoint> capturePoints = decoratorConfig.as(evaluated(heap.getBindings()))
+            List<CapturePoint> capturePoints = decoratorConfig.as(evaluated(heap.getProperties()))
                                                               .as(listOf(enumConstant(CapturePoint.class)));
             if (capturePoints.contains(null)) {
                 throw new HeapException("Capture's decorator cannot contain null value");
@@ -183,7 +183,7 @@ public class CaptureDecorator extends AbstractHandlerAndFilterDecorator {
         @Override
         public Decorator create() throws HeapException {
 
-            JsonValue evaluated = config.as(evaluated(heap.getBindings()));
+            JsonValue evaluated = config.as(evaluated(heap.getProperties()));
             boolean captureEntity = evaluated.get("captureEntity").defaultTo(false).asBoolean();
             boolean captureContext = evaluated.get("captureContext").defaultTo(false).asBoolean();
             return new CaptureDecorator(name.getLeaf(), captureEntity, captureContext);

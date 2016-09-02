@@ -48,7 +48,7 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         try {
-            auditService = buildAuditService(config.as(evaluatedWithHeapBindings()));
+            auditService = buildAuditService(config.as(evaluatedWithHeapProperties()));
             return auditService;
         } catch (AuditException ex) {
             throw new HeapException(ex);

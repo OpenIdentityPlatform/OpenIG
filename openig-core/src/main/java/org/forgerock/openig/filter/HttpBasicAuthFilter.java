@@ -274,7 +274,7 @@ public class HttpBasicAuthFilter extends GenericHeapObject implements Filter {
             HttpBasicAuthFilter filter = new HttpBasicAuthFilter(usernameExpr, passwordExpr, failureHandler);
 
             filter.cacheHeader = config.get("cacheHeader")
-                                       .as(evaluatedWithHeapBindings())
+                                       .as(evaluatedWithHeapProperties())
                                        .defaultTo(filter.cacheHeader)
                                        .asBoolean();
             logger.debug("HttpBasicAuthFilter: cacheHeader set to " + filter.cacheHeader);

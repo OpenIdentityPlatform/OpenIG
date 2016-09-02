@@ -914,11 +914,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
                     new DiscoveryFilter(discoveryHandler, heap),
                     new ClientRegistrationFilter(registrations,
                                                  discoveryHandler,
-                                                 config.as(evaluatedWithHeapBindings()).get("metadata")));
+                                                 config.as(evaluatedWithHeapProperties()).get("metadata")));
 
             // Build the cache of user-info
             final Duration expiration = config.get("cacheExpiration")
-                                              .as(evaluatedWithHeapBindings())
+                                              .as(evaluatedWithHeapProperties())
                                               .defaultTo("10 minutes")
                                               .as(duration());
             ScheduledExecutorService executor = config.get("executor")
@@ -947,11 +947,11 @@ public final class OAuth2ClientFilter extends GenericHeapObject implements Filte
             filter.setDefaultLoginGoto(config.get("defaultLoginGoto").as(expression(String.class)));
             filter.setDefaultLogoutGoto(config.get("defaultLogoutGoto").as(expression(String.class)));
             filter.setRequireHttps(config.get("requireHttps")
-                                         .as(evaluatedWithHeapBindings())
+                                         .as(evaluatedWithHeapProperties())
                                          .defaultTo(true)
                                          .asBoolean());
             filter.setRequireLogin(config.get("requireLogin")
-                                         .as(evaluatedWithHeapBindings())
+                                         .as(evaluatedWithHeapProperties())
                                          .defaultTo(true)
                                          .asBoolean());
 
