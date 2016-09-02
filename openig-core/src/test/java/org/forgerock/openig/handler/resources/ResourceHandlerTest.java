@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.resources;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.header.HeaderUtil.formatDate;
+import static org.forgerock.http.protocol.Status.FOUND;
 import static org.forgerock.http.protocol.Status.METHOD_NOT_ALLOWED;
 import static org.forgerock.http.protocol.Status.NOT_FOUND;
 import static org.forgerock.http.protocol.Status.OK;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.routing.UriRouterContext;
@@ -170,7 +172,7 @@ public class ResourceHandlerTest {
                                                         "",
                                                         "",
                                                         Collections.<String, String>emptyMap());
-        Request request = new Request().setMethod("GET");
+        Request request = new Request().setUri("/").setMethod("GET");
         Response response = handler.handle(context, request)
                                    .get();
 
@@ -184,10 +186,26 @@ public class ResourceHandlerTest {
                                                         "",
                                                         "",
                                                         Collections.<String, String>emptyMap());
-        Request request = new Request().setMethod("GET");
+        Request request = new Request().setUri("/").setMethod("GET");
         Response response = handler.handle(context, request)
                                    .get();
 
         assertThat(response.getStatus()).isEqualTo(NOT_FOUND);
+    }
+
+    @Test
+    public void shouldRedirectWhenAccessingTheWelcomePageWithoutSlashEndedUri() throws Exception {
+        ResourceHandler handler = new ResourceHandler(singletonList(resourceSet), singletonList("index.html"));
+        UriRouterContext context = new UriRouterContext(new RootContext(),
+                                                        "",
+                                                        "",
+                                                        Collections.<String, String>emptyMap());
+        Request request = new Request().setUri("/openig/console").setMethod("GET");
+        Response response = handler.handle(context, request)
+                                   .get();
+
+        assertThat(response.getStatus()).isEqualTo(FOUND);
+        assertThat(response.getHeaders().get(LocationHeader.class).getLocationUri())
+                .isEqualTo("/openig/console/");
     }
 }
