@@ -31,7 +31,6 @@ import javax.servlet.ServletRegistration;
 import org.forgerock.http.servlet.HttpFrameworkServlet;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.http.AdminHttpApplication;
 import org.forgerock.openig.http.GatewayEnvironment;
 import org.forgerock.openig.http.GatewayHttpApplication;
 import org.forgerock.openig.util.JsonValues;
@@ -78,7 +77,7 @@ public class OpenIGInitializer implements ServletContainerInitializer {
             URL adminConfigURL = selectConfigurationUrl("admin.json");
             JsonValue adminConfig = JsonValues.readJson(adminConfigURL);
             String adminPrefix = adminConfig.get("prefix").defaultTo("openig").asString();
-            AdminHttpApplication admin = new AdminHttpApplication(adminPrefix, adminConfig);
+            ConsoleAdminHttpApplication admin = new ConsoleAdminHttpApplication(adminPrefix, adminConfig, environment);
 
             URL gatewayConfigURL = selectConfigurationUrl("config.json");
             GatewayHttpApplication gateway = new GatewayHttpApplication(environment,

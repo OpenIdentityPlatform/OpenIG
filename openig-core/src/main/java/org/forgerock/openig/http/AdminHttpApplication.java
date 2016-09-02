@@ -94,8 +94,6 @@ public class AdminHttpApplication implements HttpApplication {
         this.endpointRegistry = new EndpointRegistry(systemObjectsRouter, "/" + adminPrefix + "/api/system/objects");
     }
 
-
-
     @Override
     public Handler start() throws HttpApplicationException {
         if (heap != null) {
@@ -149,6 +147,14 @@ public class AdminHttpApplication implements HttpApplication {
     public EndpointRegistry getEndpointRegistry() {
         return endpointRegistry;
 
+    }
+
+    /**
+     * Returns the router that represents the /openig namespace (or whatever path/prefix value that was configured).
+     * @return the router that represents the /openig namespace
+     */
+    protected Router getOpenIGRouter() {
+        return openigRouter;
     }
 
     private static void addSubRouter(final Router base, final String name, final Handler router) {
