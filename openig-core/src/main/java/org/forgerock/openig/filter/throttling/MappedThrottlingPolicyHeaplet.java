@@ -109,11 +109,12 @@ public class MappedThrottlingPolicyHeaplet extends GenericHeaplet {
         Expression<String> throttlingRateMapper = config.get("throttlingRateMapper").required()
                                                         .as(expression(String.class));
 
-        Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping").as(ratesMappings(heap.getBindings()));
+        Map<String, ThrottlingRate> rates = config.get("throttlingRatesMapping")
+                                                  .as(ratesMappings(heap.getProperties()));
 
         ThrottlingRate defaultRate = null;
         if (config.isDefined("defaultRate")) {
-            defaultRate = config.get("defaultRate").as(throttlingRate(heap.getBindings()));
+            defaultRate = config.get("defaultRate").as(throttlingRate(heap.getProperties()));
         }
 
         if (rates.isEmpty() && defaultRate == null) {

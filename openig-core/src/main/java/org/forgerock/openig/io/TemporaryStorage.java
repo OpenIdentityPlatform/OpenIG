@@ -57,7 +57,7 @@ public class TemporaryStorage implements Factory<Buffer> {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+            JsonValue evaluated = config.as(evaluatedWithHeapProperties());
             return new TemporaryStorage(
                     newTemporaryStorage(evaluated.get("directory").as(file()),
                                         evaluated.get("initialLength")

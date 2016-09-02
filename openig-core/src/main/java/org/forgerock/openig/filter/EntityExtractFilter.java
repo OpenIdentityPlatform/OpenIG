@@ -166,15 +166,15 @@ public class EntityExtractFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
             EntityExtractFilter filter = new EntityExtractFilter(
                     config.get("messageType")
-                          .as(evaluatedWithHeapBindings())
+                          .as(evaluatedWithHeapProperties())
                           .required()
                           .as(enumConstant(MessageType.class)),
                     config.get("target").required().as(expression(Object.class)),
-                    config.get("charset").as(evaluatedWithHeapBindings()).as(charset()));
+                    config.get("charset").as(evaluatedWithHeapProperties()).as(charset()));
 
             for (JsonValue jv : config.get("bindings").required().expect(List.class)) {
                 jv.required().expect(Map.class);
-                String key = jv.get("key").as(evaluatedWithHeapBindings()).required().asString();
+                String key = jv.get("key").as(evaluatedWithHeapProperties()).required().asString();
                 if (filter.extractor.getPatterns().containsKey(key)) {
                     throw new JsonValueException(jv.get("key"), "Key already defined (after evaluation : " + key + ")");
                 }

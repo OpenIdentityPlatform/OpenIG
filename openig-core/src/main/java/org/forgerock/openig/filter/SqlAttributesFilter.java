@@ -190,7 +190,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
                 throw new HeapException(ne);
             }
             DataSource source;
-            JsonValue dataSource = config.get("dataSource").as(evaluatedWithHeapBindings()).required();
+            JsonValue dataSource = config.get("dataSource").as(evaluatedWithHeapProperties()).required();
             try {
                 source = (DataSource) ctx.lookup(dataSource.asString());
             } catch (NamingException ne) {
@@ -204,7 +204,7 @@ public class SqlAttributesFilter extends GenericHeapObject implements Filter {
             SqlAttributesFilter filter = new SqlAttributesFilter(source,
                                                                  targetExpr,
                                                                  config.get("preparedStatement")
-                                                                       .as(evaluatedWithHeapBindings())
+                                                                       .as(evaluatedWithHeapProperties())
                                                                        .required()
                                                                        .asString());
             if (config.isDefined("parameters")) {

@@ -247,10 +247,10 @@ public class StaticRequestFilter extends GenericHeapObject implements Filter {
     public static class Heaplet extends GenericHeaplet {
         @Override
         public Object create() throws HeapException {
-            final String method = config.get("method").as(evaluatedWithHeapBindings()).required().asString();
+            final String method = config.get("method").as(evaluatedWithHeapProperties()).required().asString();
             StaticRequestFilter filter = new StaticRequestFilter(method);
             filter.setUri(config.get("uri").required().as(expression(String.class)));
-            filter.setVersion(config.get("version").as(evaluatedWithHeapBindings()).asString());
+            filter.setVersion(config.get("version").as(evaluatedWithHeapProperties()).asString());
             if (config.isDefined("entity")
                     && config.isDefined("form")
                     && "POST".equals(method)) {

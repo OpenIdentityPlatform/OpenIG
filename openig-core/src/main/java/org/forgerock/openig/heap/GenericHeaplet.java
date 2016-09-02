@@ -164,13 +164,15 @@ public abstract class GenericHeaplet implements Heaplet {
     }
 
     /**
-     * Returns a function that will evaluate the expression hold by a {@link JsonValue} using the bindings defined
-     * in the heap of this Heaplet.
+     * Returns a function that will evaluate the expression hold by a
+     * {@link JsonValue} using the properties defined in the heap of this
+     * Heaplet.
      *
-     * @return a function that will evaluate the expression hold by a {@link JsonValue} using the bindings defined
-     * in the heap of this Heaplet.
+     * @return a function that will evaluate the expression hold by a
+     *         {@link JsonValue} using the properties defined in the heap of
+     *         this Heaplet.
      */
-    protected Function<JsonValue, JsonValue, JsonValueException> evaluatedWithHeapBindings() {
-        return evaluated(heap.getBindings());
+    protected Function<JsonValue, JsonValue, JsonValueException> evaluatedWithHeapProperties() {
+        return evaluated(heap.getProperties());
     }
 }

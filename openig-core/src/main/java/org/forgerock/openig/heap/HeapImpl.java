@@ -116,9 +116,9 @@ public class HeapImpl implements Heap {
     private List<JsonValue> defaults = new ArrayList<>();
 
     /**
-     * The bindings hold by this {@link Heap}.
+     * The properties hold by this {@link Heap}.
      */
-    private final Bindings bindings = Bindings.bindings();
+    private final Bindings properties = Bindings.bindings();
 
     /**
      * Builds an anonymous root heap (will be referenced by children but has no parent itself).
@@ -177,12 +177,12 @@ public class HeapImpl implements Heap {
             throws HeapException {
         // process configuration object model structure
         this.config = config;
-        // Register the bindings if any provided
-        this.bindings.bind(config.get("bindings")
-                                 .defaultTo(emptyMap())
-                                 .as(resolvedLocation())
-                                 .expect(Map.class)
-                                 .as(bindings()));
+        // Register the properties if any provided
+        this.properties.bind(config.get("properties")
+                                   .defaultTo(emptyMap())
+                                   .as(resolvedLocation())
+                                   .expect(Map.class)
+                                   .as(bindings()));
         boolean logDeprecationWarning = false;
         JsonValue heap = config.get("heap").defaultTo(emptyList());
         if (heap.isMap()) {
@@ -559,11 +559,12 @@ public class HeapImpl implements Heap {
     }
 
     @Override
-    public Bindings getBindings() {
+    public Bindings getProperties() {
         // At some point the parent will be null, then I return an empty Bindings and the "un-stacking" will fill that
-        // newly created bindings. (and parent is also a HeapImpl) : that means we always return a copy of the Bindings.
-        Bindings parentBindings = parent != null ? parent.getBindings() : Bindings.bindings();
-        return parentBindings.bind(this.bindings);
+        // newly created properties. And parent is also a HeapImpl: that means we always return a copy of the
+        // properties.
+        Bindings parentProperties = parent != null ? parent.getProperties() : Bindings.bindings();
+        return parentProperties.bind(this.properties);
     }
 
     /**

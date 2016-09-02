@@ -60,7 +60,7 @@ public class TrustManagerHeaplet extends GenericHeaplet {
         JsonValue storeRef = config.get("keystore").required();
         KeyStore keyStore = storeRef.as(requiredHeapObject(heap, KeyStore.class));
         String algorithm = config.get("alg")
-                                 .as(evaluatedWithHeapBindings())
+                                 .as(evaluatedWithHeapProperties())
                                  .defaultTo(TrustManagerFactory.getDefaultAlgorithm())
                                  .asString();
 

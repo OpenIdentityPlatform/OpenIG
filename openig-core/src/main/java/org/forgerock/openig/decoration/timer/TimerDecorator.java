@@ -122,7 +122,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Filter decorateFilter(final Filter delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        if (decoratorConfig.as(evaluated(context.getHeap().getBindings())).asBoolean()) {
+        if (decoratorConfig.as(evaluated(context.getHeap().getProperties())).asBoolean()) {
             return new TimerFilter(delegate,
                                    LoggerFactory.getLogger(getDecoratedObjectName(context)),
                                    lookupTicker(context.getHeap()),
@@ -134,7 +134,7 @@ public class TimerDecorator extends AbstractHandlerAndFilterDecorator {
     @Override
     protected Handler decorateHandler(final Handler delegate, final JsonValue decoratorConfig, final Context context)
             throws HeapException {
-        if (decoratorConfig.as(evaluated(context.getHeap().getBindings())).asBoolean()) {
+        if (decoratorConfig.as(evaluated(context.getHeap().getProperties())).asBoolean()) {
             return new TimerHandler(delegate,
                                     LoggerFactory.getLogger(getDecoratedObjectName(context)),
                                     lookupTicker(context.getHeap()),

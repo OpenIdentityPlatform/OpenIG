@@ -413,7 +413,7 @@ public class CookieFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CookieFilter filter = new CookieFilter();
-            JsonValue evaluatedConfig = config.as(evaluatedWithHeapBindings());
+            JsonValue evaluatedConfig = config.as(evaluatedWithHeapProperties());
             filter.suppressed.addAll(evaluatedConfig.get("suppressed").defaultTo(emptyList()).asList(String.class));
             filter.relayed.addAll(evaluatedConfig.get("relayed").defaultTo(emptyList()).asList(String.class));
             filter.managed.addAll(evaluatedConfig.get("managed").defaultTo(emptyList()).asList(String.class));

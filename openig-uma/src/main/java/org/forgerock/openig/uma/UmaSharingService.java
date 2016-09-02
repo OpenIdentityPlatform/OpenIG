@@ -386,9 +386,9 @@ public class UmaSharingService {
         @Override
         public Object create() throws HeapException {
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
-            URI uri = config.get("authorizationServerUri").as(evaluatedWithHeapBindings()).required().as(uri());
-            String clientId = config.get("clientId").as(evaluatedWithHeapBindings()).required().asString();
-            String clientSecret = config.get("clientSecret").as(evaluatedWithHeapBindings()).required().asString();
+            URI uri = config.get("authorizationServerUri").as(evaluatedWithHeapProperties()).required().as(uri());
+            String clientId = config.get("clientId").as(evaluatedWithHeapProperties()).required().asString();
+            String clientSecret = config.get("clientSecret").as(evaluatedWithHeapProperties()).required().asString();
             try {
                 UmaSharingService service = new UmaSharingService(handler,
                                                                   createResourceTemplates(),
@@ -424,7 +424,7 @@ public class UmaSharingService {
                 public ShareTemplate.Action apply(final JsonValue value) {
                     return new ShareTemplate.Action(value.get("condition").required().as(expression(Boolean.class)),
                                                     value.get("scopes")
-                                                         .as(evaluatedWithHeapBindings())
+                                                         .as(evaluatedWithHeapProperties())
                                                          .asSet(String.class));
                 }
             }));

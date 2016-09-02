@@ -199,10 +199,10 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
             Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY).required()
                                                        .as(requiredHeapObject(heap, Handler.class));
             URI baseUri = getOpenamBaseUri();
-            String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo("/").asString();
-            String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapBindings()).asString();
-            String username = config.get("username").required().as(evaluatedWithHeapBindings()).asString();
-            String password = config.get("password").required().as(evaluatedWithHeapBindings()).asString();
+            String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("/").asString();
+            String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
+            String username = config.get("username").required().as(evaluatedWithHeapProperties()).asString();
+            String password = config.get("password").required().as(evaluatedWithHeapProperties()).asString();
             SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
                                                                baseUri,
                                                                realm,
@@ -213,7 +213,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
             Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
             Expression<String> target = config.get("target").required().as(expression(String.class));
 
-            String instance = config.get("instance").as(evaluatedWithHeapBindings()).required().asString();
+            String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 
             return new TokenTransformationFilter(Handlers.chainOf(amHandler, ssoTokenFilter),
                                                  transformationEndpoint(baseUri, realm, instance),
@@ -222,7 +222,7 @@ public class TokenTransformationFilter extends GenericHeapObject implements Filt
         }
 
         private URI getOpenamBaseUri() throws HeapException {
-            String baseUri = config.get("openamUri").as(evaluatedWithHeapBindings()).required().asString();
+            String baseUri = config.get("openamUri").as(evaluatedWithHeapProperties()).required().asString();
             try {
                 return new URI(trailingSlash(baseUri));
             } catch (URISyntaxException e) {

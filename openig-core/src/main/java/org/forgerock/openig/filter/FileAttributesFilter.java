@@ -131,25 +131,25 @@ public class FileAttributesFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             SeparatedValuesFile sources =
-                    new SeparatedValuesFile(config.get("file").as(evaluatedWithHeapBindings()).required().as(file()),
+                    new SeparatedValuesFile(config.get("file").as(evaluatedWithHeapProperties()).required().as(file()),
                                             config.get("charset")
-                                                  .as(evaluatedWithHeapBindings())
+                                                  .as(evaluatedWithHeapProperties())
                                                   .defaultTo("UTF-8").as(charset()),
                                             config.get("separator")
-                                                  .as(evaluatedWithHeapBindings())
+                                                  .as(evaluatedWithHeapProperties())
                                                   .defaultTo("COMMA")
                                                   .as(enumConstant(Separators.class))
                                                   .getSeparator(),
                                             config.get("header")
-                                                  .as(evaluatedWithHeapBindings())
+                                                  .as(evaluatedWithHeapProperties())
                                                   .defaultTo(true)
                                                   .asBoolean());
 
             if (config.isDefined("fields")) {
-                sources.getFields().addAll(config.get("fields").as(evaluatedWithHeapBindings()).asList(String.class));
+                sources.getFields().addAll(config.get("fields").as(evaluatedWithHeapProperties()).asList(String.class));
             }
             return new FileAttributesFilter(sources,
-                                            config.get("key").as(evaluatedWithHeapBindings()).required().asString(),
+                                            config.get("key").as(evaluatedWithHeapProperties()).required().asString(),
                                             config.get("value").required().as(expression(String.class)),
                                             config.get("target").required().as(expression(Map.class)));
         }

@@ -245,7 +245,7 @@ public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
         @Override
         public Object create() throws HeapException {
             CryptoHeaderFilter filter = new CryptoHeaderFilter();
-            JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+            JsonValue evaluated = config.as(evaluatedWithHeapProperties());
             filter.messageType = evaluated.get("messageType")
                                        .required()
                                        .as(enumConstant(MessageType.class));

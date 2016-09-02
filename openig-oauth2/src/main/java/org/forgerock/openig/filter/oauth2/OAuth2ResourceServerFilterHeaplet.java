@@ -133,13 +133,13 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
         AccessTokenResolver resolver = new OpenAmAccessTokenResolver(httpHandler,
                                                                      time,
                                                                      config.get("tokenInfoEndpoint")
-                                                                           .as(evaluatedWithHeapBindings())
+                                                                           .as(evaluatedWithHeapProperties())
                                                                            .required()
                                                                            .asString());
 
         // Build the cache
         Duration expiration = config.get("cacheExpiration")
-                                    .as(evaluatedWithHeapBindings())
+                                    .as(evaluatedWithHeapProperties())
                                     .defaultTo("1 minute")
                                     .as(duration());
         if (!expiration.isZero()) {
@@ -155,14 +155,14 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                 .required()
                 .as(setOf(expression(String.class)));
 
-        String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo(DEFAULT_REALM_NAME).asString();
+        String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo(DEFAULT_REALM_NAME).asString();
 
         Filter filter = new ResourceServerFilter(resolver,
                                                  time,
                                                  new OpenIGResourceAccess(scopes),
                                                  realm);
 
-        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").as(evaluatedWithHeapBindings())
+        if (getWithDeprecation(config, logger, "requireHttps", "enforceHttps").as(evaluatedWithHeapProperties())
                                                                               .defaultTo(Boolean.TRUE).asBoolean()) {
             try {
                 Expression<Boolean> expr = Expression.valueOf("${request.uri.scheme == 'https'}", Boolean.class);

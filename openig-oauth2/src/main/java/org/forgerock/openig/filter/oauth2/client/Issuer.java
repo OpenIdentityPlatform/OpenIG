@@ -333,7 +333,7 @@ public final class Issuer {
                     && !config.isDefined("tokenEndpoint")) {
                 try {
                     final URI wellKnownEndpoint = config.get("wellKnownEndpoint")
-                                                        .as(evaluatedWithHeapBindings())
+                                                        .as(evaluatedWithHeapProperties())
                                                         .as(uri());
                     return build(new AttributesContext(new RootContext()),
                                  this.name,
@@ -344,7 +344,7 @@ public final class Issuer {
                     throw new HeapException(format("Cannot build Issuer '%s'", name), e);
                 }
             }
-            return new Issuer(this.name, config.as(evaluatedWithHeapBindings()));
+            return new Issuer(this.name, config.as(evaluatedWithHeapProperties()));
         }
     }
 }

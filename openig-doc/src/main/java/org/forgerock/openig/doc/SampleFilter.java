@@ -98,8 +98,8 @@ public class SampleFilter extends GenericHeapObject implements Filter {
         public Object create() throws HeapException {
 
             SampleFilter filter = new SampleFilter();
-            filter.name  = config.get("name").as(evaluatedWithHeapBindings()).required().asString();
-            filter.value = config.get("value").as(evaluatedWithHeapBindings()).required().asString();
+            filter.name  = config.get("name").as(evaluatedWithHeapProperties()).required().asString();
+            filter.value = config.get("value").as(evaluatedWithHeapProperties()).required().asString();
 
             return filter;
         }

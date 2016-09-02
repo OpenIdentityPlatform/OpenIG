@@ -324,7 +324,7 @@ public class UmaResourceServerFilter extends GenericHeapObject implements Filter
                                               .required()
                                               .as(requiredHeapObject(heap, UmaSharingService.class));
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
-            String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo("uma").asString();
+            String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("uma").asString();
             return new UmaResourceServerFilter(service, handler, realm);
         }
     }

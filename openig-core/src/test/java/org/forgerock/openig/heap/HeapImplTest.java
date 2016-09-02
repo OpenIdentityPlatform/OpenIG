@@ -417,12 +417,12 @@ public class HeapImplTest {
     }
 
     @Test
-    public void shouldResolveBindingFromParent() throws Exception {
+    public void shouldResolvePropertiesFromParent() throws Exception {
         HeapImpl parentHeap = buildDefaultHeap();
-        parentHeap.init(json(object(field("bindings", object(field("name", "parent"))))));
+        parentHeap.init(json(object(field("properties", object(field("name", "parent"))))));
 
         HeapImpl childHeap = new HeapImpl(parentHeap);
-        childHeap.init(json(object(field("bindings", object(field("name", "child"))))));
+        childHeap.init(json(object(field("properties", object(field("name", "child"))))));
 
         JsonValue config = json(object(field("type", "org.forgerock.openig.heap.HeapObject"),
                                        field("name", "heap-object"),

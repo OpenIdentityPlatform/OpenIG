@@ -55,7 +55,7 @@ public class KeyStoreHeaplet extends GenericHeaplet {
 
     @Override
     public Object create() throws HeapException {
-        JsonValue evaluated = config.as(evaluatedWithHeapBindings());
+        JsonValue evaluated = config.as(evaluatedWithHeapProperties());
         URL url = evaluated.get("url").required().as(url());
         String password = evaluated.get("password").asString();
         String type = evaluated.get("type").defaultTo(KeyStore.getDefaultType()).asString().toUpperCase();

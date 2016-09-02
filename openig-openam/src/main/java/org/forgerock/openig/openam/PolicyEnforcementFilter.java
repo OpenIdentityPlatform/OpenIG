@@ -457,26 +457,26 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         public Object create() throws HeapException {
 
             final String openamUrl = trailingSlash(config.get("openamUrl")
-                                                         .as(evaluatedWithHeapBindings())
+                                                         .as(evaluatedWithHeapProperties())
                                                          .required()
                                                          .asString());
             final String pepUsername = config.get("pepUsername")
                                              .required()
-                                             .as(evaluatedWithHeapBindings())
+                                             .as(evaluatedWithHeapProperties())
                                              .asString();
             final String pepPassword = config.get("pepPassword")
                                              .required()
-                                             .as(evaluatedWithHeapBindings())
+                                             .as(evaluatedWithHeapProperties())
                                              .asString();
-            final String realm = config.get("realm").as(evaluatedWithHeapBindings()).defaultTo("/").asString();
+            final String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("/").asString();
             final String pepRealm = config.get("pepRealm")
-                                          .as(evaluatedWithHeapBindings())
+                                          .as(evaluatedWithHeapProperties())
                                           .defaultTo(realm)
                                           .asString();
             final Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
                                         .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                         .as(requiredHeapObject(heap, Handler.class));
-            final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapBindings()).asString();
+            final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
 
             @SuppressWarnings("rawtypes")
             final Expression<Map> target = config.get("target")
@@ -498,7 +498,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                             ssoTokenFilter,
                                                             new ApiVersionProtocolHeaderFilter()));
 
-                filter.setApplication(config.get("application").as(evaluatedWithHeapBindings()).asString());
+                filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
                 filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
                 filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
                 filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class));
@@ -518,7 +518,7 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                 String defaultExpiration = "1 minute";
                 cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
                 final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
-                                                          .as(evaluatedWithHeapBindings())
+                                                          .as(evaluatedWithHeapProperties())
                                                           .defaultTo(defaultExpiration)
                                                           .as(duration());
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {

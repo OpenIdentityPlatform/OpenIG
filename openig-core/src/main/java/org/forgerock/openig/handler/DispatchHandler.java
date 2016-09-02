@@ -150,7 +150,7 @@ public class DispatchHandler extends GenericHeapObject implements Handler {
                 jv.required().expect(Map.class);
                 final Expression<Boolean> expression = jv.get("condition").as(expression(Boolean.class));
                 final Handler handler = jv.get("handler").as(requiredHeapObject(heap, Handler.class));
-                final URI uri = jv.get("baseURI").as(evaluatedWithHeapBindings()).as(uri());
+                final URI uri = jv.get("baseURI").as(evaluatedWithHeapProperties()).as(uri());
                 dispatchHandler.addBinding(expression, handler, uri);
             }
             return dispatchHandler;

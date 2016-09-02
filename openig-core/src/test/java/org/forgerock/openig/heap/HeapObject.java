@@ -16,8 +16,6 @@
 
 package org.forgerock.openig.heap;
 
-import static org.forgerock.openig.util.JsonValues.evaluated;
-
 @SuppressWarnings("javadoc")
 public class HeapObject {
 
@@ -29,7 +27,7 @@ public class HeapObject {
         @Override
         public Object create() throws HeapException {
             HeapObject heapObject = new HeapObject();
-            heapObject.message = config.get("message").as(evaluated(heap.getBindings())).asString();
+            heapObject.message = config.get("message").as(evaluatedWithHeapProperties()).asString();
             return heapObject;
         }
 

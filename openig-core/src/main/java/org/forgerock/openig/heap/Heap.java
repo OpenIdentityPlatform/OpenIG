@@ -118,8 +118,9 @@ public interface Heap {
     <T> T resolve(JsonValue reference, Class<T> type, boolean optional) throws HeapException;
 
     /**
-     * Returns the bindings from this heap and its parents if any.
-     * @return the bindings from this heap and its parents if any
+     * Returns the properties from this heap and its parents if any.
+     *
+     * @return the properties from this heap and its parents if any.
      */
-    Bindings getBindings();
+    Bindings getProperties();
 }

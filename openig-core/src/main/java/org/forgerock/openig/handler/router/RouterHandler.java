@@ -434,7 +434,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             registration = registry.register("routes", routes);
             logger.info("Routes endpoint available at '{}'", registration.getPath());
 
-            File directory = config.get("directory").as(evaluatedWithHeapBindings()).as(file());
+            File directory = config.get("directory").as(evaluatedWithHeapProperties()).as(file());
             if (directory == null) {
                 // By default, uses the config/routes from the environment
                 Environment env = heap.get(ENVIRONMENT_HEAP_KEY, Environment.class);
@@ -459,7 +459,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         private Duration scanInterval() {
             JsonValue scanIntervalConfig = config.get("scanInterval")
-                                                 .as(evaluatedWithHeapBindings())
+                                                 .as(evaluatedWithHeapProperties())
                                                  .defaultTo("10 seconds");
             if (scanIntervalConfig.isNumber()) {
                 // Backward compatibility : configuration values is expressed in seconds only
