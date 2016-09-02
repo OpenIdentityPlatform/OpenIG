@@ -21,6 +21,7 @@ import static org.forgerock.http.header.HeaderUtil.parseDate;
 import static org.forgerock.http.io.IO.newBranchingInputStream;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Status.FOUND;
 import static org.forgerock.http.protocol.Status.METHOD_NOT_ALLOWED;
 import static org.forgerock.http.protocol.Status.NOT_FOUND;
 import static org.forgerock.http.protocol.Status.OK;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.ContentTypeHeader;
+import org.forgerock.http.header.LocationHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -93,6 +95,14 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
 
         Resource resource = null;
         if ("".equals(target)) {
+            // Workaround the issue that Router remove leading '/' in remainingUri
+            // preventing /openig/console to work like /openig/console/ for instance
+            if (!request.getUri().getPath().endsWith("/")) {
+                // Force redirect to the 'slashed' version of the URL
+                Response redirect = new Response(FOUND);
+                redirect.getHeaders().add(new LocationHeader(request.getUri().toString() + "/"));
+                return newResponsePromise(redirect);
+            }
             // Need welcome page
             // Find the first matching resource
             Iterator<String> i = welcomePages.iterator();
