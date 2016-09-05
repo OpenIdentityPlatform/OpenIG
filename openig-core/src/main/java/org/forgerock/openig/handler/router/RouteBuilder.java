@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
+import static java.lang.String.format;
 import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
@@ -61,23 +62,25 @@ class RouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(RouteBuilder.class);
 
+    private static final String ROUTE_ENDPOINT_PATTERN = "routes/%s/%s";
+
     /**
      * Heap to be used as parent for routes built from this builder.
      */
     private final HeapImpl heap;
     private final Name name;
-    private final EndpointRegistry registry;
+    private final EndpointRegistry routerRegistry;
 
     /**
      * Builds a new builder.
      * @param heap parent heap for produced routes
      * @param name router name (used as parent name)
-     * @param registry EndpointRegistry for supported routes
+     * @param routerRegistry EndpointRegistry of this router
      */
-    RouteBuilder(final HeapImpl heap, final Name name, final EndpointRegistry registry) {
+    RouteBuilder(final HeapImpl heap, final Name name, final EndpointRegistry routerRegistry) {
         this.heap = heap;
         this.name = name;
-        this.registry = registry;
+        this.routerRegistry = routerRegistry;
     }
 
     /**
@@ -91,18 +94,16 @@ class RouteBuilder {
         final Name routeHeapName = this.name.child(routeName);
         final HeapImpl routeHeap = new HeapImpl(heap, routeHeapName);
 
-        final Router thisRouteRouter = new Router();
-        thisRouteRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-
-        final Router objects = new Router();
-        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-
         final String slug = slug(routeId);
-        // Preemptively get the endpoint path, without actually registering the routes/my-route router
-        EndpointRegistry routeRegistry = new EndpointRegistry(thisRouteRouter, registry.pathInfo(slug));
-        EndpointRegistry.Registration objectsReg = routeRegistry.register("objects", objects);
-
-        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(objects, objectsReg.getPath()));
+        // Preemptively get the endpoint path, without actually registering endpoints in the main router
+        Router objects = new Router();
+        objects.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+        EndpointRegistry objectsRegistry = new EndpointRegistry(objects,
+                                                                format("%s/" + ROUTE_ENDPOINT_PATTERN,
+                                                                       routerRegistry.getPath(),
+                                                                       slug,
+                                                                       "objects"));
+        routeHeap.put(ENDPOINT_REGISTRY_HEAP_KEY, objectsRegistry);
 
         try {
             routeHeap.init(config.copy(), "handler", "session", "name", "condition", "auditService", "globalDecorators",
@@ -119,22 +120,20 @@ class RouteBuilder {
                             slug);
             }
 
-            Handler routeHandler = setupRouteHandler(routeHeap, config, routeRegistry);
+            final Endpoints endpoints = new Endpoints(slug);
+            endpoints.register("objects", objects, null);
+            Handler routeHandler = setupRouteHandler(routeHeap, config, endpoints);
             return new Route(routeHandler, routeId, routeName, config, condition) {
-
-                private EndpointRegistry.Registration registration;
 
                 @Override
                 public void start() {
-                    // Register this route's endpoint into the parent registry
-                    registration = registry.register(slug, thisRouteRouter);
+                    // Register this route's endpoints into the parent registry
+                    endpoints.attach();
                 }
 
                 @Override
                 public void destroy() {
-                    if (registration != null) {
-                        registration.unregister();
-                    }
+                    endpoints.detach();
                     routeHeap.destroy();
                 }
             };
@@ -146,7 +145,7 @@ class RouteBuilder {
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
                                       final JsonValue config,
-                                      final EndpointRegistry routeRegistry) throws HeapException {
+                                      final Endpoints endpoints) throws HeapException {
 
         TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
@@ -167,8 +166,7 @@ class RouteBuilder {
             MonitoringMetrics metrics = new MonitoringMetrics();
             filters.add(new MetricsFilter(metrics));
             RequestHandler singleton = newHandler(new MonitoringResourceProvider(metrics, mc.getPercentiles()));
-            EndpointRegistry.Registration monitoring = routeRegistry.register("monitoring", newHttpHandler(singleton));
-            logger.info("Monitoring endpoint available at '{}'", monitoring.getPath());
+            endpoints.register("monitoring", newHttpHandler(singleton), "Monitoring endpoint available at '{}'");
         }
 
         // Ensure we always get a Response even in case of RuntimeException
@@ -243,6 +241,51 @@ class RouteBuilder {
 
         public List<Double> getPercentiles() {
             return percentiles;
+        }
+    }
+
+    private final class Endpoints {
+
+        private final String slug;
+        private final List<Endpoint> endpoints = new ArrayList<>();
+        private final List<EndpointRegistry.Registration> registrations = new ArrayList<>();
+
+        private Endpoints(String slug) {
+            this.slug = slug;
+        }
+
+        void attach() {
+            // Register this route's endpoints into the parent registry
+            for (Endpoint endpoint : endpoints) {
+                String path = format(ROUTE_ENDPOINT_PATTERN, slug, endpoint.path);
+                EndpointRegistry.Registration registration = routerRegistry.register(path, endpoint.handler);
+                if (endpoint.message != null) {
+                    logger.info(endpoint.message, registration.getPath());
+                }
+                registrations.add(registration);
+            }
+        }
+
+        void detach() {
+            for (EndpointRegistry.Registration registration : registrations) {
+                registration.unregister();
+            }
+        }
+
+        public void register(String path, Handler handler, String message) {
+            this.endpoints.add(new Endpoint(path, handler, message));
+        }
+
+        private final class Endpoint {
+            final String path;
+            final Handler handler;
+            final String message;
+
+            private Endpoint(String path, Handler handler, String message) {
+                this.path = path;
+                this.handler = handler;
+                this.message = message;
+            }
         }
     }
 }
