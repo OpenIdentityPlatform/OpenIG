@@ -52,6 +52,7 @@ define([
                     case "group":
                         self.fillPartialsByControlType(c.controls);
                         return "templates/openig/admin/common/form/GroupControl";
+                    default: return this.template;
                 }
             };
         });
