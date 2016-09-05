@@ -42,7 +42,7 @@ define([
         route:"appsThrottling"
     }, {
         title: "config.AppConfiguration.Navigation.appsSideMenu.authentication",
-        icon:"fa-check-square-o",
+        icon: "fa-user",
         route:"appsAuthentication"
     }, {
         title: "config.AppConfiguration.Navigation.appsSideMenu.transformation",
