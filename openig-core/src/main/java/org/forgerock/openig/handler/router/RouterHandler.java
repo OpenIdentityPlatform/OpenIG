@@ -18,13 +18,11 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
-import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.file;
-import static org.forgerock.json.resource.Resources.asRequestHandler;
+import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.Route.routeName;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
@@ -50,11 +48,9 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
-import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -427,13 +423,6 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
 
         @Override
         public Object create() throws HeapException {
-            // Register the /routes/* endpoint
-            Router routes = new Router();
-            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
-            EndpointRegistry registry = endpointRegistry();
-            registration = registry.register("routes", routes);
-            logger.info("Routes endpoint available at '{}'", registration.getPath());
-
             File directory = config.get("directory").as(evaluatedWithHeapProperties()).as(file());
             if (directory == null) {
                 // By default, uses the config/routes from the environment
@@ -443,16 +432,17 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             this.directoryMonitor = new DirectoryMonitor(directory);
             this.scanInterval = scanInterval();
 
+            EndpointRegistry registry = endpointRegistry();
             RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
                                                                        qualified,
-                                                                       new EndpointRegistry(routes,
-                                                                                            registration.getPath())),
+                                                                       registry),
                                                       directoryMonitor);
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
 
-            routes.addRoute(requestUriMatcher(EQUALS, "{" + RoutesItemRequestHandler.ROUTE_ID + "}"),
-                            newHttpHandler(asRequestHandler(new RoutesItemRequestHandler(handler))));
-            routes.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+            // Register the /routes/* endpoint
+            registration = registry.register("routes",
+                                             newHttpHandler(newHandler(new RoutesCollectionProvider(handler))));
+            logger.info("Routes endpoint available at '{}'", registration.getPath());
 
             return handler;
         }

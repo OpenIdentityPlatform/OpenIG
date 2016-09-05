@@ -271,13 +271,13 @@ public class RouteBuilderTest {
         route.start();
 
         // Ensure that api endpoint is working
-        Request request = new Request().setUri("/registration-test/objects/register/ping");
+        Request request = new Request().setUri("/routes/registration-test/objects/register/ping");
         Response response = router.handle(new RootContext(), request).get();
         assertThat(response.getEntity().getString()).isEqualTo("Pong");
 
         // Ensure that the path is right
         assertThat(route.handle(null, null).get().getEntity().getString())
-                .isEqualTo("/registration-test/objects/register/ping");
+                .isEqualTo("/routes/registration-test/objects/register/ping");
 
         // Ensure that api endpoint is not accessible anymore after route has been destroyed
         route.destroy();
@@ -292,7 +292,7 @@ public class RouteBuilderTest {
         Route route = buildRoute(builder, getTestResourceFile("monitored-route.json"));
         route.start();
 
-        Request request = new Request().setMethod("GET").setUri("/monitored/monitoring");
+        Request request = new Request().setMethod("GET").setUri("/routes/monitored/monitoring");
         Response response = router.handle(new AttributesContext(new RootContext()), request).get();
 
         assertThat(response.getStatus()).isEqualTo(Status.OK);
@@ -346,7 +346,7 @@ public class RouteBuilderTest {
         route.start();
 
         // When
-        Request request = new Request().setMethod("GET").setUri("/route/monitoring");
+        Request request = new Request().setMethod("GET").setUri("/routes/route/monitoring");
         Response response = router.handle(new AttributesContext(new RootContext()), request).get();
 
         // Then

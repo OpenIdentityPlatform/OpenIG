@@ -196,7 +196,7 @@ public class RouterHandlerTest {
 
         // Ping the 'routes' and intermediate endpoints
         assertStatusOnUri(router, "/this-router", Status.NO_CONTENT);
-        assertStatusOnUri(router, "/this-router/routes", Status.NO_CONTENT);
+        //assertStatusOnUri(router, "/this-router/routes", Status.NO_CONTENT);
         assertStatusOnUri(router, "/this-router/routes/with-name", Status.OK);
         assertStatusOnUri(router, "/this-router/routes/with-name/objects", Status.NO_CONTENT);
         assertStatusOnUri(router, "/this-router/routes/with-name/objects/register", Status.NO_CONTENT);
