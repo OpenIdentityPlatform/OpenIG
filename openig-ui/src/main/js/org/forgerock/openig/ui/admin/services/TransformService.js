@@ -79,6 +79,22 @@ define(["lodash"], (_) => ({
         };
     },
 
+    policyEnforcementFilter (filter) {
+        return {
+            type: "PolicyEnforcementFilter",
+            name: "PEPFilter",
+            config: {
+                openamUrl: filter.openamUrl,
+                pepUsername: filter.pepUsername,
+                pepPassword: filter.pepPassword,
+                pepRealm: filter.pepRealm,
+                realm: filter.realm,
+                ssoTokenSubject: filter.ssoTokenSubject,
+                application: filter.application
+            }
+        };
+    },
+
     transformFilter (filter) {
         // Tranform Filter from the app model into JSON
         switch (filter.type) {
@@ -92,6 +108,8 @@ define(["lodash"], (_) => ({
 
                 // return this.passwordReplayFilter(filter);
                 break;
+            case "PolicyEnforcementFilter":
+                return this.policyEnforcementFilter(filter);
             default:
                 throw new this.TransformServiceException("unknownFilterType", filter.type);
         }

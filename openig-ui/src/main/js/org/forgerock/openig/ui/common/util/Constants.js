@@ -21,5 +21,11 @@ define([
 
     commonConstants.DOC_URL = "https://backstage.forgerock.com/#!/docs/openig/5.0/";
 
+    commonConstants.defaultFiltersOrder = {
+        ThrottlingFilter: 0,
+        OAuth2ClientFilter: 100,
+        PolicyEnforcementFilter: 200,
+        Unknown: 10000
+    };
     return commonConstants;
 });

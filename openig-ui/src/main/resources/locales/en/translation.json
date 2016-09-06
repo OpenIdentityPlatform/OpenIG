@@ -56,6 +56,7 @@
                     "throttling": "Throttling",
                     "authentication":"Authentication",
                     "transformation": "Transformation",
+                    "authorization":"Authorization",
                     "monitoring": "Monitoring"                    
                 }
             }
@@ -130,6 +131,7 @@
             "filters":{
                 "Off": "Off",
                 "OAuth2ClientFilter": "OpenID Connect",
+                "PolicyEnforcementFilter":"OpenAM Policy Enforcement",
                 "PasswordReplayFilter":"Password Replay",
                 "ThrottlingFilter": "__numberOfRequests__ requests/__duration__"
             },
@@ -156,6 +158,29 @@
                          "tokenEndpointUseBasicAuthHint": "Enable if token endpoint requires Basic Authentication",
                          "issuerWellKnownEndpoint": "OpenID configuration",
                          "issuerWellKnownEndpointHint": "OpenID configuration"
+                    }
+                },
+                "authorization":{
+                    "title": "Authorization",
+                    "description": "Protect specific resources within your app using OpenAM as a policy decision point.",
+                    "fields":{
+                        "enabled": "Enable authorization",
+                        "openAMconfigurationGroup": "OpenAM configuration",
+                        "enforcementEndpointGroup": "Enforcement endpoint",
+                        "openamUrl": "OpenAM URL",
+                        "openamUrlHint": "The URL to an OpenAM service",
+                        "pepUsername": "OpenAM Username",
+                        "pepUsernameHint": "OpenAM username of the user with permission to request policy decisions",
+                        "pepPassword": "OpenAM Password",
+                        "pepPasswordHint": "The OpenAM password of the user with access to request policy decisions",
+                        "pepRealm": "OpenAM Realm",
+                        "pepRealmHint": "The realm of the user with permission to request policy decisions",
+                        "realm": "Realm",
+                        "realmHint": "OpenAM realm to use when requesting policy decisions",
+                        "ssoTokenSubject": "OpenAM SSO token ID",
+                        "ssoTokenSubjectHint": "OpenAM SSO token ID string for the subject making the request to the protected resource",
+                        "application": "Policy Set",
+                        "applicationHint": "OpenAM application to use when requesting policy decisions"
                     }
                 }
             }

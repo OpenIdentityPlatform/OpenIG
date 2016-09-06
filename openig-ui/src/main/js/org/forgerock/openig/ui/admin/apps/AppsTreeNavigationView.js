@@ -45,6 +45,10 @@ define([
         icon: "fa-user",
         route:"appsAuthentication"
     }, {
+        title: "config.AppConfiguration.Navigation.appsSideMenu.authorization",
+        icon: "fa-key",
+        route: "appsAuthorization"
+    }, {
         title: "config.AppConfiguration.Navigation.appsSideMenu.transformation",
         icon: "fa-random",
         route: "appsTransformation"
