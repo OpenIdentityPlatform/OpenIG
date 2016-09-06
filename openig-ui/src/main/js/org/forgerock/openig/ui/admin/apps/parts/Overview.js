@@ -50,6 +50,11 @@ define([
                     icon: "fa-user"
                 },
                 {
+                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.authorization"),
+                    route: "appsAuthorization",
+                    icon: "fa-key"
+                },
+                {
                     title: $.t("config.AppConfiguration.Navigation.appsSideMenu.transformation"),
                     route: "appsTransformation",
                     icon: "fa-random"
@@ -90,6 +95,15 @@ define([
                     });
                     if (filter) {
                         status = $.t("templates.apps.filters.OAuth2ClientFilter");
+                    }
+                    break;
+                case "appsAuthorization":
+                    filter = _.find(filters, {
+                        "type": "PolicyEnforcementFilter",
+                        "enabled": true
+                    });
+                    if (filter) {
+                        status = $.t("templates.apps.filters.PolicyEnforcementFilter");
                     }
                     break;
                 case "appsTransformation":

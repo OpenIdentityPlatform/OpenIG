@@ -144,6 +144,30 @@ define([
                 }
             }
         );
+    },
+
+    addFilterIntoModel (appModel, filter) {
+        const content = _.clone(appModel.get("content"));
+        const filters = content.filters;
+        const orderedFilters = [];
+        const newFilterOrder = constants.defaultFiltersOrder[filter.type];
+        let filterIncluded = false;
+        _.forEach(filters, (f) => {
+            let order = constants.defaultFiltersOrder[_.get(f, "type", "Unknown")];
+            if (order === undefined) {
+                order = constants.defaultFiltersOrder.Unknown;
+            }
+            if (order > newFilterOrder && !filterIncluded) {
+                orderedFilters.push(filter);
+                filterIncluded = true;
+            }
+            orderedFilters.push(f);
+        });
+        if (!filterIncluded) {
+            orderedFilters.push(filter);
+        }
+        content.filters = orderedFilters;
+        appModel.set("content", content);
     }
 })
 );
