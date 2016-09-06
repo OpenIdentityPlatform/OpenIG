@@ -18,6 +18,8 @@ package org.forgerock.openig.handler.router;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.util.Files.contentOf;
+import static org.assertj.core.util.Files.newTemporaryFolder;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.testng.reporters.Files.writeFile;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +39,7 @@ import java.util.HashMap;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -133,9 +137,22 @@ public class DirectoryMonitorTest {
         verify(listener).onChanges(same(fileChangeSet));
     }
 
-    @Test
-    public void testStoreArtifact() throws Exception {
-        File folder = org.assertj.core.util.Files.newTemporaryFolder();
+
+    @DataProvider
+    public static Object[][] directories() {
+        // @Checkstyle:off
+        return new Object[][]{
+                // assertj creates a new directory
+                { newTemporaryFolder() },
+                // try with a non-existent directory
+                // newTemporaryFolder() creates a new dir at each invocation, so there is no need to do some cleanup
+                { new File(newTemporaryFolder(), "does-not-exists-yet") }
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "directories")
+    public void testStoreArtifact(File folder) throws Exception {
         DirectoryMonitor directoryMonitor = new DirectoryMonitor(folder);
 
         directoryMonitor.store("foo", json(object(field("foo", "bar"))));
@@ -143,14 +160,14 @@ public class DirectoryMonitorTest {
         File[] files = folder.listFiles();
         assertThat(files).hasSize(1);
         assertThat(files[0].getName()).isEqualTo("foo.json");
-        assertThat(org.assertj.core.util.Files.contentOf(files[0], StandardCharsets.UTF_8))
+        assertThat(contentOf(files[0], StandardCharsets.UTF_8))
                 .isEqualTo("{\n  \"foo\" : \"bar\"\n}");
     }
 
     @Test
     public void testDeleteArtifact() throws Exception {
-        File folder = org.assertj.core.util.Files.newTemporaryFolder();
-        org.testng.reporters.Files.writeFile("{ \"foo\": \"bar\" }", new File(folder, "foo.json"));
+        File folder = newTemporaryFolder();
+        writeFile("{ \"foo\": \"bar\" }", new File(folder, "foo.json"));
         DirectoryMonitor directoryMonitor = new DirectoryMonitor(folder);
 
         directoryMonitor.delete("foo");
