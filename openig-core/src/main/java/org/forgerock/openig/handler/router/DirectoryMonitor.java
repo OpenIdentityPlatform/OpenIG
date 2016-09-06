@@ -194,6 +194,11 @@ class DirectoryMonitor {
         lock.lock();
         try {
             File routeFile = routeFile(routeId);
+            // Creates intermediate directories if required
+            File parent = routeFile.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+                throw new IOException("Cannot create directories for file " + routeFile);
+            }
             try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(routeFile),
                                                                     StandardCharsets.UTF_8)) {
                 writer.write(MAPPER.writeValueAsString(routeConfig.getObject()));
