@@ -51,15 +51,6 @@ define([
                         numberOfRequests: 60,
                         duration: "1 minute"
                     },
-                    {
-                        //Authentication
-                        enabled: true,
-                        type: "OAuth2ClientFilter",
-                        clientEndpoint: "/openid",
-                        loginUri: "",
-                        logoutUri: "",
-                        metadata: ""
-                    },
                     // Password Replay
                     {
                         enabled: false,

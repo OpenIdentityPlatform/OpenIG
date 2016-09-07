@@ -21,6 +21,7 @@ define([
     "selectize",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
+    "org/forgerock/openig/ui/admin/util/AppsUtils",
     "org/forgerock/openig/ui/admin/util/FormUtils",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants"
@@ -31,6 +32,7 @@ define([
     selectize,
     AbstractView,
     validatorsManager,
+    AppsUtils,
     FormUtils,
     EventManager,
     Constants
@@ -56,49 +58,52 @@ define([
             this.data = options.parentData;
         },
         render () {
-            this.data.authFilter = _.find(this.data.appData.get("content/filters"), { "type": "OAuth2ClientFilter" });
+            this.data.newFilter = false;
+            this.data.authFilter = this.getFilter();
+            if (!this.data.authFilter) {
+                this.data.authFilter = this.createFilter();
+                this.data.newFilter = true;
+            }
 
             this.data.controls = [
                 {
                     name: "enabled",
-                    value:  (_.get(this.data.authFilter, "enabled", false) === true) ? "checked" : "",
+                    value:  this.data.authFilter.enabled ? "checked" : "",
                     controlType: "slider"
                 },
                 {
                     name: "authGroup",
                     title: "",
                     controlType: "group",
-                    cssClass: (_.get(this.data.authFilter, "enabled", false) === true) ? "collapse in" : "collapse",
+                    cssClass: this.data.authFilter.enabled ? "collapse in" : "collapse",
                     controls: [
                         {
-                            title: "Client Filter",
                             name: "clientFilterGroup",
                             controlType: "group",
                             controls: [
                                 {
                                     name: "clientEndpoint",
-                                    value: _.get(this.data.authFilter, "clientEndpoint")
+                                    value: this.data.authFilter.clientEndpoint
                                 }
                             ]
                         },
                         {
-                            title: "Client Registration",
                             name: "clientRegistrationGroup",
                             controlType: "group",
                             controls: [
                                 {
                                     name: "clientId",
-                                    value: _.get(this.data.authFilter, "clientId"),
+                                    value: this.data.authFilter.clientId,
                                     validator: "required"
                                 },
                                 {
                                     name: "clientSecret",
-                                    value: _.get(this.data.authFilter, "clientSecret"),
+                                    value: this.data.authFilter.clientSecret,
                                     validator: "required"
                                 },
                                 {
                                     name: "scopes",
-                                    value: _.get(this.data.authFilter, "scopes"),
+                                    value: this.data.authFilter.scopes,
                                     controlType: "multiselect",
                                     options: ["openid", "profile", "email", "address", "phone", "offline_access"],
                                     delimiter: " ",
@@ -106,7 +111,12 @@ define([
                                 },
                                 {
                                     name: "tokenEndpointUseBasicAuth",
-                                    value: _.get(this.data.authFilter, "tokenEndpointUseBasicAuth"),
+                                    value: this.data.authFilter.tokenEndpointUseBasicAuth,
+                                    controlType: "checkbox"
+                                },
+                                {
+                                    name: "requireHttps",
+                                    value: this.data.authFilter.requireHttps,
                                     controlType: "checkbox"
                                 }
                             ]
@@ -118,7 +128,7 @@ define([
                             controls: [
                                 {
                                     name: "issuerWellKnownEndpoint",
-                                    value: _.get(this.data.authFilter, "issuerWellKnownEndpoint"),
+                                    value: this.data.authFilter.issuerWellKnownEndpoint,
                                     validator: "required uri"
                                 }
                             ]
@@ -134,7 +144,7 @@ define([
             });
             FormUtils.fillPartialsByControlType(this.data.controls);
             this.parentRender(() => {
-                this.setFormFooterVisiblity((_.get(this.data.authFilter, "enabled", false) === true));
+                this.setFormFooterVisiblity(this.data.authFilter.enabled);
                 validatorsManager.bindValidators(this.$el);
                 _.forEach(this.$el.find(".multi-select-control"), (control) => {
                     FormUtils.initializeMultiSelect(control);
@@ -143,24 +153,35 @@ define([
         },
 
         enableAuthenticationClick (event) {
-            if (event.currentTarget.checked) {
-                this.$el.find("div[name='authGroup']").collapse("show");
-            } else {
-                this.$el.find("div[name='authGroup']").collapse("hide");
-            }
+            const newState = event.currentTarget.checked;
+            const collapseState = newState ? "show" : "hide";
+            this.$el.find("div[name='authGroup']").collapse(collapseState);
 
             // Save Enabled or disabled state immediately
-            _.set(this.data.authFilter, "enabled", event.currentTarget.checked);
-            this.data.appData.save();
-
-            this.setFormFooterVisiblity(event.currentTarget.checked);
+            this.data.authFilter.enabled = newState;
+            if (!newState) {
+                //Save Off state
+                this.data.authFilter.enabled = newState;
+                this.data.appData.save();
+            } else {
+                //Save On state, only when form is valid
+                const form = this.$el.find("#authForm")[0];
+                FormUtils.isFormValid(form).then((valid) => {
+                    if (valid) {
+                        this.data.authFilter.enabled = newState;
+                        this.data.appData.save();
+                    }
+                });
+            }
+            this.setFormFooterVisiblity(newState);
         },
 
         setFormFooterVisiblity (visible) {
+            const footerPanel = this.$el.find(".panel-footer");
             if (visible) {
-                this.$el.find(".panel-footer").show();
+                footerPanel.show();
             } else {
-                this.$el.find(".panel-footer").hide();
+                footerPanel.hide();
             }
         },
 
@@ -180,6 +201,9 @@ define([
                 const formVal = form2js(form, ".", false);
                 _.extend(this.data.authFilter, formVal);
                 this.data.authFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
+                if (this.data.newFilter) {
+                    AppsUtils.addFilterIntoModel(this.data.appData, this.data.authFilter);
+                }
                 this.data.appData.save();
 
                 EventManager.sendEvent(
@@ -190,6 +214,19 @@ define([
                     }
                 );
             });
+        },
+
+        getFilter () {
+            return _.find(this.data.appData.get("content/filters"),
+                { "type": "OAuth2ClientFilter" }
+            );
+        },
+
+        createFilter () {
+            return {
+                "type": "OAuth2ClientFilter",
+                "scopes": "openid"
+            };
         }
     })
 ));
