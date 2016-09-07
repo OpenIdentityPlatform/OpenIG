@@ -368,12 +368,12 @@ public class RouteBuilderTest {
         }
     }
 
-    private Route buildRoute(RouteBuilder builder, JsonValue routeConfig) throws HeapException, IOException {
+    private Route buildRoute(RouteBuilder builder, JsonValue routeConfig) throws HeapException {
         return buildRoute(builder, routeConfig, null);
     }
 
     private Route buildRoute(RouteBuilder builder, JsonValue routeConfig, String defaultRouteName)
-            throws HeapException, IOException {
+            throws HeapException {
         JsonValue routeName = routeConfig.get("name");
         routeName = defaultRouteName != null ? routeName.defaultTo(defaultRouteName) : routeName.required();
         return builder.build(routeName.asString(), routeName.asString(), routeConfig);
