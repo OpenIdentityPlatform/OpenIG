@@ -17,8 +17,10 @@
 package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
+import static org.forgerock.json.resource.Responses.newQueryResponse;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.openig.handler.router.Route.routeName;
+import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
@@ -121,8 +123,19 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     @Override
     public Promise<QueryResponse, ResourceException> queryCollection(Context context,
                                                                      QueryRequest request,
-                                                                     QueryResourceHandler handler) {
-        return new NotSupportedException().asPromise();
+                                                                     QueryResourceHandler resourceHandler) {
+        // Reject queries with query ID, provided expressions and non "true" filter
+        if (request.getQueryId() != null
+                || request.getQueryExpression() != null
+                || !alwaysTrue().equals(request.getQueryFilter())) {
+            return new NotSupportedException("Only accept queries with filter=true").asPromise();
+        }
+
+        for (Route route : routerHandler.getRoutes()) {
+            resourceHandler.handleResource(newResourceResponse(route.getId(), null, route.getConfig()));
+        }
+
+        return newQueryResponse().asPromise();
     }
 
     @Override

@@ -32,8 +32,10 @@ import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -322,6 +324,19 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
                 throw new RouterHandlerException(format("No route with id '%s' was loaded.", routeId));
             }
             return route.getConfig();
+        } finally {
+            read.unlock();
+        }
+    }
+
+    /**
+     * Returns a list of the currently deployed routes, in the order they are tried.
+     * @return a list of the currently deployed routes, in the order they are tried.
+     */
+    List<Route> getRoutes() {
+        read.lock();
+        try {
+            return new ArrayList<>(sorted);
         } finally {
             read.unlock();
         }

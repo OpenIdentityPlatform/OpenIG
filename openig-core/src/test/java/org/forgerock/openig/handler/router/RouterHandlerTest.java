@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import org.assertj.core.api.iterable.Extractor;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -181,6 +182,30 @@ public class RouterHandlerTest {
     }
 
     @Test
+    public void testListOfRoutesIsProperlyOrdered() throws Exception {
+        DirectoryMonitor directoryMonitor = new DirectoryMonitor(null);
+        RouterHandler handler = new RouterHandler(newRouteBuilder(), directoryMonitor);
+
+        JsonValue routeConfig = json(object(field("handler",
+                                                  object(field("type",
+                                                               "org.forgerock.openig.handler.router.StatusHandler"),
+                                                         field("config", object(field("status", 200)))))));
+
+        // Load both routes
+        handler.load("aaa", "01", routeConfig.copy());
+        handler.load("zzz", "00", routeConfig.copy());
+
+        assertThat(handler.getRoutes())
+                .extracting(new Extractor<Route, String>() {
+                    @Override
+                    public String extract(Route input) {
+                        return input.getId();
+                    }
+                })
+                .containsExactly("zzz", "aaa");
+    }
+
+    @Test
     public void testRouterEndpointIsBeingRegistered() throws Exception {
         Router router = new Router();
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
@@ -196,7 +221,7 @@ public class RouterHandlerTest {
 
         // Ping the 'routes' and intermediate endpoints
         assertStatusOnUri(router, "/this-router", Status.NO_CONTENT);
-        //assertStatusOnUri(router, "/this-router/routes", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes?_queryFilter=true", Status.OK);
         assertStatusOnUri(router, "/this-router/routes/with-name", Status.OK);
         assertStatusOnUri(router, "/this-router/routes/with-name/objects", Status.NO_CONTENT);
         assertStatusOnUri(router, "/this-router/routes/with-name/objects/register", Status.NO_CONTENT);
