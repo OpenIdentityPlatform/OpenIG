@@ -146,6 +146,8 @@
                     "description": "Authenticate users to your app using OpenID Connect.",
                     "fields":{
                         "enabled": "Enable authentication",
+                        "clientFilterGroup": "Client Filter",
+                        "clientRegistrationGroup": "Client Registration",
                         "clientEndpoint": "Client Endpoint",
                         "clientEndpointHint": "Base URI for OpenID services.",
                          "clientId": "Client Id",
@@ -156,8 +158,10 @@
                          "scopesHint": "The specific scopes to use for this client",
                          "tokenEndpointUseBasicAuth": "Basic authentication",
                          "tokenEndpointUseBasicAuthHint": "Enable if token endpoint requires Basic Authentication",
-                         "issuerWellKnownEndpoint": "OpenID configuration",
-                         "issuerWellKnownEndpointHint": "OpenID configuration"
+                         "issuerWellKnownEndpoint": "Well-known Endpoint",
+                         "issuerWellKnownEndpointHint": "The URL to the well-known configuration resource",
+                         "requireHttps": "Require HTTPS",
+                         "requireHttpsHint": "Requires incoming requests to use TLS (HTTPS)"
                     }
                 },
                 "authorization":{
