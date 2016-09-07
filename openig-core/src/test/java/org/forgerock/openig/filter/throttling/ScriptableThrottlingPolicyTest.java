@@ -53,7 +53,7 @@ public class ScriptableThrottlingPolicyTest {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
         final Heap heap = new HeapImpl(Name.of("heap"));
-        return new ScriptableThrottlingPolicy(script, heap);
+        return new ScriptableThrottlingPolicy(script, heap, "myThrottlingPolicy");
     }
 
     private Environment getEnvironment() throws Exception {

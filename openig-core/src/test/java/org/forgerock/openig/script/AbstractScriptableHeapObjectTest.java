@@ -65,7 +65,7 @@ public class AbstractScriptableHeapObjectTest {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
         final Heap heap = new HeapImpl(Name.of("heap"));
-        return new AbstractScriptableHeapObject<>(script, heap);
+        return new AbstractScriptableHeapObject<>(script, heap, "myScript");
     }
 
     private Environment getEnvironment() throws Exception {

@@ -54,11 +54,11 @@ public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
         public ScriptableAccessTokenResolver newInstance(Script script, Heap heap) throws HeapException {
-            return new ScriptableAccessTokenResolver(script, heap);
+            return new ScriptableAccessTokenResolver(script, heap, name);
         }
     }
 
-    ScriptableAccessTokenResolver(final Script compiledScript, Heap heap) {
-        super(compiledScript, heap);
+    ScriptableAccessTokenResolver(final Script compiledScript, final Heap heap, final String name) {
+        super(compiledScript, heap, name);
     }
 }

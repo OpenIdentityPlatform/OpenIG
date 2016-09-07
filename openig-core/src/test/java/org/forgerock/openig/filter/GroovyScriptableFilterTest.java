@@ -983,7 +983,7 @@ public class GroovyScriptableFilterTest {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
         final Heap heap = new HeapImpl(Name.of("heap"));
-        return new ScriptableFilter(script, heap);
+        return new ScriptableFilter(script, heap, "myScript");
     }
 
     private static class TerminalHandler implements Handler {

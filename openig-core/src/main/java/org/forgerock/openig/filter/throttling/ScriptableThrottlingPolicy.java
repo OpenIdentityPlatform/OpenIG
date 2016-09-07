@@ -42,8 +42,8 @@ public class ScriptableThrottlingPolicy
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptableThrottlingPolicy.class);
 
-    ScriptableThrottlingPolicy(final Script compiledScript, final Heap heap) {
-        super(compiledScript, heap);
+    ScriptableThrottlingPolicy(final Script compiledScript, final Heap heap, final String name) {
+        super(compiledScript, heap, name);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ScriptableThrottlingPolicy
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
         public ScriptableThrottlingPolicy newInstance(Script script, Heap heap) throws HeapException {
-            return new ScriptableThrottlingPolicy(script, heap);
+            return new ScriptableThrottlingPolicy(script, heap, name);
         }
     }
 }
