@@ -65,11 +65,11 @@ public class ScriptableFilter extends AbstractScriptableHeapObject<Response> imp
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
         public ScriptableFilter newInstance(Script script, Heap heap) throws HeapException {
-            return new ScriptableFilter(script, heap);
+            return new ScriptableFilter(script, heap, name);
         }
     }
 
-    ScriptableFilter(final Script compiledScript, Heap heap) {
-        super(compiledScript, heap);
+    ScriptableFilter(final Script compiledScript, final Heap heap, final String name) {
+        super(compiledScript, heap, name);
     }
 }

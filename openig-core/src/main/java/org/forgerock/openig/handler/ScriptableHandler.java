@@ -57,11 +57,11 @@ public class ScriptableHandler extends AbstractScriptableHeapObject<Response> im
     public static class Heaplet extends AbstractScriptableHeaplet {
         @Override
         public ScriptableHandler newInstance(Script script, Heap heap) throws HeapException {
-            return new ScriptableHandler(script, heap);
+            return new ScriptableHandler(script, heap, name);
         }
     }
 
-    ScriptableHandler(final Script compiledScript, Heap heap) {
-        super(compiledScript, heap);
+    ScriptableHandler(final Script compiledScript, final Heap heap, final String name) {
+        super(compiledScript, heap, name);
     }
 }

@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
  * for implementing any interface that we want to make pluggable through scripting support. Scripts are provided with
  * the following variables bindings:
  * <ul>
+ * <li>{@link Logger logger} - The logger for this script
  * <li>{@link Map globals} - the Map of global variables which persist across
  * successive invocations of the script
  * <li>{@link Context context} - the associated request context
@@ -159,6 +160,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
 
     private final Script compiledScript;
     private final Heap heap;
+    private final String name;
     private Handler clientHandler;
     private final LdapClient ldapClient = LdapClient.getInstance();
     private final Map<String, Object> scriptGlobals = new ConcurrentHashMap<>();
@@ -167,12 +169,17 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
     /**
      * Creates a new scriptable heap object using the provided compiled script.
      *
-     * @param compiledScript The compiled script.
-     * @param heap The heap to look for bindings
+     * @param compiledScript
+     *            The compiled script.
+     * @param heap
+     *            The heap to look for bindings
+     * @param name
+     *            The name of this scriptable heap object.
      */
-    protected AbstractScriptableHeapObject(final Script compiledScript, Heap heap) {
+    protected AbstractScriptableHeapObject(final Script compiledScript, final Heap heap, final String name) {
         this.compiledScript = compiledScript;
         this.heap = heap;
+        this.name = name;
     }
 
     /**
@@ -232,7 +239,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
         // Set engine bindings.
         final Map<String, Object> bindings = new HashMap<>();
         bindings.putAll(source.asMap());
-        bindings.put("logger", logger);
+        bindings.put("logger", getScriptLogger());
         bindings.put("globals", scriptGlobals);
         if (clientHandler != null) {
             bindings.put("http", new Client(clientHandler, context));
@@ -257,4 +264,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
         return bindings;
     }
 
+    private Logger getScriptLogger() {
+        return LoggerFactory.getLogger(format("%s.%s", this.getClass().getName(), name));
+    }
 }
