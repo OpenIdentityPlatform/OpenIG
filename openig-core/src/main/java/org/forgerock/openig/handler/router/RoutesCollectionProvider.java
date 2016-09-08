@@ -85,7 +85,10 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
                                  routeConfig.copy());
             return routeResourceResponse(resourceId, routeConfig).asPromise();
         } catch (RouterHandlerException e) {
-            return new ConflictException("Unable to create the route", e).asPromise();
+            logger.error("An error occurred while trying to create route {}", resourceId, e);
+            return new ConflictException("Unable to create route " + resourceId, e)
+                    .includeCauseInJsonValue()
+                    .asPromise();
         } catch (Exception e) {
             logger.error("An error occurred while trying to create route {}", resourceId, e);
             return new InternalServerErrorException("An error occurred while trying to create route " + resourceId, e)
@@ -102,6 +105,7 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
             JsonValue routeConfig = routerHandler.undeploy(resourceId);
             return routeResourceResponse(resourceId, routeConfig).asPromise();
         } catch (RouterHandlerException e) {
+            logger.error("An error occurred while trying to delete route {}", resourceId, e);
             return new NotFoundException(format("No route with id %s found", resourceId), e)
                     .includeCauseInJsonValue()
                     .asPromise();
@@ -146,6 +150,7 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
             JsonValue routeConfig = routerHandler.routeConfig(resourceId);
             return routeResourceResponse(resourceId, routeConfig).asPromise();
         } catch (RouterHandlerException e) {
+            logger.error("An error occurred while trying to read route {}", resourceId, e);
             return new NotFoundException(format("No route with id '%s' found", resourceId), e)
                     .includeCauseInJsonValue()
                     .asPromise();
@@ -166,6 +171,7 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
             routerHandler.update(resourceId, routeName(routeConfig, resourceId), routeConfig.copy());
             return routeResourceResponse(resourceId, routeConfig).asPromise();
         } catch (RouterHandlerException e) {
+            logger.error("An error occurred while trying to update route {}", resourceId, e);
             return new NotFoundException(format("No route with id '%s' found", resourceId), e)
                     .includeCauseInJsonValue()
                     .asPromise();
