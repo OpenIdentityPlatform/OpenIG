@@ -19,15 +19,13 @@ define([
     "underscore",
     "form2js",
     "i18next",
-    "org/forgerock/openig/ui/admin/apps/AbstractAppView",
-    "org/forgerock/commons/ui/common/main/Router"
+    "org/forgerock/openig/ui/admin/apps/AbstractAppView"
 ], (
     $,
     _,
     form2js,
     i18n,
-    AbstractAppView,
-    Router
+    AbstractAppView
 ) => (
     AbstractAppView.extend({
         element: ".main",
@@ -37,6 +35,7 @@ define([
         ],
         initialize (options) {
             this.data = options.parentData;
+            this.data.appId = this.data.appData.get("_id");
             this.data.title = this.data.appData.get("content/name");
             this.data.baseURI = this.data.appData.get("content/url");
             this.data.condition = this.data.appData.get("content/condition");
@@ -60,9 +59,9 @@ define([
         },
         data: {
         },
-        render (args) {
+        render () {
             _.forEach(this.data.overviewItems, (item) => {
-                item.href = `#${Router.getLink(Router.configuration.routes[item.route], args)}`;
+                item.appId = this.data.appId;
                 item.status = this.getStatus(item.route);
             });
 

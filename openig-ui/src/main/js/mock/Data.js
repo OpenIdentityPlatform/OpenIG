@@ -42,45 +42,12 @@ define([
                                 "id": "legacyapp",
                                 "name": "Legacy Web App",
                                 "url": "http://www.legacyapp.com:8080",
-                                "condition": "/lego",
+                                "condition": "${request.uri == '/lego'}",
                                 "router": "",
                                 "route": "",
 
                                 // Order is as defined by user in "chain"
-                                "filters": [
-                                    {
-                                        //Throttling
-                                        "enabled": true,
-                                        "type": "ThrottlingFilter",
-                                        "numberOfRequests": 60,
-                                        "durationValue": 1,
-                                        "durationRange": "m"
-                                    },
-                                    {
-                                        //Authentication
-                                        "enabled": true,
-                                        "type": "OAuth2ClientFilter",
-                                        "clientEndpoint": "/openid",
-                                        "loginUri": "",
-                                        "logoutUri": "",
-                                        "metadata": ""
-                                    },
-                                    // Password Replay
-                                    {
-                                        "enabled": false,
-                                        "type": "PasswordReplayFilter",
-                                        "request": {
-                                            "uri": "",
-                                            "method": "",
-                                            "form": {},
-                                            "headers": {}
-                                        },
-                                        "loginPage": "",
-                                        "credentials": ""
-                                    }
-                                ]
-
-
+                                "filters": []
                             }
                         },
                         {
@@ -146,7 +113,7 @@ define([
 
         server.respondWith(
             "GET",
-            "/openig/api/system/objects/router-handler/routes?_pageSize=10",
+            "/openig/api/system/objects/_router/routes?_pageSize=10",
             [
                 200,
                 {
@@ -162,7 +129,7 @@ define([
 
                         },
                         {
-                            "_id": "legacyapp2", // name
+                            "_id": "legacyapp", // name
                             "_rev": "1",
                             "uptime": 513246, // ms
                             "condition": "${request.uri.path == '/wordpress'}"
@@ -172,6 +139,48 @@ define([
                     "resultCount": 2,
                     "pagedResultsCookie": null,
                     "remainingPagedResults": -1
+                })
+            ]
+        );
+
+        server.respondWith(
+            "PUT",
+            "/openig/api/system/objects/_router/routes/legacyapp",
+            [
+                200,
+                {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                JSON.stringify({
+                    "_id": "legacyapp"
+                })
+            ]
+        );
+
+        server.respondWith(
+            "DELETE",
+            "/openig/api/system/objects/_router/routes/legacyapp?",
+            [
+                200,
+                {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                JSON.stringify({
+                    "_id": "legacyapp"
+                })
+            ]
+        );
+
+        server.respondWith(
+            "PUT",
+            "/openig/api/system/objects/_router/routes/weatherapi?",
+            [
+                200,
+                {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                JSON.stringify({
+                    "_id": "weatherapi"
                 })
             ]
         );

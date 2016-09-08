@@ -46,5 +46,21 @@ define([], () => ({
     "modelTransformationFailed": {
         msg: "config.messages.OpenIGMessages.modelTransformationFailed",
         type: "error"
+    },
+    "appDeployedSuccess": {
+        msg: "config.messages.OpenIGMessages.appDeployedSuccess",
+        type: "info"
+    },
+    "appDeployedFailed": {
+        msg: "config.messages.OpenIGMessages.appDeployedFailed",
+        type: "error"
+    },
+    "appUndeployedSuccess": {
+        msg: "config.messages.OpenIGMessages.appUndeployedSuccess",
+        type: "info"
+    },
+    "appUndeployedFailed": {
+        msg: "config.messages.OpenIGMessages.appUndeployedFailed",
+        type: "error"
     }
 }));

@@ -30,9 +30,12 @@ define([
     function init () {
 
         sinon.FakeXMLHttpRequest.useFilters = true;
-        sinon.FakeXMLHttpRequest.addFilter((method, url) => (
-             (/((\.html)|(\.css)|(\.less)|(\.json))$/).test(url)
-        ));
+        sinon.FakeXMLHttpRequest.addFilter((method, url) => {
+            if (url.search("/_router/") > 0) {
+                return true;
+            }
+            return (/((\.html)|(\.css)|(\.less)|(\.json))$/).test(url);
+        });
 
         server = sinon.fakeServer.create();
         server.autoRespond = true;

@@ -18,27 +18,64 @@ define([
     "jquery",
     "lodash",
     "backbone",
-    "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/commons/ui/common/main/AbstractCollection"
+    "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/models/RouteModel"
 ], (
     $,
     _,
     Backbone,
     Constants,
-    AbstractCollection
+    RouteModel
 ) => {
-    /* Get routes from default router(TODO: different routers)*/
-    const routeModel = Backbone.Model.extend({});
-    const RoutesCollection = AbstractCollection.extend({
-        model: routeModel,
-        url: "/openig/api/system/objects/router-handler/routes"
+    /* Collection of routes */
+    const RoutesCollection = Backbone.Collection.extend({
+        url: `${Constants.apiPath}/_router/routes`,
+        model: RouteModel,
+        parse (response) {
+            return response.result;
+        },
+        fetchRoutesIds () {
+            return this.fetch({
+                reset: true,
+                processData: false,
+                data: $.param({ _queryFilter: true, _fields: "_id" })
+            });
+        },
+        isDeployed (appId) {
+            return _.find(this.models, (route) => (route.id === appId)) !== undefined;
+        },
+        deploy (appId, jsonConfig) {
+            const deferred = $.Deferred();
+            const promise = deferred.promise();
+            const route = new RouteModel(jsonConfig);
+            route.id = appId;
+            route.save().success((deployResult) => {
+                this.add(deployResult);
+                deferred.resolve();
+            }).error((error) => {
+                console.log(error);
+                deferred.reject(error);
+            });
+            return promise;
+        },
+        undeploy (appId) {
+            const deferred = $.Deferred();
+            const promise = deferred.promise();
+            const model = this.get(appId);
+            if (model) {
+                model.destroy().done((model) => {
+                    this.remove(model);
+                    deferred.resolve();
+                }).fail((error) => {
+                    console.log(error);
+                    deferred.reject(error);
+                });
+            } else {
+                deferred.reject();
+            }
+            return promise;
+        }
     });
 
-    const routesCollection = new RoutesCollection();
-
-    routesCollection.isDeployed = function (appId) {
-        return _.find(this.models, (route) => (route.get("_id") === appId)) !== undefined;
-    };
-
-    return routesCollection;
+    return new RoutesCollection();
 });

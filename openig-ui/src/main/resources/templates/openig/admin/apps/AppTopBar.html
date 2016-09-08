@@ -10,7 +10,9 @@
     	    <i class="fa fa-check-circle"></i>
 			<strong class="hidden-xs">{{t 'templates.apps.deployedState'}}</strong>
   	    </span>
+        {{#if deployedDate}}
         <span class="text-muted hidden-xs">{{date deployedDate}}</span>
+        {{/if}}
         {{/if}}
     </div>
     {{/if}}
