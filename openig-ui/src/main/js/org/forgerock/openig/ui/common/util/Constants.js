@@ -17,7 +17,10 @@
 define([
     "org/forgerock/commons/ui/common/util/Constants"
 ], (commonConstants) => {
+
     commonConstants.context = "openig";
+
+    commonConstants.apiPath = "/openig/api/system/objects";
 
     commonConstants.DOC_URL = "https://backstage.forgerock.com/#!/docs/openig/5.0/";
 

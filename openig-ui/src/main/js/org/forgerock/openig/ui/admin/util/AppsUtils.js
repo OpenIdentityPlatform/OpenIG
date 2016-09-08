@@ -18,10 +18,9 @@ define([
     "jquery",
     "underscore",
     "i18next",
-    "org/forgerock/openig/ui/admin/delegates/AppDelegate",
-    "org/forgerock/openig/ui/admin/util/AppsUtils",
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/AppsCollection",
+    "org/forgerock/openig/ui/admin/models/RoutesCollection",
     "org/forgerock/commons/ui/common/components/BootstrapDialogView",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
@@ -31,10 +30,9 @@ define([
     $,
     _,
     i18n,
-    AppDelegate,
-    appsUtils,
     UIUtils,
     AppsCollection,
+    RoutesCollection,
     BootstrapDialogView,
     eventManager,
     constants,
@@ -104,31 +102,92 @@ define([
         });
     },
 
-    deployApplicationDlg (appId, appTitle) {
-        UIUtils.confirmDialog(i18n.t("templates.apps.deployDialog", { title: appTitle }), "danger",
-            () => {
-                AppsCollection.byId(appId).then((appData) => {
-                    if (appData) {
-                        try {
-                            transformService.transformApplication(appData);
-                            // TODO: send real config to router endpoint
-                        } catch (e) {
-                            eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
-                                key: e.errorType || "modelTransformationFailed", message: e.message
-                            });
-                        }
-                    }
-                });
+    deployApplicationModel (model) {
+        const deferred = $.Deferred();
+        const promise = deferred.promise();
+        const appId = model.get("_id");
+        const appTitle = model.get("content/name");
+        const jsonConfig = transformService.transformApplication(model);
+        RoutesCollection.deploy(appId, jsonConfig).done(() => {
+            eventManager.sendEvent(
+                constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                { key: "appDeployedSuccess", title: appTitle }
+            );
+            model.set("deployedDate", new Date());
+            model.set("pendingChanges", false);
+            model.save();
+            deferred.resolve();
+        }).fail((errorResponse) => {
+            let errorMessage;
+            if (errorResponse) {
+                errorMessage = errorResponse.cause ? errorResponse.cause.message : errorResponse.statusText;
             }
-        );
+            eventManager.sendEvent(
+                constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                { key: "appDeployedFailed", title: appTitle, message: errorMessage }
+            );
+            deferred.reject();
+        });
+        return promise;
+    },
+
+    deployApplicationDlg (appId, appTitle) {
+        const deferred = $.Deferred();
+        const promise = deferred.promise();
+        AppsCollection.byId(appId).then((appData) => {
+            if (appData) {
+                const isDeployed = RoutesCollection.isDeployed(appId);
+                if (!isDeployed) {
+                    this.deployApplicationModel(appData).done(() => {
+                        deferred.resolve();
+                    }).fail(() => {
+                        deferred.reject();
+                    });
+                } else {
+                    UIUtils.confirmDialog(i18n.t("templates.apps.deployDialog", { title: appTitle }), "danger",
+                        () => {
+                            this.deployApplicationModel(appData).done(() => {
+                                deferred.resolve();
+                            }).fail(() => {
+                                deferred.reject();
+                            });
+                        });
+                }
+            }
+        });
+        return promise;
     },
 
     undeployApplicationDlg (appId, appTitle) {
+        const deferred = $.Deferred();
+        const promise = deferred.promise();
         UIUtils.confirmDialog(i18n.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
             () => {
-                // TODO: undeploy
+                RoutesCollection.undeploy(appId).done(() => {
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        { key: "appUndeployedSuccess", title: appTitle }
+                    );
+                    AppsCollection.byId(appId).then((appData) => {
+                        appData.set("deployedDate", null);
+                        appData.set("pendingChanges", false);
+                        appData.save();
+                    });
+                    deferred.resolve();
+                }).fail((errorResponse) => {
+                    let errorMessage;
+                    if (errorResponse) {
+                        errorMessage = errorResponse.cause ? errorResponse.cause.message : errorResponse.statusText;
+                    }
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        { key: "appUndeployedFailed", title: appTitle, message: errorMessage }
+                    );
+                    deferred.reject();
+                });
             }
         );
+        return promise;
     },
 
     deleteApplicationDlg (appId, appTitle, deletedCallback) {

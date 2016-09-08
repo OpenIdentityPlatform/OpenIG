@@ -69,7 +69,7 @@ define([
         },
 
         render (args, callback) {
-            this.data.appPath = args[0];
+            this.data.appPath = Router.getCurrentHash().match(Router.currentRoute.url)[1];
 
             AppsCollection.byId(this.data.appPath).then(_.bind(function (appData) {
                 if (appData) {
@@ -79,7 +79,9 @@ define([
                     this.data.deployedDate = appData.get("content/deployedDate");
                     this.data.pendingChanges = appData.get("content/pendingChanges");
                     this.data.allowDeploy = !this.data.deployed || this.data.pendingChanges;
-                    this.data.treeNavigation = createTreeNavigation(navData, [encodeURIComponent(this.data.appPath)]);
+                    this.data.treeNavigation = createTreeNavigation(navData,
+                        [encodeURIComponent(this.data.appPath)]
+                    );
                     this.data.title = appData.get("content/name");
                     this.data.home = `#${Router.getLink(
                         Router.configuration.routes.appsOverview,
@@ -101,12 +103,16 @@ define([
 
         deployApp (e) {
             e.preventDefault();
-            appsUtils.deployApplicationDlg(this.data.appName, this.data.title);
+            appsUtils.deployApplicationDlg(this.data.appName, this.data.title).done(() => {
+                this.render();
+            });
         },
 
-        undeployApplication (e) {
+        undeployApp (e) {
             e.preventDefault();
-            appsUtils.deployApplicationDlg(this.data.appName, this.data.title);
+            appsUtils.undeployApplicationDlg(this.data.appName, this.data.title).done(() => {
+                this.render();
+            });
         },
 
         deleteApps (e) {

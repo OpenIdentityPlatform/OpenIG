@@ -42,7 +42,11 @@
                 "invalidModel": "Cannot create config file due to invalid model",
                 "unknownFilterType": "Unknown filter type: '__message__'",
                 "appSettingsSaveSuccess": "__filter__ settings successfully saved",
-                "modelTransformationFailed": "Model transformation failed"
+                "modelTransformationFailed": "Model transformation failed",
+                "appDeployedSuccess": "Application '__title__' deployed successfully",
+                "appDeployedFailed": "Deployment of application '__title__' failed",
+                "appUndeployedSuccess": "Application '__title__' undeployed successfully",
+                "appUndeployedFailed": "Undeployment of application '__title__' failed"
             }
         },
         "AppConfiguration": {

@@ -155,25 +155,26 @@ define([
 
             this.data.docHelpUrl = externalLinks.backstage.admin.appsList;
 
-            // Get Apps
-            const appPromise = AppsCollection.availableApps();
-            const routesPromise = RoutesCollection.fetch();
-            this.data.routesCollection = RoutesCollection;
-
-            $.when(appPromise, routesPromise).then(
-                (apps) => {
-                    this.data.cardData = [];
-                    this.routesList = this.data.routesCollection.models;
-                    _.each(apps.models, (app) => {
-                        const isDeployed = this.data.routesCollection.isDeployed(app.id);
-                        let updatedContent = _.clone(app.get("content"));
-                        updatedContent = _.extend(updatedContent, {
-                            deployed: isDeployed,
-                            pendingChanges: isDeployed ? updatedContent.pendingChanges : false
+            AppsCollection.availableApps().done((apps) => {
+                RoutesCollection.fetchRoutesIds().done((routes) => {
+                    if (routes) {
+                        this.routesList = routes.models;
+                        _.each(apps.models, (app) => {
+                            const isDeployed = RoutesCollection.isDeployed(app.id);
+                            let updatedContent = _.clone(app.get("content"));
+                            updatedContent = _.extend(updatedContent, {
+                                deployed: isDeployed,
+                                pendingChanges: isDeployed ? updatedContent.pendingChanges : false
+                            });
+                            app.set("content", updatedContent);
                         });
-                        app.set("content", updatedContent);
+                    }
+                }).always(() => {
+                    this.data.cardData = [];
+                    _.each(apps.models, (app) => {
                         this.data.cardData.push(this.getRenderData(app));
                     });
+
                     this.parentRender(() => {
                         if (apps.length > 0) {
                             this.$el.find("#appsGrid").append(appsGrid.render().el);
@@ -183,9 +184,9 @@ define([
                         if (callback) {
                             callback();
                         }
-
                     });
                 });
+            });
         },
 
         renderNoItem () {
@@ -225,14 +226,18 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.deployApplicationDlg(itemId, itemTitle);
+            appsUtils.deployApplicationDlg(itemId, itemTitle).done(() => {
+                this.render();
+            });
         },
 
         undeployApp (event) {
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.undeployApplicationDlg(itemId, itemTitle);
+            appsUtils.undeployApplicationDlg(itemId, itemTitle).done(() => {
+                this.render();
+            });
         },
 
         deleteApps (event) {
