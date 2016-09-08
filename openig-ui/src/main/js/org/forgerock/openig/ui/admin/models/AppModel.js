@@ -50,21 +50,6 @@ define([
                         type: "ThrottlingFilterDefault",
                         numberOfRequests: 60,
                         duration: "1 minute"
-                    },
-                    // Password Replay
-                    {
-                        enabled: false,
-                        type: "PasswordReplayFilter",
-                        request: {
-                            uri: "",
-                            method: "",
-                            // from + headers as array of key-value objects ?
-                            // subset of allowed keys or send all to server vithout validation
-                            form: {},
-                            headers: {}
-                        },
-                        loginPage: "",
-                        credentials: ""
                     }
                 ]
             }
