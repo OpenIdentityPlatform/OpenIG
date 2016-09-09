@@ -19,6 +19,7 @@ package org.forgerock.openig.openam;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Status.BAD_GATEWAY;
 import static org.forgerock.http.protocol.Status.BAD_REQUEST;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
@@ -52,6 +53,7 @@ import org.testng.annotations.Test;
 public class SsoTokenFilterTest {
 
     static final private URI OPENAM_URI = URI.create("http://www.example.com:8090/openam/");
+    static final private URI APP_URI = URI.create("http://www.example.com/app");
     static final private String VALID_TOKEN = "AAAwns...*";
     static final private Object AUTHENTICATION_SUCCEEDED = object(field("tokenId", VALID_TOKEN),
                                                                   field("successUrl", "/openam/console"));
@@ -71,7 +73,7 @@ public class SsoTokenFilterTest {
         context = new RootContext();
 
         request = new Request();
-        request.setUri(URI.create("http://www.example.com/app"));
+        request.setUri(APP_URI);
 
         unauthorized = new Response();
         unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", UNAUTHORIZED.getCode()),
@@ -244,6 +246,40 @@ public class SsoTokenFilterTest {
         // for managing the unauthorized response).
         verify(next, times(1 + taskNumber + 1)).handle(same(context), any(Request.class));
         shutdownExecutor(executorService);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldRecoverFromAuthenticationBadGateway() throws Exception {
+
+        final Response badGateway = new Response();
+        badGateway.setStatus(BAD_GATEWAY).setEntity(object(field("code", BAD_GATEWAY.getCode()),
+                                                           field("reason", "Bad Gateway"),
+                                                           field("message", "Failed to obtain response")));
+        final Request firstRequest = new Request();
+        firstRequest.setUri(APP_URI);
+        final Request secondRequest = new Request();
+        secondRequest.setUri(APP_URI);
+
+        // Given
+        when(authenticate.handle(same(context), any(Request.class)))
+                         .thenReturn(newResponsePromise(badGateway), newResponsePromise(authenticated));
+        when(next.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
+
+        // When
+        final SsoTokenFilter filter = buildSsoTokenFilter();
+        final Response failureResponse = filter.filter(context, firstRequest, next).get();
+        final Response successfulResponse = filter.filter(context, secondRequest, next).get();
+
+        // Then
+        verify(authenticate, times(2)).handle(same(context), any(Request.class));
+
+        assertThat(failureResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(failureResponse.getEntity().getString()).isEmpty();
+        assertThat(firstRequest.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
+
+        assertThat(successfulResponse.getStatus()).isEqualTo(OK);
+        assertThat(secondRequest.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
     }
 
     class Worker implements Runnable {
