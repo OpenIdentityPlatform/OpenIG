@@ -20,6 +20,7 @@ import static java.util.Collections.emptyMap;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
+import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -54,7 +55,6 @@ public class SsoTokenFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(SsoTokenFilter.class);
 
-    static final String SSO_TOKEN_KEY = "SSOToken";
     static final String BASE_ENDPOINT = "json";
     static final String AUTHENTICATION_ENDPOINT = "/authenticate";
     static final String DEFAULT_HEADER_NAME = "iPlanetDirectoryPro";
@@ -157,7 +157,6 @@ public class SsoTokenFilter implements Filter {
                     // acquired write lock and changed state before we did.
                     if (!isTokenValid) {
                         token = createSsoToken(context);
-                        isTokenValid = true;
                     }
                     // Downgrade by acquiring read lock before releasing write lock
                     rwl.readLock().lock();
@@ -175,12 +174,7 @@ public class SsoTokenFilter implements Filter {
         }
 
         Promise<String, NeverThrowsException> updateToken(final Context context) {
-            rwl.writeLock().lock();
-            try {
-                isTokenValid = false;
-            } finally {
-                rwl.writeLock().unlock();
-            }
+            setTokenState(false);
             return findToken(context);
         }
 
@@ -193,16 +187,28 @@ public class SsoTokenFilter implements Filter {
             return new Function<Response, String, NeverThrowsException>() {
                 @Override
                 public String apply(Response response) {
-                    try {
-                        @SuppressWarnings("unchecked")
-                        final Map<String, String> result = (Map<String, String>) response.getEntity().getJson();
-                        return result.get("tokenId");
-                    } catch (IOException e) {
-                        logger.warn("Couldn't parse as JSON the OpenAM authentication response", e);
+                    if (response.getStatus().equals(OK)) {
+                        try {
+                            @SuppressWarnings("unchecked")
+                            final Map<String, String> result = (Map<String, String>) response.getEntity().getJson();
+                            setTokenState(true);
+                            return result.get("tokenId");
+                        } catch (IOException e) {
+                            logger.warn("Couldn't parse as JSON the OpenAM authentication response", e);
+                        }
                     }
                     return null;
                 }
             };
+        }
+
+        private void setTokenState(boolean newState) {
+            rwl.writeLock().lock();
+            try {
+                isTokenValid = newState;
+            } finally {
+                rwl.writeLock().unlock();
+            }
         }
     }
 }
