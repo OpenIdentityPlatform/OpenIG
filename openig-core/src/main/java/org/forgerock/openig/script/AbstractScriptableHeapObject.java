@@ -216,7 +216,7 @@ public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
         try {
             o = compiledScript.run(enrichBindings(bindings, context));
         } catch (ScriptException e) {
-            logger.warn("Cannot execute script", e);
+            logger.warn("Cannot execute script from '{}'", name, e);
             return newExceptionPromise(e);
         }
         if (o == null) {
