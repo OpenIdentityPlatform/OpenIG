@@ -53,6 +53,15 @@ define([], () => ({
         navGroup: "admin",
         forceUpdate: true
     },
+    "appsCapture": {
+        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Capture",
+        url: /^apps\/edit\/(.+?)\/capture/,
+        pattern: "apps/edit/?/capture",
+        role: "ui-admin",
+        navGroup: "admin",
+        forceUpdate: true
+    },
     "appsThrottling": {
         view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
         page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",

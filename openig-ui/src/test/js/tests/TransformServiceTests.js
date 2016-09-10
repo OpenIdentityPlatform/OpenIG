@@ -307,5 +307,208 @@ define([
             );
             QUnit.start();
         });
+
+        QUnit.asyncTest("Should activate route level request capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        inbound: {
+                            request: true,
+                            response: false
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "capture": ["request"]
+                },
+                "Expecting only 'request' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate route level response capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        inbound: {
+                            request: false,
+                            response: true
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "capture": ["response"]
+                },
+                "Expecting only 'response' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate request and response route level capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        inbound: {
+                            request: true,
+                            response: true
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "capture": ["request", "response"]
+                },
+                "Expecting both 'request' & 'response' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate outbound request capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        outbound: {
+                            request: true,
+                            response: false
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(
+                transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "heap": [
+                        {
+                            "type": "ClientHandler",
+                            "name": "ClientHandler",
+                            "capture": ["request"]
+                        }
+                    ]
+                },
+                "Expecting only 'request' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate outbound response capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        outbound: {
+                            request: false,
+                            response: true
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(
+                transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "heap": [
+                        {
+                            "type": "ClientHandler",
+                            "name": "ClientHandler",
+                            "capture": ["response"]
+                        }
+                    ]
+
+                },
+                "Expecting only 'response' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate request and response outbound capture", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    url: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    capture: {
+                        outbound: {
+                            request: true,
+                            response: true
+                        }
+                    }
+                }
+            });
+
+            assert.deepEqual(
+                transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "heap": [
+                        {
+                            "type": "ClientHandler",
+                            "name": "ClientHandler",
+                            "capture": ["request", "response"]
+                        }
+                    ]
+
+                },
+                "Expecting both 'request' & 'response' for capture"
+            );
+            QUnit.start();
+        });
     }
 }));
