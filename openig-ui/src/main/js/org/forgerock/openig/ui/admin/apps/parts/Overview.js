@@ -41,7 +41,12 @@ define([
             this.data.condition = this.data.appData.get("content/condition");
             this.data.overviewItems = [
                 {
-                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.throttling"),
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.capture"),
+                    route: "appsCapture",
+                    icon: "fa-search"
+                },
+                {
+                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.throttling"),
                     route: "appsThrottling",
                     icon: "fa-filter"
                 },
@@ -72,6 +77,34 @@ define([
             let status = i18n.t("templates.apps.filters.Off");
             let filter;
             switch (route) {
+                case "appsCapture":
+                    const capture = this.data.appData.get("content/capture");
+                    let inbound;
+                    if (_.get(capture, "inbound.request") && _.get(capture, "inbound.response")) {
+                        inbound = i18n.t("templates.apps.capture.inboundMessages");
+                    } else if (_.get(capture, "inbound.request")) {
+                        inbound = i18n.t("templates.apps.capture.inboundRequests");
+                    } else if (_.get(capture, "inbound.response")) {
+                        inbound = i18n.t("templates.apps.capture.inboundResponses");
+                    }
+
+                    let outbound;
+                    if (_.get(capture, "outbound.request") && _.get(capture, "outbound.response")) {
+                        outbound = i18n.t("templates.apps.capture.outboundMessages");
+                    } else if (_.get(capture, "outbound.request")) {
+                        outbound = i18n.t("templates.apps.capture.outboundRequests");
+                    } else if (_.get(capture, "outbound.response")) {
+                        outbound = i18n.t("templates.apps.capture.outboundResponses");
+                    }
+
+                    if (inbound && outbound) {
+                        status = `${inbound},  ${outbound}`;
+                    } else if (inbound) {
+                        status = inbound;
+                    } else if (outbound) {
+                        status = outbound;
+                    }
+                    break;
                 case "appsThrottling":
                     filter = _.find(filters, {
                         "type": "ThrottlingFilter",

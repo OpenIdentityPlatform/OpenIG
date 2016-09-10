@@ -58,6 +58,7 @@
                 },
                 "appsSideMenu": {
                     "overview": "Overview",
+                    "capture": "Capture",
                     "throttling": "Throttling",
                     "authentication":"Authentication",
                     "authorization":"Authorization",
@@ -139,6 +140,14 @@
                 "PasswordReplayFilter":"Password Replay",
                 "ThrottlingFilter": "__numberOfRequests__ requests/__duration__ __durationRange__"
             },
+            "capture": {
+                "inboundMessages": "Inbound messages",
+                "inboundRequests": "Inbound requests",
+                "inboundResponses": "Inbound responses",
+                "outboundMessages": "Outbound messages",
+                "outboundRequests": "Outbound requests",
+                "outboundResponses": "Outbound responses"
+            },
             "tableColumns":{
                 "name": "Name",
                 "url": "Url",
@@ -189,6 +198,19 @@
                         "ssoTokenSubjectHint": "OpenAM SSO token ID string for the subject making the request to the protected resource",
                         "application": "Policy Set",
                         "applicationHint": "OpenAM application to use when requesting policy decisions"
+                    }
+                },
+                "capture":{
+                    "title": "Capture",
+                    "description": "Capture inbound and / or outbound HTTP messages.",
+                    "fields":{
+                        "enabled": "Enable",
+                        "inboundGroup": "Inbound Messages",
+                        "inboundRequest": "Capture Request",
+                        "inboundResponse": "Capture Response",
+                        "outboundGroup": "Outbound Messages",
+                        "outboundRequest": "Capture Request",
+                        "outboundResponse": "Capture Response"
                     }
                 },
                 "throttling":{

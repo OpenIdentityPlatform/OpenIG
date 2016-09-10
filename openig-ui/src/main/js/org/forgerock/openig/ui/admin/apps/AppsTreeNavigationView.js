@@ -37,6 +37,10 @@ define([
         icon: "fa-home",
         route: "appsOverview"
     }, {
+        title: "config.AppConfiguration.Navigation.appsSideMenu.capture",
+        icon: "fa-search",
+        route:"appsCapture"
+    }, {
         title: "config.AppConfiguration.Navigation.appsSideMenu.throttling",
         icon: "fa-filter",
         route:"appsThrottling"

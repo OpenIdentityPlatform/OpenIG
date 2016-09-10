@@ -112,7 +112,7 @@ define(["lodash"], (_) => ({
     },
 
     transformFilter (filter) {
-        // Tranform Filter from the app model into JSON
+        // Transform Filter from the app model into JSON
         switch (filter.type) {
             case "ThrottlingFilter":
                 return this.throttlingFilter(filter);
@@ -123,6 +123,26 @@ define(["lodash"], (_) => ({
             default:
                 throw new this.TransformServiceException("unknownFilterType", filter.type);
         }
+    },
+
+    heapOf (route) {
+        if (!route.heap) {
+            route.heap = [];
+        }
+        return route.heap;
+
+    },
+
+    newClientHandler () {
+        return {
+            type: "ClientHandler",
+            name: "ClientHandler"
+        };
+    },
+
+    decorate (declaration, decorator, decoration) {
+        declaration[decorator] = decoration;
+        return declaration;
     },
 
     transformApplication (app) {
@@ -149,9 +169,36 @@ define(["lodash"], (_) => ({
             }
         });
 
+        // Inbound messages capture
+        const capture = app.get("content/capture");
+        if (capture) {
+            if (capture.inbound) {
+                const captured = [];
+                _.forEach(capture.inbound, (value, key) => {
+                    if (value) {
+                        captured.push(key);
+                    }
+                });
+                if (!_.isEmpty(captured)) {
+                    route.capture = captured;
+                }
+            }
+            if (capture.outbound) {
+                const captured = [];
+                _.forEach(capture.outbound, (value, key) => {
+                    if (value) {
+                        captured.push(key);
+                    }
+                });
+                if (!_.isEmpty(captured)) {
+                    this.heapOf(route).push(this.decorate(this.newClientHandler(), "capture", captured));
+                }
+            }
+        }
+
         // Create the main "handler" attribute with the configured chain
-        const handlerType = "ClientHandler";
-        route.handler = _.size(chain.filters) === 0 ? handlerType : chain.build(handlerType);
+        const terminal = "ClientHandler";
+        route.handler = _.size(chain.filters) === 0 ? terminal : chain.build(terminal);
         return route;
     }
 }));
