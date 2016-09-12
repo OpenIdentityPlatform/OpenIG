@@ -161,6 +161,64 @@ define([
             QUnit.start();
         });
 
+        QUnit.asyncTest("Should transform OAuth2ClientFilter", (assert) => {
+            assert.deepEqual(transformService.oAuth2ClientFilter({
+                clientEndpoint: "/openid",
+                clientId: "*****",
+                clientSecret: "*****",
+                scopes: "openid address email offline_access",
+                tokenEndpointUseBasicAuth: false,
+                requireHttps: true,
+                issuerWellKnownEndpoint: "https://accounts.google.com/.well-known/openid-configuration"
+            }),
+                {
+                    "type": "OAuth2ClientFilter",
+                    "name": "OAuth2Client",
+                    "config": {
+                        "clientEndpoint": "/openid",
+                        "loginHandler": {
+                            "failureHandler": {
+                                "type": "StaticResponseHandler",
+                                "config": {
+                                    "status": 500,
+                                    "reason": "Error",
+                                    "entity": "${attributes.openid}"
+                                }
+                            }
+                        },
+                        "registrations": [
+                            {
+                                "name": "oidc-user-info-client",
+                                "type": "ClientRegistration",
+                                "config": {
+                                    "clientId": "*****",
+                                    "clientSecret": "*****",
+                                    "issuer": {
+                                        "name": "Issuer",
+                                        "type": "Issuer",
+                                        "config": {
+                                            "wellKnownEndpoint":
+                                            "https://accounts.google.com/.well-known/openid-configuration"
+                                        }
+                                    },
+                                    "scopes": [
+                                        "openid",
+                                        "address",
+                                        "email",
+                                        "offline_access"
+                                    ],
+                                    "tokenEndpointUseBasicAuth": false
+                                }
+                            }
+                        ],
+                        "requireHttps": true
+                    }
+                },
+                "Wrong JSON for OAuth2ClientFilter"
+            );
+            QUnit.start();
+        });
+
         QUnit.asyncTest("Should throw exception for unknown filter type", (assert) => {
             assert.throws(() => {
                 transformService.transformFilter({ type: "UnknownTypeOfFilter" });
