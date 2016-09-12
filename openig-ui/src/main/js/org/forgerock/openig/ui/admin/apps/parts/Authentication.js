@@ -111,12 +111,12 @@ define([
                                 },
                                 {
                                     name: "tokenEndpointUseBasicAuth",
-                                    value: this.data.authFilter.tokenEndpointUseBasicAuth,
+                                    value: this.data.authFilter.tokenEndpointUseBasicAuth ? "checked" : "",
                                     controlType: "checkbox"
                                 },
                                 {
                                     name: "requireHttps",
-                                    value: this.data.authFilter.requireHttps,
+                                    value: this.data.authFilter.requireHttps ? "checked" : "",
                                     controlType: "checkbox"
                                 }
                             ]
@@ -201,6 +201,9 @@ define([
                 const formVal = form2js(form, ".", false);
                 _.extend(this.data.authFilter, formVal);
                 this.data.authFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
+                this.data.authFilter.tokenEndpointUseBasicAuth =
+                    FormUtils.getBoolValue(formVal.tokenEndpointUseBasicAuth);
+                this.data.authFilter.requireHttps = FormUtils.getBoolValue(formVal.requireHttps);
                 if (this.data.newFilter) {
                     AppsUtils.addFilterIntoModel(this.data.appData, this.data.authFilter);
                 }
