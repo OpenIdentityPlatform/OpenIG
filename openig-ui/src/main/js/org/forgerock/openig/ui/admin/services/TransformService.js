@@ -71,10 +71,25 @@ define(["lodash"], (_) => ({
             name: "OAuth2Client",
             config: {
                 clientEndpoint: filter.clientEndpoint,
-                failureHandler: "Dump",
-                defaultLoginGoto: filter.loginUri,
-                defaultLogoutGoto: filter.logoutUri,
-                metadata: filter.metadata
+                loginHandler: this.createFailureHandler(),
+                registrations: [{
+                    name: "oidc-user-info-client",
+                    type: "ClientRegistration",
+                    config: {
+                        clientId: filter.clientId,
+                        clientSecret: filter.clientSecret,
+                        issuer: {
+                            name: "Issuer",
+                            type: "Issuer",
+                            config: {
+                                wellKnownEndpoint: filter.issuerWellKnownEndpoint
+                            }
+                        },
+                        scopes: filter.scopes.split(" "),
+                        tokenEndpointUseBasicAuth: filter.tokenEndpointUseBasicAuth
+                    }
+                }],
+                requireHttps: filter.requireHttps
             }
         };
     },
@@ -91,6 +106,21 @@ define(["lodash"], (_) => ({
                 realm: filter.realm,
                 ssoTokenSubject: filter.ssoTokenSubject,
                 application: filter.application
+            }
+        };
+    },
+
+    // In this version is the createFailureHandler method hardcoded
+    createFailureHandler () {
+        return {
+            failureHandler: {
+                type: "StaticResponseHandler",
+                config: {
+                    // "Trivial failure handler for debugging only"
+                    status: 500,
+                    reason: "Error",
+                    entity: "${attributes.openid}"
+                }
             }
         };
     },
