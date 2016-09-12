@@ -25,7 +25,6 @@ import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -95,8 +94,8 @@ public final class Keys {
     public static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     /**
-     * Key to retrieve a {@link TemporaryStorage} instance from the
-     * {@link org.forgerock.openig.heap.Heap}.
+     * Key to retrieve an implementation of a {@link org.forgerock.util.Factory<org.forgerock.http.io.Buffer>} instance
+     * from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";
 

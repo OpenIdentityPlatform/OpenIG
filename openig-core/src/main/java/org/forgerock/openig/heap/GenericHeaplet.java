@@ -30,12 +30,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.forgerock.http.io.Buffer;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,13 +68,14 @@ public abstract class GenericHeaplet implements Heaplet {
     protected Heap heap;
 
     /** Allocates temporary buffers for caching streamed content during processing. */
-    protected TemporaryStorage storage;
+    protected Factory<Buffer> storage;
 
     /** The object created by the heaplet's {@link #create()} method. */
     protected Object object;
     private EndpointRegistry.Registration registration;
     private EndpointRegistry registry;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object create(Name name, JsonValue config, Heap heap) throws HeapException {
         this.name = name.getLeaf();
@@ -83,7 +85,7 @@ public abstract class GenericHeaplet implements Heaplet {
         if (!SPECIAL_OBJECTS.contains(this.name)) {
             this.storage = config.get("temporaryStorage")
                                  .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
-                                 .as(requiredHeapObject(heap, TemporaryStorage.class));
+                                 .as(requiredHeapObject(heap, Factory.class));
         }
         this.object = create();
         if (this.object instanceof GenericHeapObject) {

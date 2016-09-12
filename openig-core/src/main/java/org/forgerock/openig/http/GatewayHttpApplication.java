@@ -19,6 +19,7 @@ package org.forgerock.openig.http;
 
 import static org.forgerock.http.filter.Filters.newSessionFilter;
 import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -56,7 +57,6 @@ import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.util.Factory;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
@@ -87,7 +87,7 @@ public final class GatewayHttpApplication implements HttpApplication {
                         field("type", "ScheduledExecutorService")));
 
     private HeapImpl heap;
-    private TemporaryStorage storage;
+    private Factory<Buffer> storage;
     private Environment environment;
     private final JsonValue config;
     private final EndpointRegistry endpointRegistry;
@@ -107,6 +107,7 @@ public final class GatewayHttpApplication implements HttpApplication {
         this.endpointRegistry = endpointRegistry;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Handler start() throws HttpApplicationException {
         if (heap != null) {
@@ -125,7 +126,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
 
             // can be overridden in config
-            heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+            heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
             heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
@@ -139,7 +140,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             // the following line provide custom storage available.
             storage = config.get("temporaryStorage")
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
-                            .as(requiredHeapObject(heap, TemporaryStorage.class));
+                            .as(requiredHeapObject(heap, Factory.class));
 
             // Create the root handler.
             List<Filter> filters = new ArrayList<>();

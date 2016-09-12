@@ -16,6 +16,7 @@
 package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -38,7 +39,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.ClientHandler;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.mockito.Mock;
@@ -152,7 +152,7 @@ public class ConditionEnforcementFilterTest {
 
     private HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         heap.put("failureHandler", failureHandler);
         return heap;

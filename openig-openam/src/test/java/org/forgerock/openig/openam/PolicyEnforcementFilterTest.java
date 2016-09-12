@@ -20,6 +20,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.http.protocol.Status.GATEWAY_TIMEOUT;
@@ -70,7 +71,6 @@ import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -701,7 +701,7 @@ public class PolicyEnforcementFilterTest {
 
     public HeapImpl buildDefaultHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(FORGEROCK_CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
         heap.put("amHandler", amHandler);

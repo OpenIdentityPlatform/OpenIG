@@ -17,6 +17,7 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -30,7 +31,6 @@ import org.forgerock.openig.heap.domain.Book4;
 import org.forgerock.openig.heap.domain.Editor;
 import org.forgerock.openig.heap.domain.EditorHeapletFactory;
 import org.forgerock.openig.heap.domain.Publisher;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -42,7 +42,7 @@ public class HeapletsTest {
     @BeforeMethod
     public void setUp() throws Exception {
         heap = new HeapImpl();
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
     }
 
     @Test

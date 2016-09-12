@@ -18,6 +18,7 @@ package org.forgerock.openig.http;
 
 import static java.lang.String.format;
 import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
@@ -52,7 +53,6 @@ import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
@@ -73,7 +73,7 @@ public class AdminHttpApplication implements HttpApplication {
     private final Router openigRouter;
     private final Environment environment;
     private HeapImpl heap;
-    private TemporaryStorage storage;
+    private Factory<Buffer> storage;
 
     /**
      * Construct a {@link AdminHttpApplication}.
@@ -103,6 +103,7 @@ public class AdminHttpApplication implements HttpApplication {
         this.endpointRegistry = new EndpointRegistry(systemObjectsRouter, "/" + adminPrefix + "/api/system/objects");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Handler start() throws HttpApplicationException {
         if (heap != null) {
@@ -119,7 +120,7 @@ public class AdminHttpApplication implements HttpApplication {
             heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
 
             // can be overridden in config
-            heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+            heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
 
@@ -135,7 +136,7 @@ public class AdminHttpApplication implements HttpApplication {
             // the following line provide custom storage available.
             storage = config.get("temporaryStorage")
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
-                            .as(requiredHeapObject(heap, TemporaryStorage.class));
+                            .as(requiredHeapObject(heap, Factory.class));
 
             return chainOf(openigRouter, protector);
         } catch (HeapException e) {
