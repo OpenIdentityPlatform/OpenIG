@@ -18,14 +18,11 @@ package org.forgerock.openig.handler.router;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.util.Arrays.asList;
-import static org.forgerock.json.JsonValue.json;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -97,6 +94,7 @@ class DirectoryMonitor {
      * @param directory
      *         a non-{@literal null} directory (it may or may not exist) to monitor
      * @param snapshot
+     *         initial state of the snapshot
      */
     public DirectoryMonitor(final File directory, final Map<File, Long> snapshot) {
         this.directory = directory;
@@ -217,19 +215,6 @@ class DirectoryMonitor {
             if (routeFile.delete()) {
                 // Update the snapshot so it is not detected during the next scan
                 snapshot.remove(routeFile);
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    JsonValue read(String routeId) throws IOException {
-        lock.lock();
-        try {
-            File routeFile = routeFile(routeId);
-            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(routeFile),
-                                                                  StandardCharsets.UTF_8)) {
-                return json(MAPPER.readValue(reader, Object.class));
             }
         } finally {
             lock.unlock();
