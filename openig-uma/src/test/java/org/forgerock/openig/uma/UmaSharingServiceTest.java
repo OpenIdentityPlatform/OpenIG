@@ -19,6 +19,7 @@ package org.forgerock.openig.uma;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -43,7 +44,6 @@ import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -190,7 +190,7 @@ public class UmaSharingServiceTest {
     public void shouldRegisterUmaShareEndpoint() throws Exception {
         Router router = new Router();
         HeapImpl heap = new HeapImpl(Name.of("this"));
-        heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put("#mock-handler", handler);
 

@@ -53,7 +53,7 @@ import org.forgerock.openig.handler.StaticResponseHandler;
 import org.forgerock.openig.handler.WelcomeHandler;
 import org.forgerock.openig.handler.router.AuditServiceObjectHeaplet;
 import org.forgerock.openig.handler.router.RouterHandler;
-import org.forgerock.openig.io.TemporaryStorage;
+import org.forgerock.openig.io.TemporaryStorageHeaplet;
 import org.forgerock.openig.jwt.JwtSessionManager;
 import org.forgerock.openig.security.KeyManagerHeaplet;
 import org.forgerock.openig.security.KeyStoreHeaplet;
@@ -106,7 +106,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("StaticRequestFilter", StaticRequestFilter.class);
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
-        ALIASES.put("TemporaryStorage", TemporaryStorage.class);
+        ALIASES.put("TemporaryStorage", TemporaryStorageHeaplet.class);
         ALIASES.put("ThrottlingFilter", ThrottlingFilterHeaplet.class);
         ALIASES.put("TimerDecorator", TimerDecorator.class);
         ALIASES.put("TrustManager", TrustManagerHeaplet.class);

@@ -18,6 +18,7 @@ package org.forgerock.openig.openam;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -45,7 +46,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -93,7 +93,7 @@ public class TokenTransformationFilterTest {
         context = attributesContext;
         attributesContext.getAttributes().put("id_token", ID_TOKEN_JWT);
         heap = new HeapImpl(Name.of("heap"));
-        heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put("#mock-handler", transformationHandler);
     }
 

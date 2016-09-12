@@ -24,6 +24,7 @@ import static com.xebialabs.restito.semantics.Condition.method;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -74,7 +75,6 @@ import org.forgerock.openig.handler.ScriptableHandler;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -861,7 +861,7 @@ public class GroovyScriptableFilterTest {
 
     private HeapImpl getHeap() throws Exception {
         final HeapImpl heap = new HeapImpl(Name.of("anonymous"));
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(ENVIRONMENT_HEAP_KEY, getEnvironment());
         heap.put(CLIENT_HANDLER_HEAP_KEY, new ClientHandler(new HttpClientHandler(defaultOptions())));
         return heap;

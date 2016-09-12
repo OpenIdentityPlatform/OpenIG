@@ -15,6 +15,7 @@
  */
 package org.forgerock.openig.heap;
 
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -23,7 +24,6 @@ import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import org.forgerock.http.routing.Router;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.http.EndpointRegistry;
-import org.forgerock.openig.io.TemporaryStorage;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -36,7 +36,7 @@ public final class HeapUtilsTest {
 
     public static HeapImpl buildDefaultHeap() throws Exception {
         HeapImpl heap = new HeapImpl();
-        heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
         heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(new Router(), "/"));
         heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
