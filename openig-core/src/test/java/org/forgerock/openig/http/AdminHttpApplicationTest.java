@@ -57,7 +57,7 @@ public class AdminHttpApplicationTest {
     @Test
     public void shouldSupportConfigurationOfEndpointProtection() throws Exception {
         Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "protection"));
-        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, adminConfig(env));
+        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, adminConfig(env), env);
         Handler handler = application.start();
 
         // The new filter expects an 'access_token=ae32f' parameter
@@ -71,7 +71,8 @@ public class AdminHttpApplicationTest {
 
     @Test
     public void shouldProvideOpenIgApiStructure() throws Exception {
-        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, json(object()));
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "ignored"));
+        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, json(object()), env);
         Handler handler = application.start();
 
         // This request must not be handled by the root handler

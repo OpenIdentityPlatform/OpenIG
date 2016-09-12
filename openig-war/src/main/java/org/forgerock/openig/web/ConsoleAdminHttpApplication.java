@@ -57,7 +57,7 @@ class ConsoleAdminHttpApplication extends AdminHttpApplication {
      */
     ConsoleAdminHttpApplication(final String prefix, final JsonValue config, final Environment environment)
             throws IOException {
-        super(prefix, config);
+        super(prefix, config, environment);
 
         // Grab the openig-ui.jar as a classloader resource
         URL url = getClass().getResource("/openig-ui.jar");

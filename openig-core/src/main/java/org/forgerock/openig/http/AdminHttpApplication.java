@@ -24,13 +24,17 @@ import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.openig.heap.Keys.API_PROTECTION_FILTER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;
@@ -41,6 +45,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.Handlers;
@@ -53,6 +58,7 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +71,7 @@ public class AdminHttpApplication implements HttpApplication {
     private final String adminPrefix;
     private final JsonValue config;
     private final Router openigRouter;
+    private final Environment environment;
     private HeapImpl heap;
     private TemporaryStorage storage;
 
@@ -73,10 +80,12 @@ public class AdminHttpApplication implements HttpApplication {
      *
      * @param adminPrefix the prefix to use in the URL to access the admin endpoints
      * @param config the admin configuration
+     * @param environment the OpenIG environment
      */
-    public AdminHttpApplication(String adminPrefix, JsonValue config) {
+    public AdminHttpApplication(String adminPrefix, JsonValue config, Environment environment) {
         this.adminPrefix = adminPrefix;
         this.config = config;
+        this.environment = environment;
         this.openigRouter = new Router();
 
         // Provide the base tree:
@@ -103,6 +112,12 @@ public class AdminHttpApplication implements HttpApplication {
         try {
             // Create and configure the heap
             heap = new HeapImpl(Name.of("admin-module"));
+
+            // "Live" objects
+            heap.put(ENVIRONMENT_HEAP_KEY, environment);
+            heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
+            heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
+
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, new TemporaryStorage());
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
