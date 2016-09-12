@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
-import org.forgerock.json.JsonTransformer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
@@ -33,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An implementation of {@link JsonTransformer} that tries to evaluate each {@link String} as an {@link Expression}.
+ * An implementation of {@link Function} that tries to evaluate each {@link String} leaf as an {@link Expression}.
  */
 class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, JsonValueException> {
 
