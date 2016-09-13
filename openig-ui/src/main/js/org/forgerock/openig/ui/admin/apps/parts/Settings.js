@@ -18,6 +18,7 @@ define([
     "jquery",
     "underscore",
     "form2js",
+    "i18next",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
@@ -31,6 +32,7 @@ define([
     $,
     _,
     form2js,
+    i18n,
     AbstractAppView,
     eventManager,
     validatorsManager,
@@ -65,13 +67,13 @@ define([
             this.data.mode = this.getFormMode();
 
             if (this.data.mode === this.formMode.EDIT) {
-                this.data.pageTitle = $.t("templates.apps.editAppDetails");
-                this.data.saveBtnTitle = $.t("common.form.save");
-                this.data.cancelBtnTitle = $.t("common.form.reset");
+                this.data.pageTitle = i18n.t("templates.apps.editAppDetails");
+                this.data.saveBtnTitle = i18n.t("common.form.save");
+                this.data.cancelBtnTitle = i18n.t("common.form.reset");
             } else {
-                this.data.pageTitle = $.t("templates.apps.addAppTitle");
-                this.data.saveBtnTitle = $.t("templates.apps.addAppButton");
-                this.data.cancelBtnTitle = $.t("common.form.cancel");
+                this.data.pageTitle = i18n.t("templates.apps.addAppTitle");
+                this.data.saveBtnTitle = i18n.t("templates.apps.addAppButton");
+                this.data.cancelBtnTitle = i18n.t("common.form.cancel");
             }
 
             this.app = this.setupApp(this.data.mode, this.data.appId);
@@ -186,7 +188,7 @@ define([
             this.fillAppFromFormData();
             appsUtils.checkName(this.app).then((checkResult) => {
                 if (checkResult !== true) {
-                    this.$el.find("#appErrorMessage .message").html($.t(checkResult));
+                    this.$el.find("#appErrorMessage .message").html(i18n.t(checkResult));
                     this.$el.find("#appErrorMessage").show();
                     this.$el.find("#submitApp").prop("disabled", true);
                     promise.resolve(checkResult);

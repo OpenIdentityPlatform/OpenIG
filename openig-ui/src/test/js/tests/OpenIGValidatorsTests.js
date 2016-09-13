@@ -15,11 +15,11 @@
  */
 
 define([
-    "jquery",
-    "underscore"
+    "underscore",
+    "i18next"
 ], (
-    $,
-    _
+    _,
+    i18n
 ) => ({
     executeAll () {
         module("OpenIG Tests");
@@ -46,19 +46,19 @@ define([
 
                 //Invalid values
             testBaseURI("111", (result) => (
-                _.difference(result, [$.t("common.form.validation.baseURINotValid")]).length === 0
+                _.difference(result, [i18n.t("common.form.validation.baseURINotValid")]).length === 0
             ));
 
             testBaseURI("http://example/subpath", (result) => (
-                _.difference(result, [$.t("common.form.validation.baseURIContainsPath")]).length === 0
+                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
             ));
 
             testBaseURI("http://www.example.org/subpath", (result) => (
-                _.difference(result, [$.t("common.form.validation.baseURIContainsPath")]).length === 0
+                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
             ));
 
             testBaseURI("http://www.example.org:8080/subpath", (result) => (
-                _.difference(result, [$.t("common.form.validation.baseURIContainsPath")]).length === 0
+                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
             ));
 
             QUnit.start();

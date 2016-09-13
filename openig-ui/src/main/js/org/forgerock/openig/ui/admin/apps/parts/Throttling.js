@@ -18,6 +18,7 @@ define([
     "jquery",
     "underscore",
     "form2js",
+    "i18next",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
     "org/forgerock/openig/ui/common/util/Constants",
@@ -27,6 +28,7 @@ define([
     $,
     _,
     form2js,
+    i18n,
     AbstractView,
     validatorsManager,
     Constants,
@@ -77,7 +79,7 @@ define([
         _.each(this.options, (opt) => {
             const option = document.createElement("option");
             option.value = opt;
-            option.text = $.t(`common.timeSlot.${opt}`);
+            option.text = i18n.t(`common.timeSlot.${opt}`);
             selectList.appendChild(option);
             selectList.value = _.get(this.data.throttFilter, "durationRange", Constants.timeSlot.SECOND);
         });
@@ -105,7 +107,7 @@ define([
                 Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
                 {
                     key: "appSettingsSaveSuccess",
-                    filter: $.t("templates.apps.parts.throttling.title")
+                    filter: i18n.t("templates.apps.parts.throttling.title")
                 }
             );
         });

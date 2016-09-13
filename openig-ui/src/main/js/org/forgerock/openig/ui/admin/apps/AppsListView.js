@@ -18,6 +18,7 @@ define([
     "jquery",
     "underscore",
     "backbone",
+    "i18next",
     "bootstrap",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/EventManager",
@@ -35,6 +36,7 @@ define([
     $,
     _,
     Backbone,
+    i18n,
     bootstrap,
     AbstractView,
     eventManager,
@@ -102,7 +104,7 @@ define([
             const tableColumns = [
                 {
                     name: "name",
-                    label: $.t("templates.apps.tableColumns.name"),
+                    label: i18n.t("templates.apps.tableColumns.name"),
                     sortable: false,
                     editable: false,
                     cell: TemplateCell.extend({
@@ -111,14 +113,14 @@ define([
                 },
                 {
                     name: "content/url",
-                    label: $.t("templates.apps.tableColumns.url"),
+                    label: i18n.t("templates.apps.tableColumns.url"),
                     cell: "string",
                     sortable: false,
                     editable: false
                 },
                 {
                     name: "status",
-                    label: $.t("templates.apps.tableColumns.status"),
+                    label: i18n.t("templates.apps.tableColumns.status"),
                     sortable: false,
                     editable: false,
                     cell: TemplateCell.extend({
@@ -203,7 +205,7 @@ define([
                 id: model.get("_id"),
                 url: model.get("content/url"),
                 name: model.get("content/name"),
-                statusText: $.t(this.getStatusTextKey(
+                statusText: i18n.t(this.getStatusTextKey(
                     model.get("content/deployed") === true,
                     model.get("content/pendingChanges") === true)
                 ),
@@ -312,7 +314,7 @@ define([
 
             if (search.length > 0) {
                 _.each(this.$el.find(".card-spacer"), (card) => {
-                    const deployedText = $.t(this.getStatusTextKey(
+                    const deployedText = i18n.t(this.getStatusTextKey(
                         $(card).attr("data-deployed") === "true",
                         $(card).attr("data-deployed") === "true")
                     );
@@ -327,7 +329,7 @@ define([
                 }, this);
 
                 _.each(this.$el.find(".backgrid tbody tr"), (row) => {
-                    const deployedText = $.t(this.getStatusTextKey(
+                    const deployedText = i18n.t(this.getStatusTextKey(
                         $(row).attr("data-deployed") === "true",
                         $(row).attr("data-deployed") === "true")
                     );

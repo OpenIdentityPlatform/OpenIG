@@ -17,6 +17,7 @@
 define([
     "jquery",
     "underscore",
+    "i18next",
     "org/forgerock/openig/ui/admin/delegates/AppDelegate",
     "org/forgerock/openig/ui/admin/util/AppsUtils",
     "org/forgerock/commons/ui/common/util/UIUtils",
@@ -29,6 +30,7 @@ define([
 ], (
     $,
     _,
+    i18n,
     AppDelegate,
     appsUtils,
     UIUtils,
@@ -72,7 +74,7 @@ define([
     },
 
     duplicateAppDlg (appId, appTitle) {
-        UIUtils.confirmDialog($.t("templates.apps.duplicateDialog", { title: appTitle }), "danger",
+        UIUtils.confirmDialog(i18n.t("templates.apps.duplicateDialog", { title: appTitle }), "danger",
             () => {
                 router.navigate(`apps/duplicate/${appId}`, true);
             }
@@ -89,7 +91,7 @@ define([
                     modal.data.jsonContent = JSON.stringify(transformService.transformApplication(appData), null, 2);
                     modal.closeByBackdrop = false;
                     modal.draggable = true;
-                    modal.setTitle($.t("common.modalWindow.title.configExport"));
+                    modal.setTitle(i18n.t("common.modalWindow.title.configExport"));
                     modal.loadContent().then(() => {
                         modal.show();
                     });
@@ -103,7 +105,7 @@ define([
     },
 
     deployApplicationDlg (appId, appTitle) {
-        UIUtils.confirmDialog($.t("templates.apps.deployDialog", { title: appTitle }), "danger",
+        UIUtils.confirmDialog(i18n.t("templates.apps.deployDialog", { title: appTitle }), "danger",
             () => {
                 AppsCollection.byId(appId).then((appData) => {
                     if (appData) {
@@ -122,7 +124,7 @@ define([
     },
 
     undeployApplicationDlg (appId, appTitle) {
-        UIUtils.confirmDialog($.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
+        UIUtils.confirmDialog(i18n.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
             () => {
                 // TODO: undeploy
             }
@@ -130,7 +132,7 @@ define([
     },
 
     deleteApplicationDlg (appId, appTitle, deletedCallback) {
-        UIUtils.confirmDialog($.t("templates.apps.deleteDialog", { title: appTitle }), "danger",
+        UIUtils.confirmDialog(i18n.t("templates.apps.deleteDialog", { title: appTitle }), "danger",
             () => {
                 AppsCollection.removeById(appId);
 
