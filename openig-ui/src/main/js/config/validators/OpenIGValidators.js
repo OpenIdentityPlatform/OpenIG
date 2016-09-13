@@ -15,9 +15,9 @@
  */
 
 define([
-    "jquery"
+    "i18next"
 ], (
-    $
+    i18n
 ) => ({
     "baseURI": {
         "name": "Base URI field",
@@ -25,9 +25,9 @@ define([
         "validator" (el, input, callback) {
             const v = input.val();
             if (!/^(http|https):\/\/[^ "]+$/.test(v)) {
-                callback([$.t("common.form.validation.baseURINotValid")]);
+                callback([i18n.t("common.form.validation.baseURINotValid")]);
             } else if (!/^(http|https):\/\/[^ "\/]+$/.test(v)) {
-                callback([$.t("common.form.validation.baseURIContainsPath")]);
+                callback([i18n.t("common.form.validation.baseURIContainsPath")]);
             } else {
                 callback();
             }
@@ -39,7 +39,7 @@ define([
         "validator" (el, input, callback) {
             const v = input.val();
             if (v.length > 0 && !/^(http|https):\/\/[^ "]+$/.test(v)) {
-                callback([$.t("common.form.validation.URINotValid")]);
+                callback([i18n.t("common.form.validation.URINotValid")]);
                 return;
             }
             callback();
@@ -54,7 +54,7 @@ define([
                 callback();
                 return;
             }
-            callback([$.t("common.form.validation.numberGreaterThanOrEqual", {
+            callback([i18n.t("common.form.validation.numberGreaterThanOrEqual", {
                 minAttr: min
             })]);
         }

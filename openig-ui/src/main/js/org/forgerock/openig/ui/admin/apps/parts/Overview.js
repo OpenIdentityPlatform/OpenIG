@@ -18,12 +18,14 @@ define([
     "jquery",
     "underscore",
     "form2js",
+    "i18next",
     "org/forgerock/openig/ui/admin/apps/AbstractAppView",
     "org/forgerock/commons/ui/common/main/Router"
 ], (
     $,
     _,
     form2js,
+    i18n,
     AbstractAppView,
     Router
 ) => (
@@ -40,22 +42,22 @@ define([
             this.data.condition = this.data.appData.get("content/condition");
             this.data.overviewItems = [
                 {
-                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.throttling"),
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.throttling"),
                     route: "appsThrottling",
                     icon: "fa-filter"
                 },
                 {
-                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.authentication"),
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.authentication"),
                     route: "appsAuthentication",
                     icon: "fa-user"
                 },
                 {
-                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.authorization"),
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.authorization"),
                     route: "appsAuthorization",
                     icon: "fa-key"
                 },
                 {
-                    title: $.t("config.AppConfiguration.Navigation.appsSideMenu.transformation"),
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.transformation"),
                     route: "appsTransformation",
                     icon: "fa-random"
                 }
@@ -73,7 +75,7 @@ define([
         },
         getStatus (route) {
             const filters = this.data.appData.get("content/filters");
-            let status = $.t("templates.apps.filters.Off");
+            let status = i18n.t("templates.apps.filters.Off");
             let filter;
             switch (route) {
                 case "appsThrottling":
@@ -82,10 +84,10 @@ define([
                         "enabled": true
                     });
                     if (filter) {
-                        status = $.t("templates.apps.filters.ThrottlingFilter", {
+                        status = i18n.t("templates.apps.filters.ThrottlingFilter", {
                             numberOfRequests: filter.numberOfRequests,
                             duration: filter.durationValue,
-                            durationRange: $.t(`common.timeSlot.${filter.durationRange}`)
+                            durationRange: i18n.t(`common.timeSlot.${filter.durationRange}`)
                         });
                     }
                     break;
@@ -95,7 +97,7 @@ define([
                         "enabled": true
                     });
                     if (filter) {
-                        status = $.t("templates.apps.filters.OAuth2ClientFilter");
+                        status = i18n.t("templates.apps.filters.OAuth2ClientFilter");
                     }
                     break;
                 case "appsAuthorization":
@@ -104,7 +106,7 @@ define([
                         "enabled": true
                     });
                     if (filter) {
-                        status = $.t("templates.apps.filters.PolicyEnforcementFilter");
+                        status = i18n.t("templates.apps.filters.PolicyEnforcementFilter");
                     }
                     break;
                 case "appsTransformation":
@@ -113,7 +115,7 @@ define([
                         "enabled": true
                     });
                     if (filter) {
-                        status = $.t("templates.apps.filters.PasswordReplayFilter");
+                        status = i18n.t("templates.apps.filters.PasswordReplayFilter");
                     }
                     break;
             }

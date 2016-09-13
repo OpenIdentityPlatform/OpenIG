@@ -19,6 +19,7 @@ define([
     "underscore",
     "form2js",
     "selectize",
+    "i18next",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
     "org/forgerock/openig/ui/admin/util/AppsUtils",
@@ -30,6 +31,7 @@ define([
     _,
     form2js,
     selectize,
+    i18n,
     AbstractView,
     validatorsManager,
     AppsUtils,
@@ -213,7 +215,7 @@ define([
                     Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
                     {
                         key: "appSettingsSaveSuccess",
-                        filter: $.t("templates.apps.parts.authentication.title")
+                        filter: i18n.t("templates.apps.parts.authentication.title")
                     }
                 );
             });
