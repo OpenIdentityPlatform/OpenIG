@@ -49,10 +49,6 @@ define([
         icon: "fa-key",
         route: "appsAuthorization"
     }, {
-        title: "config.AppConfiguration.Navigation.appsSideMenu.transformation",
-        icon: "fa-random",
-        route: "appsTransformation"
-    }, {
         title: "config.AppConfiguration.Navigation.appsSideMenu.monitoring",
         icon: "fa-line-chart",
         route: "appsMonitoring"

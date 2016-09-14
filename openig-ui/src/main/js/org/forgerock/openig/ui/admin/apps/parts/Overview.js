@@ -55,11 +55,6 @@ define([
                     title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.authorization"),
                     route: "appsAuthorization",
                     icon: "fa-key"
-                },
-                {
-                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.transformation"),
-                    route: "appsTransformation",
-                    icon: "fa-random"
                 }
             ];
         },
@@ -107,15 +102,6 @@ define([
                     });
                     if (filter) {
                         status = i18n.t("templates.apps.filters.PolicyEnforcementFilter");
-                    }
-                    break;
-                case "appsTransformation":
-                    filter = _.find(filters, {
-                        "type": "PasswordReplayFilter",
-                        "enabled": true
-                    });
-                    if (filter) {
-                        status = i18n.t("templates.apps.filters.PasswordReplayFilter");
                     }
                     break;
             }
