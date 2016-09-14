@@ -55,7 +55,6 @@
                     "overview": "Overview",
                     "throttling": "Throttling",
                     "authentication":"Authentication",
-                    "transformation": "Transformation",
                     "authorization":"Authorization",
                     "monitoring": "Monitoring"                    
                 }

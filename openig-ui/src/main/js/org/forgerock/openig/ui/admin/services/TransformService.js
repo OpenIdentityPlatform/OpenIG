@@ -51,20 +51,6 @@ define(["lodash"], (_) => ({
         };
     },
 
-    passwordReplayFilter (filter) {
-        return {
-            type: "PasswordReplayFilter",
-            name: "PasswordReplay",
-            config: {
-                request: {
-                    uri: filter.request.uri,
-                    method: filter.request.method
-                },
-                loginPage: filter.loginPage
-            }
-        };
-    },
-
     oAuth2ClientFilter (filter) {
         return {
             type: "OAuth2ClientFilter",
@@ -132,12 +118,6 @@ define(["lodash"], (_) => ({
                 return this.throttlingFilter(filter);
             case "OAuth2ClientFilter":
                 return this.oAuth2ClientFilter(filter);
-            case "PasswordReplayFilter":
-                // TODO: Not needed filters in this commit;
-                // Will be uncommented (amended) in next sprints
-
-                // return this.passwordReplayFilter(filter);
-                break;
             case "PolicyEnforcementFilter":
                 return this.policyEnforcementFilter(filter);
             default:
