@@ -164,10 +164,10 @@ public class FunctionsTest {
     private static Object[][] matchData() {
         // @formatter:off
         return new Object[][] {
-            { "I am the very model of a modern Major-General",
+            { "'I am the very model of a modern Major-General'",
                 "the (.*) model", true, groups("the very model", "very") },
-            { "/saml/endpoint", "^/saml", true, groups("/saml") },
-            { "/notsaml/endpoint", "^/saml", false, groups() }
+            { "'/saml/endpoint'", "^/saml", true, groups("/saml") },
+            { "'/notsaml/endpoint'", "^/saml", false, groups() }
         };
         // @formatter:on
     }
@@ -177,29 +177,24 @@ public class FunctionsTest {
     }
 
     @Test(dataProvider = "matchData")
-    public void matches(String s, String pattern, boolean matches, String[] groups)
-            throws Exception {
-        attributes.put("s", s);
-        Boolean o = Expression.valueOf("${matches(attributes.s, '" + pattern + "')}", Boolean.class)
+    public void matches(String input, String pattern, boolean shouldMatch, String[] ignored) throws Exception {
+        Boolean o = Expression.valueOf(format("${matches(%s, '%s')}", input, pattern), Boolean.class)
                               .eval(bindings);
-        assertThat(o).isEqualTo(matches);
+        assertThat(o).isEqualTo(shouldMatch);
     }
 
     @Test(dataProvider = "matchData")
-    public void matchingGroups(String s, String pattern, boolean matches, String[] groups)
+    public void matchingGroups(String input, String pattern, boolean shouldMatch, String[] expectedGroups)
             throws Exception {
-        attributes.put("s", s);
-        Expression<String[]> stringArrayExpr = Expression.valueOf("${matchingGroups(attributes.s, "
-                + "'" + pattern + "')}", String[].class);
-        String[] o = stringArrayExpr.eval(bindings);
-        if (matches) {
-            assertThat(o).isInstanceOf(String[].class);
-            String[] ss = o;
-            assertThat(ss).isEqualTo(groups);
-        } else {
-            assertThat(o).isNull();
-        }
 
+        Expression<String[]> stringArrayExpr = Expression.valueOf(format("${matchingGroups(%s, '%s')}", input, pattern),
+                                                                  String[].class);
+        final String[] groups = stringArrayExpr.eval(bindings);
+        if (shouldMatch) {
+            assertThat(groups).isEqualTo(expectedGroups);
+        } else {
+            assertThat(groups).isNull();
+        }
     }
 
     @DataProvider
