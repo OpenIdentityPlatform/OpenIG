@@ -220,6 +220,9 @@ public final class Functions {
      *         expression pattern.
      */
     public static boolean matches(String value, String pattern) {
+        if (value == null) {
+            return false;
+        }
         Pattern compiledPattern;
         try {
             compiledPattern = Pattern.compile(pattern);

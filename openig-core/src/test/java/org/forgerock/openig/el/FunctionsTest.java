@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,15 +41,16 @@ public class FunctionsTest {
     private Bindings bindings;
 
     @BeforeMethod
-    public void beforeMethod() {
+    public void beforeMethod() throws URISyntaxException {
         attributes = new HashMap<>();
+        attributes.put("scarter", "Carter");
         request = new Request();
+        request.setUri("http://www.forgerock.org/");
         bindings = bindings().bind("attributes", attributes).bind("request", request);
     }
 
     @Test
     public void toStringTest() throws Exception {
-        request.setUri("http://www.forgerock.org/");
         String o = Expression.valueOf("${toString(request.uri)}", String.class).eval(bindings);
         assertThat(o).isEqualTo(request.getUri().toString());
     }
@@ -167,7 +169,12 @@ public class FunctionsTest {
             { "'I am the very model of a modern Major-General'",
                 "the (.*) model", true, groups("the very model", "very") },
             { "'/saml/endpoint'", "^/saml", true, groups("/saml") },
-            { "'/notsaml/endpoint'", "^/saml", false, groups() }
+            { "'/notsaml/endpoint'", "^/saml", false, groups() },
+            { "attributes.scarter", "Carter", true, groups("Carter") },
+            { "attributes.unknown", "Carter", false, groups() },
+            { "request.uri.host", "(.*)forgerock(.*)", true, groups("www.forgerock.org", "www.", ".org") },
+            { "request.uri.query", "(.*)name=ferret(.*)", false, groups() }, // query is not set for this uri
+            { "null", "(.*)forgerock(.*)", false, groups() }
         };
         // @formatter:on
     }
