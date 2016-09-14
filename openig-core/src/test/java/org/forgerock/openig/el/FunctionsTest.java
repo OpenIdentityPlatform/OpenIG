@@ -197,6 +197,20 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    public void shouldMatchesReturnsFalseOnInvalidPattern() throws ExpressionException {
+        assertThat(Expression.valueOf(format("${matches('%s', '%s')}", "A sample text", "[[invalidPattern"),
+                                             Boolean.class)
+                             .eval(bindings)).isFalse();
+    }
+
+    @Test
+    public void shouldMatchingGroupsReturnsNullOnInvalidPattern() throws ExpressionException {
+        assertThat(Expression.valueOf(format("${matchingGroups('%s', '%s')}", "A sample text", "[[invalidPattern"),
+                                             Boolean.class)
+                             .eval(bindings)).isNull();
+    }
+
     @DataProvider
     private static Object[][] urlEncodings() {
         // @formatter:off
