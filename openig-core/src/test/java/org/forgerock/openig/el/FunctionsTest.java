@@ -130,7 +130,7 @@ public class FunctionsTest {
     }
 
     @DataProvider
-    private Object[][] integerNull() {
+    private static Object[][] integerNull() {
         // @formatter:off
         return new Object[][] {
             { "'foo'" },
@@ -147,7 +147,7 @@ public class FunctionsTest {
     }
 
     @DataProvider
-    private Object[][] booleanData() {
+    private static Object[][] booleanData() {
         // @formatter:off
         return new Object[][] {
             { "true", true },
