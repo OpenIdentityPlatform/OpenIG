@@ -97,7 +97,7 @@ define([
                     });
                 } catch (e) {
                     eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
-                        key: e.errorType, filter: e.message
+                        key: e.errorType || "modelTransformationFailed", message: e.message
                     });
                 }
             }
@@ -114,7 +114,7 @@ define([
                             // TODO: send real config to router endpoint
                         } catch (e) {
                             eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
-                                key: e.errorType, filter: e.message
+                                key: e.errorType || "modelTransformationFailed", message: e.message
                             });
                         }
                     }

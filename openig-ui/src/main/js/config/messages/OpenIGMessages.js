@@ -42,5 +42,9 @@ define([], () => ({
     "appSettingsSaveSuccess": {
         msg: "config.messages.OpenIGMessages.appSettingsSaveSuccess",
         type: "info"
+    },
+    "modelTransformationFailed": {
+        msg: "config.messages.OpenIGMessages.modelTransformationFailed",
+        type: "error"
     }
 }));
