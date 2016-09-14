@@ -40,8 +40,9 @@
                 "settingsFailed": "Settings has failed",
                 "settingsSuccess": "Settings successfully saved",
                 "invalidModel": "Cannot create config file due to invalid model",
-                "unknownFilterType": "Unknown filter type: '__filter__'",
-                "appSettingsSaveSuccess": "__filter__ settings successfully saved"
+                "unknownFilterType": "Unknown filter type: '__message__'",
+                "appSettingsSaveSuccess": "__filter__ settings successfully saved",
+                "modelTransformationFailed": "Model transformation failed"
             }
         },
         "AppConfiguration": {
