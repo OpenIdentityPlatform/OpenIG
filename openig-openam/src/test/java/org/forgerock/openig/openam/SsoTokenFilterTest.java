@@ -27,6 +27,7 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -70,8 +71,10 @@ public class SsoTokenFilterTest {
         context = new RootContext();
 
         request = new Request();
+        request.setUri(URI.create("http://www.example.com/app"));
+
         unauthorized = new Response();
-        unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", 401),
+        unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", UNAUTHORIZED.getCode()),
                                                                    field("reason", "Unauthorized"),
                                                                    field("message", "Access denied"))));
         authenticated = new Response();
@@ -118,15 +121,14 @@ public class SsoTokenFilterTest {
     @Test(dataProvider = "ssoTokenHeaderName")
     public void shouldRequestForSSOTokenWhenNone(final String givenSsoTokenHeaderName) throws Exception {
         // Given
-        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
-        when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)));
+        when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
         buildSsoTokenFilter(givenSsoTokenHeaderName).filter(context, request, next);
 
         // Then
-        verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next).handle(context, request);
+        verify(authenticate).handle(same(context), any(Request.class));
+        verify(next).handle(same(context), any(Request.class));
         assertThat(request.getHeaders().get(givenSsoTokenHeaderName != null
                                             ? givenSsoTokenHeaderName
                                             : DEFAULT_HEADER_NAME).getFirstValue()).isEqualTo(VALID_TOKEN);
@@ -135,8 +137,8 @@ public class SsoTokenFilterTest {
     @Test
     public void shouldRequestForNewSSOTokenOnlyOnceWhenFirstRequestFailed() throws Exception {
         // Given
-        when(next.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(unauthorized));
-        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
+        when(next.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(unauthorized));
+        when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
         final Response finalResponse = buildSsoTokenFilter().filter(context,
@@ -144,8 +146,8 @@ public class SsoTokenFilterTest {
                                                                     next).get();
 
         // Then
-        verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
-        verify(next, times(2)).handle(context, request);
+        verify(authenticate, times(2)).handle(same(context), any(Request.class));
+        verify(next, times(2)).handle(same(context), any(Request.class));
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isTrue();
         assertThat(finalResponse).isSameAs(unauthorized);
     }
@@ -156,7 +158,7 @@ public class SsoTokenFilterTest {
         final Response badRequestResponse = new Response();
         badRequestResponse.setStatus(BAD_REQUEST);
 
-        when(authenticate.handle(any(Context.class), any(Request.class)))
+        when(authenticate.handle(same(context), any(Request.class)))
             .thenReturn(newResponsePromise(badRequestResponse));
 
         final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
@@ -166,7 +168,7 @@ public class SsoTokenFilterTest {
 
         // Then
         verifyZeroInteractions(next);
-        verify(authenticate).handle(any(Context.class), any(Request.class));
+        verify(authenticate).handle(same(context), any(Request.class));
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
@@ -175,7 +177,7 @@ public class SsoTokenFilterTest {
     @Test(timeOut = 1000)
     public void shouldOnlyAuthenticateOnceOnMultiThreadingMode() throws Exception {
         // Given
-        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
+        when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
         when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)));
 
         final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
@@ -198,8 +200,8 @@ public class SsoTokenFilterTest {
         finished.await();
 
         // Then
-        verify(authenticate).handle(any(Context.class), any(Request.class));
-        verify(next, times(taskNumber)).handle(context, request);
+        verify(authenticate).handle(same(context), any(Request.class));
+        verify(next, times(taskNumber)).handle(same(context), any(Request.class));
         shutdownExecutor(executorService);
     }
 
@@ -207,8 +209,8 @@ public class SsoTokenFilterTest {
     @Test(timeOut = 1000)
     public void shouldUpdateTokenOnMultiThreadingMode() throws Exception {
         // Given
-        when(authenticate.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(authenticated));
-        when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)),
+        when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
+        when(next.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)),
                                                                  newResponsePromise(unauthorized),
                                                                  newResponsePromise(new Response(OK)));
 
@@ -237,10 +239,10 @@ public class SsoTokenFilterTest {
 
         // Then
         // Authenticate is called a first time to generate a token + one more time to update the token
-        verify(authenticate, times(2)).handle(any(Context.class), any(Request.class));
+        verify(authenticate, times(2)).handle(same(context), any(Request.class));
         // Next is called a first time before the workers, plus (x + 1) times by the workers (task_number + one
         // for managing the unauthorized response).
-        verify(next, times(1 + taskNumber + 1)).handle(context, request);
+        verify(next, times(1 + taskNumber + 1)).handle(same(context), any(Request.class));
         shutdownExecutor(executorService);
     }
 

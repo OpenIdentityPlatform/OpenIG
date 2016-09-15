@@ -17,9 +17,11 @@
 package org.forgerock.openig.openam;
 
 import static java.util.Collections.emptyMap;
+import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
+import static org.forgerock.openig.filter.RequestCopyFilter.requestCopyFilter;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.io.IOException;
@@ -91,6 +93,9 @@ public class SsoTokenFilter implements Filter {
                                                           final Request request,
                                                           final Handler next) {
 
+        // Take a defensive copy of the request in case we need to revalidate the token.
+        final Handler wrappedNext = chainOf(next, requestCopyFilter());
+
         final AsyncFunction<String, Response, NeverThrowsException> executeRequestWithToken =
                 new AsyncFunction<String, Response, NeverThrowsException>() {
 
@@ -98,7 +103,7 @@ public class SsoTokenFilter implements Filter {
                     public Promise<Response, NeverThrowsException> apply(String token) {
                         if (token != null) {
                             request.getHeaders().put(headerName, token);
-                            return next.handle(context, request);
+                            return wrappedNext.handle(context, request);
                         } else {
                             logger.error("Unable to retrieve SSO Token");
                             return newResponsePromise(newInternalServerError());
