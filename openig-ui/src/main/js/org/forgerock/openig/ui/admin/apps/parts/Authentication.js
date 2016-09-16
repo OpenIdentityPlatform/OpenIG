@@ -109,7 +109,7 @@ define([
                                     controlType: "multiselect",
                                     options: ["openid", "profile", "email", "address", "phone", "offline_access"],
                                     delimiter: " ",
-                                    validator: "required"
+                                    mandatory: "openid"
                                 },
                                 {
                                     name: "tokenEndpointUseBasicAuth",

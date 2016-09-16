@@ -61,6 +61,7 @@ define([
     initializeMultiSelect (control) {
         const input = $(control);
         const tags = input.val().split(/\s* \s*/);
+        const mandatory = input.data("mandatory");
         const predefinedOptions = _.map(input.data("options").split(","), (option) => (
             {
                 value: option,
@@ -84,7 +85,22 @@ define([
                     _.forEach(tags, (tag) => {
                         this.addOption({ value: tag, text: tag });
                     });
-                    this.setValue(tags);
+                    const defaultValues = tags;
+                    defaultValues.push(this.getValue().split(/\s* \s*/));
+                    defaultValues.push(mandatory);
+                    this.setValue(
+                        _.chain(defaultValues)
+                        .flattenDeep()
+                        .uniq()
+                        .value()
+                    );
+                }
+            },
+            onItemRemove (value) {
+                const selected = this.getValue().split(/\s* \s*/);
+                if (mandatory === value) {
+                    selected.unshift(value);
+                    this.setValue(selected);
                 }
             }
         });
