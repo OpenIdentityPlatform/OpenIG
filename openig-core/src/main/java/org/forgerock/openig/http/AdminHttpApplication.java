@@ -23,6 +23,8 @@ import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 import static org.forgerock.http.util.Paths.addLeadingSlash;
+import static org.forgerock.json.resource.Resources.newHandler;
+import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.heap.Keys.API_PROTECTION_FILTER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
@@ -30,8 +32,11 @@ import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -53,10 +58,12 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.handler.Handlers;
+import org.forgerock.openig.heap.EnvironmentHeap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.heap.EnvironmentHeap;
+import org.forgerock.openig.ui.record.RecordProvider;
+import org.forgerock.openig.ui.record.RecordService;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
@@ -89,8 +96,10 @@ public class AdminHttpApplication implements DescribedHttpApplication {
      * @param adminPrefix the prefix to use in the URL to access the admin endpoints
      * @param config the admin configuration
      * @param environment the OpenIG environment
+     * @throws IOException when initialization failed
      */
-    public AdminHttpApplication(String adminPrefix, JsonValue config, Environment environment) {
+    public AdminHttpApplication(String adminPrefix, JsonValue config, Environment environment)
+            throws IOException {
         this.adminPrefix = adminPrefix;
         this.config = config;
         this.environment = environment;
@@ -107,6 +116,13 @@ public class AdminHttpApplication implements DescribedHttpApplication {
         // this is just to mimic the fact that 'system' should be a Route within a RouterHandler
         addSubRouter(systemRouter, "objects", systemObjectsRouter);
         systemObjectsRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
+
+        // Expose a UI-only storage service
+        File data = new File(environment.getBaseDirectory(), "data/ui/records");
+        RecordProvider provider = new RecordProvider(new RecordService(data));
+        Handler recordHandler = newHttpHandler(newCrestApplication(newHandler(provider),
+                                                                   "frapi:openig:internal:ui:record"));
+        systemObjectsRouter.addRoute(requestUriMatcher(STARTS_WITH, "ui/record"), recordHandler);
 
         this.endpointRegistry = new EndpointRegistry(systemObjectsRouter, "/" + adminPrefix + "/api/system/objects");
     }

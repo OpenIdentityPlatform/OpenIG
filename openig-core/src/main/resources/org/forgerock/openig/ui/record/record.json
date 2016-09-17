@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://forgerock.org/openig/schemas/5.0.0/record.json",
+
+  "title" : "i18n:org/forgerock/openig/ui/record/record#record.title",
+  "description" : "i18n:org/forgerock/openig/ui/record/record#record.desc",
+  "type": "object"
+}
