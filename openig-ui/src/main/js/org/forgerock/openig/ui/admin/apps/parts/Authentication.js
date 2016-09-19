@@ -71,7 +71,8 @@ define([
                 {
                     name: "enabled",
                     value:  this.data.authFilter.enabled ? "checked" : "",
-                    controlType: "slider"
+                    controlType: "slider",
+                    hint: false
                 },
                 {
                     name: "authGroup",
@@ -114,12 +115,12 @@ define([
                                 {
                                     name: "tokenEndpointUseBasicAuth",
                                     value: this.data.authFilter.tokenEndpointUseBasicAuth ? "checked" : "",
-                                    controlType: "checkbox"
+                                    controlType: "slider"
                                 },
                                 {
                                     name: "requireHttps",
                                     value: this.data.authFilter.requireHttps ? "checked" : "",
-                                    controlType: "checkbox"
+                                    controlType: "slider"
                                 }
                             ]
                         },
