@@ -122,8 +122,8 @@ public class OAuth2ClientFilterTest {
         sessionContext = new SessionContext(attributesContext, newSession());
         registrations = new ClientRegistrationRepository();
         request = new Request();
-        failureResponse = new Response();
-        failureResponse.setStatus(INTERNAL_SERVER_ERROR).setEntity("An error occured");
+        failureResponse = new Response(INTERNAL_SERVER_ERROR);
+        failureResponse.setEntity("An error occured");
         when(failureHandler.handle(any(Context.class), any(Request.class)))
             .thenReturn(newResponsePromise(failureResponse));
     }

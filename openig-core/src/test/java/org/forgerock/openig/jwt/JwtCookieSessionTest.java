@@ -44,6 +44,7 @@ import org.forgerock.http.header.SetCookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.jws.EncryptedThenSignedJwt;
 import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
@@ -132,7 +133,7 @@ public class JwtCookieSessionTest {
     public void shouldStoreSessionContentInACookie() throws Exception {
         JwtCookieSession session = newJwtSession(new Request());
         session.put("a-value", "ForgeRock OpenIG");
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
 
         Cookie cookie = SetCookieHeader.valueOf(response).getCookies().get(0);
@@ -154,7 +155,7 @@ public class JwtCookieSessionTest {
 
         JwtCookieSession session = newJwtSession(new Request(), timeService, sessionTimeout);
         session.put("a-value", "ForgeRock OpenIG");
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
 
         Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
@@ -166,7 +167,7 @@ public class JwtCookieSessionTest {
         Request request = new Request();
         setRequestCookie(request, jwtCookie.getValue());
         session = newJwtSession(request, timeService, sessionTimeout);
-        response = new Response();
+        response = new Response(Status.OK);
         // Unless we add another value, the session won't be seen as dirty and the JWT cookie won't be returned
         session.put("b-value", "ForgeRock OpenIG");
         session.save(response);
@@ -179,7 +180,7 @@ public class JwtCookieSessionTest {
         request = new Request();
         setRequestCookie(request, jwtCookie.getValue());
         session = newJwtSession(request, timeService, sessionTimeout);
-        response = new Response();
+        response = new Response(Status.OK);
         session.save(response);
         jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
@@ -195,7 +196,7 @@ public class JwtCookieSessionTest {
 
         JwtCookieSession session = newJwtSession(new Request(), timeService, Duration.UNLIMITED);
         session.put("a-value", "ForgeRock OpenIG");
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
 
         Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
@@ -219,7 +220,7 @@ public class JwtCookieSessionTest {
         setRequestCookie(request, ORIGINAL);
         JwtCookieSession session = newJwtSession(request);
         session.clear();
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
         Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
@@ -233,7 +234,7 @@ public class JwtCookieSessionTest {
         setRequestCookie(request, ORIGINAL);
         JwtCookieSession session = newJwtSession(request);
         session.remove("a-value");
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
         Cookie jwtCookie = SetCookieHeader.valueOf(response).getCookies().get(0);
 
@@ -244,7 +245,7 @@ public class JwtCookieSessionTest {
     @Test
     public void shouldNotStoreSessionContentInACookieWhenSessionWasNotModified() throws Exception {
         JwtCookieSession session = newJwtSession(new Request());
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
 
         assertThat(response.getHeaders().get("Set-Cookie")).isNull();
@@ -255,7 +256,7 @@ public class JwtCookieSessionTest {
         Request request = new Request();
         setRequestCookie(request, ORIGINAL);
         JwtCookieSession session = newJwtSession(request);
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         session.save(response);
 
         // First time around with a non-empty pre-sessionTimeout JWT cookie, the expiry time will be added.
@@ -265,7 +266,7 @@ public class JwtCookieSessionTest {
         request = new Request();
         setRequestCookie(request, jwtCookie.getValue());
         session = newJwtSession(request);
-        response = new Response();
+        response = new Response(Status.OK);
         session.save(response);
 
         // Since the session state has not changed, an updated JWT cookie should not be returned.
@@ -308,7 +309,7 @@ public class JwtCookieSessionTest {
         Request request = new Request();
         JwtCookieSession session = newJwtSession(request);
         session.put("more-than-4KB", generateMessageOf(5000));
-        session.save(new Response());
+        session.save(new Response(Status.OK));
     }
 
     @Test
@@ -322,7 +323,7 @@ public class JwtCookieSessionTest {
                 duration(DEFAULT_SESSION_TIMEOUT),
                 SIGNING_HANDLER);
         session.put("in-between-3KB-and-4KB", generateMessageOf(2000));
-        session.save(new Response());
+        session.save(new Response(Status.OK));
     }
 
     private static Object generateMessageOf(final int size) {

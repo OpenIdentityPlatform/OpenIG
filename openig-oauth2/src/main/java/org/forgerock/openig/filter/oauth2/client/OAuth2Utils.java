@@ -95,9 +95,7 @@ final class OAuth2Utils {
     }
 
     static Response httpResponse(final Status status) {
-        Response response = new Response();
-        response.setStatus(status);
-        return response;
+        return new Response(status);
     }
 
     static boolean matchesUri(final URI originalUri, final URI uri) {

@@ -17,6 +17,7 @@
 package org.forgerock.openig.handler.router;
 
 import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -27,7 +28,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.forgerock.util.promise.Promises;
 
 @SuppressWarnings("javadoc")
 public class StatusHandler implements Handler {
@@ -39,9 +39,7 @@ public class StatusHandler implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Response response = new Response();
-        response.setStatus(status);
-        return Promises.newResultPromise(response);
+        return newResultPromise(new Response(status));
     }
 
     public static class Heaplet extends GenericHeaplet {

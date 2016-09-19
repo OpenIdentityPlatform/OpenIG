@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.oauth2.OAuth2Error;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -50,7 +51,7 @@ public class OAuth2BearerWWWAuthenticateHeaderTest {
     @Test(dataProvider = "validHeaders")
     public void testConstructFromMessage(final String header, String realm, List<String> scopes,
             String error, String errorDescription) {
-        final Response response = new Response();
+        final Response response = new Response(Status.OK);
         response.getHeaders().put(NAME, header);
         OAuth2BearerWWWAuthenticateHeader parsed =
                 OAuth2BearerWWWAuthenticateHeader.valueOf(response);

@@ -75,12 +75,12 @@ public class SsoTokenFilterTest {
         request = new Request();
         request.setUri(APP_URI);
 
-        unauthorized = new Response();
-        unauthorized.setStatus(UNAUTHORIZED).setEntity(json(object(field("code", UNAUTHORIZED.getCode()),
-                                                                   field("reason", "Unauthorized"),
-                                                                   field("message", "Access denied"))));
-        authenticated = new Response();
-        authenticated.setStatus(OK).setEntity(AUTHENTICATION_SUCCEEDED);
+        unauthorized = new Response(UNAUTHORIZED);
+        unauthorized.setEntity(json(object(field("code", 401),
+                                           field("reason", "Unauthorized"),
+                                           field("message", "Access denied"))));
+        authenticated = new Response(OK);
+        authenticated.setEntity(AUTHENTICATION_SUCCEEDED);
     }
 
     @SuppressWarnings("unused")
@@ -157,8 +157,7 @@ public class SsoTokenFilterTest {
     @Test
     public void shouldRequestForSSOTokenFails() throws Exception {
         // Given
-        final Response badRequestResponse = new Response();
-        badRequestResponse.setStatus(BAD_REQUEST);
+        final Response badRequestResponse = new Response(BAD_REQUEST);
 
         when(authenticate.handle(same(context), any(Request.class)))
             .thenReturn(newResponsePromise(badRequestResponse));

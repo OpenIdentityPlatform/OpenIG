@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.openig.heap.HeapImpl;
@@ -155,7 +156,7 @@ public class ExpressionTest {
         request.getHeaders().put("host", "wiki.example.com");
         request.getHeaders().put("cookie", "SESSION=value; path=/");
 
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         response.getHeaders().put("Set-Cookie", "MyCookie=example; path=/");
 
         Bindings bindings = bindings(null, request, response);

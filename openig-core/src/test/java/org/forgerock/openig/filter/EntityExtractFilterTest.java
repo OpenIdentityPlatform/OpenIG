@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.regex.PatternTemplate;
 import org.forgerock.openig.util.MessageType;
@@ -104,7 +105,7 @@ public class EntityExtractFilterTest {
         filter.getExtractor().getPatterns().put("hello", Pattern.compile("Hello(.*)"));
 
         AttributesContext context = new AttributesContext(new RootContext());
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         response.setEntity((String) null);
 
         when(terminalHandler.handle(context, null))

@@ -26,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.Name;
 import org.mockito.Mock;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class TimerHandlerTest {
     public void shouldReadTickerForAllInterceptions() throws Exception {
         // Given
         TimerHandler handler = new TimerHandler(delegate, logger, ticker, MICROSECONDS);
-        when(delegate.handle(null, null)).thenReturn(newResponsePromise(new Response()));
+        when(delegate.handle(null, null)).thenReturn(newResponsePromise(new Response(Status.OK)));
         // When
         handler.handle(null, null).get();
         // Then

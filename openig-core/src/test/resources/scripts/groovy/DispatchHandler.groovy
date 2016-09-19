@@ -8,7 +8,7 @@
 
 // Rather than return a Promise of a response from an external source,
 // this script returns the response itself.
-response = new Response();
+response = new Response(Status.OK);
 
 switch (request.uri.path) {
 

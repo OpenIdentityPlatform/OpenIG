@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
@@ -61,7 +62,7 @@ public class SequenceHandlerTest {
     public void shouldExecuteSingleElementSequenceCompletely() throws Exception {
         SequenceHandler sequence = new SequenceHandler();
         sequence.addBinding(handler1, null);
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         promise1.handleResult(response);
 
         Context context = new RootContext();
@@ -75,9 +76,9 @@ public class SequenceHandlerTest {
         SequenceHandler sequence = new SequenceHandler();
         sequence.addBinding(handler1, null);
         sequence.addBinding(handler2, null);
-        Response response1 = new Response();
+        Response response1 = new Response(Status.OK);
         promise1.handleResult(response1);
-        Response response2 = new Response();
+        Response response2 = new Response(Status.OK);
         promise2.handleResult(response2);
 
         Context context = new RootContext();
@@ -91,9 +92,9 @@ public class SequenceHandlerTest {
         SequenceHandler sequence = new SequenceHandler();
         sequence.addBinding(handler1, Expression.valueOf("${false}", Boolean.class));
         sequence.addBinding(handler2, null);
-        Response response1 = new Response();
+        Response response1 = new Response(Status.OK);
         promise1.handleResult(response1);
-        Response response2 = new Response();
+        Response response2 = new Response(Status.OK);
         promise2.handleResult(response2);
 
         Context context = new RootContext();

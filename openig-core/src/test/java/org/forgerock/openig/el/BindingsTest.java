@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  *
  */
 
@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.services.context.AttributesContext;
@@ -95,7 +96,7 @@ public class BindingsTest {
 
     @Test
     public void shouldBindContextRequestAndResponse() throws Exception {
-        assertThat(bindings(new RootContext(), new Request(), new Response()).asMap())
+        assertThat(bindings(new RootContext(), new Request(), new Response(Status.OK)).asMap())
                 .containsKeys("context", "request", "response", "contexts")
                 .hasSize(4);
     }

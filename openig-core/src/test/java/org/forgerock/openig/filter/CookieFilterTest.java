@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -31,6 +31,7 @@ import org.forgerock.http.header.CookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -90,7 +91,7 @@ public class CookieFilterTest {
                         // Cannot assert on request.cookies due to OPENIG-123
                         // assertFalse(request.cookies.containsKey("Test-Managed"));
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 
@@ -128,7 +129,7 @@ public class CookieFilterTest {
                         // As the cookie should have been removed, we should not have any Cookie header now
                         assertThat(request.getHeaders().get(CookieHeader.NAME)).isNull();
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 
@@ -157,7 +158,7 @@ public class CookieFilterTest {
                         // As the cookie should have been removed, we should not have any Cookie header now
                         assertThat(request.getHeaders().get(CookieHeader.NAME)).isNull();
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 
@@ -190,7 +191,7 @@ public class CookieFilterTest {
                         assertThat(cookies).hasSize(1);
                         assertThat(cookies.get(0).getName()).isEqualTo("Will-Not-Be-Deleted");
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 
@@ -220,7 +221,7 @@ public class CookieFilterTest {
                         assertThat(request.getHeaders().getFirst(CookieHeader.NAME))
                                 .contains("Will-Be-Relayed=\"Default Value\"");
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 
@@ -249,7 +250,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
-                        Response response = new Response();
+                        Response response = new Response(Status.OK);
                         response.getHeaders().put("Set-cookie2", "Hidden-Cookie=value");
 
                         return Promises.newResultPromise(response);
@@ -273,7 +274,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
-                        Response response = new Response();
+                        Response response = new Response(Status.OK);
                         response.getHeaders().put("Set-cookie2", "Suppressed-Cookie=value");
 
                         return Promises.newResultPromise(response);
@@ -325,7 +326,7 @@ public class CookieFilterTest {
                             throws Throwable {
 
                         // Populate the response with a cookie that should be invisible to client
-                        Response response = new Response();
+                        Response response = new Response(Status.OK);
                         response.getHeaders().put("Set-cookie2", "Managed=value");
 
                         return Promises.newResultPromise(response);
@@ -352,7 +353,7 @@ public class CookieFilterTest {
                         String cookie = request2.getHeaders().getFirst(CookieHeader.NAME);
                         assertThat(cookie).isEqualTo("Managed=value");
 
-                        return Promises.newResultPromise(new Response());
+                        return Promises.newResultPromise(new Response(Status.OK));
                     }
                 });
 

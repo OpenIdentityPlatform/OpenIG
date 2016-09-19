@@ -558,16 +558,14 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
     }
 
     private static Response sendError(Status status, String message) {
-        Response response = new Response();
-        response.setStatus(status);
+        Response response = new Response(status);
         response.getEntity().setString(message);
         return response;
     }
 
     private static Response sendRedirect(String redirectUri) {
-        Response response = new Response();
         // Redirect with a 302 (Found) status code
-        response.setStatus(Status.FOUND);
+        Response response = new Response(Status.FOUND);
         // Web container was rebasing location header against server URL
         // Not useful if relayState is already (and always) an absolute URL
         response.getHeaders().put(LocationHeader.NAME, redirectUri);

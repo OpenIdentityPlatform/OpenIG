@@ -43,8 +43,7 @@ public class WelcomeHandler extends GenericHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Response response = new Response();
-        response.setStatus(Status.OK);
+        Response response = new Response(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
         response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream("welcome.html"), getStorage()));
         return Promises.newResultPromise(response);
