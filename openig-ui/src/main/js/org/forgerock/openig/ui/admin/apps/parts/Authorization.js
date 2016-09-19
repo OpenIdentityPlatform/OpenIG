@@ -67,7 +67,8 @@ define([
                 {
                     name: "enabled",
                     value:  this.data.authZFilter.enabled ? "checked" : "",
-                    controlType: "slider"
+                    controlType: "slider",
+                    hint: false
                 },
                 {
                     name: "authZGroup",

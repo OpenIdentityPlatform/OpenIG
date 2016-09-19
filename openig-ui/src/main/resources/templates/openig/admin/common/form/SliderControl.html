@@ -7,6 +7,9 @@
             <div class="checkbox checkbox-slider checkbox-slider-md checkbox-slider--b-flat checkbox-slider-primary active-control">
                 <label><input name="{{name}}" type="checkbox" {{value}}><span></span></label>
             </div>
+            {{#if hint}}
+            <div class="form-control-hint">{{t hint}}</div>
+            {{/if}}
         </div>
     </div>
 </div>
