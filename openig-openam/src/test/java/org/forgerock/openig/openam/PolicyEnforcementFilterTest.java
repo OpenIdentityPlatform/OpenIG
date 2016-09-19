@@ -288,9 +288,8 @@ public class PolicyEnforcementFilterTest {
         request.setMethod("GET");
         request.setUri(resource);
 
-        final Response displayEmptyResourceResponse = new Response();
-        displayEmptyResourceResponse.setStatus(Status.OK)
-                                    .setEntity(emptyPolicyDecision(resource));
+        final Response displayEmptyResourceResponse = new Response(Status.OK);
+        displayEmptyResourceResponse.setEntity(emptyPolicyDecision(resource));
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
@@ -352,8 +351,7 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldFailDueToInvalidServerResponse() throws Exception {
         // Given
-        final Response errorResponse = new Response();
-        errorResponse.setStatus(GATEWAY_TIMEOUT);
+        final Response errorResponse = new Response(GATEWAY_TIMEOUT);
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
@@ -600,8 +598,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private static Response policyDecisionResponse() {
-        final Response response = new Response();
-        response.setStatus(OK);
+        final Response response = new Response(OK);
         response.setEntity(policyDecision());
         return response;
     }
@@ -657,8 +654,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     private static Response displayResourceResponse() {
-        final Response response = new Response();
-        response.setStatus(OK);
+        final Response response = new Response(OK);
         response.setEntity(RESOURCE_CONTENT);
         return response;
     }

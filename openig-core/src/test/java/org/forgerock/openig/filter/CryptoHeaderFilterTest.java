@@ -41,6 +41,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.Name;
@@ -100,7 +101,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
 
         filter.filter(null, request, terminalHandler);
 
@@ -117,7 +118,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
 
         filter.filter(null, request, terminalHandler);
 
@@ -133,7 +134,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
 
         filter.filter(null, request, terminalHandler);
 
@@ -151,7 +152,7 @@ public class CryptoHeaderFilterTest {
         request.getHeaders().put(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, request))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
 
         filter.filter(null, request, terminalHandler);
 
@@ -164,7 +165,7 @@ public class CryptoHeaderFilterTest {
         CryptoHeaderFilter filter = buildDefaultCryptoHeader();
         filter.setMessageType(RESPONSE);
 
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         response.getHeaders().put(HEADER_NAME, CLEAR_TEXT_VALUE);
 
         when(terminalHandler.handle(null, null))
@@ -182,7 +183,7 @@ public class CryptoHeaderFilterTest {
         filter.setMessageType(RESPONSE);
         filter.setOperation(CryptoHeaderFilter.Operation.DECRYPT);
 
-        Response response = new Response();
+        Response response = new Response(Status.OK);
         response.getHeaders().put(HEADER_NAME, ENCRYPTED_VALUE);
 
         when(terminalHandler.handle(null, null))

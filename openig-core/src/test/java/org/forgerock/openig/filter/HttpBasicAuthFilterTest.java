@@ -279,8 +279,7 @@ public class HttpBasicAuthFilterTest {
         // 1st time called: Mock a 401 (Unauthorized status) response
         @Override
         public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) throws Throwable {
-            Response response = new Response();
-            response.setStatus(Status.UNAUTHORIZED);
+            Response response = new Response(Status.UNAUTHORIZED);
             response.getHeaders().put(AUTHENTICATE_HEADER, "Basic realm=\"Login\"");
             return Promises.newResultPromise(response);
         }
@@ -303,8 +302,7 @@ public class HttpBasicAuthFilterTest {
                     .isEqualTo("Basic " + credentials);
 
             // Produce a valid response, no special header is required
-            Response response = new Response();
-            response.setStatus(Status.OK);
+            Response response = new Response(Status.OK);
             return Promises.newResultPromise(response);
         }
     }

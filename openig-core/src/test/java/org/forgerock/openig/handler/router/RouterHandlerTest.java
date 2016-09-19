@@ -130,7 +130,7 @@ public class RouterHandlerTest {
     private Handler mockDefaultHandler() {
         // Create a successful promise
         PromiseImpl<Response, NeverThrowsException> result = PromiseImpl.create();
-        result.handleResult(new Response());
+        result.handleResult(new Response(Status.OK));
         // Mock the handler to return the promise
         Handler defaultHandler = mock(Handler.class);
         when(defaultHandler.handle(any(Context.class), any(Request.class))).thenReturn(result);

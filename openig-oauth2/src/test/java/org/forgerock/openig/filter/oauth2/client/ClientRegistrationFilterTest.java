@@ -136,8 +136,7 @@ public class ClientRegistrationFilterTest {
     public void shouldPerformDynamicRegistration() throws Exception {
         // given
         final ClientRegistrationFilter crf = buildClientRegistrationFilter();
-        final Response response = new Response();
-        response.setStatus(CREATED);
+        final Response response = new Response(CREATED);
         response.setEntity(json(object()));
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
@@ -157,8 +156,7 @@ public class ClientRegistrationFilterTest {
     public void shouldFailToPerformDynamicRegistrationWhenStatusCodeResponseIsDifferentFromCreated() throws Exception {
         // given
         final ClientRegistrationFilter crf = buildClientRegistrationFilter();
-        final Response response = new Response();
-        response.setStatus(BAD_REQUEST);
+        final Response response = new Response(BAD_REQUEST);
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
         // when
@@ -171,8 +169,7 @@ public class ClientRegistrationFilterTest {
     public void shouldFailToPerformDynamicRegistrationWhenResponseHasInvalidResponseContent() throws Exception {
         // given
         final ClientRegistrationFilter crf = buildClientRegistrationFilter();
-        final Response response = new Response();
-        response.setStatus(CREATED);
+        final Response response = new Response(CREATED);
         response.setEntity(array("invalid", "content"));
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
@@ -240,8 +237,7 @@ public class ClientRegistrationFilterTest {
     }
 
     private static Response performedClientRegistration() {
-        final Response response = new Response();
-        response.setStatus(CREATED);
+        final Response response = new Response(CREATED);
         response.setEntity(clientRegistrationOnOpenAMAsJsonResponse());
         return response;
     }

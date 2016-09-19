@@ -135,8 +135,7 @@ public class IssuerTest {
     @Test
     public void shouldPerformBuildWithWellKnownUriProvided() throws Exception {
         // given
-        final Response response = new Response();
-        response.setStatus(Status.OK);
+        final Response response = new Response(Status.OK);
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
 
         final URI wellKnownUri = new URI(ISSUER_URI + WELLKNOWN_ENDPOINT);
@@ -161,8 +160,7 @@ public class IssuerTest {
     @Test
     public void shouldPerformBuildWithWellKnownUriProvidedAndContainSupportedDomains() throws Exception {
         // given
-        final Response response = new Response();
-        response.setStatus(Status.OK);
+        final Response response = new Response(Status.OK);
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
         final URI wellKnownUri = new URI(ISSUER_URI + WELLKNOWN_ENDPOINT);
@@ -190,8 +188,7 @@ public class IssuerTest {
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailToPerformBuildWithWellKnownUriProvidedCausedByInvalidResponse() throws Exception {
         // given
-        final Response response = new Response();
-        response.setStatus(Status.OK);
+        final Response response = new Response(Status.OK);
         response.setEntity(json(object(field("invalid", "response"))));
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 
@@ -202,8 +199,7 @@ public class IssuerTest {
     @Test(expectedExceptions = DiscoveryException.class)
     public void shouldFailToPerformBuildWithWellKnownUriProvidedCausedByTeapotResponse() throws Exception {
         // given
-        final Response response = new Response();
-        response.setStatus(Status.TEAPOT);
+        final Response response = new Response(Status.TEAPOT);
         response.setEntity(getValidWellKnownOpenIdConfigurationResponse());
         when(handler.handle(any(Context.class), any(Request.class))).thenReturn(newResponsePromise(response));
 

@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.handler;
@@ -84,8 +84,7 @@ public class DesKeyGenHandler extends GenericHeapObject implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Response response = new Response();
-        response.setStatus(Status.OK);
+        Response response = new Response(Status.OK);
         response.setEntity(getSharedKey());
         return Promises.newResultPromise(response);
     }

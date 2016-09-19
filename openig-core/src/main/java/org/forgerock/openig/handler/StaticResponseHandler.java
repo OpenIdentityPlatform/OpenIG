@@ -102,8 +102,7 @@ public class StaticResponseHandler extends GenericHeapObject implements Handler 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Bindings bindings = bindings(context, request);
-        Response response = new Response();
-        response.setStatus(this.status);
+        Response response = new Response(this.status);
         if (this.version != null) { // default in Message class
             response.setVersion(this.version);
         }

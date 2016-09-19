@@ -121,8 +121,7 @@ public class GroovyScriptableFilterTest {
                 "})"
         );
         // @formatter:on
-        final Response response = new Response();
-        response.setStatus(Status.FOUND);
+        final Response response = new Response(Status.FOUND);
         final Handler handler = new ResponseHandler(response);
         AttributesContext context = new AttributesContext(new RootContext());
         filter.filter(context, null, handler);
@@ -394,7 +393,7 @@ public class GroovyScriptableFilterTest {
                     "username = request.headers.Username.values[0]",
                     "password = request.headers.Password.values[0]",
                     "",
-                    "Response response = new Response()",
+                    "Response response = new Response(Status.OK)",
                     "",
                     "client = ldap.connect('0.0.0.0'," + port + ")",
                     "try {",
@@ -611,7 +610,7 @@ public class GroovyScriptableFilterTest {
                 "next.handle(context, request)",
                 "42");
         // @formatter:on
-        final Response expectedResponse = new Response();
+        final Response expectedResponse = new Response(Status.OK);
         final Handler handler = new ResponseHandler(expectedResponse);
         Response response = filter.filter(new RootContext(), new Request(), handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.INTERNAL_SERVER_ERROR);

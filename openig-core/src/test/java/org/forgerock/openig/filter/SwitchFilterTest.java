@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.filter;
@@ -62,15 +62,15 @@ public class SwitchFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(terminalHandler.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
         when(handler1.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
         when(handler2.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
         when(handler3.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
         when(handler4.handle(any(Context.class), any(Request.class)))
-                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response()));
+                .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
     }
 
     @Test

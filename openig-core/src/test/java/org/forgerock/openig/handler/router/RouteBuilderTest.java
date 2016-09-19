@@ -392,7 +392,7 @@ public class RouteBuilderTest {
         public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             Session session = context.asContext(SessionContext.class).getSession();
             session.put("ForgeRock", "OpenIG");
-            return Promises.newResultPromise(new Response());
+            return Promises.newResultPromise(new Response(Status.OK));
         }
 
         public static class Heaplet extends GenericHeaplet {

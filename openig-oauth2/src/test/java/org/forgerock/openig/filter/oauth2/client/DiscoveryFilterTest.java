@@ -167,8 +167,7 @@ public class DiscoveryFilterTest {
 
         final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
-        final Response response = new Response();
-        response.setStatus(Status.OK);
+        final Response response = new Response(Status.OK);
         response.setEntity(json(object(field("links", array(
                                                         object(
                                                             field("rel" , "copyright"),
@@ -195,8 +194,7 @@ public class DiscoveryFilterTest {
         // given
         final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
-        final Response response = new Response();
-        response.setStatus(Status.TEAPOT);
+        final Response response = new Response(Status.TEAPOT);
         response.setEntity(json(object(field("links", array(
                                                         object(
                                                             field("rel" , "copyright"),
@@ -214,8 +212,7 @@ public class DiscoveryFilterTest {
         // given
         final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
-        final Response response = new Response();
-        response.setStatus(Status.TEAPOT);
+        final Response response = new Response(Status.TEAPOT);
         response.setEntity(json(object(field("links", "not an array. Should fail"))));
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 
@@ -229,8 +226,7 @@ public class DiscoveryFilterTest {
         // given
         final AccountIdentifier account = DiscoveryFilter.extractFromInput("http://openam.example.com/jackson");
 
-        final Response response = new Response();
-        response.setStatus(Status.OK);
+        final Response response = new Response(Status.OK);
         response.setEntity(null);
         when(handler.handle(eq(context), any(Request.class))).thenReturn(newResponsePromise(response));
 

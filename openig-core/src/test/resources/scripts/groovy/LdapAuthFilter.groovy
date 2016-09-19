@@ -54,8 +54,7 @@ try {
     // LDAP authentication failed, so fail the response with
     // HTTP status code 403 Forbidden.
 
-    response = new Response()
-    response.status = Status.FORBIDDEN
+    response = new Response(Status.FORBIDDEN)
     response.entity = "<html><p>Authentication failed: " + e.message + "</p></html>"
 
 } catch (Exception e) {
@@ -63,8 +62,7 @@ try {
     // Something other than authentication failed on the server side,
     // so fail the response with HTTP 500 Internal Server Error.
 
-    response = new Response()
-    response.status = Status.INTERNAL_SERVER_ERROR
+    response = new Response(Status.INTERNAL_SERVER_ERROR)
     response.entity = "<html><p>Server error: " + e.message + "</p></html>"
 
 } finally {

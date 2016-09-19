@@ -115,21 +115,18 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
         }
 
         if (resource != null) {
-            Response response = new Response();
-            // last modified
-            response.getHeaders().put("Last-Modified", formatDate(new Date(resource.getLastModified())));
-
             // cached in client ?
             String since = request.getHeaders().getFirst("If-Modified-Since");
             if (since != null) {
                 if (!resource.hasChangedSince(parseDate(since).getTime())) {
-                    response.setStatus(NOT_MODIFIED);
-                    return newResponsePromise(response);
+                    return newResponsePromise(new Response(NOT_MODIFIED));
                 }
             }
 
             // not cached, need to send the content back
-            response.setStatus(OK);
+            Response response = new Response(OK);
+            // last modified
+            response.getHeaders().put("Last-Modified", formatDate(new Date(resource.getLastModified())));
             try {
                 response.getEntity().setRawContentInputStream(newBranchingInputStream(resource.open(), getStorage()));
             } catch (IOException e) {

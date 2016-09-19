@@ -169,9 +169,8 @@ public class LocationHeaderFilterTest {
 
 
         // Prepare a response
-        Response expectedResponse = new Response();
+        Response expectedResponse = new Response(Status.FOUND);
         expectedResponse.getHeaders().add(LocationHeader.NAME, "http://internal.example.com/redirected");
-        expectedResponse.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
 
@@ -202,9 +201,8 @@ public class LocationHeaderFilterTest {
                                                      Collections.<String, String>emptyMap(),
                                                      new URI("http://www.origin.com:443"));
 
-        Response expectedResponse = new Response();
+        Response expectedResponse = new Response(Status.FOUND);
         expectedResponse.getHeaders().put(LocationHeader.NAME, testRedirectionURI.toString());
-        expectedResponse.setStatus(Status.FOUND);
 
         ResponseHandler next = new ResponseHandler(expectedResponse);
 

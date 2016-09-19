@@ -28,6 +28,7 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -63,7 +64,7 @@ public class TimerFilterTest {
     public void shouldReadTickerForAllInterceptions() throws Exception {
         // Given
         TimerFilter filter = new TimerFilter(new DelegateFilter(), logger, ticker, MICROSECONDS);
-        when(terminal.handle(null, null)).thenReturn(newResponsePromise(new Response()));
+        when(terminal.handle(null, null)).thenReturn(newResponsePromise(new Response(Status.OK)));
         // When
         filter.filter(null, null, terminal).get();
         // Then

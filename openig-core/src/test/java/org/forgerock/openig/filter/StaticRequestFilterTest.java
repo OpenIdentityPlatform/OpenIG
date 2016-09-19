@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.filter;
 
@@ -27,6 +27,7 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
@@ -292,7 +293,7 @@ public class StaticRequestFilterTest {
         @Override
         public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
             this.request = request;
-            return Promises.newResultPromise(new Response());
+            return Promises.newResultPromise(new Response(Status.OK));
         }
     }
 }
