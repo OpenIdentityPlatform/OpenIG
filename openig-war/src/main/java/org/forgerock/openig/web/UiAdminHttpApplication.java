@@ -43,19 +43,19 @@ import org.slf4j.LoggerFactory;
 /**
  * Extension of the admin module that is responsible to serve the UI.
  */
-class ConsoleAdminHttpApplication extends AdminHttpApplication {
+class UiAdminHttpApplication extends AdminHttpApplication {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsoleAdminHttpApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(UiAdminHttpApplication.class);
 
     /**
-     * Construct a {@link ConsoleAdminHttpApplication}.
+     * Construct a {@link UiAdminHttpApplication}.
      *
      * @param prefix the prefix to use in the URL to access the admin endpoints
      * @param config the admin configuration
      * @param environment the OpenIG environment
      * @throws IOException when unpack fails
      */
-    ConsoleAdminHttpApplication(final String prefix, final JsonValue config, final Environment environment)
+    UiAdminHttpApplication(final String prefix, final JsonValue config, final Environment environment)
             throws IOException {
         super(prefix, config, environment);
 
@@ -85,8 +85,8 @@ class ConsoleAdminHttpApplication extends AdminHttpApplication {
         // Create a ResourceHandler
         ResourceHandler handler = new ResourceHandler(singletonList(resources), singletonList("index.html"));
 
-        // Register it in the router under the /openig/console path
-        getOpenIGRouter().addRoute(requestUriMatcher(STARTS_WITH, "console"), handler);
+        // Register it in the router under the /openig/studio path
+        getOpenIGRouter().addRoute(requestUriMatcher(STARTS_WITH, "studio"), handler);
     }
 
     private static void unpackFileEntry(final JarInputStream jar, final JarEntry entry, final File destination)

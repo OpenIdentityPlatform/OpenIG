@@ -37,16 +37,16 @@ import org.forgerock.services.context.RootContext;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class ConsoleAdminHttpApplicationTest {
+public class UiAdminHttpApplicationTest {
 
     @Test
     public void shouldServeTheUi() throws Exception {
         Environment env = new DefaultEnvironment(getRelative(getClass(), "doesnt-exist"));
-        ConsoleAdminHttpApplication module = new ConsoleAdminHttpApplication("openig", json(object()), env);
+        UiAdminHttpApplication module = new UiAdminHttpApplication("openig", json(object()), env);
         Handler handler = module.start();
 
         Response response = handler.handle(newInternalClientContext(newUriRouterContext(new RootContext())),
-                                           new Request().setMethod("GET").setUri("/console/")).get();
+                                           new Request().setMethod("GET").setUri("/studio/")).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
         assertThat(response.getHeaders().getFirst(ContentTypeHeader.class)).isEqualTo("text/html");
     }

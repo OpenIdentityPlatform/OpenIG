@@ -200,12 +200,12 @@ public class ResourceHandlerTest {
                                                         "",
                                                         "",
                                                         Collections.<String, String>emptyMap());
-        Request request = new Request().setUri("/openig/console").setMethod("GET");
+        Request request = new Request().setUri("/context").setMethod("GET");
         Response response = handler.handle(context, request)
                                    .get();
 
         assertThat(response.getStatus()).isEqualTo(FOUND);
         assertThat(response.getHeaders().get(LocationHeader.class).getLocationUri())
-                .isEqualTo("/openig/console/");
+                .isEqualTo("/context/");
     }
 }

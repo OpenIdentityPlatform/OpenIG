@@ -95,8 +95,8 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
 
         Resource resource = null;
         if ("".equals(target)) {
-            // Workaround the issue that Router remove leading '/' in remainingUri
-            // preventing /openig/console to work like /openig/console/ for instance
+            // Workaround the issue that Router ignore leading '/' in remainingUri
+            // preventing /resource/path to work like /resource/path/ for instance
             if (!request.getUri().getPath().endsWith("/")) {
                 // Force redirect to the 'slashed' version of the URL
                 Response redirect = new Response(FOUND);

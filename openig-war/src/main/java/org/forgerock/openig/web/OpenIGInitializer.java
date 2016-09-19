@@ -77,7 +77,7 @@ public class OpenIGInitializer implements ServletContainerInitializer {
             URL adminConfigURL = selectConfigurationUrl("admin.json");
             JsonValue adminConfig = JsonValues.readJson(adminConfigURL);
             String adminPrefix = adminConfig.get("prefix").defaultTo("openig").asString();
-            ConsoleAdminHttpApplication admin = new ConsoleAdminHttpApplication(adminPrefix, adminConfig, environment);
+            UiAdminHttpApplication admin = new UiAdminHttpApplication(adminPrefix, adminConfig, environment);
 
             URL gatewayConfigURL = selectConfigurationUrl("config.json");
             GatewayHttpApplication gateway = new GatewayHttpApplication(environment,
