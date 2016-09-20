@@ -153,7 +153,7 @@ define(["lodash"], (_) => ({
         // Base route attributes
         const route = {
             name: app.get("_id"),
-            baseURI: app.get("content/url"),
+            baseURI: app.get("content/baseURI"),
             condition: app.get("content/condition")
         };
 

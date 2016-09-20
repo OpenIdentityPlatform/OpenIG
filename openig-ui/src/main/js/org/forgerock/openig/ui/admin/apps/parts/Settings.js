@@ -25,6 +25,7 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/openig/ui/admin/delegates/AppDelegate",
     "org/forgerock/openig/ui/admin/util/AppsUtils",
+    "org/forgerock/openig/ui/admin/util/FormUtils",
     "org/forgerock/commons/ui/common/main/Router",
     "org/forgerock/openig/ui/admin/models/AppModel",
     "org/forgerock/openig/ui/admin/models/AppsCollection"
@@ -39,6 +40,7 @@ define([
     constants,
     AppDelegate,
     appsUtils,
+    FormUtils,
     router,
     AppModel,
     AppsCollection
@@ -46,10 +48,12 @@ define([
     AbstractAppView.extend({
         element: ".main",
         template: "templates/openig/admin/apps/parts/Settings.html",
+        partials: [
+            "templates/openig/admin/common/form/EditControl.html"
+        ],
         events: {
             "click #submitApp": "appFormSubmit",
             "click #cancelApp": "appFormCancel",
-            "blur #appName": "validateName",
             "onValidate": "onValidate"
         },
         formMode: { ADD:0, DUPLICATE: 1, EDIT: 2 },
@@ -61,25 +65,45 @@ define([
             this.data.appId = args[0];
             this.data.docHelpUrl = constants.DOC_URL;
 
-            // editState true for readonly
-            this.data.editState = false;
-
             this.data.mode = this.getFormMode();
 
             if (this.data.mode === this.formMode.EDIT) {
-                this.data.pageTitle = i18n.t("templates.apps.editAppDetails");
+                this.data.pageTitle = i18n.t("templates.apps.parts.settings.editTitle");
                 this.data.saveBtnTitle = i18n.t("common.form.save");
                 this.data.cancelBtnTitle = i18n.t("common.form.reset");
             } else {
-                this.data.pageTitle = i18n.t("templates.apps.addAppTitle");
-                this.data.saveBtnTitle = i18n.t("templates.apps.addAppButton");
+                this.data.pageTitle = i18n.t("templates.apps.parts.settings.addTitle");
+                this.data.saveBtnTitle = i18n.t("templates.apps.parts.settings.addButton");
                 this.data.cancelBtnTitle = i18n.t("common.form.cancel");
             }
 
             this.app = this.setupApp(this.data.mode, this.data.appId);
-            this.data.appName = this.app.get("content/name");
-            this.data.appUrl = this.app.get("content/url");
-            this.data.appCondition = this.app.get("content/condition");
+            this.data.controls = [
+                {
+                    name: "name",
+                    value: this.app.get("content/name"),
+                    validator: "required spaceCheck customValidator"
+                },
+                {
+                    name: "baseURI",
+                    value: this.app.get("content/baseURI"),
+                    validator: "required baseURI spaceCheck"
+                },
+                {
+                    name: "condition",
+                    value: this.app.get("content/condition"),
+                    placeholder: "templates.apps.parts.settings.fields.conditionPlaceHolder",
+                    validator: "required spaceCheck"
+                }
+            ];
+
+            FormUtils.extendControlsSettings(this.data.controls, {
+                autoTitle: true,
+                autoHint: true,
+                translatePath: "templates.apps.parts.settings.fields",
+                defaultControlType: "edit"
+            });
+            FormUtils.fillPartialsByControlType(this.data.controls);
 
             this.renderForm(callback);
         },
@@ -98,15 +122,17 @@ define([
             const app = new AppModel();
             switch (mode) {
                 case this.formMode.DUPLICATE:
-                    AppsCollection.byId(appId).then((parentApp) => {
-                        app.set("content", _.clone(parentApp.get("content")));
-                    });
+                    AppsCollection.byId(appId)
+                        .then((parentApp) => {
+                            app.set("content", _.clone(parentApp.get("content")));
+                        });
                     break;
                 case this.formMode.EDIT:
-                    AppsCollection.byId(appId).then((parentApp) => {
-                        app.set("content", _.clone(parentApp.get("content")));
-                        app.set("_id", appId);
-                    });
+                    AppsCollection.byId(appId)
+                        .then((parentApp) => {
+                            app.set("content", _.clone(parentApp.get("content")));
+                            app.set("_id", appId);
+                        });
                     break;
             }
             return app;
@@ -116,7 +142,6 @@ define([
             this.parentRender(() => {
                 validatorsManager.bindValidators(this.$el);
                 this.loadAppTemplate(callback);
-                this.validateName();
             });
         },
 
@@ -130,27 +155,20 @@ define([
                     $(form).find("input").trigger("validate");
                     return;
                 }
-
-                appsUtils.checkName(modifiedApp).then((checkResult) => {
-                    if (checkResult !== true) {
-                        this.validateName();
-                        return;
-                    }
-
-                    if (this.data.mode === this.formMode.ADD || this.data.mode === this.formMode.DUPLICATE) {
-                        modifiedApp.save();
-                        AppsCollection.add([
-                            modifiedApp
-                        ]);
-                    } else {
-                        AppsCollection.byId(this.data.appId).then((parentApp) => {
+                if (this.data.mode === this.formMode.ADD || this.data.mode === this.formMode.DUPLICATE) {
+                    modifiedApp.save();
+                    AppsCollection.add([
+                        modifiedApp
+                    ]);
+                } else {
+                    AppsCollection.byId(this.data.appId)
+                        .then((parentApp) => {
                             parentApp.set("content", modifiedApp.get("content"));
                             parentApp.save();
                         });
-                    }
-                    eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                        route: router.configuration.routes.appsOverview, args: [this.data.appId]
-                    });
+                }
+                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
+                    route: router.configuration.routes.appsOverview, args: [this.data.appId]
                 });
             }
         },
@@ -181,26 +199,6 @@ define([
             let updatedContent = _.clone(this.app.get("content"));
             updatedContent = _.extend(updatedContent, formVal);
             this.app.set("content", updatedContent);
-        },
-
-        validateName () {
-            const promise = $.Deferred();
-            this.fillAppFromFormData();
-            appsUtils.checkName(this.app).then((checkResult) => {
-                if (checkResult !== true) {
-                    this.$el.find("#appErrorMessage .message").html(i18n.t(checkResult));
-                    this.$el.find("#appErrorMessage").show();
-                    this.$el.find("#submitApp").prop("disabled", true);
-                    promise.resolve(checkResult);
-                } else {
-                    this.$el.find("#appErrorMessage").hide();
-                    this.$el.find("#submitApp").prop("disabled", false);
-
-                    promise.resolve(true);
-                }
-            });
-            return promise;
         }
-
     })
 ));

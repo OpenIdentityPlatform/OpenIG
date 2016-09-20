@@ -114,15 +114,6 @@
             "exportConfig": "Export Config",
             "undeploy": "Undeploy",
             "deploy": "Deploy",
-            "appName": "Name",
-            "appNameHint": "Human-friendly name for your app.",
-            "appUrl": "Base URI",
-            "appUrlHint": "The base URI of the OpenIG instance.",
-            "appCondition": "Accept Conditions",
-            "appConditionHint": "Enter a path or expression to handle the request.",
-            "appConditionPlaceHolder": "eg. /wordpress or ${matches(request.uri.path, '^/openig/my/path')}",
-            "addAppTitle": "New App / API",
-            "addAppButton": "Create App",
             "deleteDialog": "Do you want to delete application '__title__' ?",
             "deployDialog":"Deploy application '__title__' ?",
             "undeployDialog": "Undeploy application '__title__' ?",
@@ -130,7 +121,6 @@
             "changesPending": "Changes pending",
             "appSettings": "App settings",
             "moreOptions": "More options",
-            "editAppDetails": "Edit App Details",
             "duplicateNameError": "Duplicate name detected. Please provide a unique name.",
             "noAppItems": "You haven't configured any apps or APIs yet.",
             "filters":{
@@ -150,10 +140,24 @@
             },
             "tableColumns":{
                 "name": "Name",
-                "url": "Url",
+                "baseURI": "Url",
                 "status": "Status"
             },
             "parts":{
+                "settings":{
+                    "addTitle": "New App / API",
+                    "addButton": "Create App",
+                    "editTitle": "Edit App Details",
+                    "fields":{
+                        "name":"Name",
+                        "nameHint": "Human-friendly name for your app.",
+                        "baseURI": "Base URI",
+                        "baseURIHint": "The base URI of the OpenIG instance.",
+                        "condition": "Accept Conditions",
+                        "conditionHint": "Enter a path or expression to handle the request.",
+                        "conditionPlaceHolder": "eg. /wordpress or ${matches(request.uri.path, '^/openig/my/path')}"
+                    }
+                },
                 "authentication":{
                     "title": "Authentication",
                     "description": "Authenticate users to your app using OpenID Connect.",
