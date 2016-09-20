@@ -122,6 +122,7 @@
             "appSettings": "App settings",
             "moreOptions": "More options",
             "duplicateNameError": "Duplicate name detected. Please provide a unique name.",
+            "duplicateIdError": "Duplicate Id detected. Please provide a unique Id.",
             "noAppItems": "You haven't configured any apps or APIs yet.",
             "filters":{
                 "Off": "Off",
@@ -151,6 +152,8 @@
                     "fields":{
                         "name":"Name",
                         "nameHint": "Human-friendly name for your app.",
+                        "id": "Id",
+                        "idHint": "Unique app id",
                         "baseURI": "Base URI",
                         "baseURIHint": "The base URI of the OpenIG instance.",
                         "condition": "Accept Conditions",
@@ -310,7 +313,8 @@
                 "baseURINotValid": "Not a valid uri",
                 "baseURIContainsPath": "Cannot contain path",
                 "URINotValid": "Not a valid uri",
-                "numberGreaterThanOrEqual": "Value must be greater than or equal to __minAttr__" 
+                "numberGreaterThanOrEqual": "Value must be greater than or equal to __minAttr__",
+                "notUrlCompatible": "Value is not URI compatible. Use only lowercase letters, numbers and dash"
             }
         },
         "modalWindow": {
