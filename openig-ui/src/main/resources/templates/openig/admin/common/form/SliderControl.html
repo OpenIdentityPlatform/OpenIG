@@ -5,7 +5,7 @@
         <label class=" control-label col-sm-3">{{t title}}</label>
         <div class="col-sm-7">
             <div class="checkbox checkbox-slider checkbox-slider-md checkbox-slider--b-flat checkbox-slider-primary active-control">
-                <label><input name="{{name}}" type="checkbox" {{value}}><span></span></label>
+                <label><input name="{{name}}" type="checkbox" {{#if value}}checked{{/if}} ><span></span></label>
             </div>
             {{#if hint}}
             <div class="form-control-hint">{{t hint}}</div>

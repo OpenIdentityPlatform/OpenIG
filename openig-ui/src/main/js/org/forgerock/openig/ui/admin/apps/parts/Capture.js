@@ -59,12 +59,12 @@ define(
                             controls: [
                                 {
                                     name: "inboundRequest",
-                                    value: capture.inbound.request ? "checked" : "",
+                                    value: capture.inbound.request,
                                     controlType: "slider"
                                 },
                                 {
                                     name: "inboundResponse",
-                                    value: capture.inbound.response ? "checked" : "",
+                                    value: capture.inbound.response,
                                     controlType: "slider"
                                 }
                             ]
@@ -75,12 +75,12 @@ define(
                             controls: [
                                 {
                                     name: "outboundRequest",
-                                    value: capture.outbound.request ? "checked" : "",
+                                    value: capture.outbound.request,
                                     controlType: "slider"
                                 },
                                 {
                                     name: "outboundResponse",
-                                    value: capture.outbound.response ? "checked" : "",
+                                    value: capture.outbound.response,
                                     controlType: "slider"
                                 }
                             ]

@@ -24,6 +24,9 @@ define([
     validatorsManager
 ) => ({
     extendControlsSettings (controls, options) {
+        if (!options.defaultValidatorEvent) {
+            options.defaultValidatorEvent = "keyup blur";
+        }
         _.forEach(controls, (c) => {
             if (options.autoTitle && options.autoTitle === true && c.title === undefined) {
                 c.title = `${options.translatePath}.${c.name}`;
@@ -31,9 +34,16 @@ define([
             if (options.autoHint && options.autoHint === true && c.hint === undefined) {
                 c.hint = `${options.translatePath}.${c.name}Hint`;
             }
+            if (options.autoPlaceHolder && options.autoPlaceHolder === true && c.placeholder === undefined) {
+                c.placeholder = `${options.translatePath}.${c.name}PlaceHolder`;
+            }
             if (options.defaultControlType && c.controlType === undefined) {
                 c.controlType = options.defaultControlType;
             }
+            if (c.validatorEvent === undefined) {
+                c.validatorEvent = options.defaultValidatorEvent;
+            }
+
             if (c.controlType) {
                 this.extendControlsSettings(c.controls, options);
             }
