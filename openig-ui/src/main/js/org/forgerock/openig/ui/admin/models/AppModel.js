@@ -36,7 +36,7 @@ define([
             content: {
                 id: "",
                 name: "",
-                url: "",
+                baseURI: "",
                 condition: "",
 
                 router: "",
@@ -67,7 +67,7 @@ define([
                 return "appErrorNoName";
             }
 
-            if (!attrs.content.url || attrs.content.url.trim() === "") {
+            if (!attrs.content.baseURI || attrs.content.baseURI.trim() === "") {
                 return "appErrorNoUrl";
             }
 

@@ -93,7 +93,7 @@ define([
                     RenderRow.__super__.render.apply(this, arguments);
                     if (this.model) {
                         this.$el.attr("data-id", this.model.get("_id"));
-                        this.$el.attr("data-url", this.model.get("content/url"));
+                        this.$el.attr("data-baseURI", this.model.get("content/baseURI"));
                         this.$el.attr("data-title", this.model.get("content/name"));
                         this.$el.attr("data-deployed", this.model.get("content/deployed"));
                     }
@@ -112,8 +112,8 @@ define([
                     })
                 },
                 {
-                    name: "content/url",
-                    label: i18n.t("templates.apps.tableColumns.url"),
+                    name: "content/baseURI",
+                    label: i18n.t("templates.apps.tableColumns.baseURI"),
                     cell: "string",
                     sortable: false,
                     editable: false
@@ -204,7 +204,7 @@ define([
         getRenderData (model) {
             return {
                 id: model.get("_id"),
-                url: model.get("content/url"),
+                baseURI: model.get("content/baseURI"),
                 name: model.get("content/name"),
                 statusText: i18n.t(this.getStatusTextKey(
                     model.get("content/deployed") === true,
@@ -324,7 +324,7 @@ define([
                         $(card).attr("data-deployed") === "true")
                     );
                     if ($(card).attr("data-id").toLowerCase().indexOf(search) > -1 ||
-                        $(card).attr("data-url").toLowerCase().indexOf(search) > -1 ||
+                        $(card).attr("data-baseURI").toLowerCase().indexOf(search) > -1 ||
                         $(card).attr("data-title").toLowerCase().indexOf(search) > -1 ||
                         deployedText.toLowerCase().indexOf(search) > -1) {
                         $(card).fadeIn();
@@ -339,7 +339,7 @@ define([
                         $(row).attr("data-deployed") === "true")
                     );
                     if ($(row).attr("data-id").toLowerCase().indexOf(search) > -1 ||
-                        $(row).attr("data-url").toLowerCase().indexOf(search) > -1 ||
+                        $(row).attr("data-baseURI").toLowerCase().indexOf(search) > -1 ||
                         $(row).attr("data-title").toLowerCase().indexOf(search) > -1 ||
                         deployedText.toLowerCase().indexOf(search) > -1) {
                         $(row).fadeIn();

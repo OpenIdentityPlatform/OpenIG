@@ -37,7 +37,7 @@ define([
             this.data = options.parentData;
             this.data.appId = this.data.appData.get("_id");
             this.data.title = this.data.appData.get("content/name");
-            this.data.baseURI = this.data.appData.get("content/url");
+            this.data.baseURI = this.data.appData.get("content/baseURI");
             this.data.condition = this.data.appData.get("content/condition");
             this.data.overviewItems = [
                 {

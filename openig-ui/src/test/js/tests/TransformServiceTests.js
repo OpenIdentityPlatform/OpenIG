@@ -123,7 +123,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path == '/'}"
                 }
             });
@@ -235,7 +235,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     filters: [
                         {
@@ -267,7 +267,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     filters: [
                         {
@@ -314,7 +314,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         inbound: {
@@ -344,7 +344,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         inbound: {
@@ -374,7 +374,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         inbound: {
@@ -404,7 +404,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         outbound: {
@@ -441,7 +441,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         outbound: {
@@ -479,7 +479,7 @@ define([
                 content: {
                     id: "modelID",
                     name: "Router",
-                    url: "http://www.example.com:8081",
+                    baseURI: "http://www.example.com:8081",
                     condition: "${request.uri.path === '/'}",
                     capture: {
                         outbound: {
