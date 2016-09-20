@@ -17,7 +17,6 @@ package org.forgerock.openig.handler.router;
 
 import static org.forgerock.audit.AuditServiceBuilder.newAuditService;
 import static org.forgerock.audit.json.AuditJsonConfig.registerHandlerToService;
-import static org.forgerock.http.HttpApplication.LOGGER;
 
 import org.forgerock.audit.AuditException;
 import org.forgerock.audit.AuditService;
@@ -36,12 +35,16 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Constructs an {@link AuditService} through an {@link Heaplet}.
  */
 /** Creates and initializes an AuditService in a heap environment. */
 public class AuditServiceObjectHeaplet extends GenericHeaplet {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuditServiceObjectHeaplet.class);
 
     private AuditService auditService;
 
@@ -94,7 +97,7 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
             try {
                 registerHandlerToService(handlerConfig, auditServiceBuilder, classLoader);
             } catch (Exception ex) {
-                LOGGER.error("Unable to register handler defined by config: " + handlerConfig, ex);
+                logger.error("Unable to register handler defined by config: " + handlerConfig, ex);
             }
         }
 
@@ -132,7 +135,7 @@ public class AuditServiceObjectHeaplet extends GenericHeaplet {
                         return type.cast(new Client(handler));
                     }
                 } catch (HeapException e) {
-                    LOGGER.error("An error occurred while looking for the ElasticsearchClientHandler", e);
+                    logger.error("An error occurred while looking for the ElasticsearchClientHandler", e);
                     throw new ClassNotFoundException(type.getName(), e);
                 }
             }
