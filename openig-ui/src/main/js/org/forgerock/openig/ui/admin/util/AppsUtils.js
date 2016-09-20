@@ -41,27 +41,24 @@ define([
     router,
     Clipboard
 ) => ({
-    cleanAppNamen (name) {
-        // TODO: add some checks, fixes
-        const clearName = name;
-        return clearName;
+    generateAppId (appName) {
+        return appName.toLowerCase()
+            .replace(/[^\w ]+/g, "")
+            .replace(/ +/g, "-");
     },
 
-    checkName (app) {
-        const promise = $.Deferred();
-        AppsCollection.availableApps().then((apps) => {
-            const foundApp = _.find(apps.models, (a) => (
-                a.get("content/name") === app.get("content/name")) &&
-                a.get("_id") !== app.get("_id")
-            );
+    isAppIdUniq (appId) {
+        return AppsCollection.byId(appId)
+            .then((appModel) => !appModel);
+    },
 
-            if (foundApp) {
-                promise.resolve("templates.apps.duplicateNameError");
-            } else {
-                promise.resolve(true);
-            }
+    checkName (appName) {
+        return AppsCollection.availableApps().then((apps) => {
+            const foundApp = _.find(apps.models, (a) => (
+                a.get("content/name") === appName
+            ));
+            return foundApp ? "templates.apps.duplicateNameError" : "";
         });
-        return promise;
     },
 
     toggleValue (e) {

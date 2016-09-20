@@ -58,5 +58,29 @@ define([
                 minAttr: min
             })]);
         }
+    },
+    "urlCompatible": {
+        "name": "Url compatible value",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const v = input.val();
+            if (/^[\d,a-z,-]+$/.test(v)) {
+                callback();
+            } else {
+                callback([i18n.t("common.form.validation.notUrlCompatible")]);
+            }
+        }
+    },
+    "customValidator": {
+        "name": "Custom validator",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const validMsg = input.data("custom-valid-msg");
+            if (validMsg) {
+                callback([i18n.t(validMsg)]);
+                return;
+            }
+            callback();
+        }
     }
 }));

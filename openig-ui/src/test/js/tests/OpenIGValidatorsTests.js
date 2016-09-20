@@ -63,12 +63,89 @@ define([
 
             QUnit.start();
         });
+
+        QUnit.asyncTest("urlCompatible Validator", (assert) => {
+            const moduleClass = "config/validators/OpenIGValidators";
+            const validators = require(moduleClass);
+            const testURLCompatible = (value, callbackCheck) => {
+                validators.urlCompatible.validator(undefined, this.fakeInputElement(value), (result) => {
+                    assert.ok(
+                        callbackCheck(result),
+                        `URI check '${value}' with result: ${(result || "ok")}`
+                    );
+                });
+            };
+
+            // Valid values
+            testURLCompatible("example", (result) => (result === undefined));
+
+            testURLCompatible("example-new-id", (result) => (result === undefined));
+
+            testURLCompatible("example-new-id123456", (result) => (result === undefined));
+
+            testURLCompatible("123456", (result) => (result === undefined));
+
+            //Invalid values
+            testURLCompatible("bad id", (result) => (
+                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+            ));
+
+            testURLCompatible("Bad-Id", (result) => (
+                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+            ));
+
+            testURLCompatible("id=bad", (result) => (
+                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+            ));
+
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("customValidator Validator", (assert) => {
+            const moduleClass = "config/validators/OpenIGValidators";
+            const validators = require(moduleClass);
+            const testCustomValidator = (value, callbackCheck) => {
+                validators.customValidator.validator(
+                    undefined,
+                    this.fakeDataAttr("custom-valid-msg", value),
+                    (result) => {
+                        assert.ok(
+                            callbackCheck(result),
+                            `URI check '${value}' with result: ${(result || "ok")}`
+                        );
+                    }
+                );
+            };
+
+            // Valid values
+            testCustomValidator("common.form.validation.baseURINotValid",
+                (result) => (
+                    result && _.difference(result, [i18n.t("common.form.validation.baseURINotValid")])
+                )
+            );
+
+            //Invalid values
+            testCustomValidator(undefined, (result) => (result === undefined));
+
+            QUnit.start();
+        });
     },
-        // Create object with val() method to fake real input
+    // Create object with val() method to fake real input
     fakeInputElement (value) {
         return {
             val () {
                 return value;
+            }
+        };
+    },
+
+    fakeDataAttr (dataAttr, value) {
+        return {
+            data (attr) {
+                if (attr === dataAttr) {
+                    return value;
+                }
+                return;
             }
         };
     }

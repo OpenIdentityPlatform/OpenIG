@@ -54,12 +54,16 @@ define([
         events: {
             "click #submitApp": "appFormSubmit",
             "click #cancelApp": "appFormCancel",
-            "onValidate": "onValidate"
+            "blur input[name='name']": "validateName",
+            "onValidate": "onValidate",
+            "keyup input[name='name']": "generateId",
+            "keyup input[name='id']": "validateId"
         },
         formMode: { ADD:0, DUPLICATE: 1, EDIT: 2 },
         data: {
         },
         app: null,
+        manualIdChange: false,
         render (args, callback) {
             this.data = {};
             this.data.appId = args[0];
@@ -83,6 +87,12 @@ define([
                     name: "name",
                     value: this.app.get("content/name"),
                     validator: "required spaceCheck customValidator"
+                },
+                {
+                    name: "id",
+                    value: this.app.get("_id"),
+                    validator: "required spaceCheck urlCompatible customValidator",
+                    disabled: this.data.mode === this.formMode.EDIT
                 },
                 {
                     name: "baseURI",
@@ -168,7 +178,7 @@ define([
                         });
                 }
                 eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                    route: router.configuration.routes.appsOverview, args: [this.data.appId]
+                    route: router.configuration.routes.appsOverview, args: [this.app.id]
                 });
             }
         },
@@ -176,7 +186,7 @@ define([
         appFormCancel () {
             if (this.data.mode === this.formMode.EDIT) {
                 eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                    route: router.configuration.routes.appsSettings, args: [this.data.appId]
+                    route: router.configuration.routes.appsSettings, args: [this.app.id]
                 });
             } else {
                 eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
@@ -188,17 +198,41 @@ define([
         fillAppFromFormData () {
             const form = this.$el.find("#appForm")[0];
             const formVal = form2js(form, ".", true);
-            // Create simple content + fake id
-            if ((this.data.mode === this.formMode.ADD || this.data.mode === this.formMode.DUPLICATE) &&
-                !this.app.get("_id")) {
-                this.data.appId = formVal.name + Date.now();
-                this.app.set("_id", this.data.appId);
-            }
-
-            _.extend(formVal, { id: this.data.appId });
             let updatedContent = _.clone(this.app.get("content"));
             updatedContent = _.extend(updatedContent, formVal);
+            if (this.data.mode !== this.formMode.EDIT) {
+                this.app.set("_id", formVal.id);
+            }
             this.app.set("content", updatedContent);
+        },
+
+        generateId (evt) {
+            // Avoid re-generate on tab, after manual change or at edit page
+            if (evt.keyCode === 9 || this.manualIdChange || this.data.mode === this.formMode.EDIT) {
+                return;
+            }
+            this.$el.find("[name='id']").val(appsUtils.generateAppId(evt.target.value));
+        },
+
+        validateId (evt) {
+            if (this.app.id !== evt.target.value) {
+                appsUtils.isAppIdUniq(evt.target.value)
+                    .then((isValid) => {
+                        $(evt.target).data("custom-valid-msg", (isValid ? "" : "templates.apps.duplicateIdError"));
+                    });
+            }
+            if (evt.keyCode !== 9) {
+                this.manualIdChange = true;
+            }
+        },
+
+        validateName (evt) {
+            if (this.app.get("content/name") !== evt.target.value) {
+                appsUtils.checkName(evt.target.value)
+                    .then((checkResult) => {
+                        $(evt.target).data("custom-valid-msg", checkResult || "");
+                    });
+            }
         }
     })
 ));
