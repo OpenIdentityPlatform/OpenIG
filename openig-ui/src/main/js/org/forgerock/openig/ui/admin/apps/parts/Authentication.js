@@ -70,7 +70,7 @@ define([
             this.data.controls = [
                 {
                     name: "enabled",
-                    value:  this.data.authFilter.enabled ? "checked" : "",
+                    value:  this.data.authFilter.enabled,
                     controlType: "slider",
                     hint: false
                 },
@@ -114,12 +114,12 @@ define([
                                 },
                                 {
                                     name: "tokenEndpointUseBasicAuth",
-                                    value: this.data.authFilter.tokenEndpointUseBasicAuth ? "checked" : "",
+                                    value: this.data.authFilter.tokenEndpointUseBasicAuth,
                                     controlType: "slider"
                                 },
                                 {
                                     name: "requireHttps",
-                                    value: this.data.authFilter.requireHttps ? "checked" : "",
+                                    value: this.data.authFilter.requireHttps,
                                     controlType: "slider"
                                 }
                             ]

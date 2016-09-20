@@ -66,7 +66,7 @@ define([
             this.data.controls = [
                 {
                     name: "enabled",
-                    value:  this.data.authZFilter.enabled ? "checked" : "",
+                    value:  this.data.authZFilter.enabled,
                     controlType: "slider",
                     hint: false
                 },
