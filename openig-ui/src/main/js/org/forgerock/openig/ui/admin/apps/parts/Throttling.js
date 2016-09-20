@@ -22,8 +22,10 @@ define([
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
     "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/util/AppsUtils",
     "org/forgerock/openig/ui/admin/util/FormUtils",
-    "org/forgerock/commons/ui/common/main/EventManager"
+    "org/forgerock/commons/ui/common/main/EventManager",
+    "org/forgerock/commons/ui/common/util/ModuleLoader"
 ], (
     $,
     _,
@@ -32,11 +34,17 @@ define([
     AbstractView,
     validatorsManager,
     Constants,
+    AppsUtils,
     FormUtils,
     EventManager
 ) => (AbstractView.extend({
     element: ".main",
     template: "templates/openig/admin/apps/parts/Throttling.html",
+    partials: [
+        "templates/openig/admin/common/form/SliderControl.html",
+        "templates/openig/admin/common/form/GroupControl.html",
+        "templates/openig/admin/apps/components/ThrottlingControl.html"
+    ],
     events: {
         "click #resetThrottling": "throttlingReset",
         "click #saveThrottling": "throttlingSave",
@@ -56,20 +64,41 @@ define([
     },
 
     render () {
-        this.data.throttFilter = _.find(this.data.appData.get("content/filters"), {
-            "type": "ThrottlingFilter"
-        });
+        this.data.newFilter = false;
+        this.data.throttFilter = this.getFilter();
+        if (!this.data.throttFilter) {
+            this.data.throttFilter = this.createFilter();
+            this.data.newFilter = true;
+        }
 
-        this.data.sliderValue = (_.get(this.data.throttFilter, "enabled", false) === true)
-                ? "checked" : "";
-        this.data.cssClass = (_.get(this.data.throttFilter, "enabled", false) === true)
-                ? "collapse in" : "collapse";
-        this.data.requests = _.get(this.data.throttFilter, "numberOfRequests", 1);
-        this.data.duration = _.get(this.data.throttFilter, "durationValue", 1);
+        this.data.controls = [
+            {
+                name: "enabled",
+                title: i18n.t("templates.apps.parts.throttling.btnEnableTitle"),
+                value: this.data.throttFilter.enabled ? "checked" : "",
+                controlType: "slider"
+            },
+            {
+                name: "throttGroup",
+                title: "",
+                controlType: "group",
+                cssClass: this.data.throttFilter.enabled ? "collapse in" : "collapse",
+                controls: [
+                    {
+                        controlType: "throttling",
+                        requests: this.data.throttFilter.numberOfRequests,
+                        duration: this.data.throttFilter.durationValue,
+                        validator: "required greaterThanOrEqualMin",
+                        template: "templates/openig/admin/apps/components/ThrottlingControl"
+                    }
+                ]
+            }
+        ];
 
+        FormUtils.fillPartialsByControlType(this.data.controls);
         this.parentRender(() => {
             this.createTimeRangeSelect();
-            this.setFormFooterVisiblity((_.get(this.data.throttFilter, "enabled", false) === true));
+            this.setFormFooterVisiblity(this.data.throttFilter.enabled);
             validatorsManager.bindValidators(this.$el);
         });
     },
@@ -81,56 +110,88 @@ define([
             option.value = opt;
             option.text = i18n.t(`common.timeSlot.${opt}`);
             selectList.appendChild(option);
-            selectList.value = _.get(this.data.throttFilter, "durationRange", Constants.timeSlot.SECOND);
+            selectList.value = this.data.throttFilter.durationRange;
         });
     },
 
-    throttlingReset () {
+    throttlingReset (event) {
         event.preventDefault();
         this.render();
     },
 
-    throttlingSave () {
+    throttlingSave (event) {
         event.preventDefault();
         const form = this.$el.find("#throttForm")[0];
-        FormUtils.isFormValid(form).then((valid) => {
-            if (!valid) {
-                $(form).find("input").trigger("validate");
-                return;
-            }
-            const formVal = form2js(form, ".", false);
-            _.extend(this.data.throttFilter, formVal);
-            this.data.throttFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
-            this.data.appData.save();
-
-            EventManager.sendEvent(
-                Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                {
-                    key: "appSettingsSaveSuccess",
-                    filter: i18n.t("templates.apps.parts.throttling.title")
+        FormUtils.isFormValid(form)
+            .done(
+            () => {
+                const formVal = form2js(form, ".", false);
+                _.extend(this.data.throttFilter, formVal);
+                this.data.throttFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
+                if (this.data.newFilter) {
+                    AppsUtils.addFilterIntoModel(this.data.appData, this.data.throttFilter);
                 }
-            );
-        });
+                this.data.appData.save();
+
+                EventManager.sendEvent(
+                    Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                    {
+                        key: "appSettingsSaveSuccess",
+                        filter: i18n.t("templates.apps.parts.throttling.title")
+                    }
+                );
+            })
+            .fail(
+            () => {
+                $(form).find("input").trigger("validate");
+            });
     },
 
     enableThrottlingClick (event) {
-        if (event.target.checked) {
-            this.$el.find("div[name='throttGroup']").collapse("show");
-        } else {
-            this.$el.find("div[name='throttGroup']").collapse("hide");
-        }
+        const newState = event.currentTarget.checked;
+        const collapseState = newState ? "show" : "hide";
+        this.$el.find("div[name='throttGroup']").collapse(collapseState);
 
         // Save Enabled or disabled state immediately
-        _.set(this.data.throttFilter, "enabled", event.currentTarget.checked);
-        this.data.appData.save();
-        this.setFormFooterVisiblity(event.currentTarget.checked);
+        if (!newState) {
+            // Save Off state
+            this.data.throttFilter.enabled = newState;
+            this.data.appData.save();
+        } else {
+            // Save On state, only when form is valid
+            const form = this.$el.find("#throttForm")[0];
+            FormUtils.isFormValid(form)
+                .done(
+                () => {
+                    this.data.throttFilter.enabled = newState;
+                    this.data.appData.save();
+                });
+        }
+        this.setFormFooterVisiblity(newState);
     },
 
     setFormFooterVisiblity (visible) {
+        const footer = this.$el.find(".panel-footer");
         if (visible) {
-            this.$el.find(".panel-footer").show();
+            footer.show();
         } else {
-            this.$el.find(".panel-footer").hide();
+            footer.hide();
         }
+    },
+
+    getFilter () {
+        return _.find(this.data.appData.get("content/filters"),
+            { "type": "ThrottlingFilter" }
+        );
+    },
+
+    createFilter () {
+        return {
+            type: "ThrottlingFilter",
+            enabled: false,
+            numberOfRequests: 100,
+            durationValue: 1,
+            durationRange: Constants.timeSlot.SECOND
+        };
     }
 })));
