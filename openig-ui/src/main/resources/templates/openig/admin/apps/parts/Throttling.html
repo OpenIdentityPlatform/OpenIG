@@ -5,44 +5,16 @@
     <p class="panel-description">{{t "templates.apps.parts.throttling.description"}}</p>
 </div>
 
-<form class="panel panel-default" id="throttForm" role="form">
+<form id="throttForm" class="panel panel-default" role="form">
         <div class="panel-body">
-            <div class="form-horizontal">
-                <div class="form-group">
-                    <label class="control-label col-xs-2 col-sm-3 col-md-3">{{t "templates.apps.parts.throttling.btnEnableTitle"}}</label>
-                    <div class="col-xs-10 col-sm-9 col-md-9 form-group">
-                        <div class="checkbox checkbox-slider checkbox-slider-md checkbox-slider--b-flat checkbox-slider-primary active-control">
-                            <label><input name="enabled" type="checkbox" {{sliderValue}}><span></span></label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="form-horizontal {{cssClass}}" name="throttGroup">
-                <div class="form-group">
-                    <label class="control-label col-xs-2 col-sm-3 col-md-3">{{t "templates.apps.parts.throttling.lblAllow"}}</label>
-                    <div class="col-xs-10 col-sm-9 col-md-9">
-                        <div class="form-group row">
-                            <div class="col-xs-3 col-md-3 col-lg-5 form-group">
-                                <input class="form-control" type="number" min="1" name="numberOfRequests" data-validator="required greaterThanOrEqualMin" data-validator-event="keyup blur" value="{{requests}}">
-                            </div>
-                            <label class="control-label col-xs-3 col-md-3 col-lg-2">{{t "templates.apps.parts.throttling.lblPer"}}</label>
-                            <div class="col-xs-3 col-md-3 col-lg-2 form-group">
-                                <input class="form-control" type="number" min="1" data-validator="required greaterThanOrEqualMin" data-validator-event="keyup blur" name="durationValue" value="{{duration}}">
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-4 col-md-3 col-lg-3">
-                                    <select name="durationRange" class="form-control generic-selectize selectized"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {{#each controls}}
+                {{> (control) }}
+            {{/each}}
         </div>
     <div class="panel-footer clearfix">
         <div class="pull-right">
-            <input id="resetThrottling" class="btn btn-default" type="button" value="{{t 'common.form.reset'}}" />
-            <input id="saveThrottling" name="saveThrottling" disabled="true" class="btn btn-primary" type="submit" value="{{t 'common.form.save'}}" />
+            <input type="button" id="resetThrottling" class="btn btn-default" name="resetThrottling" value="{{t 'common.form.reset'}}" />
+            <input type="submit" id="saveThrottling" class="btn btn-primary" name="saveThrottling" value="{{t 'common.form.save'}}" disabled />
         </div>
     </div>
 </form>

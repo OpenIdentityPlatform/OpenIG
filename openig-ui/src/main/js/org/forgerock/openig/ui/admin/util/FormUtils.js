@@ -16,11 +16,13 @@
 
 define([
     "jquery",
-    "underscore",
+    "lodash",
+    "i18next",
     "org/forgerock/commons/ui/common/main/ValidatorsManager"
 ], (
     $,
     _,
+    i18n,
     validatorsManager
 ) => ({
     extendControlsSettings (controls, options) {
@@ -53,6 +55,7 @@ define([
     fillPartialsByControlType (controls) {
         const self = this;
         _.forEach(controls, (c) => {
+            // 'control()' function is used for dynamically select the partial to be executed within handelbars template
             c.control = function () {
                 switch (this.controlType) {
                     case "slider": return "templates/openig/admin/common/form/SliderControl";
@@ -122,7 +125,6 @@ define([
 
     isFormValid (form) {
         const deferred = $.Deferred();
-        const promise = deferred.promise();
         const validatorResults = [];
         _.forEach($(form).find("input"), (control) => {
             const input = $(control);
@@ -130,10 +132,14 @@ define([
             validatorResults.push(valRes);
         });
         $.when.apply($, validatorResults).then((...args) => {
-            deferred.resolve($.inArray(false, args) === -1);
+            if ($.inArray(false, args) === -1) {
+                deferred.resolve();
+            } else {
+                deferred.reject();
+            }
         }
         );
-        return promise;
+        return deferred;
     },
 
     evaluateAllValidatorsForField (element, container) {
