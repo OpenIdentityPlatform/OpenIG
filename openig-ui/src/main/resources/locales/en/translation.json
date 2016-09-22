@@ -312,6 +312,13 @@
         "modalWindow": {
             "title": {
                 "configExport": "Generated config file"
+            },
+            "button": {
+                "copyToClipboard": "Copy to clipboard"
+            },
+            "message":{
+                "copied": "Copied!",
+                "copyFailed": "Clipboard copy failed"
             }
         },
         "grid": {
