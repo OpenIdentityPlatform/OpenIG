@@ -148,12 +148,12 @@ define([
             } else {
                 //Save On state, only when form is valid
                 const form = this.$el.find("#authorizationForm")[0];
-                FormUtils.isFormValid(form).then((valid) => {
-                    if (valid) {
+                FormUtils.isFormValid(form)
+                    .done(
+                    () => {
                         this.data.authZFilter.enabled = newState;
                         this.data.appData.save();
-                    }
-                });
+                    });
             }
             this.setFormFooterVisiblity(newState);
         },
@@ -175,27 +175,29 @@ define([
         saveClick () {
             event.preventDefault();
             const form = this.$el.find("#authorizationForm")[0];
-            FormUtils.isFormValid(form).then((valid) => {
-                if (!valid) {
-                    $(form).find("input").trigger("validate");
-                    return;
-                }
-                const formVal = form2js(form, ".", false);
-                _.extend(this.data.authZFilter, formVal);
-                this.data.authZFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
-                if (this.data.newFilter) {
-                    AppsUtils.addFilterIntoModel(this.data.appData, this.data.authZFilter);
-                }
-                this.data.appData.save();
-
-                EventManager.sendEvent(
-                    Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                    {
-                        key: "appSettingsSaveSuccess",
-                        filter: i18n.t("templates.apps.parts.authorization.title")
+            FormUtils.isFormValid(form)
+                .done(
+                () => {
+                    const formVal = form2js(form, ".", false);
+                    _.extend(this.data.authZFilter, formVal);
+                    this.data.authZFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
+                    if (this.data.newFilter) {
+                        AppsUtils.addFilterIntoModel(this.data.appData, this.data.authZFilter);
                     }
-                );
-            });
+                    this.data.appData.save();
+
+                    EventManager.sendEvent(
+                        Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        {
+                            key: "appSettingsSaveSuccess",
+                            filter: i18n.t("templates.apps.parts.authorization.title")
+                        }
+                    );
+                })
+                .fail(
+                () => {
+                    $(form).find("input").trigger("validate");
+                });
         },
 
         getFilter () {
