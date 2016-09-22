@@ -21,11 +21,12 @@ define([
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/AppsCollection",
     "org/forgerock/openig/ui/admin/models/RoutesCollection",
-    "org/forgerock/commons/ui/common/components/BootstrapDialogView",
+    "org/forgerock/commons/ui/common/components/BootstrapDialog",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/openig/ui/admin/services/TransformService",
-    "org/forgerock/commons/ui/common/main/Router"
+    "org/forgerock/commons/ui/common/main/Router",
+    "org/forgerock/openig/ui/common/util/Clipboard"
 ], (
     $,
     _,
@@ -33,11 +34,12 @@ define([
     UIUtils,
     AppsCollection,
     RoutesCollection,
-    BootstrapDialogView,
+    BootstrapDialog,
     eventManager,
     constants,
     transformService,
-    router
+    router,
+    Clipboard
 ) => ({
     cleanAppNamen (name) {
         // TODO: add some checks, fixes
@@ -79,20 +81,71 @@ define([
         );
     },
 
+    showTooltip (target, options) {
+        target.tooltip(_.extend({
+            container: "body",
+            placement: "bottom",
+            trigger: "manual"
+        }, options));
+        target.tooltip("show");
+        _.delay(() => {
+            target.tooltip("hide");
+        }, 1500);
+    },
+
+    showExportDialog (jsonContent) {
+        const self = this;
+        const buttons = [];
+        if (Clipboard.isClipboardEnabled()) {
+            buttons.push(
+                {
+                    id: "btnOk",
+                    label: i18n.t("common.modalWindow.button.copyToClipboard"),
+                    cssClass: "btn-default",
+                    action (dialog) {
+                        const copyElement = dialog.getMessage().find("#jsonExportContent")[0];
+                        if (Clipboard.copyContent(copyElement)) {
+                            self.showTooltip(this, {
+                                title: i18n.t("common.modalWindow.message.copied")
+                            });
+                        } else {
+                            self.showTooltip(this, {
+                                title: i18n.t("common.modalWindow.message.copyFailed")
+                            });
+                        }
+                    }
+                }
+            );
+        }
+        buttons.push(
+            {
+                label: i18n.t("common.form.cancel"),
+                cssClass: "btn-primary",
+                action (dialog) {
+                    dialog.close();
+                }
+            }
+        );
+
+        const msgNode = $(`<div><pre id='jsonExportContent'>${jsonContent}</pre></div>`);
+
+        BootstrapDialog.show({
+            title: i18n.t("common.modalWindow.title.configExport"),
+            message: msgNode,
+            closable: true,
+            buttons,
+            onshown () {
+                this.message.css("max-height", "calc(100vh - 212px)");
+            }
+        });
+    },
+
     exportConfigDlg (appId) {
-        // TODO: call export function
         AppsCollection.byId(appId).then((appData) => {
             if (appData) {
                 try {
-                    const modal = new BootstrapDialogView();
-                    modal.contentTemplate = "templates/openig/admin/modals/ModalMessageTemplate.html";
-                    modal.data.jsonContent = JSON.stringify(transformService.transformApplication(appData), null, 2);
-                    modal.closeByBackdrop = false;
-                    modal.draggable = true;
-                    modal.setTitle(i18n.t("common.modalWindow.title.configExport"));
-                    modal.loadContent().then(() => {
-                        modal.show();
-                    });
+                    const jsonContent = JSON.stringify(transformService.transformApplication(appData), null, 2);
+                    this.showExportDialog(jsonContent);
                 } catch (e) {
                     eventManager.sendEvent(constants.EVENT_DISPLAY_MESSAGE_REQUEST, {
                         key: e.errorType || "modelTransformationFailed", message: e.message
