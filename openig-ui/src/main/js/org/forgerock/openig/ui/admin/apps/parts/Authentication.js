@@ -169,12 +169,12 @@ define([
             } else {
                 //Save On state, only when form is valid
                 const form = this.$el.find("#authForm")[0];
-                FormUtils.isFormValid(form).then((valid) => {
-                    if (valid) {
+                FormUtils.isFormValid(form)
+                    .done(
+                    () => {
                         this.data.authFilter.enabled = newState;
                         this.data.appData.save();
-                    }
-                });
+                    });
             }
             this.setFormFooterVisiblity(newState);
         },
@@ -196,30 +196,32 @@ define([
         saveClick () {
             event.preventDefault();
             const form = this.$el.find("#authForm")[0];
-            FormUtils.isFormValid(form).then((valid) => {
-                if (!valid) {
-                    $(form).find("input").trigger("validate");
-                    return;
-                }
-                const formVal = form2js(form, ".", false);
-                _.extend(this.data.authFilter, formVal);
-                this.data.authFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
-                this.data.authFilter.tokenEndpointUseBasicAuth =
-                    FormUtils.getBoolValue(formVal.tokenEndpointUseBasicAuth);
-                this.data.authFilter.requireHttps = FormUtils.getBoolValue(formVal.requireHttps);
-                if (this.data.newFilter) {
-                    AppsUtils.addFilterIntoModel(this.data.appData, this.data.authFilter);
-                }
-                this.data.appData.save();
-
-                EventManager.sendEvent(
-                    Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                    {
-                        key: "appSettingsSaveSuccess",
-                        filter: i18n.t("templates.apps.parts.authentication.title")
+            FormUtils.isFormValid(form)
+                .done(
+                () => {
+                    const formVal = form2js(form, ".", false);
+                    _.extend(this.data.authFilter, formVal);
+                    this.data.authFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
+                    this.data.authFilter.tokenEndpointUseBasicAuth =
+                        FormUtils.getBoolValue(formVal.tokenEndpointUseBasicAuth);
+                    this.data.authFilter.requireHttps = FormUtils.getBoolValue(formVal.requireHttps);
+                    if (this.data.newFilter) {
+                        AppsUtils.addFilterIntoModel(this.data.appData, this.data.authFilter);
                     }
-                );
-            });
+                    this.data.appData.save();
+
+                    EventManager.sendEvent(
+                        Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        {
+                            key: "appSettingsSaveSuccess",
+                            filter: i18n.t("templates.apps.parts.authentication.title")
+                        }
+                    );
+                })
+                .fail(
+                () => {
+                    $(form).find("input").trigger("validate");
+                });
         },
 
         getFilter () {
