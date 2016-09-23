@@ -251,10 +251,10 @@ public class SsoTokenFilterTest {
     @Test
     public void shouldRecoverFromAuthenticationBadGateway() throws Exception {
 
-        final Response badGateway = new Response();
-        badGateway.setStatus(BAD_GATEWAY).setEntity(object(field("code", BAD_GATEWAY.getCode()),
-                                                           field("reason", "Bad Gateway"),
-                                                           field("message", "Failed to obtain response")));
+        final Response badGateway = new Response(BAD_GATEWAY).setEntity(object(field("code", BAD_GATEWAY.getCode()),
+                                                                               field("reason", "Bad Gateway"),
+                                                                               field("message",
+                                                                                     "Failed to obtain response")));
         final Request firstRequest = new Request();
         firstRequest.setUri(APP_URI);
         final Request secondRequest = new Request();
