@@ -28,6 +28,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forgerock.api.annotations.Handler;
+import org.forgerock.api.annotations.Operation;
+import org.forgerock.api.annotations.Read;
+import org.forgerock.api.annotations.Schema;
+import org.forgerock.api.annotations.SingletonProvider;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
@@ -49,6 +54,11 @@ import com.codahale.metrics.Snapshot;
  * Expose monitoring information provided by the given {@link MonitoringMetrics} as a REST resource.
  * This resource only supports read typed operations.
  */
+@SingletonProvider(@Handler(
+        title = "i18n:#service.title",
+        description = "i18n:#service.desc",
+        resourceSchema = @Schema(schemaResource = "monitoring-resource.json"),
+        mvccSupported = false))
 class MonitoringResourceProvider implements SingletonResourceProvider {
 
     /**
@@ -71,6 +81,7 @@ class MonitoringResourceProvider implements SingletonResourceProvider {
     }
 
     @Override
+    @Read(operationDescription = @Operation(description = "i18n:#read.desc"))
     public Promise<ResourceResponse, ResourceException> readInstance(final Context context, final ReadRequest request) {
         JsonValue data = json(object());
 

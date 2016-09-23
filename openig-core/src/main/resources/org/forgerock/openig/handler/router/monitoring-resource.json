@@ -1,0 +1,114 @@
+{
+  "title": "i18n:org/forgerock/openig/handler/router/MonitoringResourceProvider#service.title",
+  "description": "i18n:org/forgerock/openig/handler/router/MonitoringResourceProvider#read.desc",
+  "type": "object",
+  "properties": {
+    "requests": {
+      "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#requests.desc",
+      "type": "object",
+      "properties": {
+        "total": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#requests.total",
+          "type": "integer"
+        },
+        "active": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#requests.active",
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.desc",
+      "type": "object",
+      "properties": {
+        "total": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.total",
+          "type": "integer"
+        },
+        "info": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.info",
+          "type": "integer"
+        },
+        "success": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.success",
+          "type": "integer"
+        },
+        "redirect": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.redirect",
+          "type": "integer"
+        },
+        "clientError": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.clientError",
+          "type": "integer"
+        },
+        "serverError": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.serverError",
+          "type": "integer"
+        },
+        "other": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.other",
+          "type": "integer"
+        },
+        "errors": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.errors",
+          "type": "integer"
+        },
+        "null": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.notHandled",
+          "type": "integer"
+        }
+      }
+    },
+    "throughput": {
+      "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.desc",
+      "type": "object",
+      "properties": {
+        "mean": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.mean",
+          "type": "number"
+        },
+        "lastMinute": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.lastMinute",
+          "type": "number"
+        },
+        "last5Minutes": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.last5Minutes",
+          "type": "number"
+        },
+        "last15Minutes": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.last15Minutes",
+          "type": "number"
+        }
+      }
+    },
+    "responseTime": {
+      "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.desc",
+      "type": "object",
+      "properties": {
+        "mean": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.mean",
+          "type": "number"
+        },
+        "median": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.median",
+          "type": "number"
+        },
+        "standardDeviation": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.standardDeviation",
+          "type": "number"
+        },
+        "total": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.total",
+          "type": "number"
+        },
+        "percentiles": {
+          "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#percentiles.desc",
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}
