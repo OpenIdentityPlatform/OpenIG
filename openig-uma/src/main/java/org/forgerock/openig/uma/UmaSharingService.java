@@ -22,6 +22,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.json.JsonValueFunctions.pattern;
+import static org.forgerock.json.JsonValueFunctions.setOf;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
@@ -426,7 +427,7 @@ public class UmaSharingService {
                                                          .as(expression(Boolean.class)),
                                                     value.get("scopes")
                                                          .as(evaluatedWithHeapProperties())
-                                                         .asSet(String.class));
+                                                         .as(setOf(String.class)));
                 }
             }));
         }
