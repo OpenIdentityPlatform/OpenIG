@@ -195,7 +195,7 @@
               <goal>unpack</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/www/libs</outputDirectory>
+              <outputDirectory>${project.build.directory}/compose/libs</outputDirectory>
               <artifactItems>
                 <artifactItem>
                   <groupId>org.forgerock.commons.ui.libs</groupId>

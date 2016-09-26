@@ -26,7 +26,10 @@ define([
     "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/openig/ui/admin/services/TransformService",
     "org/forgerock/commons/ui/common/main/Router",
-    "org/forgerock/openig/ui/common/util/Clipboard"
+    "org/forgerock/openig/ui/common/util/Clipboard",
+    "codemirror",
+    // codemirror's dependency for ld+json mode
+    "codemirror/mode/javascript/javascript"
 ], (
     $,
     _,
@@ -39,7 +42,8 @@ define([
     constants,
     transformService,
     router,
-    Clipboard
+    Clipboard,
+    CodeMirror
 ) => ({
     generateAppId (appName) {
         return appName.toLowerCase()
@@ -124,8 +128,17 @@ define([
             }
         );
 
-        const msgNode = $(`<div><pre id='jsonExportContent'>${jsonContent}</pre></div>`);
-
+        const msgNode = $(`<div><pre id="jsonExportContent" class="hidden-pre">${jsonContent}</pre></div>`);
+        const codeMirror = CodeMirror((elm) => {
+            msgNode.append(elm);
+        }, {
+            value: jsonContent,
+            mode: "application/ld+json",
+            theme: "forgerock",
+            autofocus: true,
+            readOnly: true
+        });
+        codeMirror.setSize("100%", "100%");
         BootstrapDialog.show({
             title: i18n.t("common.modalWindow.title.configExport"),
             message: msgNode,
@@ -133,6 +146,8 @@ define([
             buttons,
             onshown () {
                 this.message.css("max-height", "calc(100vh - 212px)");
+                codeMirror.refresh();
+                this.message.css("height", this.message.find(".CodeMirror").height());
             }
         });
     },

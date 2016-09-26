@@ -24,6 +24,13 @@ require.config({
             "underscore": "lodash"
         }
     },
+    packages: [
+        {
+            name: "codemirror",
+            location: "libs/codemirror-4.10",
+            main: "lib/codemirror"
+        }
+    ],
     paths: {
         // sinon only needed (or available) for Mock project
         sinon: "libs/sinon-1.15.4",
