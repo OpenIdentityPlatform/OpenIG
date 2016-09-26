@@ -19,7 +19,6 @@ package org.forgerock.openig.util;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.json.JsonValue.set;
 import static org.forgerock.json.JsonValueFunctions.url;
 import static org.forgerock.openig.util.JsonValues.readJson;
 
@@ -80,7 +79,7 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
 
     private JsonValue applyOnCollection(JsonValue node) {
         // [ "foo", { "$location" : "...." }, "quix" ]
-        JsonValue result = json(node.isList() ? array() : set());
+        JsonValue result = json(array());
         for (JsonValue elem : node) {
             result.add(apply(elem).getObject());
         }

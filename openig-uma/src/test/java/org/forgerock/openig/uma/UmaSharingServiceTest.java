@@ -25,7 +25,6 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.json.JsonValue.set;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -199,7 +198,7 @@ public class UmaSharingServiceTest {
 
         List<Object> resources = array(object(field("pattern", ".*"),
                                               field("actions", array(object(field("condition", "${true}"),
-                                                                            field("scopes", set("scope-a")))))));
+                                                                            field("scopes", array("scope-a")))))));
         JsonValue config = json(object(field("protectionApiHandler", "#mock-handler"),
                                        field("authorizationServerUri", "http://openam.example.com"),
                                        field("clientId", "joe"),

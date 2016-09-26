@@ -21,7 +21,6 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.json.JsonValue.set;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
@@ -79,13 +78,11 @@ public class JsonValuesTest {
                                         field("string", "${decodeBase64('VGhpcyBtZXRob2Q=')}"),
                                         field("array", array("${decodeBase64('ZXZhbHVhdGVz')}")),
                                         field("map", object(field("mapField",
-                                                "${decodeBase64('YWxsIHN0cmluZyBleHByZXNzaW9ucw==')}"))),
-                                        field("set", set("${decodeBase64('aW4gdGhlIGdpdmVuIG9iamVjdA==')}"))));
+                                                "${decodeBase64('YWxsIHN0cmluZyBleHByZXNzaW9ucw==')}")))));
         final JsonValue transformed = value.as(evaluated());
         assertThat(transformed.get("string").asString()).isEqualTo("This method");
         assertThat(transformed.get("array").get(0).asString()).isEqualTo("evaluates");
         assertThat(transformed.get("map").get("mapField").asString()).isEqualTo("all string expressions");
-        assertThat(transformed.get("set").iterator().next().asString()).isEqualTo("in the given object");
     }
 
     @Test

@@ -19,7 +19,6 @@ package org.forgerock.openig.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.forgerock.json.JsonValue;
@@ -67,8 +66,6 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
             object = transformNumber(value);
         } else if (value.isList()) {
             object = transformList(value);
-        } else if (value.isSet()) {
-            object = transformSet(value);
         } else if (value.isMap()) {
             object = transformMap(value);
         } else {
@@ -102,10 +99,6 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
 
     private Object transformList(JsonValue value) {
         return fillCollection(value, new ArrayList<>(value.size()));
-    }
-
-    private Object transformSet(JsonValue value) {
-        return fillCollection(value, new LinkedHashSet<>(value.size()));
     }
 
     private Collection<Object> fillCollection(JsonValue value, Collection<Object> result) {

@@ -21,7 +21,6 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.json.JsonValue.set;
 import static org.forgerock.json.test.assertj.AssertJJsonValueAssert.assertThat;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.util.test.assertj.Conditions.equalTo;
@@ -110,16 +109,6 @@ public class ExpressionJsonTransformFunctionTest {
 
         assertThat(node).isArray()
                         .containsExactly("foo", "bar", null);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void shouldEvaluateSet() throws Exception {
-        JsonValue node = evaluate(json(set(1, "${1}", "${3.5}")));
-
-        // Even if the original Set is composed of 3 elements, then the transformed one has only 2 elements to preserve
-        // the uniqueness of each element
-        assertThat(node).isSet().containsExactly(1L, 3.5);
     }
 
     @Test

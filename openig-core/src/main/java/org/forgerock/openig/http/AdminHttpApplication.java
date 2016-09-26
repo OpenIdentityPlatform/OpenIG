@@ -45,6 +45,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
+import org.forgerock.http.swagger.OpenApiRequestFilter;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
@@ -138,7 +139,7 @@ public class AdminHttpApplication implements HttpApplication {
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
                             .as(requiredHeapObject(heap, Factory.class));
 
-            return chainOf(openigRouter, protector);
+            return chainOf(openigRouter, protector, new OpenApiRequestFilter());
         } catch (HeapException e) {
             throw new HttpApplicationException(e);
         }
