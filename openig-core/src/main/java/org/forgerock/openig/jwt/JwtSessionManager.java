@@ -66,6 +66,7 @@ import org.slf4j.LoggerFactory;
  *             "alias": "PrivateKey Alias",
  *             "password": "KeyStore/Key Password",
  *             "cookieName": "OpenIG",
+ *             "cookieDomain": ".example.com",
  *             "sessionTimeout": "30 minutes",
  *             "sharedSecret": "hello=="
  *         }
@@ -89,6 +90,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The {@literal cookieName} optional string attribute specifies the name of the cookie used to store the encrypted JWT.
  * If not set, {@link JwtCookieSession#OPENIG_JWT_SESSION} is used.
+ * <p>
+ * The {@literal cookieDomain} optional string attribute specifies the domain of the cookie used to store the encrypted
+ * JWT. If not set, the cookie will be treated as a host-based cookie.
  * <p>
  * The {@literal sessionTimeout} optional duration attribute, specifies the amount of time before the cookie session
  * expires. If not set, a default of 30 minutes is used. A duration of 0 is not valid and it will be limited to
@@ -118,9 +122,14 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
     private final KeyPair keyPair;
 
     /**
-     * The name of the cookie to be used to session's content transmission.
+     * The name of the cookie to be used for session's content transmission.
      */
     private final String cookieName;
+
+    /**
+     * The domain of the cookie to be used for session's content transmission.
+     */
+    private final String cookieDomain;
 
     /**
      * The TimeService to use when setting the cookie session expiry time.
@@ -142,23 +151,27 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
      * cookie with the given name.
      *
      * @param keyPair
-     *         Private and public keys used for ciphering/deciphering
+     *         Private and public keys used for ciphering/deciphering.
      * @param cookieName
-     *         name of the cookie
+     *         Name of the cookie.
+     * @param cookieDomain
+     *         Domain of the cookie. If null, the cookie will be treated as a host-based cookie.
      * @param timeService
-     *         TimeService to use when dealing with cookie sessions
+     *         TimeService to use when dealing with cookie sessions.
      * @param sessionTimeout
-     *         The duration of the cookie session
+     *         The duration of the cookie session.
      * @param handler
-     *         The JWT signing handler
+     *         The JWT signing handler.
      */
     public JwtSessionManager(final KeyPair keyPair,
                              final String cookieName,
+                             final String cookieDomain,
                              final TimeService timeService,
                              final Duration sessionTimeout,
                              final SigningHandler handler) {
         this.keyPair = keyPair;
         this.cookieName = cookieName;
+        this.cookieDomain = cookieDomain;
         this.timeService = timeService;
         this.sessionTimeout = sessionTimeout;
         this.signingHandler = handler;
@@ -166,7 +179,13 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
 
     @Override
     public Session load(final Request request) {
-        return new JwtCookieSession(request, keyPair, cookieName, timeService, sessionTimeout, signingHandler);
+        return new JwtCookieSession(request,
+                                    keyPair,
+                                    cookieName,
+                                    cookieDomain,
+                                    timeService,
+                                    sessionTimeout,
+                                    signingHandler);
     }
 
     @Override
@@ -201,6 +220,7 @@ public class JwtSessionManager extends GenericHeapObject implements SessionManag
                                          evaluated.get("cookieName")
                                                   .defaultTo(OPENIG_JWT_SESSION)
                                                   .asString(),
+                                         evaluated.get("cookieDomain").asString(),
                                          timeService,
                                          sessionTimeout,
                                          createHmacSigningHandler(evaluated));

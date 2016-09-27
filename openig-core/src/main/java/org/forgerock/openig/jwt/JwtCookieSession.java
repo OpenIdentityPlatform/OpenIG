@@ -103,6 +103,11 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     private final String cookieName;
 
     /**
+     * Domain to be used for the JWT Cookie.
+     */
+    private final String cookieDomain;
+
+    /**
      * Used for decryption/encryption of session's content.
      */
     private final KeyPair pair;
@@ -131,22 +136,26 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
      *         Secret key used to sign the JWT payload.
      * @param cookieName
      *         Name to be used for the JWT Cookie.
+     * @param cookieDomain
+     *         Domain to be used for the JWT Cookie. If null, the cookie will be treated as a host-based cookie.
      * @param timeService
-     *         TimeService to use when dealing with cookie sessions
+     *         TimeService to use when dealing with cookie sessions.
      * @param sessionTimeout
-     *         The duration of the cookie session
+     *         The duration of the cookie session.
      * @param signingHandler
-     *         The JWT signing handler
+     *         The JWT signing handler.
      */
     public JwtCookieSession(final Request request,
                             final KeyPair pair,
                             final String cookieName,
+                            final String cookieDomain,
                             final TimeService timeService,
                             final Duration sessionTimeout,
                             final SigningHandler signingHandler) {
         super(new LinkedHashMap<String, Object>());
         this.pair = pair;
         this.cookieName = cookieName;
+        this.cookieDomain = cookieDomain;
         this.timeService = timeService;
         this.signingHandler = signingHandler;
 
@@ -309,7 +318,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
     }
 
     private Cookie buildExpiredJwtCookie() {
-        return new Cookie().setPath("/").setName(cookieName).setExpires(EPOCH);
+        return new Cookie().setPath("/").setName(cookieName).setDomain(cookieDomain).setExpires(EPOCH);
     }
 
     private Cookie buildJwtCookie() {
@@ -323,6 +332,7 @@ public class JwtCookieSession extends MapDecorator<String, Object> implements Se
         return new Cookie()
                 .setPath("/")
                 .setName(cookieName)
+                .setDomain(cookieDomain)
                 .setValue(buildJwtSession())
                 .setExpires(new Date(expiryTime.longValue()));
     }
