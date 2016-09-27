@@ -273,6 +273,29 @@ public class JwtCookieSessionTest {
         assertThat(response.getHeaders().get("Set-Cookie")).isNull();
     }
 
+    @Test
+    public void shouldOverrideCookieName() throws Exception {
+        JwtCookieSession session = newJwtSession(new Request(), "testCookieName", null);
+        session.put("a-value", "ForgeRock OpenIG");
+        Response response = new Response(Status.OK);
+        session.save(response);
+
+        Cookie cookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+        assertThat(cookie.getName()).isEqualTo("testCookieName");
+        assertThat(cookie.getDomain()).isNull();
+    }
+
+    @Test
+    public void shouldSetCookieDomain() throws Exception {
+        JwtCookieSession session = newJwtSession(new Request(), "testCookieName", ".example.com");
+        session.put("a-value", "ForgeRock OpenIG");
+        Response response = new Response(Status.OK);
+        session.save(response);
+
+        Cookie cookie = SetCookieHeader.valueOf(response).getCookies().get(0);
+        assertThat(cookie.getName()).isEqualTo("testCookieName");
+        assertThat(cookie.getDomain()).isEqualTo(".example.com");
+    }
 
     @DataProvider
     public static Object[][] invalidJwtSessionCookieValues() {
@@ -319,6 +342,7 @@ public class JwtCookieSessionTest {
                 request,
                 keyPair,
                 "Test",
+                null,
                 TimeService.SYSTEM,
                 duration(DEFAULT_SESSION_TIMEOUT),
                 SIGNING_HANDLER);
@@ -344,8 +368,19 @@ public class JwtCookieSessionTest {
         return new JwtCookieSession(request,
                                     keyPair,
                                     OPENIG_JWT_SESSION,
+                                    null,
                                     timeService,
                                     sessionTimeout,
+                                    SIGNING_HANDLER);
+    }
+
+    private JwtCookieSession newJwtSession(final Request request, String cookieName, String cookieDomain) {
+        return new JwtCookieSession(request,
+                                    keyPair,
+                                    cookieName,
+                                    cookieDomain,
+                                    TimeService.SYSTEM,
+                                    duration(DEFAULT_SESSION_TIMEOUT),
                                     SIGNING_HANDLER);
     }
 

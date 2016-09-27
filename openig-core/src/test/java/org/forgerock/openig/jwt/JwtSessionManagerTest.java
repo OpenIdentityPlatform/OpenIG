@@ -45,7 +45,7 @@ public class JwtSessionManagerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        manager = new JwtSessionManager(null, null, null, null, SIGNING_HANDLER);
+        manager = new JwtSessionManager(null, null, null, null, null, SIGNING_HANDLER);
         session = mock(Session.class);
     }
 
