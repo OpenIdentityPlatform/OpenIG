@@ -407,6 +407,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             unload(routeId(file));
         } catch (RouterHandlerException e) {
             // No route with id routeId was found. Just ignore.
+            logger.warn("The file '{}' has not been loaded yet, removal ignored.", file, e);
         }
     }
 
