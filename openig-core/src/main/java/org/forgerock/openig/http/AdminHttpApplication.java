@@ -16,7 +16,6 @@
 
 package org.forgerock.openig.http;
 
-import static java.lang.String.format;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
@@ -201,7 +200,7 @@ public class AdminHttpApplication implements HttpApplication {
                     }
                 }
             } catch (UnknownHostException e) {
-                logger.trace(format("Cannot resolve host '%s' when accessing '/%s'", remoteAddr, adminPrefix));
+                logger.trace("Cannot resolve host '{}' when accessing '/{}'", remoteAddr, adminPrefix, e);
             }
             return newResponsePromise(new Response(Status.FORBIDDEN));
         }
