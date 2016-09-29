@@ -26,6 +26,7 @@ import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
@@ -166,7 +167,10 @@ class RouteBuilder {
             MonitoringMetrics metrics = new MonitoringMetrics();
             filters.add(new MetricsFilter(metrics));
             RequestHandler singleton = newHandler(new MonitoringResourceProvider(metrics, mc.getPercentiles()));
-            endpoints.register("monitoring", newHttpHandler(singleton), "Monitoring endpoint available at '{}'");
+            endpoints.register("monitoring",
+                               newHttpHandler(newCrestApplication(singleton,
+                                                                  "frapi:openig:builder")),
+                               "Monitoring endpoint available at '{}'");
         }
 
         // Ensure we always get a Response even in case of RuntimeException
