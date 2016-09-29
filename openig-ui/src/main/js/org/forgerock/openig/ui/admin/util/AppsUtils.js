@@ -260,24 +260,14 @@ define([
     addFilterIntoModel (appModel, filter) {
         const content = _.clone(appModel.get("content"));
         const filters = content.filters;
-        const orderedFilters = [];
-        const newFilterOrder = constants.defaultFiltersOrder[filter.type];
-        let filterIncluded = false;
-        _.forEach(filters, (f) => {
-            let order = constants.defaultFiltersOrder[_.get(f, "type", "Unknown")];
-            if (order === undefined) {
-                order = constants.defaultFiltersOrder.Unknown;
-            }
-            if (order > newFilterOrder && !filterIncluded) {
-                orderedFilters.push(filter);
-                filterIncluded = true;
-            }
-            orderedFilters.push(f);
-        });
-        if (!filterIncluded) {
-            orderedFilters.push(filter);
+
+        if (_.includes(filters, filter)) {
+            return;
         }
-        content.filters = orderedFilters;
+        filters.push(filter);
+        content.filters = _.sortBy(filters, (f) =>
+            constants.defaultFiltersOrder[_.get(f, "type", "Unknown")]
+        );
         appModel.set("content", content);
     }
 })
