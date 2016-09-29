@@ -27,6 +27,7 @@ import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.Route.routeName;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 
 import java.io.File;
@@ -52,6 +53,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -456,8 +458,10 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
 
             // Register the /routes/* endpoint
+            final RequestHandler routesCollection = newHandler(new RoutesCollectionProvider(handler));
             registration = registry.register("routes",
-                                             newHttpHandler(newHandler(new RoutesCollectionProvider(handler))));
+                                             newHttpHandler(newCrestApplication(routesCollection,
+                                                                                "frapi:openig:handler")));
             logger.info("Routes endpoint available at '{}'", registration.getPath());
 
             return handler;

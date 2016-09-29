@@ -35,9 +35,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.forgerock.guava.common.base.Ticker;
+import org.forgerock.http.DescribedHttpApplication;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.HttpApplication;
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.io.Buffer;
 import org.forgerock.http.protocol.Request;
@@ -45,6 +45,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.http.swagger.OpenApiRequestFilter;
+import org.forgerock.http.swagger.SwaggerApiProducer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
@@ -62,11 +63,14 @@ import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.swagger.models.Info;
+
 /**
  * Configuration class for the OpenIG Administration.
  */
-public class AdminHttpApplication implements HttpApplication {
+public class AdminHttpApplication implements DescribedHttpApplication {
 
+    private static final String API_TITLE = "OpenIG";
     private final EndpointRegistry endpointRegistry;
     private final String adminPrefix;
     private final JsonValue config;
@@ -176,6 +180,15 @@ public class AdminHttpApplication implements HttpApplication {
     private static void addSubRouter(final Router base, final String name, final Handler router) {
         base.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
         base.addRoute(requestUriMatcher(STARTS_WITH, name), router);
+    }
+
+    /**
+     * Needed to enforce generation of CREST APIs.
+     *
+     * @return a swagger api producer.
+     */
+    public SwaggerApiProducer getApiProducer() {
+        return new SwaggerApiProducer(new Info().title(API_TITLE));
     }
 
     /**
