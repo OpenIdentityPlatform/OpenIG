@@ -19,13 +19,7 @@ require.config({
         "*": {
             "Footer": "org/forgerock/openig/ui/common/components/Footer",
             "ThemeManager": "org/forgerock/openig/ui/common/util/ThemeManager",
-            "LoginView": "org/forgerock/commons/ui/common/LoginView",
-            "ForgotUsernameView": "org/forgerock/commons/ui/user/anonymousProcess/ForgotUsernameView",
-            "PasswordResetView": "org/forgerock/commons/ui/user/anonymousProcess/PasswordResetView",
-            "LoginDialog": "org/forgerock/commons/ui/common/LoginDialog",
-            "RegisterView": "org/forgerock/commons/ui/user/anonymousProcess/SelfRegistrationView",
             "NavigationFilter": "org/forgerock/commons/ui/common/components/navigation/filters/RoleFilter",
-            "KBADelegate": "org/forgerock/commons/ui/user/delegates/KBADelegate",
             // TODO: Remove this when there are no longer any references to the "underscore" dependency
             "underscore": "lodash"
         }
@@ -138,8 +132,9 @@ require([
     // these as arguments, but ignores the others.
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/commons/ui/common/util/CookieHelper",
-    "org/forgerock/openig/ui/common/main/LocalStorage",
+    "org/forgerock/commons/ui/common/main/Configuration",
+
+    "backbone",
 
     // core forgerock-ui files
     "org/forgerock/commons/ui/common/main",
@@ -151,61 +146,20 @@ require([
     // libraries necessary for forgerock-ui (and thus worth bundling)
     "jquery",
     "underscore",
-    "backbone",
     "handlebars",
     "i18next",
     "spin"
-], (EventManager, Constants, CookieHelper, LocalStorage) => {
-
-    // Mock project is run without server. Framework requires cookies to be enabled in order to be able to login.
-    // Default CookieHelper.cookiesEnabled() implementation will always return false as cookies cannot be set from local
-    // file. Hence redefining function to return true
-    CookieHelper.cookiesEnabled = function () {
-        return true;
-    };
-
-    // Adding stub user
-    LocalStorage.add("mock/repo/internal/user/test", {
-        _id: "test",
-        _rev: "1",
-        component: "'mock/repo/internal/user",
-        roles: ["ui-admin", "ui-user", "ui-self-service-user"],
-        uid: "test",
-        userName: "test",
-        password: "test",
-        telephoneNumber: "12345",
-        givenName: "Jack",
-        sn: "White",
-        mail: "white@test.com",
-        kbaInfo: [
-            {
-                "customQuestion": "What is my favorite open source identity company?",
-                "answer": {
-                    "$crypto": {
-                        "value":
-                        {
-                            "algorithm": "SHA-256",
-                            "data": "LbOwzJnSKtSn2waBA/6Zv8AFaTwe74vHh9dyPaBOVnZFTCU/MsNWTfmbRcx2PM4d"
-                        },
-                        "type": "salted-hash"
-                    }
-                }
-            },
-            {
-                "questionId": "1",
-                "answer": {
-                    "$crypto": {
-                        "value":
-                        {
-                            "algorithm": "SHA-256",
-                            "data": "ht5QecQ11l4mnCBxa8TKRU7KZhhMrD6SSTxv1XJkbEUlRjGhw5Ss5WMC4diBgNme"
-                        },
-                        "type": "salted-hash"
-                    }
-                }
-            }
-        ]
+], (
+    EventManager,
+    Constants,
+    Configuration,
+    Backbone
+) => {
+    // Setup studio user; user is needed for common ui components
+    const studioUser = new Backbone.Model({
+        userName: Constants.studioUser
     });
+    Configuration.loggedUser = studioUser;
 
     EventManager.sendEvent(Constants.EVENT_DEPENDENCIES_LOADED);
 });

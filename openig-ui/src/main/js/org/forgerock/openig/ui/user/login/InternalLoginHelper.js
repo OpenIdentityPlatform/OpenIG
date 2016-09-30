@@ -16,34 +16,27 @@
 
 define([
     "jquery",
-    "org/forgerock/openig/ui/user/UserModel",
-    "org/forgerock/commons/ui/common/main/EventManager",
-    "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/commons/ui/common/main/AbstractConfigurationAware",
-    "org/forgerock/commons/ui/common/main/ServiceInvoker",
     "org/forgerock/commons/ui/common/main/Configuration"
-], ($, UserModel, eventManager, constants, AbstractConfigurationAware, serviceInvoker, conf) => {
-    const obj = new AbstractConfigurationAware();
+], ($, AbstractConfigurationAware, conf) => {
+    const loginHelper = new AbstractConfigurationAware();
 
-    obj.login = function (params, successCallback, errorCallback) {
-        return UserModel.getProfile(params.userName, params.password).then(successCallback, errorCallback);
-    };
+    loginHelper.login = () => $.Deferred().resolve(conf.loggedUser);
 
-    obj.logout = function (successCallback) {
-        delete conf.loggedUser;
+    loginHelper.logout = (successCallback) => {
         if (successCallback) {
             successCallback();
         }
         return $.Deferred().resolve();
     };
 
-    obj.getLoggedUser = function (successCallback, errorCallback) {
-        // the mock project doesn't support sessions, so there is no point in checking
+    loginHelper.getLoggedUser = (successCallback, errorCallback) => {
         if (conf.loggedUser && successCallback) {
             successCallback(conf.loggedUser);
         } else if (errorCallback) {
             errorCallback();
         }
     };
-    return obj;
+
+    return loginHelper;
 });

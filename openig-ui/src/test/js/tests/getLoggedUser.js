@@ -15,13 +15,17 @@
  */
 
 define([
-    "org/forgerock/openig/ui/common/main/LocalStorage",
-    "org/forgerock/openig/ui/user/UserModel"
-], (LocalStorage, UserModel) => (
+    "backbone",
+    "org/forgerock/openig/ui/common/util/Constants"
+], (
+    Backbone,
+    Constants
+) => (
     function () {
-        UserModel.set(LocalStorage.get("mock/repo/internal/user/test"));
-        UserModel.hideAttribute("password");
-        return UserModel;
+        const studioUser = new Backbone.Model({
+            userName: Constants.studioUser
+        });
+        return studioUser;
     }
 
 ));
