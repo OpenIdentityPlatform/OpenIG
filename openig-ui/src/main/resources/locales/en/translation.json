@@ -8,13 +8,9 @@
         },
         "messages": {
             "CommonMessages": {
-                "authenticationFailed": "Login/password combination is invalid.",
                 "serviceUnavailable": "Service unavailable",
                 "unknown": "Unknown error. Please contact with administrator",
-                "loggedIn": "You have been successfully logged in.",
                 "errorFetchingData": "Error fetching user data",
-                "loggedOut": "You have been logged out.",
-                "unauthorized": "Unauthorized access or session timeout",
                 "internalError": "Internal server error",
                 "forbiddenError": "Forbidden request error.",
                 "notFoundError": "Not found error.",
@@ -23,16 +19,6 @@
                 "incorrectRevisionError": "Cannot update the record because the version is not the latest.",
                 "securityDataChanged": "Security data has been changed",
                 "tokenNotFound": "Token not found."
-            },
-            "UserMessages": {
-                "changedPassword": "Password has been changed",
-                "profileUpdateSuccessful": "Profile has been updated",
-                "userNameUpdated": "Username has been modified succesfully.",
-                "afterRegistration": "User has been registered successfully",
-                "userAlreadyExists": "User already exists",
-                "errorDeletingNotification": "Error deleting notification.",
-                "errorFetchingNotifications": "Error Fetching notifications.",
-                "userProfileIncorrectPassword": "Incorrect current password provided."
             },
             "OpenIGMessages":{
                 "deleteAppSuccess": "Aplication '__title__' was removed.",
@@ -69,36 +55,9 @@
     },
     "templates": {
         "user": {
-            "LoginDialog": {
-                "refreshOnLogin": "Should refresh on login"
-            },
-            "LoginTemplate": {
-                "loginRemember": "Remember my username",
-                "noAccountQuestion": "New here?",
-                "registerAccount": "Create an account",
-                "problemLoggingQuestion": "Having trouble logging in?",
-                "resetPassword": "Forgot Password?",
-                "forgotUsername": "Forgot Username?"
-            },
             "404": {
                 "pageNotFound": "Page not found",
                 "requestedPageCouldNotBeFound": "The requested page could not be found."
-            },
-            "DefaultBaseTemplate": {
-                "orPhone": ", or phone"
-            },
-            "ConfirmPasswordDialogTemplate": {
-                "title": "Current Password",
-                "explanation1": "Changing the following attributes requires re-authentication: ",
-                "explanation2": "Please confirm your current password to continue."
-            },
-            "ForgottenPasswordTemplate": {
-                "forgottenPasswordQuestion": "Forgotten password?",
-                "enterLogin": "Please enter your login in the field below to continue."
-            },
-            "ChangesPendingTemplate": {
-                "undo": "Undo Changes",
-                "changesPending": "Changes Pending"
             }
         },
         "apps": {
@@ -345,99 +304,6 @@
             "m": "Minute",
             "h": "Hour",
             "d": "Day"
-        },
-        "user": {
-            "userQuery": {
-                "mainEnterPrompt": "Enter your ",
-                "optionalEnterPrompt": "or your ",
-                "orAllEnterPrompt": "or all of the following information",
-                "title": "Enter details to find your account",
-                "any": "Any of these:"
-            },
-            "passwordReset": {
-                "title": "Reset Your Password",
-                "completed": "Your password has been successfully reset.",
-                "failed": "Unable to reset your password",
-                "tryAgain": "Try Resetting Your Password Again",
-                "answerQuestions": "Answer the security questions below to reset your password."
-            },
-            "selfRegistration": {
-                "title": "Register Your Account",
-                "completed": "Your account has been successfully registered.",
-                "failed": "Unable to register your account",
-                "tryAgain": "Try Registering Again"
-            },
-            "forgotUsername": {
-                "title": "Retrieve Your Username",
-                "checkEmail": "An email containing your username has been sent to your account.",
-                "failed": "Unable to retrieve your username",
-                "found": "Username found:",
-                "tryAgain": "Try Finding Your Username Again",
-                "answerQuestions": "Answer the security questions below to retrieve your username."
-            },
-            "kba": {
-                "description": "Select __numberOfQuestions__ or more security questions below. These questions will help us verify your identity if you forget your password.",
-                "provideAnother": "Add a question",
-                "selectQuestion": "Select a security question",
-                "provideYourOwn": "Provide your own",
-                "customQuestion": "Custom Security Question",
-                "answer": "Security Answer",
-                "securityQuestions": "Security Questions"
-            },
-            "returnToLoginPage": "Return to Login Page",
-            "emailValidation": "Enter your email address to proceed. We will send you a link, so you can continue the registration process.",
-            "send": "Send",
-            "validateCode": "An email has been sent to your address. Click the link in that email to proceed.",
-            "user": "User",
-            "login": "Login",
-            "profile": "Profile",
-            "myProfile": "My Profile",
-            "basicInfo": "Basic Info",
-            "userProfile": "User profile",
-            "username": "Username",
-            "emailAddress": "Email Address",
-            "givenName": "First Name",
-            "sn": "Last Name",
-            "changePassword": "Change password",
-            "accountStatus": "Account status",
-            "active": "Active",
-            "inactive": "Inactive",
-            "address": "Address",
-            "address1": "Address 1",
-            "address2": "Address 2",
-            "country": "Country",
-            "city": "City",
-            "role": "Admin Role",
-            "stateProvince": "State/Province",
-            "phoneNumber": "Mobile Phone",
-            "postalCode": "Postal Code",
-            "lastPasswordSet": "Last password set",
-            "siteImage": "Site Image",
-            "sitePhrase": "Site Phrase",
-            "securityQuestion": "Security Question",
-            "securityAnswer": "Answer",
-            "adaptiveAuthMethod": "Adaptive auth method",
-            "SMS": "SMS",
-            "OAuth": "OAuth",
-            "createNewAccount": "Create new account",
-            "password": "Password",
-            "confirmPassword": "Confirm Password",
-            "newPassword": "New password",
-            "oldPassword": "Old password",
-            "currentPassword": "Current password",
-            "confirmNewPassword": "Confirm new password",
-            "usersList": "Users list",
-            "addUsers": "Add users",
-            "name": "Name",
-            "status": "Status",
-            "email": "Email",
-            "system": "System",
-            "changePhoto": "Change photo",
-            "SKYPE": "SKYPE",
-            "googlePlus": "Google+"
         }
-    },
-    "test": {
-        "sayHello": "Hello __name__"
     }
 }

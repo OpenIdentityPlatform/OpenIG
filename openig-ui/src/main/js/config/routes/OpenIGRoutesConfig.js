@@ -14,34 +14,48 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define([], () => ({
+define([
+    "org/forgerock/commons/ui/common/util/Constants"
+], (
+    Constants
+) => ({
+    "404": { //this route must be the first route
+        view: "org/forgerock/commons/ui/common/NotFoundView",
+        url: /^([\w\W]*)$/,
+        pattern: "?"
+    },
+    "default": {
+        event: Constants.EVENT_HANDLE_DEFAULT_ROUTE,
+        url: /^$/,
+        pattern: ""
+    },
+    "enableCookies": {
+        view: "org/forgerock/commons/ui/common/EnableCookiesView",
+        url: "enableCookies/"
+    },
     "appsPage": {
         view: "org/forgerock/openig/ui/admin/apps/AppsListView",
-        role: "ui-admin",
-        url: "apps/"
+        url: "apps/",
+        defaults: ["/", ""]
     },
     "addAppView": {
         view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-        role: "ui-admin",
         url: "apps/add/"
     },
     "duplicateAppView": {
         view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-        role: "ui-admin",
         url: /^apps\/duplicate\/(.+?)$/,
         pattern: "apps/duplicate/?"
     },
     "editAppView": {
         view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
         page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
-        role: "ui-admin",
         defaults: ["", ""],
         url: /^apps\/edit\/(.+?)\/(.*)$/,
         pattern: "apps/edit/?/?"
     },
     "settings": {
         view: "org/forgerock/openig/ui/admin/settings/SettingsView",
-        role: "ui-admin",
         url: "settings/"
     },
     "appsOverview": {
@@ -49,7 +63,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
         url: /^apps\/edit\/(.+?)\/overview$/,
         pattern: "apps/edit/?/overview",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -58,7 +71,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Capture",
         url: /^apps\/edit\/(.+?)\/capture/,
         pattern: "apps/edit/?/capture",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -67,7 +79,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",
         url: /^apps\/edit\/(.+?)\/throttling$/,
         pattern: "apps/edit/?/throttling",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -76,7 +87,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Authentication",
         url: /^apps\/edit\/(.+?)\/authentication$/,
         pattern: "apps/edit/?/authentication",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -85,7 +95,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Authorization",
         url: /^apps\/edit\/(.+?)\/authorization$/,
         pattern: "apps/edit/?/authorization",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -94,7 +103,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Monitoring",
         url: /^apps\/edit\/(.+?)\/monitoring$/,
         pattern: "apps/edit/?/monitoring",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     },
@@ -103,7 +111,6 @@ define([], () => ({
         page: "org/forgerock/openig/ui/admin/apps/parts/Settings",
         url: /^apps\/edit\/(.+?)\/settings$/,
         pattern: "apps/edit/?/settings",
-        role: "ui-admin",
         navGroup: "admin",
         forceUpdate: true
     }

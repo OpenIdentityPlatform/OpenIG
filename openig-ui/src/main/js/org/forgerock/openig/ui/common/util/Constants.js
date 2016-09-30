@@ -41,5 +41,7 @@ define([
         DAY: "d"
     };
 
+    commonConstants.studioUser = "studio";
+
     return commonConstants;
 });

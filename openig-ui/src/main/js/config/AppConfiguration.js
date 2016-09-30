@@ -44,9 +44,7 @@ define([], () => ({
                 routes: {
                 },
                 loader: [
-                    { "routes": "config/routes/CommonRoutesConfig" },
-                    { "routes": "config/routes/OpenIGRoutesConfig" },
-                    { "routes": "config/routes/UserRoutesConfig" }
+                    { "routes": "config/routes/OpenIGRoutesConfig" }
                 ]
             }
         },
@@ -70,23 +68,6 @@ define([], () => ({
         {
             moduleClass: "org/forgerock/commons/ui/common/components/Navigation",
             configuration: {
-                userBar: [
-                    {
-                        "id": "profile_link",
-                        "href": "#profile/details",
-                        "i18nKey": "common.user.profile"
-                    },
-                    {
-                        "id": "change_password",
-                        "href": "#profile/password",
-                        "i18nKey": "common.user.changePassword"
-                    },
-                    {
-                        "id": "logout_link",
-                        "href": "#logout/",
-                        "i18nKey": "common.form.logout"
-                    }
-                ],
                 links: {
                     user: {
                         urls: {
@@ -103,30 +84,6 @@ define([], () => ({
                                 "inactive": false
                             }
                         }
-                    },
-                    "admin": {
-                        "role": "ui-admin",
-                        "urls": {
-                            "dashboard": {
-                                "url": "#dashboard/",
-                                "name": "config.AppConfiguration.Navigation.links.dashboard",
-                                "icon": "fa fa-dashboard",
-                                "inactive": false
-                            },
-                            "apps": {
-                                "url": "#dashboard/",
-                                "name": "config.AppConfiguration.Navigation.links.apps",
-                                "icon": "fa fa-dashboard",
-                                "inactive": false
-                            },
-                            "profile": {
-                                "url": "#profile/",
-                                "name": "common.user.profile",
-                                "icon": "fa fa-user",
-                                "inactive": false
-                            }
-                        }
-
                     }
                 }
             }
