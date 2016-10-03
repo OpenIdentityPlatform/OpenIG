@@ -9,37 +9,37 @@
         "messages": {
             "CommonMessages": {
                 "serviceUnavailable": "Service unavailable",
-                "unknown": "Unknown error. Please contact with administrator",
+                "unknown": "Unknown error - contact an administrator",
                 "errorFetchingData": "Error fetching user data",
                 "internalError": "Internal server error",
                 "forbiddenError": "Forbidden request error.",
                 "notFoundError": "Not found error.",
                 "badRequestError": "Bad request error.",
                 "conflictError": "Detected conflict in request.",
-                "incorrectRevisionError": "Cannot update the record because the version is not the latest.",
+                "incorrectRevisionError": "Can't update the record because this isn't the latest version.",
                 "securityDataChanged": "Security data has been changed",
                 "tokenNotFound": "Token not found."
             },
             "OpenIGMessages":{
-                "deleteAppSuccess": "Aplication '__title__' was removed.",
-                "deleteAppFailed": "Application removing failed.",
+                "deleteAppSuccess": "Protection for '__title__' was removed",
+                "deleteAppFailed": "Failed to remove protection for '__title__'",
                 "settingsFailed": "Settings has failed",
-                "settingsSuccess": "Settings successfully saved",
-                "invalidModel": "Cannot create config file due to invalid model",
+                "settingsSuccess": "Settings saved",
+                "invalidModel": "Can't create the config file because the model is not valid",
                 "unknownFilterType": "Unknown filter type: '__message__'",
-                "appSettingsSaveSuccess": "__filter__ settings successfully saved",
-                "modelTransformationFailed": "Model transformation failed",
-                "appDeployedSuccess": "Application '__title__' deployed successfully",
-                "appDeployedFailed": "Deployment of application '__title__' failed",
-                "appUndeployedSuccess": "Application '__title__' undeployed successfully",
-                "appUndeployedFailed": "Undeployment of application '__title__' failed"
+                "appSettingsSaveSuccess": "__filter__ settings saved",
+                "modelTransformationFailed": "Failed to transform the model",
+                "appDeployedSuccess": "Protection for '__title__' was deployed",
+                "appDeployedFailed": "Failed to deploy protection for '__title__'",
+                "appUndeployedSuccess": "Protection for '__title__' was undeployed",
+                "appUndeployedFailed": "Failed to undeploy protection for '__title__'"
             }
         },
         "AppConfiguration": {
             "Navigation": {
                 "links": {
                     "dashboard": "Dashboards",
-                    "apps": "Apps / APIs",
+                    "apps": "Protected applications",
                     "settings": "Settings"
                 },
                 "appsSideMenu": {
@@ -57,32 +57,32 @@
         "user": {
             "404": {
                 "pageNotFound": "Page not found",
-                "requestedPageCouldNotBeFound": "The requested page could not be found."
+                "requestedPageCouldNotBeFound": "Can't find the requested page"
             }
         },
         "apps": {
-            "title": "Apps / APIs",
-            "description": "Set up a mobile, web or IoT application to protect with OpenIG.",
+            "title": "Protected applications",
+            "description": "Configure OpenIG to protect your applications",
             "filter": "Filter...",
-            "addApp": "New App / API",
+            "addApp": "Protect an app",
             "help": "Help",
             "deployedState": "Deployed",
             "undeployedState": "Undeployed",
             "edit": "Edit",
             "duplicate": "Duplicate",
-            "exportConfig": "Export Config",
+            "exportConfig": "Display route",
             "undeploy": "Undeploy",
             "deploy": "Deploy",
-            "deleteDialog": "Do you want to delete application '__title__' ?",
-            "deployDialog":"Deploy application '__title__' ?",
-            "undeployDialog": "Undeploy application '__title__' ?",
-            "duplicateDialog":"Duplicate application '__title__' ?",
+            "deleteDialog": "Delete protection for '__title__'?",
+            "deployDialog":"Deploy protection for '__title__'?",
+            "undeployDialog": "Undeploy protection for '__title__'?",
+            "duplicateDialog":"Duplicate protection for '__title__'?",
             "changesPending": "Changes pending",
-            "appSettings": "App settings",
+            "appSettings": "Protection settings",
             "moreOptions": "More options",
-            "duplicateNameError": "Duplicate name detected. Please provide a unique name.",
-            "duplicateIdError": "Duplicate Id detected. Please provide a unique Id.",
-            "noAppItems": "You haven't configured any apps or APIs yet.",
+            "duplicateNameError": "This name already exists - provide a unique name",
+            "duplicateIdError": "This ID already exists - provide a unique ID",
+            "noAppItems": "Protection is not configured for any apps",
             "filters":{
                 "Off": "Off",
                 "OAuth2ClientFilter": "OpenID Connect",
@@ -100,24 +100,24 @@
             },
             "tableColumns":{
                 "name": "Name",
-                "baseURI": "Url",
+                "baseURI": "URL",
                 "status": "Status"
             },
             "parts":{
                 "settings":{
-                    "addTitle": "New App / API",
-                    "addButton": "Create App",
-                    "editTitle": "Edit App Details",
+                    "addTitle": "Set up protection for an app",
+                    "addButton": "Create route",
+                    "editTitle": "Edit route",
                     "fields":{
                         "name":"Name",
-                        "nameHint": "Human-friendly name for your app.",
-                        "id": "Id",
-                        "idHint": "Unique app id",
+                        "nameHint": "Friendly name for the protected application",
+                        "id": "ID",
+                        "idHint": "Unique ID for the route",
                         "baseURI": "Base URI",
-                        "baseURIHint": "The base URI of the OpenIG instance.",
-                        "condition": "Accept Conditions",
-                        "conditionHint": "Enter a path or expression to handle the request.",
-                        "conditionPlaceHolder": "eg. /wordpress or ${matches(request.uri.path, '^/openig/my/path')}"
+                        "baseURIHint": "Internal URL for the application - OpenIG forwards proxied requests to this URL",
+                        "condition": "Condition",
+                        "conditionHint": "Requests must meet this condition to access the protected application",
+                        "conditionPlaceHolder": "For example, /my-app or ${matches(request.uri.path, '^/my-app')}"
                     }
                 },
                 "authentication":{
@@ -278,14 +278,14 @@
         },
         "modalWindow": {
             "title": {
-                "configExport": "Generated config file"
+                "configExport": "JSON for the current configuration"
             },
             "button": {
                 "copyToClipboard": "Copy to clipboard"
             },
             "message":{
-                "copied": "Copied!",
-                "copyFailed": "Clipboard copy failed"
+                "copied": "Copied",
+                "copyFailed": "Copy failed"
             }
         },
         "grid": {
