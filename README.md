@@ -151,6 +151,26 @@ ForgeRock provide a comprehensive set of documents for OpenIG, including the nig
 - [Documentation for enterprise builds][enterprise_docs]
 - [Draft docs for nightly builds and self built code][nightly_docs]
 
+## OpenIG Studio
+
+OpenIG comes bundled with a web studio to help you set up your route definitions. OpenIG Studio is an easy-to-use
+interface for configuring routes, replacing the complexity of manually writing JSON files.
+
+Use OpenIG Studio to configure:
+* Inbound / Outbound Message Capture (Debugging)
+* Throttling (Rate Limitation)
+* Authentication (OpenID Connect)
+* Authorization (Policy Enforcement Point)
+* Monitoring (Runtime Statistics)
+
+When you’ve created your routes in OpenIG Studio, it takes only a single click to deploy (and undeploy) them on the
+current OpenIG instance.
+
+For advanced configurations, you can always grab the generated JSON, copy/paste it into your favorite IDE, and edit
+it manually. In this case, you'll need to deploy the configuration by copying the modified JSON into a file that will
+be deployed by OpenIG, or POSTing the JSON through one of the routers' endpoints.
+
+Give OpenIG Studio a try on [http://localhost:8080/openig/studio](http://localhost:8080/openig/studio).
 
 ## Contributing
 
