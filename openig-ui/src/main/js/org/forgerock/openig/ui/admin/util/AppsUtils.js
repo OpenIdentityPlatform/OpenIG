@@ -223,53 +223,112 @@ define([
         return promise;
     },
 
+    undeployApplication (appId) {
+        const deferred = $.Deferred();
+        RoutesCollection.undeploy(appId).done(() => {
+            AppsCollection.byId(appId).then((appData) => {
+                appData.set("deployedDate", null);
+                appData.set("pendingChanges", false);
+                appData.save();
+                deferred.resolve();
+            });
+        }).fail((errorResponse) => {
+            let errorMessage;
+            if (errorResponse) {
+                errorMessage = errorResponse.cause ? errorResponse.cause.message : errorResponse.statusText;
+            }
+            deferred.reject(errorMessage);
+        });
+        return deferred;
+    },
+
     undeployApplicationDlg (appId, appTitle) {
         const deferred = $.Deferred();
         const promise = deferred.promise();
         UIUtils.confirmDialog(i18n.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
             () => {
-                RoutesCollection.undeploy(appId).done(() => {
-                    eventManager.sendEvent(
-                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                        { key: "appUndeployedSuccess", title: appTitle }
+                this.undeployApplication(appId)
+                    .then(
+                        () => {
+                            eventManager.sendEvent(
+                                constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                                { key: "appUndeployedSuccess", title: appTitle }
+                            );
+                            deferred.resolve();
+                        },
+                        (errorMessage) => {
+                            eventManager.sendEvent(
+                                constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                                { key: "appUndeployedFailed", title: appTitle, message: errorMessage }
+                            );
+                            deferred.reject();
+                        }
                     );
-                    AppsCollection.byId(appId).then((appData) => {
-                        appData.set("deployedDate", null);
-                        appData.set("pendingChanges", false);
-                        appData.save();
-                    });
-                    deferred.resolve();
-                }).fail((errorResponse) => {
-                    let errorMessage;
-                    if (errorResponse) {
-                        errorMessage = errorResponse.cause ? errorResponse.cause.message : errorResponse.statusText;
-                    }
-                    eventManager.sendEvent(
-                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                        { key: "appUndeployedFailed", title: appTitle, message: errorMessage }
-                    );
-                    deferred.reject();
-                });
             }
         );
         return promise;
     },
 
-    deleteApplicationDlg (appId, appTitle, deletedCallback) {
-        UIUtils.confirmDialog(i18n.t("templates.apps.deleteDialog", { title: appTitle }), "danger",
-            () => {
-                AppsCollection.removeById(appId);
-
-                eventManager.sendEvent(
-                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                    { key: "deleteAppSuccess", title: appTitle }
-                );
-
-                if (deletedCallback) {
-                    deletedCallback();
+    deleteApplication (appId, appTitle) {
+        const deferred = $.Deferred();
+        AppsCollection.removeById(appId)
+            .then(
+                () => {
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        { key: "deleteAppSuccess", title: appTitle }
+                    );
+                    deferred.resolve();
+                },
+                () => {
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        { key: "deleteAppFailed", title: appTitle }
+                    );
+                    deferred.reject();
                 }
+            );
+        return deferred;
+    },
+
+    deleteApplicationDlg (appId, appTitle) {
+        const deferred = $.Deferred();
+        AppsCollection.byId(appId).then((appModel) => {
+            if (appModel) {
+                const isDeployed = RoutesCollection.isDeployed(appId);
+                const dialogMessageKey =
+                    isDeployed ? "templates.apps.undeployAndDeleteDialog" : "templates.apps.deleteDialog";
+                UIUtils.confirmDialog(i18n.t(dialogMessageKey, { title: appTitle }), "danger",
+                    () => {
+                        if (isDeployed) {
+                            this.undeployApplication(appId)
+                                .then(() => {
+                                    this.deleteApplication(appId, appTitle)
+                                        .then(
+                                            () => { deferred.resolve(); },
+                                            () => { deferred.reject(); }
+                                        );
+                                },
+                                (errorMessage) => {
+                                    eventManager.sendEvent(
+                                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                                        { key: "appUndeployedFailed", title: appTitle, message: errorMessage }
+                                    );
+                                    deferred.reject();
+                                }
+                            );
+                        } else {
+                            this.deleteApplication(appId, appTitle)
+                                .then(
+                                    () => { deferred.resolve(); },
+                                    () => { deferred.reject(); }
+                                );
+                        }
+                    }
+                );
             }
-        );
+        });
+        return deferred;
     },
 
     addFilterIntoModel (appModel, filter) {

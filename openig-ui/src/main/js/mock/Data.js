@@ -112,6 +112,25 @@ define([
         );
 
         server.respondWith(
+            "DELETE",
+            "/openig/api/system/objects/config/legacyapp?",
+            [
+                200,
+                {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                JSON.stringify([
+                    {
+                        "name": "Legacy Web App",
+                        "baseURI": "http://www.legacyapp.com:8080",
+                        "condition": "${matches(request.uri.path, '^/legacy')}",
+                        "status": "undeployed"
+                    }
+                ])
+            ]
+        );
+
+        server.respondWith(
             "GET",
             "/openig/api/system/objects/_router/routes?_pageSize=10",
             [

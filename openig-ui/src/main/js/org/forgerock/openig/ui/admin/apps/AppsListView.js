@@ -244,19 +244,20 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.deleteApplicationDlg(itemId, itemTitle,
-                () => {
-                    item.selected.remove();
-                    if (item.alternate) {
-                        item.alternate.remove();
-                    }
-                    AppsCollection.availableApps().then((apps) => {
-                        if (apps.models.length === 0) {
-                            this.renderNoItem();
+            appsUtils.deleteApplicationDlg(itemId, itemTitle)
+                .then(
+                    () => {
+                        item.selected.remove();
+                        if (item.alternate) {
+                            item.alternate.remove();
                         }
-                    });
-                }
-            );
+                        AppsCollection.availableApps().then((apps) => {
+                            if (apps.models.length === 0) {
+                                this.renderNoItem();
+                            }
+                        });
+                    }
+                );
         },
 
         exportAppConfig (event) {

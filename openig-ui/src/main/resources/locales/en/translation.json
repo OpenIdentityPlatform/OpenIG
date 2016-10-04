@@ -74,6 +74,7 @@
             "undeploy": "Undeploy",
             "deploy": "Deploy",
             "deleteDialog": "Delete protection for '__title__'?",
+            "undeployAndDeleteDialog": "Do you want to undeploy the protection for '__title__' and then delete it?",
             "deployDialog":"Deploy protection for '__title__'?",
             "undeployDialog": "Undeploy protection for '__title__'?",
             "duplicateDialog":"Duplicate protection for '__title__'?",

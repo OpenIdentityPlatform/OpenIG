@@ -64,12 +64,23 @@ define([
             return promise;
         },
 
-            // Remove also from local cache
+        // Remove also from local cache
         removeById (appId) {
+            const deferred = $.Deferred();
             const item = this.get(appId);
-            item.destroy();
-            this.remove(item);
-            this.appsCache.currentApps.remove(item);
+            item.destroy()
+                .then(
+                    (model) => {
+                        this.remove(model);
+                        this.appsCache.currentApps.remove(item);
+                        deferred.resolve();
+                    },
+                    (error) => {
+                        console.log(error);
+                        deferred.reject(error);
+                    }
+                );
+            return deferred;
         }
     });
 

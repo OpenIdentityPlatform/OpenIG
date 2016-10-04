@@ -121,14 +121,15 @@ define([
 
         deleteApps (e) {
             e.preventDefault();
-            appsUtils.deleteApplicationDlg(this.data.appName, this.data.title,
-                () => {
-                    EventManager.sendEvent(
-                            Constants.EVENT_CHANGE_VIEW,
-                            { route: Router.configuration.routes.appsPage }
-                   );
-                }
-            );
+            appsUtils.deleteApplicationDlg(this.data.appName, this.data.title)
+                .then(
+                    () => {
+                        EventManager.sendEvent(
+                                Constants.EVENT_CHANGE_VIEW,
+                                { route: Router.configuration.routes.appsPage }
+                       );
+                    }
+                );
         }
     });
 
