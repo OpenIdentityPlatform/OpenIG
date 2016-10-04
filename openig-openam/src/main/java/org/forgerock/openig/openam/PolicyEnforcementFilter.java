@@ -20,8 +20,8 @@ import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
+import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
-import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.routing.Version.version;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -29,6 +29,8 @@ import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.resource.Responses.newActionResponse;
+import static org.forgerock.json.resource.http.CrestHttp.newRequestHandler;
 import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
@@ -59,13 +61,13 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
+import org.forgerock.json.resource.FilterChain;
 import org.forgerock.json.resource.InternalServerErrorException;
 import org.forgerock.json.resource.NotSupportedException;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.Requests;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ResourcePath;
-import org.forgerock.json.resource.http.CrestHttp;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
@@ -180,7 +182,6 @@ public class PolicyEnforcementFilter implements Filter {
     private static final String SUBJECT_ERROR =
             "The attribute 'ssoTokenSubject' or 'jwtSubject' or 'claimsSubject' must be specified";
 
-    private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> policyDecisionCache;
     private final RequestHandler requestHandler;
     private String application;
     private Expression<String> ssoTokenSubject;
@@ -193,30 +194,16 @@ public class PolicyEnforcementFilter implements Filter {
     /**
      * Creates a new OpenAM enforcement filter.
      *
-     * @param baseUri
-     *            The location of the selected OpenAM instance, including the
-     *            realm, to the json base endpoint, not {@code null}.
      * @param target
      *            Map which will be used to store policy decision extra
      *            attributes, not {@code null}.
-     * @param amHandler
-     *            The handler used to get perform policies requests, not {@code null}.
+     * @param requestHandler
+     *            the CREST handler to use for asking the policy decisions.
      */
-    public PolicyEnforcementFilter(final URI baseUri,
-                                   @SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
-                                   final Handler amHandler) {
+    public PolicyEnforcementFilter(@SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
+                                   final RequestHandler requestHandler) {
         this.target = checkNotNull(target);
-        this.requestHandler = CrestHttp.newRequestHandler(amHandler, baseUri);
-    }
-
-    /**
-     * Sets the cache for the policy decisions.
-     *
-     * @param cache
-     *            The cache for policy decisions to set.
-     */
-    public void setCache(final PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache) {
-        this.policyDecisionCache = cache;
+        this.requestHandler = checkNotNull(requestHandler);
     }
 
     @Override
@@ -290,9 +277,7 @@ public class PolicyEnforcementFilter implements Filter {
                 @Override
                 public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
                     logger.debug("Cannot get the policy evaluation", exception);
-                    final Response response = new Response(INTERNAL_SERVER_ERROR);
-                    response.setCause(exception);
-                    return newResponsePromise(response);
+                    return newResponsePromise(newInternalServerError(exception));
                 }
             };
 
@@ -325,20 +310,8 @@ public class PolicyEnforcementFilter implements Filter {
         actionRequest.setContent(resources);
         actionRequest.setResourceVersion(version(2, 0));
 
-        final JsonValue subject = resources.get("subject");
-        final String key = createKeyCache(request.getUri().toASCIIString(),
-                                          subject.get("ssoToken").asString(),
-                                          subject.get("jwt").asString(),
-                                          subject.get("claims").asMap() != null
-                                                      ? subject.get("claims").asMap().hashCode()
-                                                      : 0);
-        try {
-            return policyDecisionCache.getValue(key,
-                                                getPolicyDecisionCallable(context, requestHandler, actionRequest),
-                                                extractDurationFromTtl());
-        } catch (InterruptedException | ExecutionException e) {
-            return new InternalServerErrorException(e).asPromise();
-        }
+        return requestHandler.handleAction(context, actionRequest)
+                             .then(EXTRACT_POLICY_DECISION_AS_JSON);
     }
 
     @VisibleForTesting
@@ -360,60 +333,6 @@ public class PolicyEnforcementFilter implements Filter {
                            field("subject", subject.getObject()),
                            fieldIfNotNull("application", application),
                            fieldIfNotNull("environment", environment != null ? environment.apply(bindings) : null)));
-    }
-
-    private AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception> extractDurationFromTtl() {
-        //@Checkstyle:off
-        return new AsyncFunction<Promise<JsonValue, ResourceException>, Duration, Exception>() {
-            @Override
-            public Promise<Duration, Exception> apply(Promise<JsonValue, ResourceException> promise) throws Exception {
-                return promise.then(new Function<JsonValue, Duration, Exception>() {
-                    @Override
-                    public Duration apply(JsonValue node) throws Exception {
-                        return duration(node.get("ttl").asLong(), MILLISECONDS);
-                    }
-                },
-                                  new Function<ResourceException, Duration, Exception>() {
-                    @Override
-                    public Duration apply(ResourceException e) throws Exception {
-                        // Do not cache if case of Exception
-                        return Duration.ZERO;
-                    }
-                });
-            }
-        };
-        //@Checkstyle:on
-    }
-
-    private static Callable<Promise<JsonValue, ResourceException>> getPolicyDecisionCallable(
-                                                                                  final Context context,
-                                                                                  final RequestHandler requestHandler,
-                                                                                  final ActionRequest actionRequest) {
-        return new Callable<Promise<JsonValue, ResourceException>>() {
-
-            @Override
-            public Promise<JsonValue, ResourceException> call() throws Exception {
-                return requestHandler.handleAction(context, actionRequest)
-                                     .then(EXTRACT_POLICY_DECISION_AS_JSON);
-            }
-        };
-    }
-
-    @VisibleForTesting
-    static String createKeyCache(final String requestedUri,
-                                 final String ssoToken,
-                                 final String jwt,
-                                 final int claimsHashCode) {
-        return new StringBuilder(requestedUri).append(ifSpecified(ssoToken))
-                                              .append(ifSpecified(jwt))
-                                              .append(claimsHashCode != 0 ? "@" + claimsHashCode : "").toString();
-    }
-
-    private static String ifSpecified(final String value) {
-        if (value != null && !value.isEmpty()) {
-            return "@" + value;
-        }
-        return "";
     }
 
     private static final Function<ActionResponse, JsonValue, ResourceException> EXTRACT_POLICY_DECISION_AS_JSON =
@@ -449,10 +368,120 @@ public class PolicyEnforcementFilter implements Filter {
         };
     }
 
+    static class CachePolicyDecisionFilter extends NotSupportedFilter {
+
+        public static final Function<ActionResponse, ActionResponse, ResourceException> COPY_ACTION_RESPONSE =
+                new Function<ActionResponse, ActionResponse, ResourceException>() {
+                    @Override
+                    public ActionResponse apply(ActionResponse actionResponse)
+                            throws ResourceException {
+                        return newActionResponse(actionResponse.getJsonContent().copy());
+                    }
+                };
+
+        private final PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache;
+
+        public CachePolicyDecisionFilter(
+                PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache) {
+            this.cache = checkNotNull(cache);
+        }
+
+        @Override
+        public Promise<ActionResponse, ResourceException> filterAction(final Context context,
+                                                                       final ActionRequest request,
+                                                                       final RequestHandler next) {
+            // We expect a valid request to build the key. But if we are not able to build the key because the request
+            // is invalid, then just forward to OpenAM, that will certainly answer a detailed message explaining why
+            // the request is invalid.
+            JsonValue requestContent = request.getContent();
+            final JsonValue subject = requestContent.get("subject");
+            final JsonValue resources = requestContent.get("resources");
+            if (subject.isNotNull() && resources.isNotNull()) {
+                final String key = createKeyCache(resources.get(0).asString(),
+                                                  subject.get("ssoToken").asString(),
+                                                  subject.get("jwt").asString(),
+                                                  subject.get("claims").asMap() != null
+                                                    ? subject.get("claims").asMap().hashCode()
+                                                    : 0);
+                Callable<Promise<ActionResponse, ResourceException>> callable =
+                        new Callable<Promise<ActionResponse, ResourceException>>() {
+                            @Override
+                            public Promise<ActionResponse, ResourceException> call() throws Exception {
+                                return next.handleAction(context, request);
+                            }
+                        };
+                try {
+                    return cache.getValue(key, callable, extractDurationFromTtl())
+                                .then(copyActionResponse());
+                } catch (InterruptedException | ExecutionException e) {
+                    return new InternalServerErrorException(e).asPromise();
+                }
+            }
+            return next.handleAction(context, request);
+        }
+
+        private Function<ActionResponse, ActionResponse, ResourceException> copyActionResponse() {
+            return COPY_ACTION_RESPONSE;
+        }
+
+        @VisibleForTesting
+        static String createKeyCache(final String requestedUri,
+                                     final String ssoToken,
+                                     final String jwt,
+                                     final int claimsHashCode) {
+            return new StringBuilder(requestedUri).append(ifSpecified(ssoToken))
+                                                  .append(ifSpecified(jwt))
+                                                  .append(claimsHashCode != 0 ? "@" + claimsHashCode : "").toString();
+        }
+
+        private static String ifSpecified(final String value) {
+            if (value != null && !value.isEmpty()) {
+                return "@" + value;
+            }
+            return "";
+        }
+
+        private AsyncFunction<Promise<ActionResponse, ResourceException>, Duration, Exception>
+        extractDurationFromTtl() {
+            //@Checkstyle:off
+            return new AsyncFunction<Promise<ActionResponse, ResourceException>, Duration, Exception>() {
+
+                @Override
+                public Promise<Duration, Exception> apply(Promise<ActionResponse, ResourceException> promise)
+                        throws Exception {
+                    return promise.then(providedTtl(), zeroTtl());
+                }
+
+                private Function<ActionResponse, Duration, Exception> providedTtl() {
+                    return new Function<ActionResponse, Duration, Exception>() {
+                                            @Override
+                                            public Duration apply(ActionResponse response) throws Exception {
+                                                // The policy response is an array
+                                                return duration(response.getJsonContent().get(0).get("ttl").asLong(),
+                                                                MILLISECONDS);
+                                            }
+                                        };
+                }
+
+                private Function<ResourceException, Duration, Exception> zeroTtl() {
+                    return new Function<ResourceException, Duration, Exception>() {
+                        @Override
+                        public Duration apply(ResourceException e) throws Exception {
+                            // Do not cache if case of Exception
+                            return Duration.ZERO;
+                        }
+                    };
+                }
+            };
+            //@Checkstyle:on
+        }
+
+    }
+
     /** Creates and initializes a policy enforcement filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache;
+        private PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache;
 
         @Override
         public Object create() throws HeapException {
@@ -474,7 +503,7 @@ public class PolicyEnforcementFilter implements Filter {
                                           .as(evaluatedWithHeapProperties())
                                           .defaultTo(realm)
                                           .asString();
-            final Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
+            Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
                                         .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                         .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
@@ -492,36 +521,15 @@ public class PolicyEnforcementFilter implements Filter {
                                                                          pepUsername,
                                                                          pepPassword);
 
-                final PolicyEnforcementFilter filter =
-                        new PolicyEnforcementFilter(normalizeToJsonEndpoint(openamUrl, realm),
-                                                    target,
-                                                    chainOf(amHandler,
-                                                            ssoTokenFilter,
-                                                            // CREST operation(action) is compatible between protocols
-                                                            // v1 and v2.
-                                                            new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1)));
+                amHandler = chainOf(amHandler,
+                                    ssoTokenFilter,
+                                    // /json/policies endpoint has a compatible 'evaluate' action between CREST
+                                    // protocol v1 and v2 (response format unchanged)
+                                    new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1));
 
-                filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
-                filter.setSsoTokenSubject(config.get("ssoTokenSubject")
-                                                .as(expression(String.class)));
-                filter.setJwtSubject(config.get("jwtSubject")
-                                           .as(expression(String.class)));
-                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
-
-                if (config.get("ssoTokenSubject").isNull()
-                        && config.get("jwtSubject").isNull()
-                        && config.get("claimsSubject").isNull()) {
-                    throw new HeapException(SUBJECT_ERROR);
-                }
-
-                filter.setEnvironment(environment(heap.getProperties()));
-
-                // Sets the cache
-                ScheduledExecutorService executor = config.get("executor")
-                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
-                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
+                RequestHandler requestHandler = newRequestHandler(amHandler, normalizeToJsonEndpoint(openamUrl, realm));
+                // Cache requested ?
                 String defaultExpiration = "1 minute";
-                cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
                 final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
                                                           .as(evaluatedWithHeapProperties())
                                                           .defaultTo(defaultExpiration)
@@ -529,8 +537,28 @@ public class PolicyEnforcementFilter implements Filter {
                 if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
                     throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
                 }
+                ScheduledExecutorService executor = config.get("executor")
+                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
+                cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
                 cache.setMaxTimeout(cacheMaxExpiration);
-                filter.setCache(cache);
+                requestHandler = new FilterChain(requestHandler, new CachePolicyDecisionFilter(cache));
+
+                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, requestHandler);
+
+                filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
+
+                if (config.get("ssoTokenSubject").isNull()
+                        && config.get("jwtSubject").isNull()
+                        && config.get("claimsSubject").isNull()) {
+                    throw new HeapException(SUBJECT_ERROR);
+                }
+
+                filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
+                filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
+                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
+
+                filter.setEnvironment(environment(heap.getProperties()));
 
                 return filter;
             } catch (URISyntaxException e) {
