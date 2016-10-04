@@ -18,17 +18,19 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "org/forgerock/commons/ui/common/main/AbstractModel"
+    "org/forgerock/commons/ui/common/main/AbstractModel",
+    "org/forgerock/openig/ui/common/util/Constants"
 ], (
     $,
     _,
     Backbone,
-    AbstractModel
+    AbstractModel,
+    Constants
     ) => {
         /* Define App structure + add defaults, constants, orders */
 
-        //var mockPrefix = "mock/repo/internal/AppModel/";
     const AppModel = AbstractModel.extend({
+        url: `${Constants.apiPath}/config`,
         defaults: {
             _id: "",
             content: {
