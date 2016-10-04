@@ -30,14 +30,16 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.resource.ResourceException.newResourceException;
+import static org.forgerock.json.resource.Responses.newActionResponse;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.CachePolicyDecisionFilter.createKeyCache;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.asFunction;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -48,9 +50,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -59,17 +58,17 @@ import java.util.concurrent.TimeUnit;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.http.protocol.Status;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.json.resource.ActionRequest;
+import org.forgerock.json.resource.ActionResponse;
+import org.forgerock.json.resource.FilterChain;
+import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.ResourceException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -78,20 +77,16 @@ import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
 import org.forgerock.util.PerItemEvictionStrategyCache;
-import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class PolicyEnforcementFilterTest {
-    private static final URI BASE_URI = URI.create("http://www.example.com:8090/openam/json/");
     private static final JsonValue CLAIMS_SUBJECT = json(object(field("iss", "jwt-bearer-client"),
                                                                 field("sub", "client_id"),
                                                                 field("aud", "http://example.com:8088/openam"),
@@ -106,9 +101,6 @@ public class PolicyEnforcementFilterTest {
     private static final String TOKEN = "ARrrg...42*";
 
     private AttributesContext attributesContext;
-    private Bindings bindings;
-    private SessionContext sessionContext;
-    private PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache;
     private Request resourceRequest;
     @SuppressWarnings("rawtypes")
     private LeftValueExpression<Map> target;
@@ -117,7 +109,7 @@ public class PolicyEnforcementFilterTest {
     private Handler next;
 
     @Mock
-    private Handler amHandler;
+    private RequestHandler requestHandler;
 
     @Captor
     private ArgumentCaptor<Runnable> captor;
@@ -125,12 +117,11 @@ public class PolicyEnforcementFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         initMocks(this);
-        sessionContext = new SessionContext(new RootContext(), new SimpleMapSession());
-        attributesContext = new AttributesContext(sessionContext);
+        attributesContext = new AttributesContext(new RootContext());
         attributesContext.getAttributes().put("password", "hifalutin");
         attributesContext.getAttributes().put("ssoTokenSubject", TOKEN);
         attributesContext.getAttributes().put("client_id", "OpenIG");
-        bindings = bindings(attributesContext, null);
+        Bindings bindings = bindings(attributesContext, null);
         @SuppressWarnings("rawtypes")
         final LeftValueExpression<Map> claimsSubject = LeftValueExpression.valueOf("${attributes.claimsSubject}",
                                                                                    Map.class);
@@ -139,22 +130,12 @@ public class PolicyEnforcementFilterTest {
         final LeftValueExpression<Map> environmentMap = LeftValueExpression.valueOf("${attributes.environmentMap}",
                                                                                     Map.class);
         environmentMap.set(bindings, singletonMap("IP", IP_LIST));
-        cache = new PerItemEvictionStrategyCache<>(newSingleThreadScheduledExecutor(), duration(1, TimeUnit.MINUTES));
         target = LeftValueExpression.valueOf("${attributes.policy}", Map.class);
 
-        when(amHandler.handle(any(Context.class), any(Request.class)))
-                .thenAnswer(new Answer<Promise<Response, NeverThrowsException>>() {
-                    @Override
-                    public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation)
-                            throws Throwable {
-                        // Create a new reponse for each call as the Response will be automatically closed
-                        // by the CrestAdapter
-                        return newResponsePromise(policyDecisionResponse());
-                    }
-                });
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(newActionResponse(json(policyDecision())).asPromise());
 
-        resourceRequest = new Request();
-        resourceRequest.setMethod("GET").setUri(RESOURCE_URI);
+        resourceRequest = new Request().setMethod("GET").setUri(RESOURCE_URI);
     }
 
     @DataProvider
@@ -267,43 +248,36 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private static Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
-            { null, LeftValueExpression.valueOf("${attributes.policy}", Map.class), Handlers.NO_CONTENT },
-            { URI.create(OPENAM_URI), LeftValueExpression.valueOf("${attributes.policy}", Map.class), null },
-            { URI.create(OPENAM_URI), null, Handlers.NO_CONTENT } };
+            { LeftValueExpression.valueOf("${attributes.policy}", Map.class), null },
+            { null, mock(RequestHandler.class) } };
     }
 
     @SuppressWarnings("rawtypes")
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
-    public void shouldFailToCreatePolicyEnforcementFilter(final URI baseUri,
-                                                          final LeftValueExpression<Map> target,
-                                                          final Handler amHandler)
+    public void shouldFailToCreatePolicyEnforcementFilter(final LeftValueExpression<Map> target,
+                                                          final RequestHandler requestHandler)
             throws Exception {
-        new PolicyEnforcementFilter(baseUri, target, amHandler);
+        new PolicyEnforcementFilter(target, requestHandler);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldNotAuthorizeAccessWhenRequestedResourceNotInPolicyDecision() throws Exception {
-        // Given
         final String resource = "http://example.com/user.1/edit";
-        final Request request = new Request();
-        request.setMethod("GET");
-        request.setUri(resource);
 
-        final Response displayEmptyResourceResponse = new Response(Status.OK);
-        displayEmptyResourceResponse.setEntity(emptyPolicyDecision(resource));
+        // Given
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(newActionResponse(json(emptyPolicyDecision(resource))).asPromise());
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
-        when(amHandler.handle(any(Context.class), any(Request.class)))
-            .thenReturn(newResponsePromise(displayEmptyResourceResponse));
-
         // When
+        final Request request = new Request().setMethod("GET").setUri(resource);
         final Response finalResponse = filter.filter(attributesContext,
                                                      request,
                                                      next).get();
         // Then
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
                                                                                        .get(DEFAULT_POLICY_KEY);
@@ -324,7 +298,7 @@ public class PolicyEnforcementFilterTest {
                                                      resourceRequest,
                                                      next).get();
         // Then
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         verify(next).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
@@ -345,7 +319,7 @@ public class PolicyEnforcementFilterTest {
                                                      request,
                                                      next).get();
         // Then
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
         assertThatAttributesAndAdvicesAreStoredInAttributesContext();
     }
@@ -353,19 +327,18 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldFailDueToInvalidServerResponse() throws Exception {
         // Given
-        final Response errorResponse = new Response(GATEWAY_TIMEOUT);
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(newResourceException(GATEWAY_TIMEOUT.getCode(), "").<ActionResponse>asPromise());
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
-
-        when(amHandler.handle(any(Context.class), any(Request.class)))
-            .thenReturn(newResponsePromise(errorResponse));
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
                                                      resourceRequest,
                                                      next).get();
+
         // Then
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(finalResponse.getEntity().getString()).isEmpty();
     }
@@ -406,15 +379,13 @@ public class PolicyEnforcementFilterTest {
     @Test
     public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
         // Given
-        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(URI.create(OPENAM_URI),
-                                                                     target,
-                                                                     amHandler);
-        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
-
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
-        PerItemEvictionStrategyCache<String, Promise<JsonValue, ResourceException>> cache =
+        PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache =
                 new PerItemEvictionStrategyCache<>(executorService, duration(1, TimeUnit.MINUTES));
-        filter.setCache(cache);
+        RequestHandler chainedHandler = new FilterChain(requestHandler,
+                                                        new PolicyEnforcementFilter.CachePolicyDecisionFilter(cache));
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
+        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
         when(next.handle(any(Context.class), eq(resourceRequest)))
             .thenReturn(newResponsePromise(displayResourceResponse()));
@@ -424,7 +395,7 @@ public class PolicyEnforcementFilterTest {
                       resourceRequest,
                       next).get();
         // Then
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         verify(next).handle(attributesContext, resourceRequest);
         verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
@@ -436,18 +407,18 @@ public class PolicyEnforcementFilterTest {
                       next).get();
 
         verify(next, times(2)).handle(attributesContext, resourceRequest);
-        // No other call to the amHandler has to be done here
-        verify(amHandler).handle(any(Context.class), any(Request.class));
+        // No other call to the requestHandler has to be done here
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
 
         // Mimic cache expiration
         captor.getValue().run();
 
-        // When third call: the amHandler must do another call to get the policy decision result.
+        // When third call: the requestHandler must do another call to get the policy decision result.
         filter.filter(attributesContext,
                       resourceRequest,
                       next).get();
 
-        verify(amHandler, times(2)).handle(any(Context.class), any(Request.class));
+        verify(requestHandler, times(2)).handleAction(any(Context.class), any(ActionRequest.class));
         verify(next, times(3)).handle(attributesContext, resourceRequest);
     }
 
@@ -625,12 +596,6 @@ public class PolicyEnforcementFilterTest {
                                                                         singletonList("3"));
     }
 
-    private static Response policyDecisionResponse() {
-        final Response response = new Response(OK);
-        response.setEntity(policyDecision());
-        return response;
-    }
-
     /**
      * An example of a response given by OpenAM when the resource is supported
      * by the policy:
@@ -688,11 +653,10 @@ public class PolicyEnforcementFilterTest {
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter() throws Exception {
-        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(BASE_URI, target, amHandler);
+        final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, requestHandler);
         Expression<String> subject = Expression.valueOf("${attributes.ssoTokenSubject}",
                                                         String.class);
         filter.setSsoTokenSubject(subject);
-        filter.setCache(cache);
         return filter;
     }
 
@@ -717,21 +681,12 @@ public class PolicyEnforcementFilterTest {
                                                                 buildDefaultHeap());
     }
 
-    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void save(Response response) throws IOException {
-            // Nothing to do.
-        }
-    }
-
     public HeapImpl buildDefaultHeap() {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());
         heap.put(FORGEROCK_CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
-        heap.put("amHandler", amHandler);
+        heap.put("amHandler", mock(Handler.class));
         return heap;
     }
 }
