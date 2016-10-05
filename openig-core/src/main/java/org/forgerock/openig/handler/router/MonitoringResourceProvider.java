@@ -57,7 +57,7 @@ import com.codahale.metrics.Snapshot;
 @SingletonProvider(@Handler(
         title = "i18n:#service.title",
         description = "i18n:#service.desc",
-        resourceSchema = @Schema(schemaResource = "monitoring-resource.json"),
+        resourceSchema = @Schema(schemaResource = "monitoring-resource.json", id = "monitoring-data"),
         mvccSupported = false))
 class MonitoringResourceProvider implements SingletonResourceProvider {
 

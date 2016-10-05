@@ -169,7 +169,7 @@ class RouteBuilder {
             RequestHandler singleton = newHandler(new MonitoringResourceProvider(metrics, mc.getPercentiles()));
             endpoints.register("monitoring",
                                newHttpHandler(newCrestApplication(singleton,
-                                                                  "frapi:openig:builder")),
+                                                                  "frapi:openig:monitoring")),
                                "Monitoring endpoint available at '{}'");
         }
 

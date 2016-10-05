@@ -461,7 +461,7 @@ public class RouterHandler extends GenericHeapObject implements FileChangeListen
             final RequestHandler routesCollection = newHandler(new RoutesCollectionProvider(handler));
             registration = registry.register("routes",
                                              newHttpHandler(newCrestApplication(routesCollection,
-                                                                                "frapi:openig:handler")));
+                                                                                "frapi:openig:router-handler")));
             logger.info("Routes endpoint available at '{}'", registration.getPath());
 
             return handler;

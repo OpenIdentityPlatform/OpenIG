@@ -15,7 +15,8 @@
           "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#requests.active",
           "type": "integer"
         }
-      }
+      },
+      "required": [ "total", "active" ]
     },
     "responses": {
       "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.desc",
@@ -57,7 +58,8 @@
           "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responses.notHandled",
           "type": "integer"
         }
-      }
+      },
+      "required": [ "total", "info", "success", "redirect", "clientError", "serverError", "other", "errors", "null" ]
     },
     "throughput": {
       "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.desc",
@@ -79,7 +81,8 @@
           "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#throughput.last15Minutes",
           "type": "number"
         }
-      }
+      },
+      "required": [ "mean", "lastMinute", "last5Minutes", "last15Minutes" ]
     },
     "responseTime": {
       "description": "i18n:org/forgerock/openig/handler/router/monitoring-resource#responseTime.desc",
@@ -108,7 +111,8 @@
             "type": "number"
           }
         }
-      }
+      },
+      "required": [ "mean", "median", "standardDeviation", "total", "percentiles" ]
     }
   }
 }
