@@ -73,16 +73,17 @@ define([
 
     initializeMultiSelect (control) {
         const input = $(control);
-        const tags = input.val().split(/\s* \s*/);
+        const delimiter = input.data("delimiter");
+        const tags = input.val().split(delimiter);
         const mandatory = input.data("mandatory");
-        const predefinedOptions = _.map(input.data("options").split(","), (option) => (
+        const predefinedOptions = _.map(input.data("options").split(delimiter), (option) => (
             {
                 value: option,
                 text: option
             }
         ));
-        const delimiter = input.data("delimiter");
-        input.selectize({
+
+        return input.selectize({
             delimiter,
             persist: true,
             sortField: "text",
@@ -102,7 +103,7 @@ define([
                     defaultValues.push(this.getValue().split(/\s* \s*/));
                     defaultValues.push(mandatory);
                     this.setValue(
-                        _.chain(defaultValues)
+                        _(defaultValues)
                         .flattenDeep()
                         .uniq()
                         .value()
@@ -110,10 +111,8 @@ define([
                 }
             },
             onItemRemove (value) {
-                const selected = this.getValue().split(/\s* \s*/);
                 if (mandatory === value) {
-                    selected.unshift(value);
-                    this.setValue(selected);
+                    this.addItem(value);
                 }
             }
         });

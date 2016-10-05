@@ -14,7 +14,13 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-define(["lodash"], (_) => ({
+define([
+    "lodash",
+    "org/forgerock/openig/ui/admin/util/ValueHelper"
+], (
+    _,
+    ValueHelper
+) => ({
 
     TransformServiceException (type, message) {
         this.errorType = type;
@@ -145,6 +151,19 @@ define(["lodash"], (_) => ({
         return declaration;
     },
 
+    transformStatistics (statistics) {
+        if (!statistics) {
+            return false;
+        }
+
+        return (statistics.percentiles && statistics.enabled)
+            ? {
+                enabled: true,
+                percentiles: _.map(statistics.percentiles.split(" "), (o) => ValueHelper.toNumber(o))
+            }
+            : statistics.enabled;
+    },
+
     transformApplication (app) {
         if (app === undefined || app === null || !app.isValid()) {
             throw new this.TransformServiceException("invalidModel");
@@ -154,7 +173,8 @@ define(["lodash"], (_) => ({
         const route = {
             name: app.get("_id"),
             baseURI: app.get("content/baseURI"),
-            condition: app.get("content/condition")
+            condition: app.get("content/condition"),
+            monitor: this.transformStatistics(app.get("content/statistics"))
         };
 
         // Convert all filters
