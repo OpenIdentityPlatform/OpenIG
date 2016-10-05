@@ -43,5 +43,8 @@ define([
 
     commonConstants.studioUser = "studio";
 
+    // view setting cookie expiration in days
+    commonConstants.viewSettingCookieExpiration = 30;
+
     return commonConstants;
 });

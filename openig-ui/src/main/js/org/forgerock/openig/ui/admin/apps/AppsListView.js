@@ -31,7 +31,8 @@ define([
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/AppsCollection",
     "org/forgerock/openig/ui/admin/models/RoutesCollection",
-    "org/forgerock/openig/ui/admin/views/common/NoItemBox"
+    "org/forgerock/openig/ui/admin/views/common/NoItemBox",
+    "org/forgerock/commons/ui/common/util/CookieHelper"
 ], (
     $,
     _,
@@ -49,7 +50,8 @@ define([
     UIUtils,
     AppsCollection,
     RoutesCollection,
-    NoItemBox
+    NoItemBox,
+    CookieHelper
 ) => {
     const AppsListView = AbstractView.extend({
         template: "templates/openig/admin/apps/AppsListViewTemplate.html",
@@ -67,11 +69,18 @@ define([
             "keyup .filter-input": "filterApps",
             "paste .filter-input": "filterApps"
         },
+        viewStyleTypes: { card: "card", grid: "grid" },
+        listStyleCookieName: "openig-ui-apps-list-style",
         model: {
 
         },
         render (args, callback) {
             const viewThis = this;
+
+            // Get and refresh view style setting
+            this.data.viewStyle = CookieHelper.getCookie(this.listStyleCookieName) || this.viewStyleTypes.card;
+            this.saveListViewStyle(this.data.viewStyle);
+
             UIUtils.preloadPartial("templates/openig/admin/apps/components/AppPopupMenu.html");
             const TemplateCell = Backgrid.Cell.extend({
                 render () {
@@ -293,6 +302,7 @@ define([
         /* switch cards and grid */
         toggleButtonChange (event) {
             let target = $(event.target);
+            this.saveListViewStyle(target.hasClass("fa-th") ? this.viewStyleTypes.card : this.viewStyleTypes.grid);
 
             if (target.hasClass("fa")) {
                 target = target.parents(".btn");
@@ -300,6 +310,16 @@ define([
 
             this.$el.find(".toggle-view-btn").toggleClass("active", false);
             target.toggleClass("active", true);
+        },
+
+        saveListViewStyle (style) {
+            const expire = new Date();
+            expire.setDate(expire.getDate() + constants.viewSettingCookieExpiration);
+            CookieHelper.setCookie(
+                this.listStyleCookieName,
+                style,
+                expire
+            );
         },
 
         getStatusTextKey (deployed, pendingChnages) {
