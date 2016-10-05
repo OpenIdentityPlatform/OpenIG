@@ -16,6 +16,8 @@
 
 package org.forgerock.openig.util;
 
+import static org.forgerock.openig.util.JsonValues.expression;
+
 import java.util.Map;
 
 import org.forgerock.json.JsonValue;
@@ -25,11 +27,28 @@ import org.forgerock.util.Function;
 
 class BindingsFromJsonValueFunction implements Function<JsonValue, Bindings, JsonValueException> {
 
+    private final Bindings initialBindings;
+
+    BindingsFromJsonValueFunction() {
+        this(Bindings.bindings());
+    }
+
+    BindingsFromJsonValueFunction(Bindings initialBindings) {
+        this.initialBindings = initialBindings;
+    }
+
     @Override
     public Bindings apply(JsonValue value) {
         Bindings bindings = Bindings.bindings();
         for (String key : value.expect(Map.class).keys()) {
-            bindings.bind(key, value.get(key).getObject());
+            Object object;
+            JsonValue elem = value.get(key);
+            if (elem.isString()) {
+                object = elem.as(expression(Object.class, initialBindings)).eval(bindings);
+            } else {
+                object = elem.getObject();
+            }
+            bindings.bind(key, object);
         }
         return bindings;
     }

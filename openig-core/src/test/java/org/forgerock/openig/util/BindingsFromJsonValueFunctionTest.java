@@ -24,6 +24,7 @@ import static org.forgerock.json.JsonValue.object;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.ExpressionException;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -32,20 +33,55 @@ public class BindingsFromJsonValueFunctionTest {
     @Test
     public void shouldBuildBindings() throws Exception {
         JsonValue value = json(object(field("foo", "bar")));
-
-        Bindings bindings = value.as(new BindingsFromJsonValueFunction());
-
-        Expression<String> expression = Expression.valueOf("Hello ${foo}", String.class);
-        assertThat(expression.eval(bindings)).isEqualTo("Hello bar");
+        assertExpressionEval(value, "Hello ${foo}", "Hello bar");
     }
 
     @Test
     public void shouldBuildComplexBindings() throws Exception {
         JsonValue value = json(object(field("foo", object(field("bar", 42)))));
+        assertExpressionEval(value, "The ultimate answer is ${foo.bar}", "The ultimate answer is 42");
+    }
 
-        Bindings bindings = value.as(new BindingsFromJsonValueFunction());
+    @Test
+    public void shouldEvaluateExpression() throws Exception {
+        JsonValue value = json(object(field("foo", "${40 + 2}")));
+        assertExpressionEval(value, "The ultimate answer is ${foo}", "The ultimate answer is 42");
+    }
 
-        Expression<String> expression = Expression.valueOf("The ultimate answer is ${foo.bar}", String.class);
+    @Test
+    public void shouldAllowReferencesToPreviousBindings() throws Exception {
+        JsonValue value = json(object(field("bar", 40),
+                                      field("foo", "${bar + 2}")));
+        assertExpressionEval(value, "The ultimate answer is ${foo}", "The ultimate answer is 42");
+    }
+
+    @Test
+    public void shouldNotAllowReferenceInAdvance() throws Exception {
+        JsonValue value = json(object(field("foo", "${bar + 2}"),
+                                      field("bar", 40)));
+        String expression = "The ultimate answer is ${foo}";
+        String expected = "The ultimate answer is 2";
+
+        assertExpressionEval(value, expression, expected);
+    }
+
+    @Test
+    public void shouldUseInitialBindings() throws Exception {
+        Bindings initialBindings = Bindings.bindings().bind("bar", 40);
+        JsonValue value = json(object(field("foo", "${bar + 2}")));
+
+        Bindings bindings = value.as(new BindingsFromJsonValueFunction(initialBindings));
+
+        Expression<String> expression = Expression.valueOf("The ultimate answer is ${foo}", String.class);
         assertThat(expression.eval(bindings)).isEqualTo("The ultimate answer is 42");
     }
+
+    private static void assertExpressionEval(JsonValue value, String expressionText, String expected)
+            throws ExpressionException {
+        Bindings bindings = value.as(new BindingsFromJsonValueFunction());
+
+        Expression<String> expression = Expression.valueOf(expressionText, String.class);
+        assertThat(expression.eval(bindings)).isEqualTo(expected);
+    }
+
 }

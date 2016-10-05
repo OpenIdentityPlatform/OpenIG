@@ -282,6 +282,15 @@ public final class JsonValues {
     }
 
     /**
+     * Returns a function that will create some bindings based of a Map-based {@link JsonValue}.
+     * @param bindings The initial bindings used when evaluated the
+     * @return a function that will create some bindings based of a Map-based {@link JsonValue}.
+     */
+    public static Function<JsonValue, Bindings, JsonValueException> bindings(final Bindings bindings) {
+        return new BindingsFromJsonValueFunction(bindings);
+    }
+
+    /**
      * Returns a {@link Function} to transform a list of String-based {@link JsonValue}s into a list of required heap
      * objects.
      *
