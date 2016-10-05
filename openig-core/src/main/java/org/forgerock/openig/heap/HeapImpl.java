@@ -182,7 +182,7 @@ public class HeapImpl implements Heap {
                                    .defaultTo(emptyMap())
                                    .as(resolvedLocation())
                                    .expect(Map.class)
-                                   .as(bindings()));
+                                   .as(bindings(getProperties())));
         JsonValue heap = config.get("heap").defaultTo(emptyList());
         if (heap.isMap()) {
             /*
