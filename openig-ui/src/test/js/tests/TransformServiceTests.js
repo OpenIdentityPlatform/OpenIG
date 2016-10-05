@@ -133,7 +133,8 @@ define([
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path == '/'}",
-                    "handler": "ClientHandler"
+                    "handler": "ClientHandler",
+                    "monitor": false
                 },
                 "Wrong top level properties"
             );
@@ -254,7 +255,8 @@ define([
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
-                    "handler": "ClientHandler"
+                    "handler": "ClientHandler",
+                    "monitor": false
                 },
                 "Wrong number of filters when all of them are disabled"
             );
@@ -286,6 +288,7 @@ define([
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
+                    "monitor": false,
                     "handler": {
                         "type": "Chain",
                         "config": {
@@ -331,6 +334,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "capture": ["request"]
                 },
                 "Expecting only 'request' for capture"
@@ -361,6 +365,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "capture": ["response"]
                 },
                 "Expecting only 'response' for capture"
@@ -391,6 +396,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "capture": ["request", "response"]
                 },
                 "Expecting both 'request' & 'response' for capture"
@@ -422,6 +428,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "heap": [
                         {
                             "type": "ClientHandler",
@@ -459,6 +466,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "heap": [
                         {
                             "type": "ClientHandler",
@@ -497,6 +505,7 @@ define([
                     "baseURI": "http://www.example.com:8081",
                     "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
+                    "monitor": false,
                     "heap": [
                         {
                             "type": "ClientHandler",
@@ -507,6 +516,92 @@ define([
 
                 },
                 "Expecting both 'request' & 'response' for capture"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should enable statistics", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    baseURI: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    statistics: {
+                        enabled: true
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "monitor": true
+                },
+                "Expecting monitor enabled"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should enable statistics and add percentiles", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    baseURI: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    statistics: {
+                        enabled: true,
+                        percentiles: "0.99 0.999 0.9999"
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "monitor": {
+                        "enabled": true,
+                        "percentiles": [0.99, 0.999, 0.9999]
+                    }
+                },
+                "Expecting monitor enabled with percentiles"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should disable statistics and remove percentiles", (assert) => {
+            const app = new AppModel({
+                _id: "modelID",
+                content: {
+                    id: "modelID",
+                    name: "Router",
+                    baseURI: "http://www.example.com:8081",
+                    condition: "${request.uri.path === '/'}",
+                    statistics: {
+                        enabled: false,
+                        percentiles: "0.99 0.999 0.9999"
+                    }
+                }
+            });
+
+            assert.deepEqual(transformService.transformApplication(app),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "monitor": false
+                },
+                "Expecting monitor disabled"
             );
             QUnit.start();
         });

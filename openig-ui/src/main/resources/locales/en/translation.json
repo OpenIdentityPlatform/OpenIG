@@ -48,7 +48,7 @@
                     "throttling": "Throttling",
                     "authentication":"Authentication",
                     "authorization":"Authorization",
-                    "monitoring": "Monitoring"                    
+                    "statistics": "Statistics"                    
                 }
             }
         }
@@ -186,6 +186,16 @@
                     "btnEnableTitle": "Enable throttling",
                     "lblAllow": "Allow",
                     "lblPer": "requests each"
+                },
+                "statistics":{
+                    "title": "Statistics",
+                    "description": "Specify whether to maintain statistics about the route.",
+                    "fields":{
+                        "enabled": "Enable statistics",
+                        "percentiles": "Percentiles",
+                        "status": "On",
+                        "percentilesHint": "The percentiles in the distribution for which to maintain response time statistics."
+                    }
                 }
             }
         },

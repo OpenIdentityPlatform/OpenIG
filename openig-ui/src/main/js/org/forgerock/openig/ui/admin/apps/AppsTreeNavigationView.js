@@ -53,9 +53,9 @@ define([
         icon: "fa-key",
         route: "appsAuthorization"
     }, {
-        title: "config.AppConfiguration.Navigation.appsSideMenu.monitoring",
+        title: "config.AppConfiguration.Navigation.appsSideMenu.statistics",
         icon: "fa-line-chart",
-        route: "appsMonitoring"
+        route: "appsStatistics"
     }];
 
     const AppsTreeNavigationView = TreeNavigation.extend({

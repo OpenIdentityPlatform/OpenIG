@@ -98,11 +98,11 @@ define([
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsMonitoring": {
+    "appsStatistics": {
         view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Monitoring",
-        url: /^apps\/edit\/(.+?)\/monitoring$/,
-        pattern: "apps/edit/?/monitoring",
+        page: "org/forgerock/openig/ui/admin/apps/parts/Statistics",
+        url: /^apps\/edit\/(.+?)\/statistics$/,
+        pattern: "apps/edit/?/statistics",
         navGroup: "admin",
         forceUpdate: true
     },

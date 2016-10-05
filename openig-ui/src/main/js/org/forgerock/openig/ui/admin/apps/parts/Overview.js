@@ -59,6 +59,11 @@ define([
                     title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.authorization"),
                     route: "appsAuthorization",
                     icon: "fa-key"
+                },
+                {
+                    title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.statistics"),
+                    route: "appsStatistics",
+                    icon: "fa-line-chart"
                 }
             ];
         },
@@ -136,6 +141,11 @@ define([
                         status = i18n.t("templates.apps.filters.PolicyEnforcementFilter");
                     }
                     break;
+                case "appsStatistics":
+                    const statistics = this.data.appData.get("content/statistics");
+                    if (_.get(statistics, "enabled")) {
+                        status = i18n.t("templates.apps.parts.statistics.fields.status");
+                    }
             }
             return status;
         }

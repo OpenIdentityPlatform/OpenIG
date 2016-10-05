@@ -1,0 +1,19 @@
+{{! Copyright 2016 ForgeRock AS.
+	License terms: https://forgerock.org/cddlv1-0/ }}
+<div class="page-header">
+    <h1>{{t "templates.apps.parts.statistics.title"}}</h1>
+    <p class="panel-description">{{t "templates.apps.parts.statistics.description"}}</p>
+</div>
+<form id="statisticsForm" class="panel panel-default" role="form">
+    <div class="panel-body">
+    {{#each controls}}
+        {{> (control) }}
+    {{/each}}
+    </div>
+    <div class="panel-footer clearfix">
+        <div class="pull-right">
+            <input type="button" id="cancelStatistics" class="btn btn-default" value="{{t 'common.form.reset'}}" />
+            <input type="submit" id="submitStatistics" class="btn btn-primary" name="submitStatistics" value="{{t 'common.form.save'}}" disabled="true" />
+        </div>
+    </div>
+</form>
