@@ -22,6 +22,7 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
+import static org.forgerock.http.util.Paths.addLeadingSlash;
 import static org.forgerock.openig.heap.Keys.API_PROTECTION_FILTER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.CAPTURE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
@@ -33,6 +34,7 @@ import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.DescribedHttpApplication;
@@ -64,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.swagger.models.Info;
+import io.swagger.models.Scheme;
 
 /**
  * Configuration class for the OpenIG Administration.
@@ -188,7 +191,10 @@ public class AdminHttpApplication implements DescribedHttpApplication {
      * @return a swagger api producer.
      */
     public SwaggerApiProducer getApiProducer() {
-        return new SwaggerApiProducer(new Info().title(API_TITLE));
+        return new SwaggerApiProducer(new Info().title(API_TITLE),
+                                      addLeadingSlash(adminPrefix),
+                                      null,
+                                      Collections.<Scheme>emptyList());
     }
 
     /**
