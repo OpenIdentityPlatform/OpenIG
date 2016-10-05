@@ -160,7 +160,7 @@ public class AuthorizationRedirectHandlerTest {
         return buildClientRegistrationWithIssuer(true);
     }
 
-    private ClientRegistration buildClientRegistrationWithIssuer(final boolean containIssuer) throws Exception {
+    private ClientRegistration buildClientRegistrationWithIssuer(final boolean containIssuer) {
         return new ClientRegistration("myAppRegistered",
                                       buildClientRegistrationConfiguration(),
                                       containIssuer ? buildIssuerWithAllRequestedEndpoints() : null,

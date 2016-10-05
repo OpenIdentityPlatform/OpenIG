@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.ldap;
@@ -40,7 +40,6 @@ import com.forgerock.opendj.ldap.controls.TransactionIdControl;
 @SuppressWarnings("javadoc")
 public class LdapConnectionTest {
 
-    private TransactionId rootTransactionId;
     private LdapConnection ldapConnection;
 
     @Mock
@@ -49,8 +48,7 @@ public class LdapConnectionTest {
     @BeforeMethod
     private void beforeMethod() {
         MockitoAnnotations.initMocks(this);
-        rootTransactionId = new TransactionId("foo");
-        ldapConnection = new LdapConnection(connection, rootTransactionId);
+        ldapConnection = new LdapConnection(connection, new TransactionId("foo"));
     }
 
     @Test

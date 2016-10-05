@@ -39,8 +39,6 @@ import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -254,18 +252,18 @@ public class HttpBasicAuthFilterTest {
             { "ending-with-colon:" } };
     }
 
-    private void basicAuthServerAnswersUnauthorizedThenSuccess(final String credentials) throws Exception {
+    private void basicAuthServerAnswersUnauthorizedThenSuccess(final String credentials) {
         doAnswer(new UnauthorizedAnswer())
                 .doAnswer(new AuthorizedAnswer(credentials))
                 .when(terminalHandler).handle(any(Context.class), any(Request.class));
     }
 
-    private void basicAuthServerAnswersSuccess(final String credentials) throws Exception {
+    private void basicAuthServerAnswersSuccess(final String credentials) {
         doAnswer(new AuthorizedAnswer(credentials))
                 .when(terminalHandler).handle(any(Context.class), any(Request.class));
     }
 
-    private Context newContextChain() throws Exception {
+    private Context newContextChain() {
         return new AttributesContext(new SessionContext(new RootContext(), session));
     }
 
@@ -304,30 +302,6 @@ public class HttpBasicAuthFilterTest {
             // Produce a valid response, no special header is required
             Response response = new Response(Status.OK);
             return Promises.newResultPromise(response);
-        }
-    }
-
-    private class AbsenceOfHeaderInRequest extends BaseMatcher<Request> {
-
-        private final String headerName;
-
-        private AbsenceOfHeaderInRequest(final String headerName) {
-            this.headerName = headerName;
-        }
-
-        @Override
-        public boolean matches(final Object o) {
-            if (!(o instanceof Request)) {
-                return false;
-            }
-
-            Request request = (Request) o;
-            return request.getHeaders().get(headerName) == null;
-        }
-
-        @Override
-        public void describeTo(final Description description) {
-            description.appendText("headers[" + headerName + "] is not null");
         }
     }
 }

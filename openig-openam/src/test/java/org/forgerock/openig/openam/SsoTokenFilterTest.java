@@ -313,11 +313,11 @@ public class SsoTokenFilterTest {
         }
     }
 
-    private static SsoTokenFilter buildSsoTokenFilter() throws Exception {
+    private static SsoTokenFilter buildSsoTokenFilter() {
         return buildSsoTokenFilter(null);
     }
 
-    private static SsoTokenFilter buildSsoTokenFilter(final String headerName) throws Exception {
+    private static SsoTokenFilter buildSsoTokenFilter(final String headerName) {
         return new SsoTokenFilter(authenticate,
                                   OPENAM_URI,
                                   null,

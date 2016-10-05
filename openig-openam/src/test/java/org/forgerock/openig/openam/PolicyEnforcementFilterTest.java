@@ -698,7 +698,7 @@ public class PolicyEnforcementFilterTest {
         }
     }
 
-    public HeapImpl buildDefaultHeap() throws Exception {
+    public HeapImpl buildDefaultHeap() {
         final HeapImpl heap = new HeapImpl(Name.of("myHeap"));
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, newSingleThreadScheduledExecutor());

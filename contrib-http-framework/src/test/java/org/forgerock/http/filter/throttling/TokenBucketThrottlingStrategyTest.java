@@ -87,7 +87,6 @@ public class TokenBucketThrottlingStrategyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void shouldUseDifferentBucketsWhenUsingValidPartitionKey() throws Exception {
         // arbitrary variables just to define a valid rate of 1 request per 3 seconds.
         ThrottlingRate throttlingRate = new ThrottlingRate(1, duration("3 seconds"));

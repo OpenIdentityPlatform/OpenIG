@@ -11,17 +11,16 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014-2015 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 package org.forgerock.openig.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import org.forgerock.http.util.Indexed;
 import org.forgerock.http.util.Loader;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -78,7 +77,7 @@ public class LoaderTest {
 
     @Test(expectedExceptions = java.lang.NullPointerException.class)
     public void testLoadMapDoesNotAllowNullServiceType() {
-        Loader.<String, Indexed<String>> loadMap(String.class, null);
+        Loader.loadMap(String.class, null);
     }
 
     @Test

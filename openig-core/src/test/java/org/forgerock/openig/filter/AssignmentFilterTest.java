@@ -38,7 +38,6 @@ import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.handler.StaticResponseHandler;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
@@ -94,7 +93,7 @@ public class AssignmentFilterTest {
     }
 
     @Test(dataProvider = "validConfigurations")
-    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
         final AssignmentFilter filter = buildAssignmentFilter(config);
         AttributesContext context = new AttributesContext(new RootContext());
         final StaticResponseHandler handler = new StaticResponseHandler(Status.OK);

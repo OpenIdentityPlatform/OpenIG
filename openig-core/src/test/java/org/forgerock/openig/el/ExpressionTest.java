@@ -375,7 +375,6 @@ public class ExpressionTest {
             return value;
         }
 
-        @SuppressWarnings("unused")
         public void setValue(final String value) {
             this.value = value;
         }

@@ -36,7 +36,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
-import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.Context;
@@ -128,7 +127,7 @@ public class ClientRegistrationTest {
     }
 
     @Test(dataProvider = "validConfigurations")
-    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws HeapException, Exception {
+    public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
         final ClientRegistration.Heaplet heaplet = new ClientRegistration.Heaplet();
         final ClientRegistration cr = (ClientRegistration) heaplet.create(Name.of("myClientRegistration"),
                                                                           config,
@@ -244,7 +243,7 @@ public class ClientRegistrationTest {
         buildClientRegistration().getUserInfo(context, session).getOrThrow();
     }
 
-    private ClientRegistration buildClientRegistration() throws Exception {
+    private ClientRegistration buildClientRegistration() {
         final JsonValue config = json(object(field("clientId", "OpenIG"),
                                              field("clientSecret", "password"),
                                              field("issuer", "myIssuer"),

@@ -34,7 +34,7 @@ public final class HeapUtilsTest {
     private HeapUtilsTest() {
     }
 
-    public static HeapImpl buildDefaultHeap() throws Exception {
+    public static HeapImpl buildDefaultHeap() {
         HeapImpl heap = new HeapImpl();
         heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));

@@ -282,7 +282,6 @@ public class SamlFederationHandler extends GenericHeapObject implements Handler 
         }
 
         if (authnContext != null) {
-            @SuppressWarnings("unchecked")
             List<AuthnStatement> authnStatements = ((Assertion) assertion.get(SAML2Constants.ASSERTION))
                     .getAuthnStatements();
             StringBuilder authnContextValues = new StringBuilder();

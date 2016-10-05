@@ -19,14 +19,11 @@ import org.forgerock.json.resource.ConnectionFactory;
 import org.forgerock.json.resource.CrestApplication;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.Resources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * CREST utility class.
  */
 public final class CrestUtil {
-    private static final Logger logger = LoggerFactory.getLogger(CrestUtil.class);
 
     private CrestUtil() { }
 
