@@ -20,19 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.readJson;
-import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.HttpApplicationException;
 import org.forgerock.http.filter.ResponseHandler;
-import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.http.session.Session;
-import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
@@ -40,10 +35,6 @@ import org.forgerock.openig.handler.router.DestroyDetectHandler;
 import org.forgerock.openig.handler.router.Files;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.services.context.AttributesContext;
-import org.forgerock.services.context.ClientContext;
-import org.forgerock.services.context.Context;
-import org.forgerock.services.context.RootContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -90,23 +81,8 @@ public class GatewayHttpApplicationTest {
         new GatewayHttpApplication(env, gatewayConfig(env), null).start();
     }
 
-    private Context buildExternalContext() {
-        ClientContext clientInfoContext = buildExternalClientContext(new RootContext())
-                .certificates()
-                .remoteAddress("125.12.34.52")
-                .build();
-        return new AttributesContext(new SessionContext(clientInfoContext, new SimpleMapSession()));
-    }
-
-    private JsonValue gatewayConfig(Environment env) throws IOException {
+    private static JsonValue gatewayConfig(Environment env) throws IOException {
         return readJson(new File(env.getConfigDirectory(), "config.json").toURI().toURL());
-    }
-
-    private static class SimpleMapSession extends HashMap<String, Object> implements Session {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void save(Response response) throws IOException { }
     }
 
     public static class ExecutorServiceHandler extends GenericHeaplet {

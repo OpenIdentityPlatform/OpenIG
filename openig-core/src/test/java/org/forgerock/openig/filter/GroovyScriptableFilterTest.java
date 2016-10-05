@@ -966,7 +966,7 @@ public class GroovyScriptableFilterTest {
         final Map<String, Object> args = new LinkedHashMap<>();
         args.put("title", "Coffee time");
         args.put("status", "${400 + 18}"); // show that the args are evaluated as expressions
-        args.put("reason", asList(new String[] { "${'Not Acceptable'}", "I'm a teapot", "Acceptable" }));
+        args.put("reason", asList("${'Not Acceptable'}", "I'm a teapot", "Acceptable"));
         final Map<String, Object> coffeeNames = new LinkedHashMap<>();
         coffeeNames.put("1", "koffie");
         coffeeNames.put("2", "kafe");

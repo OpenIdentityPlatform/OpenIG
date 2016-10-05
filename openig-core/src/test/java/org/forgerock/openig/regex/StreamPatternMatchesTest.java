@@ -11,21 +11,23 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2014-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.regex;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.util.Utils.closeSilently;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.Reader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -38,18 +40,25 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class StreamPatternMatchesTest {
 
+    private StreamPatternMatches matches;
+
     @Mock
     private Reader reader;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        initMocks(this);
+    }
+
+    @AfterMethod
+    public void tearDownMethod() throws Exception {
+        closeSilently(matches);
     }
 
     @Test
     public void testMultiLinePatternNotMatching() throws Exception {
         Pattern pattern = Pattern.compile("c");
-        StreamPatternMatches matches = new StreamPatternMatches(Readers.reader("aab", "aab"), asList(pattern), true);
+        matches = new StreamPatternMatches(Readers.reader("aab", "aab"), asList(pattern), true);
 
         assertThat(matches.hasNext()).isFalse();
     }
@@ -58,7 +67,7 @@ public class StreamPatternMatchesTest {
     public void testMultiLinePatternMatching() throws Exception {
         Pattern pattern = Pattern.compile("a+b");
         // Needs to set discard to false otherwise, only the first matching result is returned
-        StreamPatternMatches matches = new StreamPatternMatches(Readers.reader("aab", "aab"), asList(pattern), false);
+        matches = new StreamPatternMatches(Readers.reader("aab", "aab"), asList(pattern), false);
 
         Matcher matcher = matches.next();
         assertThat(matcher.group()).isEqualTo("aab");
@@ -76,7 +85,7 @@ public class StreamPatternMatchesTest {
     @Test
     public void testCLoseIsPropagated() throws Exception {
         Pattern pattern = Pattern.compile(".*");
-        StreamPatternMatches matches = new StreamPatternMatches(reader, asList(pattern), true);
+        matches = new StreamPatternMatches(reader, asList(pattern), true);
 
         matches.close();
 
@@ -86,7 +95,7 @@ public class StreamPatternMatchesTest {
     @Test
     public void testMultiLineMultiPatternMatching() throws Exception {
 
-        StreamPatternMatches matches = new StreamPatternMatches(
+        matches = new StreamPatternMatches(
                 Readers.reader("aab", "aabc"),
                 asList(
                         Pattern.compile("ab"),
@@ -104,9 +113,9 @@ public class StreamPatternMatchesTest {
     }
 
     @Test
-    public void testMultiLineMultiPatternMatchingAndDiscrad() throws Exception {
+    public void testMultiLineMultiPatternMatchingAndDiscard() throws Exception {
 
-        StreamPatternMatches matches = new StreamPatternMatches(
+        matches = new StreamPatternMatches(
                 Readers.reader("aab", "aabc"),
                 asList(
                         Pattern.compile("ab"),
@@ -120,5 +129,4 @@ public class StreamPatternMatchesTest {
 
         assertThat(matches.hasNext()).isFalse();
     }
-
 }

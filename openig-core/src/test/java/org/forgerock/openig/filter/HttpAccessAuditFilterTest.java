@@ -114,7 +114,7 @@ public class HttpAccessAuditFilterTest {
         assertThat(content.get("http").get("request").get("path").asString())
                 .isEqualTo("https://www.example.com/rockstar");
         assertThat(content.get("http").get("request").get("queryParameters").asMapOfList(String.class))
-                .contains(entry("who", Collections.<String>singletonList("forgerock")));
+                .contains(entry("who", Collections.singletonList("forgerock")));
     }
 
     private Context context() {

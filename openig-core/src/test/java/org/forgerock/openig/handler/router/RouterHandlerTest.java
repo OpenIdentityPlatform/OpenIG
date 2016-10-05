@@ -168,9 +168,6 @@ public class RouterHandlerTest {
         RouterHandler handler = new RouterHandler(newRouteBuilder(), directoryMonitor);
         directoryMonitor.monitor(handler);
 
-        File first = Files.getRelativeFile(RouterHandlerTest.class, "names/abcd-route.json");
-        File second = Files.getRelativeFile(RouterHandlerTest.class, "names/another-abcd-route.json");
-
         JsonValue routeConfig = json(object(field("handler",
                                            object(field("type",
                                                         "org.forgerock.openig.handler.router.StatusHandler"),

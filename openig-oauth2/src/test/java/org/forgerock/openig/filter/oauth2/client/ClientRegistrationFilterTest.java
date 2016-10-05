@@ -213,7 +213,7 @@ public class ClientRegistrationFilterTest {
         verify(registrations).add(any(ClientRegistration.class));
     }
 
-    private ClientRegistrationFilter buildClientRegistrationFilter() throws Exception {
+    private ClientRegistrationFilter buildClientRegistrationFilter() {
         return new ClientRegistrationFilter(registrations, handler, getMetadata());
     }
 
