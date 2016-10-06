@@ -17,11 +17,11 @@
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
+import static org.forgerock.http.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.http.util.Uris.create;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
-import static org.forgerock.openig.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.util.Utils.closeSilently;
 
 import java.net.URI;

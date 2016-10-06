@@ -21,8 +21,8 @@
  *     <li>It resolves it against a given Authorization Server (that must provide a {@literal token-info}
  *     endpoint).
  *     <ul>
- *         <li>Produced {@link org.forgerock.openig.oauth2.AccessTokenInfo} are cached for future re-use.</li>
- *         <li>Produced {@link org.forgerock.openig.oauth2.AccessTokenInfo} are stored in the
+ *         <li>Produced {@link org.forgerock.http.oauth2.AccessTokenInfo} are cached for future re-use.</li>
+ *         <li>Produced {@link org.forgerock.http.oauth2.AccessTokenInfo} are stored in the
  *         {@link org.forgerock.services.context.AttributesContext} for downstream handlers/filters.</li>
  *     </ul>
  *     </li>
