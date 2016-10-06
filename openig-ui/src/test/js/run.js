@@ -23,6 +23,7 @@ define([
     "org/forgerock/commons/ui/common/main/EventManager",
     "../test/tests/OpenIGValidatorsTests",
     "../test/tests/TransformServiceTests",
+    "../test/tests/DataFilterTests",
     "../test/tests/getLoggedUser"
 ], (
     $,
@@ -31,6 +32,7 @@ define([
     eventManager,
     openIGValidatorsTests,
     transformServiceTests,
+    dataFilterTests,
     getLoggedUser) => {
 
     $.doTimeout = function (name, time, func) {
@@ -59,6 +61,7 @@ define([
                     QUnit.start();
                     openIGValidatorsTests.executeAll(server, getLoggedUser());
                     transformServiceTests.executeAll(server);
+                    dataFilterTests.executeAll(server);
                 }, 500);
 
                 QUnit.done(() => {
