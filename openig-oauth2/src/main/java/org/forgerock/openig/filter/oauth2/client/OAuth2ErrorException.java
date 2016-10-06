@@ -16,9 +16,9 @@
 
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.openig.oauth2.OAuth2Error.newAuthorizationServerError;
+import static org.forgerock.http.oauth2.OAuth2Error.newAuthorizationServerError;
 
-import org.forgerock.openig.oauth2.OAuth2Error;
+import org.forgerock.http.oauth2.OAuth2Error;
 
 /**
  * An exception that is thrown when OAuth 2.0 request fails.

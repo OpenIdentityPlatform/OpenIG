@@ -22,9 +22,9 @@ import static org.forgerock.http.header.HeaderUtil.parseSingleValuedHeader;
 import java.util.Collections;
 import java.util.List;
 
+import org.forgerock.http.oauth2.OAuth2Error;
 import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Message;
-import org.forgerock.openig.oauth2.OAuth2Error;
 
 /**
  * Processes the OAuth 2.0 Bearer <strong>{@code WWW-Authenticate}</strong>
