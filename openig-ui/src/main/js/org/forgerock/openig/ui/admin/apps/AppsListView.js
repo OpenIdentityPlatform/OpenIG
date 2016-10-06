@@ -32,7 +32,8 @@ define([
     "org/forgerock/openig/ui/admin/models/AppsCollection",
     "org/forgerock/openig/ui/admin/models/RoutesCollection",
     "org/forgerock/openig/ui/admin/views/common/NoItemBox",
-    "org/forgerock/commons/ui/common/util/CookieHelper"
+    "org/forgerock/commons/ui/common/util/CookieHelper",
+    "org/forgerock/openig/ui/admin/util/DataFilter"
 ], (
     $,
     _,
@@ -51,7 +52,8 @@ define([
     AppsCollection,
     RoutesCollection,
     NoItemBox,
-    CookieHelper
+    CookieHelper,
+    DataFilter
 ) => {
     const AppsListView = AbstractView.extend({
         template: "templates/openig/admin/apps/AppsListViewTemplate.html",
@@ -102,9 +104,7 @@ define([
                     RenderRow.__super__.render.apply(this, arguments);
                     if (this.model) {
                         this.$el.attr("data-id", this.model.get("_id"));
-                        this.$el.attr("data-baseURI", this.model.get("content/baseURI"));
-                        this.$el.attr("data-title", this.model.get("content/name"));
-                        this.$el.attr("data-deployed", this.model.get("content/deployed"));
+                        this.$el.addClass("app-item");
                     }
                     return this;
                 }
@@ -213,9 +213,9 @@ define([
         getRenderData (model) {
             return {
                 id: model.get("_id"),
-                baseURI: model.get("content/baseURI"),
+                uri: model.get("content/baseURI"),
                 name: model.get("content/name"),
-                statusText: i18n.t(this.getStatusTextKey(
+                status: i18n.t(this.getStatusTextKey(
                     model.get("content/deployed") === true,
                     model.get("content/pendingChanges") === true)
                 ),
@@ -336,42 +336,18 @@ define([
 
         /* Filter cards and rows */
         filterApps (event) {
-            const search = $(event.target).val().toLowerCase();
-
-            if (search.length > 0) {
-                _.each(this.$el.find(".card-spacer"), (card) => {
-                    const deployedText = i18n.t(this.getStatusTextKey(
-                        $(card).attr("data-deployed") === "true",
-                        $(card).attr("data-deployed") === "true")
-                    );
-                    if ($(card).attr("data-id").toLowerCase().indexOf(search) > -1 ||
-                        $(card).attr("data-baseURI").toLowerCase().indexOf(search) > -1 ||
-                        $(card).attr("data-title").toLowerCase().indexOf(search) > -1 ||
-                        deployedText.toLowerCase().indexOf(search) > -1) {
-                        $(card).fadeIn();
-                    } else {
-                        $(card).fadeOut();
-                    }
-                }, this);
-
-                _.each(this.$el.find(".backgrid tbody tr"), (row) => {
-                    const deployedText = i18n.t(this.getStatusTextKey(
-                        $(row).attr("data-deployed") === "true",
-                        $(row).attr("data-deployed") === "true")
-                    );
-                    if ($(row).attr("data-id").toLowerCase().indexOf(search) > -1 ||
-                        $(row).attr("data-baseURI").toLowerCase().indexOf(search) > -1 ||
-                        $(row).attr("data-title").toLowerCase().indexOf(search) > -1 ||
-                        deployedText.toLowerCase().indexOf(search) > -1) {
-                        $(row).fadeIn();
-                    } else {
-                        $(row).fadeOut();
-                    }
-                }, this);
-            } else {
-                this.$el.find(".card-spacer").fadeIn();
-                this.$el.find(".backgrid tbody tr").fadeIn();
-            }
+            const dataFilter = new DataFilter($(event.target).val(), ["id", "uri", "name", "status"]);
+            _.each(this.$el.find(".app-item"), (elm) => {
+                const element = $(elm);
+                AppsCollection.byId(element.data("id"))
+                    .then((model) => {
+                        if (dataFilter.filter(this.getRenderData(model))) {
+                            element.fadeIn();
+                        } else {
+                            element.fadeOut();
+                        }
+                    });
+            });
         }
     });
 
