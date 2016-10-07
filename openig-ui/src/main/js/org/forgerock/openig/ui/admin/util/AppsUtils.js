@@ -74,7 +74,7 @@ define([
         }
     },
 
-    duplicateAppDlg (appId, appTitle) {
+    duplicateAppDialog (appId, appTitle) {
         UIUtils.confirmDialog(i18n.t("templates.apps.duplicateDialog", { title: appTitle }), "danger",
             () => {
                 router.navigate(`apps/duplicate/${appId}`, true);
@@ -152,7 +152,7 @@ define([
         });
     },
 
-    exportConfigDlg (appId) {
+    exportConfigDialog (appId) {
         AppsCollection.byId(appId).then((appData) => {
             if (appData) {
                 try {
@@ -196,7 +196,7 @@ define([
         return promise;
     },
 
-    deployApplicationDlg (appId, appTitle) {
+    deployApplicationDialog (appId, appTitle) {
         const deferred = $.Deferred();
         const promise = deferred.promise();
         AppsCollection.byId(appId).then((appData) => {
@@ -242,7 +242,7 @@ define([
         return deferred;
     },
 
-    undeployApplicationDlg (appId, appTitle) {
+    undeployApplicationDialog (appId, appTitle) {
         const deferred = $.Deferred();
         const promise = deferred.promise();
         UIUtils.confirmDialog(i18n.t("templates.apps.undeployDialog", { title: appTitle }), "danger",
@@ -291,7 +291,7 @@ define([
         return deferred;
     },
 
-    deleteApplicationDlg (appId, appTitle) {
+    deleteApplicationDialog (appId, appTitle) {
         const deferred = $.Deferred();
         AppsCollection.byId(appId).then((appModel) => {
             if (appModel) {
