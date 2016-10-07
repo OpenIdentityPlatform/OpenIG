@@ -425,12 +425,13 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private static Object[][] givenAndExpectedKey() {
         return new Object[][] {
-            { REQUESTED_URI, TOKEN, null, 0, REQUESTED_URI + "@" + TOKEN },
-            { REQUESTED_URI, TOKEN, JWT_TOKEN, 0, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
-            { REQUESTED_URI, "", JWT_TOKEN, 0, REQUESTED_URI + "@" + JWT_TOKEN },
-            { REQUESTED_URI, TOKEN, "", 0, REQUESTED_URI + "@" + TOKEN },
-            { REQUESTED_URI, TOKEN, null, CLAIMS_SUBJECT.asMap().hashCode(), REQUESTED_URI + "@" + TOKEN
-                                          + "@" + CLAIMS_SUBJECT.asMap().hashCode() } };
+            { REQUESTED_URI, TOKEN, null, 0, 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, JWT_TOKEN, 0, 0, REQUESTED_URI + "@" + TOKEN + "@" + JWT_TOKEN },
+            { REQUESTED_URI, "", JWT_TOKEN, 0, 0, REQUESTED_URI + "@" + JWT_TOKEN },
+            { REQUESTED_URI, TOKEN, "", 0, 0, REQUESTED_URI + "@" + TOKEN },
+            { REQUESTED_URI, TOKEN, null, CLAIMS_SUBJECT.asMap().hashCode(), ENVIRONMENT.asMap().hashCode(),
+              REQUESTED_URI + "@" + TOKEN + "@" + CLAIMS_SUBJECT.asMap().hashCode() + "@"
+                      + ENVIRONMENT.asMap().hashCode() } };
     }
 
     @Test(dataProvider = "givenAndExpectedKey")
@@ -438,8 +439,10 @@ public class PolicyEnforcementFilterTest {
                                               final String ssoToken,
                                               final String jwt,
                                               final int claimsHashCode,
+                                              final int environmentHashCode,
                                               final String expected) {
-        assertThat(createKeyCache(requestedUri, ssoToken, jwt, claimsHashCode)).isEqualTo(expected);
+        assertThat(createKeyCache(requestedUri, ssoToken, jwt, claimsHashCode, environmentHashCode))
+                .isEqualTo(expected);
     }
 
     @DataProvider
