@@ -393,12 +393,16 @@ public class PolicyEnforcementFilter implements Filter {
             JsonValue requestContent = request.getContent();
             final JsonValue subject = requestContent.get("subject");
             final JsonValue resources = requestContent.get("resources");
+            final JsonValue environment = requestContent.get("environment");
             if (subject.isNotNull() && resources.isNotNull()) {
                 final String key = createKeyCache(resources.get(0).asString(),
                                                   subject.get("ssoToken").asString(),
                                                   subject.get("jwt").asString(),
                                                   subject.get("claims").asMap() != null
                                                     ? subject.get("claims").asMap().hashCode()
+                                                    : 0,
+                                                  environment.asMap() != null
+                                                    ? environment.asMap().hashCode()
                                                     : 0);
                 Callable<Promise<ActionResponse, ResourceException>> callable =
                         new Callable<Promise<ActionResponse, ResourceException>>() {
@@ -425,10 +429,13 @@ public class PolicyEnforcementFilter implements Filter {
         static String createKeyCache(final String requestedUri,
                                      final String ssoToken,
                                      final String jwt,
-                                     final int claimsHashCode) {
+                                     final int claimsHashCode,
+                                     final int environmentHashCode) {
             return new StringBuilder(requestedUri).append(ifSpecified(ssoToken))
                                                   .append(ifSpecified(jwt))
-                                                  .append(claimsHashCode != 0 ? "@" + claimsHashCode : "").toString();
+                                                  .append(claimsHashCode != 0 ? "@" + claimsHashCode : "")
+                                                  .append(environmentHashCode != 0 ? "@" + environmentHashCode : "")
+                                                  .toString();
         }
 
         private static String ifSpecified(final String value) {
