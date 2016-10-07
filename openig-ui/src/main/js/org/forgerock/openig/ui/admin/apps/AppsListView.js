@@ -219,14 +219,14 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.duplicateAppDlg(itemId, itemTitle);
+            appsUtils.duplicateAppDialog(itemId, itemTitle);
         },
 
         deployApp (event) {
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.deployApplicationDlg(itemId, itemTitle).done(() => {
+            appsUtils.deployApplicationDialog(itemId, itemTitle).done(() => {
                 this.render();
             });
         },
@@ -235,7 +235,7 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.undeployApplicationDlg(itemId, itemTitle).done(() => {
+            appsUtils.undeployApplicationDialog(itemId, itemTitle).done(() => {
                 this.render();
             });
         },
@@ -244,7 +244,7 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.deleteApplicationDlg(itemId, itemTitle)
+            appsUtils.deleteApplicationDialog(itemId, itemTitle)
                 .then(
                     () => {
                         item.selected.remove();
@@ -264,7 +264,7 @@ define([
             const item = this.getSelectedItem(event);
             const itemTitle = item.selected.data("title");
             const itemId = item.selected.data("id");
-            appsUtils.exportConfigDlg(itemId, itemTitle);
+            appsUtils.exportConfigDialog(itemId, itemTitle);
         },
 
         /* Get selected item (card or row) */

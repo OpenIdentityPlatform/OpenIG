@@ -97,31 +97,31 @@ define([
         },
         exportAppConfig (e) {
             e.preventDefault();
-            appsUtils.exportConfigDlg(this.data.appName, this.data.title);
+            appsUtils.exportConfigDialog(this.data.appName, this.data.title);
         },
 
         duplicateAppConfig (e) {
             e.preventDefault();
-            appsUtils.duplicateAppDlg(this.data.appName, this.data.title);
+            appsUtils.duplicateAppDialog(this.data.appName, this.data.title);
         },
 
         deployApp (e) {
             e.preventDefault();
-            appsUtils.deployApplicationDlg(this.data.appName, this.data.title).done(() => {
+            appsUtils.deployApplicationDialog(this.data.appName, this.data.title).done(() => {
                 this.render();
             });
         },
 
         undeployApp (e) {
             e.preventDefault();
-            appsUtils.undeployApplicationDlg(this.data.appName, this.data.title).done(() => {
+            appsUtils.undeployApplicationDialog(this.data.appName, this.data.title).done(() => {
                 this.render();
             });
         },
 
         deleteApps (e) {
             e.preventDefault();
-            appsUtils.deleteApplicationDlg(this.data.appName, this.data.title)
+            appsUtils.deleteApplicationDialog(this.data.appName, this.data.title)
                 .then(
                     () => {
                         EventManager.sendEvent(
