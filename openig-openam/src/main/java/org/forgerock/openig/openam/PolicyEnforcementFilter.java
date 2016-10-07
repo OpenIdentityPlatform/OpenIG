@@ -300,7 +300,7 @@ public class PolicyEnforcementFilter implements Filter {
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
                                                                       EVALUATE_ACTION);
 
-        JsonValue resources = null;
+        JsonValue resources;
         try {
             resources = buildResources(context, request);
         } catch (NotSupportedException | ExpressionException ex) {
@@ -318,19 +318,18 @@ public class PolicyEnforcementFilter implements Filter {
     JsonValue buildResources(final Context context, final Request request) throws ExpressionException,
                                                                                   NotSupportedException {
         final Bindings bindings = bindings(context, request);
-        final JsonValue subject =
-                 json(object(
-                         fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),
-                         fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(bindings) : null),
-                         fieldIfNotNull("claims", claimsSubject != null ? claimsSubject.apply(bindings) : null)));
+        final Map<String, Object> subject =
+                object(fieldIfNotNull("ssoToken", ssoTokenSubject != null ? ssoTokenSubject.eval(bindings) : null),
+                       fieldIfNotNull("jwt", jwtSubject != null ? jwtSubject.eval(bindings) : null),
+                       fieldIfNotNull("claims", claimsSubject != null ? claimsSubject.apply(bindings) : null));
 
-        if (subject.size() == 0) {
+        if (subject.isEmpty()) {
             logger.error(SUBJECT_ERROR);
             throw new NotSupportedException(SUBJECT_ERROR);
         }
 
         return json(object(field("resources", array(request.getUri().toASCIIString())),
-                           field("subject", subject.getObject()),
+                           field("subject", subject),
                            fieldIfNotNull("application", application),
                            fieldIfNotNull("environment", environment != null ? environment.apply(bindings) : null)));
     }
@@ -353,15 +352,13 @@ public class PolicyEnforcementFilter implements Filter {
             public Boolean apply(final JsonValue policyDecision) {
                 final MutableUri original = request.getUri();
                 if (policyDecision.get("resource").asString().equals(original.toASCIIString())) {
-                    final Map<String, Object> extra = new LinkedHashMap<>();
+                    final Map<String, Object> extra = new LinkedHashMap<>(2);
                     extra.put("attributes", policyDecision.get("attributes").asMap());
                     extra.put("advices", policyDecision.get("advices").asMap());
                     target.set(bindings(context, request), extra);
-                    final String method = request.getMethod();
-                    final Map<String, Object> actions = policyDecision.get("actions").asMap();
-                    if (actions.containsKey(method)) {
-                        return (boolean) actions.get(method);
-                    }
+
+                    JsonValue action = policyDecision.get("actions").get(request.getMethod());
+                    return action.isNotNull() && action.asBoolean();
                 }
                 return false;
             }
