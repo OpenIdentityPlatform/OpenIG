@@ -108,7 +108,7 @@ define([
                                     name: "scopes",
                                     value: this.data.authFilter.scopes,
                                     controlType: "multiselect",
-                                    options: ["openid", "profile", "email", "address", "phone", "offline_access"],
+                                    options: "openid profile email address phone offline_access",
                                     delimiter: " ",
                                     mandatory: "openid"
                                 },
