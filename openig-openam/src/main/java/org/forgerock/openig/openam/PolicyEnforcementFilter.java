@@ -29,6 +29,7 @@ import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
@@ -51,7 +52,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.MutableUri;
-import org.forgerock.http.header.AcceptApiVersionHeader;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
@@ -498,7 +498,9 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
                                                     target,
                                                     chainOf(amHandler,
                                                             ssoTokenFilter,
-                                                            new ApiVersionProtocolHeaderFilter()));
+                                                            // CREST operation(action) is compatible between protocols
+                                                            // v1 and v2.
+                                                            new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1)));
 
                 filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
                 filter.setSsoTokenSubject(config.get("ssoTokenSubject")
@@ -589,19 +591,6 @@ public class PolicyEnforcementFilter extends GenericHeapObject implements Filter
         public void destroy() {
             if (cache != null) {
                 cache.clear();
-            }
-        }
-
-        private class ApiVersionProtocolHeaderFilter implements Filter {
-
-            @Override
-            public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
-                // The protocol versions supported in OPENAM-13 is 1.0 and
-                // CREST adapter forces to 2.0, throwing a 'Unsupported major
-                // version: 2.0' exception if not set. CREST operation(action) is
-                // compatible between protocol v1 and v2
-                request.getHeaders().put(AcceptApiVersionHeader.NAME, "protocol=1.0, resource=2.0");
-                return next.handle(context, request);
             }
         }
     }
