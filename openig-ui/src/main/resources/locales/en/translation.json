@@ -182,10 +182,10 @@
                 },
                 "throttling":{
                     "title": "Throttling",
-                    "description": "Limit the rate of operations on your api.",
-                    "btnEnableTitle": "Enable Throttling",
+                    "description": "Limit the rate at which requests can access the application",
+                    "btnEnableTitle": "Enable throttling",
                     "lblAllow": "Allow",
-                    "lblPer": "requests per"
+                    "lblPer": "requests each"
                 }
             }
         },
@@ -298,13 +298,13 @@
             }
         },
         "timeSlot":{
-            "ns": "Nanosecond",
-            "us": "Microsecond",
-            "ms": "Millisecond",
-            "s": "Second",
-            "m": "Minute",
-            "h": "Hour",
-            "d": "Day"
+            "ns": "nanosecond(s)",
+            "us": "microsecond(s)",
+            "ms": "millisecond(s)",
+            "s": "second(s)",
+            "m": "minute(s)",
+            "h": "hour(s)",
+            "d": "day(s)"
         }
     }
 }
