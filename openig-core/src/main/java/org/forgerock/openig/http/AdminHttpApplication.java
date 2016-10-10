@@ -56,6 +56,7 @@ import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.heap.EnvironmentHeap;
 import org.forgerock.services.context.ClientContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Factory;
@@ -119,7 +120,7 @@ public class AdminHttpApplication implements DescribedHttpApplication {
 
         try {
             // Create and configure the heap
-            heap = new HeapImpl(Name.of("admin-module"));
+            heap = new EnvironmentHeap(Name.of("admin-module"), environment);
 
             // "Live" objects
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
