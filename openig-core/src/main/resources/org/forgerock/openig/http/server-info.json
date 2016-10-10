@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+
+  "title" : "i18n:org/forgerock/openig/http/server-info#info.title",
+  "description" : "i18n:org/forgerock/openig/http/server-info#info.desc",
+  "type": "object",
+
+  "properties": {
+    "version": {
+      "description": "i18n:org/forgerock/openig/http/server-info#info-version.desc",
+      "type": "string"
+    },
+    "revision": {
+      "description": "i18n:org/forgerock/openig/http/server-info#info-revision.desc",
+      "type": "string"
+    },
+    "branch": {
+      "description": "i18n:org/forgerock/openig/http/server-info#info-branch.desc",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "i18n:org/forgerock/openig/http/server-info#info-timestamp.desc",
+      "type": "integer"
+    }
+  }
+}

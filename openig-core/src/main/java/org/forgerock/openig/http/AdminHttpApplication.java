@@ -124,6 +124,11 @@ public class AdminHttpApplication implements DescribedHttpApplication {
                                                                    "frapi:openig:internal:ui:record"));
         systemObjectsRouter.addRoute(requestUriMatcher(STARTS_WITH, "ui/record"), recordHandler);
 
+        // Expose Server info service
+        Handler infoHandler = newHttpHandler(newCrestApplication(newHandler(new ServerInfoSingletonProvider()),
+                                                                 "frapi:openig:server-info"));
+        apiRouter.addRoute(requestUriMatcher(EQUALS, "info"), infoHandler);
+
         this.endpointRegistry = new EndpointRegistry(systemObjectsRouter, "/" + adminPrefix + "/api/system/objects");
     }
 
