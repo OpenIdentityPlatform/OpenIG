@@ -35,6 +35,7 @@ import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.DEFAULT_POLICY_KEY;
+import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.asFunction;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.createKeyCache;
 import static org.forgerock.util.time.Duration.duration;
@@ -75,6 +76,7 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.Function;
 import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -474,8 +476,7 @@ public class PolicyEnforcementFilterTest {
         return new Object[][] {
             { null, json(object(field("IP", "Not an array"))) },
             { null, json(object(field("IP", 123))) },
-            { field("This is", "Not map"), null },
-            { json(object(field("iss", "${invalid"))), null } };
+            { field("This is", "Not map"), null } };
     }
 
     @Test(dataProvider = "invalidClaimsEnvironment", expectedExceptions = { JsonValueException.class,
@@ -510,7 +511,7 @@ public class PolicyEnforcementFilterTest {
                       field("sub", "OpenIG"),
                       field("subs", false),
                       field("aud", "http://example.com:8088/openam"),
-                      field("exp", 1300819380))).asMap() },
+                      field("exp", 1300819380L))).asMap() },
             { "${attributes.claimsSubject}", json(object(field("iss", "jwt-bearer-client"))).asMap() } };
     }
 
@@ -566,6 +567,33 @@ public class PolicyEnforcementFilterTest {
         assertThat(resources).hasSize(3);
         assertResourcesContainResourceURIAndSsoToken(resources);
         assertThat(resources.get("application").asString()).isNotEmpty();
+    }
+
+    @Test
+    public void shouldReturnNullWhenJsonValueInputIsNull() throws Exception {
+        Function<Bindings, Map<String, List>, ExpressionException> function =
+                asFunction(json(null), List.class, bindings());
+        assertThat(function).isNull();
+    }
+
+    @DataProvider
+    public static Object[][] asFunctionProvider() {
+        //@Checkstyle:off
+        return new Object[][] {
+                { json("${foo}"), object(field("bar", array(1, 2, 3))) },
+                { json(object(field("quix", "${foo['bar']}"))), object(field("quix", array(1, 2, 3)))}
+        };
+        //@Checkstyle:on
+    }
+
+    @Test(dataProvider = "asFunctionProvider")
+    public void shouldEvaluateToMap(JsonValue input, Map<String, Object> expectedOutput) throws Exception {
+        Bindings bindings = bindings().bind("foo", object(field("bar", array(1, 2, 3))));
+
+        Function<Bindings, Map<String, List>, ExpressionException> function =
+                asFunction(input, List.class, bindings());
+
+        assertThat(function.apply(bindings)).isEqualTo(expectedOutput);
     }
 
     private static void assertResourcesContainResourceURIAndSsoToken(final JsonValue resources) {

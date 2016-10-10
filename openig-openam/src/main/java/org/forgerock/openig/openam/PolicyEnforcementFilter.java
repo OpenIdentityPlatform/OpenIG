@@ -33,6 +33,7 @@ import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -68,7 +69,6 @@ import org.forgerock.json.resource.http.CrestHttp;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.el.Expressions;
 import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -544,7 +544,8 @@ public class PolicyEnforcementFilter implements Filter {
             return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class, heapBindings);
         }
 
-        private <T> Function<Bindings, Map<String, T>, ExpressionException>
+        @VisibleForTesting
+        static <T> Function<Bindings, Map<String, T>, ExpressionException>
         asFunction(final JsonValue node, final Class<T> expectedType, final Bindings initialBindings) {
             if (node.isNull()) {
                 return null;
@@ -560,10 +561,9 @@ public class PolicyEnforcementFilter implements Filter {
             } else if (node.isMap()) {
                 return new Function<Bindings, Map<String, T>, ExpressionException>() {
 
-                    @SuppressWarnings("unchecked")
                     @Override
                     public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return (Map<String, T>) Expressions.evaluate(node.asMap(expectedType), bindings);
+                        return node.as(evaluated(bindings)).asMap(expectedType);
                     }
                 };
             } else {
