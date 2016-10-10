@@ -57,6 +57,7 @@ import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.heap.EnvironmentHeap;
 import org.forgerock.util.Factory;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
@@ -116,7 +117,7 @@ public final class GatewayHttpApplication implements HttpApplication {
 
         try {
             // Create and configure the heap
-            heap = new HeapImpl(Name.of("gateway"));
+            heap = new EnvironmentHeap(Name.of("gateway"), environment);
 
             heap.put(ENDPOINT_REGISTRY_HEAP_KEY, endpointRegistry);
 
