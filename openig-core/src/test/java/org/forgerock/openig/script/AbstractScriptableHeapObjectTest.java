@@ -17,24 +17,36 @@
 package org.forgerock.openig.script;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
 
 import javax.script.ScriptException;
 
+import org.forgerock.http.protocol.Request;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
-import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.Promise;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class AbstractScriptableHeapObjectTest {
+
+    private HeapImpl heap;
+
+    @BeforeMethod
+    public void setUp() throws Exception {
+        heap = new HeapImpl(Name.of("heap"));
+    }
 
     @Test
     public void shouldReturnAPromiseWrappingTheResult() throws Exception {
@@ -60,11 +72,69 @@ public class AbstractScriptableHeapObjectTest {
         scriptableObject.runScript(bindings(), new RootContext(), Integer.class).getOrThrow();
     }
 
+    @Test
+    public void shouldGiveAccessToHeapPropertiesInScript() throws Exception {
+        heap.init(json(object(field("properties", object(field("heapProperty", "myValue"))))));
+
+        AbstractScriptableHeapObject<String> scriptableObject = newScriptableObject("return heapProperty");
+        String value = scriptableObject.runScript(bindings(), null, String.class)
+                                       .getOrThrow();
+
+        assertThat(value).isEqualTo("myValue");
+    }
+
+    @Test
+    public void shouldGiveAccessToHeapPropertiesInArgs() throws Exception {
+        heap.init(json(object(field("properties", object(field("bar", 40))))));
+
+        AbstractScriptableHeapObject<Number> scriptableObject = newScriptableObject("return foo");
+        scriptableObject.setArgs(Collections.<String, Object>singletonMap("foo", "${bar + 2}"));
+
+        Number value = scriptableObject.runScript(bindings(), null, Number.class)
+                                       .getOrThrow();
+
+        assertThat(value).isEqualTo(42L);
+    }
+
+    @Test
+    public void shouldResolveHeapObjectReferencedFromArgs() throws Exception {
+        heap.put("referenced", "I'm here");
+
+        AbstractScriptableHeapObject<String> scriptableObject = newScriptableObject("return ref");
+        scriptableObject.setArgs(Collections.<String, Object>singletonMap("ref", "${heap['referenced']}"));
+
+        String value = scriptableObject.runScript(bindings(), null, String.class)
+                                       .getOrThrow();
+
+        assertThat(value).isEqualTo("I'm here");
+    }
+
+    @Test
+    public void shouldSourceBindingsShadowPropertiesFromHeap() throws Exception {
+        heap.init(json(object(field("properties", object(field("request", "from-heap-properties"))))));
+
+        AbstractScriptableHeapObject<Object> scriptableObject = newScriptableObject("return request");
+        Request request = new Request();
+        Object value = scriptableObject.runScript(bindings(new RootContext(), request), null, Object.class)
+                                       .getOrThrow();
+
+        assertThat(value).isSameAs(request);
+    }
+
+    @Test(expectedExceptions = ScriptException.class)
+    public void shouldDisallowArgsShadowingPreviousBindings() throws Exception {
+        heap.init(json(object(field("properties", object(field("existing", "from-heap-properties"))))));
+        AbstractScriptableHeapObject<String> scriptableObject = newScriptableObject("return existing");
+        scriptableObject.setArgs(Collections.<String, Object>singletonMap("existing", "from-args"));
+
+        scriptableObject.runScript(bindings(), null, String.class)
+                        .getOrThrow();
+    }
+
     private <T> AbstractScriptableHeapObject<T> newScriptableObject(final String... sourceLines)
             throws Exception {
         final Environment environment = getEnvironment();
         final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
-        final Heap heap = new HeapImpl(Name.of("heap"));
         return new AbstractScriptableHeapObject<>(script, heap, "myScript");
     }
 
