@@ -47,9 +47,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An abstract scriptable heap object acts as a simple wrapper around the scripting engine. This class is a base class
- * for implementing any interface that we want to make pluggable through scripting support. Scripts are provided with
- * the following variables bindings:
+ * A scriptable heap object acts as a simple wrapper around the scripting engine.
+ *
+ * <p>This class is a base class for implementing any interface that we want to make pluggable
+ * through scripting support.
+ *
+ * <p>Scripts are provided with the following variables bindings:
  * <ul>
  * <li>{@link Logger logger} - The logger for this script
  * <li>{@link Map globals} - the Map of global variables which persist across
@@ -59,8 +62,20 @@ import org.slf4j.LoggerFactory;
  * <li>{@link Client http} - an HTTP client which may be used for performing outbound HTTP requests
  * <li>{@link LdapClient ldap} - an OpenIG LDAP client which may be used for
  * performing LDAP requests such as LDAP authentication
- * <li>{@link Heap heap} - the heap.
  * </ul>
+ *
+ * <p>The provided {@code args} parameters supports runtime expressions evaluation with the
+ * special addition of a {@link Heap heap} variable that allows the script to get references
+ * to other objects available in the heap.
+ *
+ * <pre>
+ *     {@code {
+ *         "args": {
+ *             "ref": "heap['object-name']"
+ *         }
+ *     }}
+ * </pre>
+ *
  * <p>
  * <b>NOTE :</b> at the moment only Groovy is supported.
  *
@@ -236,8 +251,10 @@ public class AbstractScriptableHeapObject<V> {
 
     private Map<String, Object> enrichBindings(final Bindings source, final Context context) throws ScriptException {
         // Set engine bindings.
+        Bindings enriched = bindings().bind(heap.getProperties())
+                                      .bind(source);
         final Map<String, Object> bindings = new HashMap<>();
-        bindings.putAll(source.asMap());
+        bindings.putAll(enriched.asMap());
         bindings.put("logger", getScriptLogger());
         bindings.put("globals", scriptGlobals);
         if (clientHandler != null) {
@@ -246,7 +263,8 @@ public class AbstractScriptableHeapObject<V> {
         bindings.put("ldap", ldapClient);
         if (args != null) {
             try {
-                final Bindings exprEvalBindings = bindings().bind(source).bind("heap", heap);
+                final Bindings exprEvalBindings = bindings().bind(enriched)
+                                                            .bind("heap", heap);
                 for (final Entry<String, Object> entry : args.entrySet()) {
                     final String key = entry.getKey();
                     if (bindings.containsKey(key)) {
