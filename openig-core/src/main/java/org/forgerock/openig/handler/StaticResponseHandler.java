@@ -31,7 +31,6 @@ import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -42,7 +41,7 @@ import org.forgerock.util.promise.Promises;
 /**
  * Creates a static HTTP response.
  */
-public class StaticResponseHandler extends GenericHeapObject implements Handler {
+public class StaticResponseHandler implements Handler {
 
     /** The status (code + reason). */
     private final Status status;

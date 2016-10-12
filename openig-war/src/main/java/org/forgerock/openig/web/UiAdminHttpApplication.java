@@ -83,7 +83,9 @@ class UiAdminHttpApplication extends AdminHttpApplication {
         ResourceSet resources = new FileResourceSet(unpack);
 
         // Create a ResourceHandler
-        ResourceHandler handler = new ResourceHandler(singletonList(resources), singletonList("index.html"));
+        ResourceHandler handler = new ResourceHandler(getBufferFactory(),
+                                                      singletonList(resources),
+                                                      singletonList("index.html"));
 
         // Register it in the router under the /openig/studio path
         getOpenIGRouter().addRoute(requestUriMatcher(STARTS_WITH, "studio"), handler);

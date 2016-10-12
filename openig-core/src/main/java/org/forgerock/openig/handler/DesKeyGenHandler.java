@@ -27,7 +27,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -62,7 +61,7 @@ import org.forgerock.util.promise.Promises;
  *
  * <pre>{@code {"error":"Failed to generate a key: ..."}}</pre>
  */
-public class DesKeyGenHandler extends GenericHeapObject implements Handler {
+public class DesKeyGenHandler implements Handler {
 
     /**
      * Generate a base64-encoded DES key.

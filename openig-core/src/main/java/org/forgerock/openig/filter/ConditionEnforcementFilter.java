@@ -27,7 +27,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handlers;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -68,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public class ConditionEnforcementFilter extends GenericHeapObject implements Filter {
+public class ConditionEnforcementFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionEnforcementFilter.class);
 

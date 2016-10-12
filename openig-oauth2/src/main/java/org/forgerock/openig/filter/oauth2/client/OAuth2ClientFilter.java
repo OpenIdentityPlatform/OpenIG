@@ -68,7 +68,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -244,7 +243,7 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public final class OAuth2ClientFilter extends GenericHeapObject implements Filter {
+public final class OAuth2ClientFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(OAuth2ClientFilter.class);
 

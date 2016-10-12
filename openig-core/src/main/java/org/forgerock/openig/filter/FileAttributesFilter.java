@@ -34,7 +34,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.text.SeparatedValuesFile;
@@ -61,7 +60,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see SeparatedValuesFile
  */
-public class FileAttributesFilter extends GenericHeapObject implements Filter {
+public class FileAttributesFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(FileAttributesFilter.class);
 

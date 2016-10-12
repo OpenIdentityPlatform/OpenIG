@@ -55,7 +55,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
@@ -98,7 +97,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.2
  */
-public class RouterHandler extends GenericHeapObject implements FileChangeListener, Handler {
+public class RouterHandler implements FileChangeListener, Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(RouterHandler.class);
 

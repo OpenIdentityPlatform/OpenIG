@@ -41,7 +41,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -97,7 +96,7 @@ import org.slf4j.LoggerFactory;
  * <p>If errors are happening during the token transformation, the error response is returned as-is to the caller,
  * and informative messages are being logged for the administrator.
  */
-public class TokenTransformationFilter extends GenericHeapObject implements Filter {
+public class TokenTransformationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenTransformationFilter.class);
 

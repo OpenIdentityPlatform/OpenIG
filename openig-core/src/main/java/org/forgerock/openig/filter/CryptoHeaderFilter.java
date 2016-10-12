@@ -39,7 +39,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.MessageType;
@@ -58,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * not implement a way to set/retrieve the initialization vector(IV) (OPENIG-42)
  * therefore, the CryptoHeader can not decrypt cipher algorithm using IV.
  */
-public class CryptoHeaderFilter extends GenericHeapObject implements Filter {
+public class CryptoHeaderFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(CryptoHeaderFilter.class);
 

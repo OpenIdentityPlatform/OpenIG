@@ -20,17 +20,11 @@ package org.forgerock.openig.heap;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.http.routing.RoutingMode.EQUALS;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
-import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.slug;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.forgerock.http.io.Buffer;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
@@ -38,7 +32,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.openig.util.JsonValues;
-import org.forgerock.util.Factory;
 import org.forgerock.util.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,10 +46,6 @@ public abstract class GenericHeaplet implements Heaplet {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericHeaplet.class);
 
-    /** Heap objects to avoid dependency injection (prevents circular dependencies). */
-    private static final Set<String> SPECIAL_OBJECTS =
-            new HashSet<>(Arrays.asList(TEMPORARY_STORAGE_HEAP_KEY));
-
     /** The name of the object to be created and stored in the heap by this heaplet. */
     protected String name;
 
@@ -68,9 +57,6 @@ public abstract class GenericHeaplet implements Heaplet {
 
     /** Where objects should be put and where object dependencies should be retrieved. */
     protected Heap heap;
-
-    /** Allocates temporary buffers for caching streamed content during processing. */
-    protected Factory<Buffer> storage;
 
     /** The object created by the heaplet's {@link #create()} method. */
     protected Object object;
@@ -84,17 +70,7 @@ public abstract class GenericHeaplet implements Heaplet {
         this.qualified = name;
         this.config = config.required().expect(Map.class);
         this.heap = heap;
-        if (!SPECIAL_OBJECTS.contains(this.name)) {
-            this.storage = config.get("temporaryStorage")
-                                 .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
-                                 .as(requiredHeapObject(heap, Factory.class));
-        }
         this.object = create();
-        if (this.object instanceof GenericHeapObject) {
-            // instrument object if possible
-            GenericHeapObject ghObject = (GenericHeapObject) this.object;
-            ghObject.setStorage(this.storage);
-        }
         start();
         return object;
     }

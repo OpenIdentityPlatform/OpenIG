@@ -16,15 +16,20 @@
 
 package org.forgerock.openig.handler;
 
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+
 import org.forgerock.http.Handler;
+import org.forgerock.http.io.Buffer;
 import org.forgerock.http.io.IO;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Factory;
+import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
@@ -32,20 +37,28 @@ import org.forgerock.util.promise.Promises;
 /**
  * Creates a static response containing a simple HTML welcome page.
  */
-public class WelcomeHandler extends GenericHeapObject implements Handler {
+public class WelcomeHandler implements Handler {
+
+    private final Factory<Buffer> storage;
+
+    @VisibleForTesting
+    WelcomeHandler() {
+        this(IO.newTemporaryStorage());
+    }
 
     /**
      * Creates a new welcome page handler.
+     * @param storage the temporary storage to use to stream the resource
      */
-    public WelcomeHandler() {
-        // Nothing to do.
+    public WelcomeHandler(Factory<Buffer> storage) {
+        this.storage = storage;
     }
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Response response = new Response(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
-        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream("welcome.html"), getStorage()));
+        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream("welcome.html"), storage));
         return Promises.newResultPromise(response);
     }
 
@@ -53,9 +66,12 @@ public class WelcomeHandler extends GenericHeapObject implements Handler {
      * Creates and initializes a static response handler in a heap environment.
      */
     public static class Heaplet extends GenericHeaplet {
+        @SuppressWarnings("unchecked")
         @Override
         public Object create() throws HeapException {
-            return new WelcomeHandler();
+            return new WelcomeHandler(config.get("temporaryStorage")
+                                            .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
+                                            .as(requiredHeapObject(heap, Factory.class)));
         }
     }
 }

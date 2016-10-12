@@ -36,7 +36,6 @@ import org.forgerock.http.util.MultiValueMap;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.MessageType;
@@ -48,7 +47,7 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Removes headers from and adds headers to a message.
  */
-public class HeaderFilter extends GenericHeapObject implements Filter {
+public class HeaderFilter implements Filter {
 
     /** Indicates the type of message to filter headers for. */
     private final MessageType messageType;
