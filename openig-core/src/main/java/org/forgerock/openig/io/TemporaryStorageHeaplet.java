@@ -22,8 +22,10 @@ import static org.forgerock.json.JsonValueFunctions.file;
 
 import org.forgerock.http.io.IO;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.util.Function;
 
 /**
  * A Heaplet to call {@link IO#newTemporaryStorage} within a heaplet environment.
@@ -35,12 +37,25 @@ public class TemporaryStorageHeaplet extends GenericHeaplet {
         return newTemporaryStorage(evaluated.get("directory").as(file()),
                                    evaluated.get("initialLength")
                                             .defaultTo(IO.DEFAULT_TMP_INIT_LENGTH)
-                                            .asInteger(),
+                                            .as(positiveInteger()),
                                    evaluated.get("memoryLimit")
                                             .defaultTo(IO.DEFAULT_TMP_MEMORY_LIMIT)
-                                            .asInteger(),
+                                            .as(positiveInteger()),
                                    evaluated.get("fileLimit")
                                             .defaultTo(IO.DEFAULT_TMP_FILE_LIMIT)
-                                            .asInteger());
+                                            .as(positiveInteger()));
+    }
+
+    private static Function<JsonValue, Integer, JsonValueException> positiveInteger() {
+        return new Function<JsonValue, Integer, JsonValueException>() {
+            @Override
+            public Integer apply(JsonValue jsonValue) {
+                Integer result = jsonValue.asInteger();
+                if (result > 0) {
+                    return result;
+                }
+                throw new JsonValueException(jsonValue, "Expected a positive integer.");
+            }
+        };
     }
 }
