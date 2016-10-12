@@ -34,6 +34,7 @@ import static org.forgerock.http.handler.HttpClientHandler.OPTION_TRUST_MANAGERS
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.Utils.closeSilently;
 
@@ -50,10 +51,10 @@ import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Factory;
 import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -84,7 +85,8 @@ import org.slf4j.LoggerFactory;
  *       "keyManager": [ "RefToKeyManager", ... ],
  *       "trustManager": [ "RefToTrustManager", ... ],
  *       "sslEnabledProtocols": [ "SSLv2", ... ],
- *       "sslCipherSuites": [ "TLS_DH_anon_WITH_AES_256_CBC_SHA256", ... ]
+ *       "sslCipherSuites": [ "TLS_DH_anon_WITH_AES_256_CBC_SHA256", ... ],
+ *       "temporaryStorage": {reference to or inline declaration of a TemporaryStorage}
  *     }
  *   }
  *   }
@@ -139,7 +141,7 @@ import org.slf4j.LoggerFactory;
  * @see org.forgerock.openig.security.KeyManagerHeaplet
  * @see org.forgerock.openig.security.TrustManagerHeaplet
  */
-public class ClientHandler extends GenericHeapObject implements Handler {
+public class ClientHandler implements Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
@@ -175,6 +177,7 @@ public class ClientHandler extends GenericHeapObject implements Handler {
 
         private HttpClientHandler httpClientHandler;
 
+        @SuppressWarnings("unchecked")
         @Override
         public Object create() throws HeapException {
             final Options options = Options.defaultOptions();
@@ -225,7 +228,10 @@ public class ClientHandler extends GenericHeapObject implements Handler {
                             evaluated.get("numberOfWorkers").asInteger());
             }
 
-            options.set(OPTION_TEMPORARY_STORAGE, storage);
+            options.set(OPTION_TEMPORARY_STORAGE, evaluated.get("temporaryStorage")
+                                                           .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
+                                                           .as(requiredHeapObject(heap, Factory.class)));
+
             options.set(OPTION_KEY_MANAGERS, getKeyManagers());
             options.set(OPTION_TRUST_MANAGERS, getTrustManagers());
 

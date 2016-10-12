@@ -44,7 +44,6 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -68,7 +67,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see PreparedStatement
  */
-public class SqlAttributesFilter extends GenericHeapObject implements Filter {
+public class SqlAttributesFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(SqlAttributesFilter.class);
 

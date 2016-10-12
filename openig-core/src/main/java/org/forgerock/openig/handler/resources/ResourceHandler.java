@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.resources;
 import static org.forgerock.http.header.HeaderUtil.formatDate;
 import static org.forgerock.http.header.HeaderUtil.parseDate;
 import static org.forgerock.http.io.IO.newBranchingInputStream;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Status.FOUND;
@@ -35,12 +36,13 @@ import java.util.List;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.header.LocationHeader;
+import org.forgerock.http.io.Buffer;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.services.context.Context;
+import org.forgerock.util.Factory;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -51,7 +53,7 @@ import org.forgerock.util.promise.Promise;
  * <p>It's using the remaining URL information provided by the {@link UriRouterContext} to determine
  * the resource path to look for.
  */
-public class ResourceHandler extends GenericHeapObject implements Handler {
+public class ResourceHandler implements Handler {
 
     /**
      * {@literal Not Modified} 304 Status.
@@ -61,23 +63,25 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
 
     private final List<ResourceSet> resourceSets;
     private final List<String> welcomePages;
+    private final Factory<Buffer> storage;
 
-    /**
-     * Creates a new {@link ResourceHandler} with the given {@code sets} of {@link ResourceSet} and no welcome pages.
-     * @param sets provide access to {@link Resource}.
-     */
-    public ResourceHandler(final List<ResourceSet> sets) {
-        this(sets, Collections.<String>emptyList());
+    @VisibleForTesting
+    ResourceHandler(final List<ResourceSet> sets) {
+        this(newTemporaryStorage(), sets, Collections.<String>emptyList());
     }
 
     /**
      * Creates a new {@link ResourceHandler} with the given {@code sets} of {@link ResourceSet} and the
      * list of welcome pages mappings.
+     * @param storage the temporary storage to use to stream the resource
      * @param sets provide access to {@link Resource}.
      * @param welcomePages the list of resources name to be searched if there is
      *        no remaining path to use in the request.
      */
-    public ResourceHandler(final List<ResourceSet> sets, final List<String> welcomePages) {
+    public ResourceHandler(final Factory<Buffer> storage,
+                           final List<ResourceSet> sets,
+                           final List<String> welcomePages) {
+        this.storage = storage;
         this.resourceSets = sets;
         this.welcomePages = welcomePages;
     }
@@ -128,7 +132,7 @@ public class ResourceHandler extends GenericHeapObject implements Handler {
             // last modified
             response.getHeaders().put("Last-Modified", formatDate(new Date(resource.getLastModified())));
             try {
-                response.getEntity().setRawContentInputStream(newBranchingInputStream(resource.open(), getStorage()));
+                response.getEntity().setRawContentInputStream(newBranchingInputStream(resource.open(), storage));
             } catch (IOException e) {
                 return newResponsePromise(newInternalServerError(e));
             }

@@ -46,7 +46,6 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.http.util.CaseInsensitiveSet;
 import org.forgerock.json.JsonValue;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -71,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * {@link Session} object. The default {@code policy} is to accept all incoming cookies, but
  * can be changed to others as appropriate.
  */
-public class CookieFilter extends GenericHeapObject implements Filter {
+public class CookieFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(CookieFilter.class);
 

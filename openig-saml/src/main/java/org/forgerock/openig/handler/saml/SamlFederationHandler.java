@@ -42,7 +42,6 @@ import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.AttributesContext;
@@ -74,7 +73,7 @@ import com.sun.identity.saml2.servlet.SPSingleLogoutServiceSOAP;
 /**
  * The SAML federation handler.
  */
-public class SamlFederationHandler extends GenericHeapObject implements Handler {
+public class SamlFederationHandler implements Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(SamlFederationHandler.class);
 

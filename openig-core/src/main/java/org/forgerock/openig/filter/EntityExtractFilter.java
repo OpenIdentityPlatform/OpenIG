@@ -40,7 +40,6 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.regex.PatternTemplate;
@@ -67,7 +66,7 @@ import org.slf4j.LoggerFactory;
  * @see StreamPatternExtractor
  * @see PatternTemplate
  */
-public class EntityExtractFilter extends GenericHeapObject implements Filter {
+public class EntityExtractFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(EntityExtractFilter.class);
 

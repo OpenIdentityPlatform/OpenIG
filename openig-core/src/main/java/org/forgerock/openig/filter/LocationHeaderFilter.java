@@ -32,7 +32,6 @@ import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.http.util.Uris;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -70,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public class LocationHeaderFilter extends GenericHeapObject implements Filter {
+public class LocationHeaderFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(LocationHeaderFilter.class);
 

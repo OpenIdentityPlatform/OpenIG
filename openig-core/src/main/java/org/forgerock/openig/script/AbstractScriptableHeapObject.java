@@ -37,7 +37,6 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
@@ -68,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @param <V> The expected result type of the {@link Promise}. As a convenience, this class supports non-Promise type to
  * be returned from the script, and will wrap it into a {@link Promise}.
  */
-public class AbstractScriptableHeapObject<V> extends GenericHeapObject {
+public class AbstractScriptableHeapObject<V> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractScriptableHeapObject.class);
 

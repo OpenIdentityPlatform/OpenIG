@@ -21,7 +21,6 @@ import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -32,7 +31,7 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Filter to set a header in the incoming request and in the outgoing response.
  */
-public class SampleFilter extends GenericHeapObject implements Filter {
+public class SampleFilter implements Filter {
 
     /** Header name. */
     String name;

@@ -44,7 +44,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.util.encode.Base64;
@@ -103,7 +102,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 3.1
  */
-public class JwtSessionManager extends GenericHeapObject implements SessionManager {
+public class JwtSessionManager implements SessionManager {
 
     /**
      * Default sessionTimeout duration.

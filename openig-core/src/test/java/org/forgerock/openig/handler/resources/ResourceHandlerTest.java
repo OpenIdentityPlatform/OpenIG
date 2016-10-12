@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.resources;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.header.HeaderUtil.formatDate;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Status.FOUND;
 import static org.forgerock.http.protocol.Status.METHOD_NOT_ALLOWED;
 import static org.forgerock.http.protocol.Status.NOT_FOUND;
@@ -167,7 +168,9 @@ public class ResourceHandlerTest {
     public void shouldServeWelcomePage() throws Exception {
         when(resourceSet.find("index.html")).thenReturn(resource);
 
-        ResourceHandler handler = new ResourceHandler(singletonList(resourceSet), singletonList("index.html"));
+        ResourceHandler handler = new ResourceHandler(newTemporaryStorage(),
+                                                      singletonList(resourceSet),
+                                                      singletonList("index.html"));
         UriRouterContext context = new UriRouterContext(new RootContext(),
                                                         "",
                                                         "",
@@ -181,7 +184,9 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldReturnsNotFoundWhenNoWelcomePage() throws Exception {
-        ResourceHandler handler = new ResourceHandler(singletonList(resourceSet), singletonList("index.html"));
+        ResourceHandler handler = new ResourceHandler(newTemporaryStorage(),
+                                                      singletonList(resourceSet),
+                                                      singletonList("index.html"));
         UriRouterContext context = new UriRouterContext(new RootContext(),
                                                         "",
                                                         "",
@@ -195,7 +200,9 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldRedirectWhenAccessingTheWelcomePageWithoutSlashEndedUri() throws Exception {
-        ResourceHandler handler = new ResourceHandler(singletonList(resourceSet), singletonList("index.html"));
+        ResourceHandler handler = new ResourceHandler(newTemporaryStorage(),
+                                                      singletonList(resourceSet),
+                                                      singletonList("index.html"));
         UriRouterContext context = new UriRouterContext(new RootContext(),
                                                         "",
                                                         "",

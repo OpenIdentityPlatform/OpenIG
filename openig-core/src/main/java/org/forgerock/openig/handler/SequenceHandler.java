@@ -31,7 +31,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -44,7 +43,7 @@ import org.forgerock.util.promise.ResultHandler;
  * Processes a request through a sequence of handlers. This allows multi-request processing such as retrieving a form,
  * extracting form content (e.g. nonce) and submitting in a subsequent request.
  */
-public class SequenceHandler extends GenericHeapObject implements Handler {
+public class SequenceHandler implements Handler {
 
     /** Handlers and associated sequence processing postconditions. */
     private final List<Binding> bindings = new ArrayList<>();

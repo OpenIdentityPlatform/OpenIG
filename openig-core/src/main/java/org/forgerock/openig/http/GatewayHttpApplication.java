@@ -136,8 +136,6 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.addDefaultDeclaration(DEFAULT_SCHEDULED_THREAD_POOL);
             heap.init(config, "temporaryStorage", "handler", "handlerObject", "globalDecorators", "properties");
 
-            // As all heaplets can specify their own storage,
-            // the following line provide custom storage available.
             storage = config.get("temporaryStorage")
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
                             .as(requiredHeapObject(heap, Factory.class));

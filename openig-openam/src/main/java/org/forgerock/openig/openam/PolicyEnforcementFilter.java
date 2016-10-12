@@ -70,7 +70,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.Expressions;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.JsonValues;
@@ -169,7 +168,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://openam.forgerock.org/doc/bootstrap/dev-guide/index.html#rest-api-authz-policy-decisions">
  *      Requesting Policy Decisions in OpenAM</a>
  */
-public class PolicyEnforcementFilter extends GenericHeapObject implements Filter {
+public class PolicyEnforcementFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(PolicyEnforcementFilter.class);
 

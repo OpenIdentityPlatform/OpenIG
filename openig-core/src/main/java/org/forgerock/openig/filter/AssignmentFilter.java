@@ -31,7 +31,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.LeftValueExpression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -42,7 +41,7 @@ import org.forgerock.util.promise.ResultHandler;
 /**
  * Conditionally assigns values to expressions before and after the request is handled.
  */
-public class AssignmentFilter extends GenericHeapObject implements Filter {
+public class AssignmentFilter implements Filter {
 
     /** Defines assignment condition, target and value expressions. */
     private static final class Binding {

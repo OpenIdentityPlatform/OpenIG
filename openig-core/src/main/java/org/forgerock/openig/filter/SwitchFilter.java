@@ -31,7 +31,6 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.heap.GenericHeapObject;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -46,7 +45,7 @@ import org.forgerock.util.promise.Promises;
  * the processing flow is diverted to the associated handler. If no condition evaluates to
  * {@code true}, then the request flows normally through the filter.
  */
-public class SwitchFilter extends GenericHeapObject implements Filter {
+public class SwitchFilter implements Filter {
 
     /** Associates a condition with a handler to divert to if the condition yields {@code true}. */
     private static class Case {
