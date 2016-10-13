@@ -63,7 +63,7 @@ define([
             name: "OAuth2Client",
             config: {
                 clientEndpoint: filter.clientEndpoint,
-                loginHandler: this.createFailureHandler(),
+                failureHandler: this.createFailureHandler(),
                 registrations: [{
                     name: "oidc-user-info-client",
                     type: "ClientRegistration",
@@ -105,14 +105,12 @@ define([
     // In this version is the createFailureHandler method hardcoded
     createFailureHandler () {
         return {
-            failureHandler: {
-                type: "StaticResponseHandler",
-                config: {
-                    // "Trivial failure handler for debugging only"
-                    status: 500,
-                    reason: "Error",
-                    entity: "${attributes.openid}"
-                }
+            type: "StaticResponseHandler",
+            config: {
+                // "Trivial failure handler for debugging only"
+                status: 500,
+                reason: "Error",
+                entity: "${attributes.openid}"
             }
         };
     },
