@@ -15,7 +15,6 @@
  */
 package org.forgerock.openig.filter.oauth2.client;
 
-import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.openig.filter.oauth2.client.ClientRegistration.CLIENT_REG_KEY;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2Session.stateNew;
@@ -140,7 +139,7 @@ class AuthorizationRedirectHandler implements Handler {
 
             final String redirect = appendQuery(issuer.getAuthorizeEndpoint(), query).toString();
 
-            return newResponsePromise(httpRedirect(redirect)).then(
+            return httpRedirect(redirect).then(
                     new Function<Response, Response, NeverThrowsException>() {
                         @Override
                         public Response apply(final Response response) {

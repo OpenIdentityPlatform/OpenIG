@@ -770,19 +770,15 @@ public final class OAuth2ClientFilter implements Filter {
                                                                      final Expression<String> defaultGotoUri) {
         try {
             if (gotoUri != null) {
-                return completion(httpRedirect(gotoUri));
+                return httpRedirect(gotoUri);
             } else if (defaultGotoUri != null) {
-                return completion(httpRedirect(buildUri(context, request, defaultGotoUri).toString()));
+                return httpRedirect(buildUri(context, request, defaultGotoUri).toString());
             } else {
-                return completion(httpResponse(OK));
+                return newResultPromise(httpResponse(OK));
             }
         } catch (ResponseException e) {
             return handleException(context, request, e);
         }
-    }
-
-    private static Promise<Response, NeverThrowsException> completion(Response response) {
-        return newResultPromise(response);
     }
 
     private Promise<Response, NeverThrowsException> sendAuthorizationRedirect(final Context context,
