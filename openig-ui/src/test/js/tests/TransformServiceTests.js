@@ -177,14 +177,12 @@ define([
                     "name": "OAuth2Client",
                     "config": {
                         "clientEndpoint": "/openid",
-                        "loginHandler": {
-                            "failureHandler": {
-                                "type": "StaticResponseHandler",
-                                "config": {
-                                    "status": 500,
-                                    "reason": "Error",
-                                    "entity": "${attributes.openid}"
-                                }
+                        "failureHandler": {
+                            "type": "StaticResponseHandler",
+                            "config": {
+                                "status": 500,
+                                "reason": "Error",
+                                "entity": "${attributes.openid}"
                             }
                         },
                         "registrations": [
