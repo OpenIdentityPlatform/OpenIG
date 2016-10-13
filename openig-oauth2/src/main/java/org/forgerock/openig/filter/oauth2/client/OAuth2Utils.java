@@ -18,6 +18,7 @@ package org.forgerock.openig.filter.oauth2.client;
 
 import static java.lang.String.format;
 import static org.forgerock.http.oauth2.OAuth2Error.E_SERVER_ERROR;
+import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.util.Uris.create;
 import static org.forgerock.http.util.Uris.withoutQueryAndFragment;
 import static org.forgerock.openig.el.Bindings.bindings;
@@ -40,6 +41,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
+import org.forgerock.util.promise.NeverThrowsException;
+import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
 
 /**
@@ -88,10 +91,10 @@ final class OAuth2Utils {
         }
     }
 
-    static Response httpRedirect(final String uri) {
+    static Promise<Response, NeverThrowsException> httpRedirect(final String uri) {
         Response response = httpResponse(Status.FOUND);
         response.getHeaders().add(LocationHeader.NAME, uri);
-        return response;
+        return newResponsePromise(response);
     }
 
     static Response httpResponse(final Status status) {
