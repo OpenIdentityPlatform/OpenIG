@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.openam;
@@ -28,6 +28,7 @@ public class OpenAMClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
+        ALIASES.put("AuthenticationFilter", AuthenticationFilter.class);
         ALIASES.put("PolicyEnforcementFilter", PolicyEnforcementFilter.class);
         ALIASES.put("TokenTransformationFilter", TokenTransformationFilter.class);
     }
