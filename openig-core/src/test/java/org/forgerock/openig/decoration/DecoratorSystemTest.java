@@ -19,13 +19,11 @@ package org.forgerock.openig.decoration;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
-import static org.forgerock.http.util.Json.readJson;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.util.JsonValues.readJson;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -253,8 +251,7 @@ public class DecoratorSystemTest {
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {
-        final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
-        return new JsonValue(readJson(reader));
+        return readJson(getClass().getResource(resourceName));
     }
 
     private class MakeTitleDecorator implements Decorator {
