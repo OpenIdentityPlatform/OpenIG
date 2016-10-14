@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.http.MutableUri.uri;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.fieldIfNotNull;
@@ -31,9 +30,9 @@ import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory
 import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.util.JsonValues.readJson;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -363,9 +362,7 @@ public class RouteBuilderTest {
     }
 
     private Route buildRoute(RouteBuilder builder, File testResourceFile) throws HeapException, IOException {
-        try (FileInputStream fis = new FileInputStream(testResourceFile)) {
-            return buildRoute(builder, new JsonValue(readJsonLenient(fis)), testResourceFile.getName());
-        }
+        return buildRoute(builder, readJson(testResourceFile.toURI().toURL()), testResourceFile.getName());
     }
 
     private Route buildRoute(RouteBuilder builder, JsonValue routeConfig) throws HeapException {

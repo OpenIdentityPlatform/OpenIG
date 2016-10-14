@@ -18,8 +18,6 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.forgerock.http.util.Json.readJsonLenient;
-import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.json.resource.Resources.newHandler;
@@ -29,9 +27,9 @@ import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
+import static org.forgerock.openig.util.JsonValues.readJson;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -391,8 +389,8 @@ public class RouterHandler implements FileChangeListener, Handler {
     }
 
     private void onAddedFile(File file) {
-        try (FileReader fileReader = new FileReader(file)) {
-            JsonValue routeConfig = routeConfig(fileReader);
+        try {
+            JsonValue routeConfig = readJson(file.toURI().toURL());
             String routeId = routeId(file);
             String routeName = routeName(routeConfig, routeId);
             load(routeId, routeName, routeConfig);
@@ -415,10 +413,6 @@ public class RouterHandler implements FileChangeListener, Handler {
     private void onModifiedFile(File file) {
         onRemovedFile(file);
         onAddedFile(file);
-    }
-
-    private static JsonValue routeConfig(FileReader fileReader) throws IOException {
-        return json(readJsonLenient(fileReader));
     }
 
     private static String routeId(File file) {

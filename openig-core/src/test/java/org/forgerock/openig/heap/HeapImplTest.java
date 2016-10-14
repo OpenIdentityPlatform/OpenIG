@@ -17,15 +17,13 @@
 package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.http.util.Json.readJson;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.util.JsonValues.readJson;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.List;
 
 import org.forgerock.json.JsonValue;
@@ -432,8 +430,7 @@ public class HeapImplTest {
     }
 
     private JsonValue asJson(final String resourceName) throws Exception {
-        final Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
-        return new JsonValue(readJson(reader));
+        return readJson(getClass().getResource(resourceName));
     }
 
     private static class BookDecorator implements Decorator {
