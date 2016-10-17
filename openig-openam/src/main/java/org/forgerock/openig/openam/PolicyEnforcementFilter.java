@@ -21,7 +21,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
-import static org.forgerock.http.protocol.Status.FORBIDDEN;
 import static org.forgerock.http.routing.Version.version;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -72,6 +71,7 @@ import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.LeftValueExpression;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.util.JsonValues;
@@ -123,8 +123,9 @@ import org.slf4j.LoggerFactory;
  *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute ]
  *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
  *          "environment"            :    map/expression,     [OPTIONAL - instance of Map<String, List<Object>>]
- *          "executor"               :    executor            [OPTIONAL - by default uses 'ScheduledThreadPool'
+ *          "executor"               :    executor,           [OPTIONAL - by default uses 'ScheduledThreadPool'
  *                                                                        heap object]
+ *          "failureHandler          :    handler             [OPTIONAL - default to 403]
  *      }
  *  }
  *  }
@@ -190,6 +191,13 @@ public class PolicyEnforcementFilter implements Filter {
     @SuppressWarnings("rawtypes")
     private final LeftValueExpression<Map> target;
     private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment;
+    private Handler failureHandler;
+
+    @VisibleForTesting
+    PolicyEnforcementFilter(@SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
+                            final RequestHandler requestHandler) {
+        this(target, requestHandler, Handlers.FORBIDDEN);
+    }
 
     /**
      * Creates a new OpenAM enforcement filter.
@@ -199,11 +207,15 @@ public class PolicyEnforcementFilter implements Filter {
      *            attributes, not {@code null}.
      * @param requestHandler
      *            the CREST handler to use for asking the policy decisions.
+     * @param failureHandler
+     *            The handler which will be invoked when policy denies access.
      */
     public PolicyEnforcementFilter(@SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
-                                   final RequestHandler requestHandler) {
+                                   final RequestHandler requestHandler,
+                                   final Handler failureHandler) {
         this.target = checkNotNull(target);
         this.requestHandler = checkNotNull(requestHandler);
+        this.failureHandler = checkNotNull(failureHandler);
     }
 
     @Override
@@ -290,7 +302,7 @@ public class PolicyEnforcementFilter implements Filter {
                 if (authorized) {
                     return next.handle(context, request);
                 }
-                return newResponsePromise(new Response(FORBIDDEN));
+                return failureHandler.handle(context, request);
             }
         };
     }
@@ -548,7 +560,14 @@ public class PolicyEnforcementFilter implements Filter {
                 cache.setMaxTimeout(cacheMaxExpiration);
                 requestHandler = new FilterChain(requestHandler, new CachePolicyDecisionFilter(cache));
 
-                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, requestHandler);
+                Handler failureHandler = Handlers.FORBIDDEN;
+                if (config.isDefined("failureHandler")) {
+                    failureHandler = config.get("failureHandler").as(requiredHeapObject(heap, Handler.class));
+                }
+
+                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target,
+                                                                                   requestHandler,
+                                                                                   failureHandler);
 
                 filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
 
