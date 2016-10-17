@@ -66,6 +66,7 @@ class BaseUriFilter implements Filter {
         }
         if (request != null && request.getUri() != null) {
             try {
+                logger.trace("Rebasing request to " + newBaseUri);
                 request.getUri().rebase(new URI(newBaseUri));
             } catch (URISyntaxException e) {
                 logger.error("Invalid baseUri '{}'", baseUri);
