@@ -47,6 +47,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -65,6 +66,7 @@ import org.forgerock.json.resource.ActionResponse;
 import org.forgerock.json.resource.FilterChain;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.ResourceException;
+import org.forgerock.json.resource.Responses;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
@@ -248,16 +250,39 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     private static Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
-            { LeftValueExpression.valueOf("${attributes.policy}", Map.class), null },
-            { null, mock(RequestHandler.class) } };
+            { LeftValueExpression.valueOf("${attributes.policy}", Map.class), null, mock(Handler.class) },
+            { mock(LeftValueExpression.class), mock(RequestHandler.class), null },
+            { null, mock(RequestHandler.class), mock(Handler.class) } };
     }
 
     @SuppressWarnings("rawtypes")
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
     public void shouldFailToCreatePolicyEnforcementFilter(final LeftValueExpression<Map> target,
-                                                          final RequestHandler requestHandler)
+                                                          final RequestHandler requestHandler,
+                                                          final Handler failureHandler)
             throws Exception {
-        new PolicyEnforcementFilter(target, requestHandler);
+        new PolicyEnforcementFilter(target, requestHandler, failureHandler);
+    }
+
+    @Test
+    public void shouldInvokeFailureHandlerWhenAccessDenied() throws Exception {
+        RequestHandler requestHandler = mock(RequestHandler.class);
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(Responses.newActionResponse(json(policyDecision())).asPromise());
+
+        Handler failureHandler = mock(Handler.class);
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(LeftValueExpression.valueOf("${attributes.policy}",
+                                                                                                 Map.class),
+                                                                     requestHandler,
+                                                                     failureHandler);
+        Expression<String> subject = Expression.valueOf("foo", String.class);
+        filter.setSsoTokenSubject(subject);
+
+        Request request = new Request().setMethod("POST").setUri(RESOURCE_URI);
+        filter.filter(attributesContext, request, next);
+
+        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
+        verifyZeroInteractions(next);
     }
 
     @Test
