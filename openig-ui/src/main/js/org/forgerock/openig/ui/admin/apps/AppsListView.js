@@ -104,6 +104,7 @@ define([
                     RenderRow.__super__.render.apply(this, arguments);
                     if (this.model) {
                         this.$el.attr("data-id", this.model.get("_id"));
+                        this.$el.attr("data-name", this.model.get("content/name"));
                         this.$el.addClass("app-item");
                     }
                     return this;
@@ -226,34 +227,34 @@ define([
 
         duplicateAppConfig (event) {
             const item = this.getSelectedItem(event);
-            const itemTitle = item.selected.data("title");
+            const itemName = item.selected.data("name");
             const itemId = item.selected.data("id");
-            appsUtils.duplicateAppDialog(itemId, itemTitle);
+            appsUtils.duplicateAppDialog(itemId, itemName);
         },
 
         deployApp (event) {
             const item = this.getSelectedItem(event);
-            const itemTitle = item.selected.data("title");
+            const itemName = item.selected.data("name");
             const itemId = item.selected.data("id");
-            appsUtils.deployApplicationDialog(itemId, itemTitle).done(() => {
+            appsUtils.deployApplicationDialog(itemId, itemName).done(() => {
                 this.render();
             });
         },
 
         undeployApp (event) {
             const item = this.getSelectedItem(event);
-            const itemTitle = item.selected.data("title");
+            const itemName = item.selected.data("name");
             const itemId = item.selected.data("id");
-            appsUtils.undeployApplicationDialog(itemId, itemTitle).done(() => {
+            appsUtils.undeployApplicationDialog(itemId, itemName).done(() => {
                 this.render();
             });
         },
 
         deleteApps (event) {
             const item = this.getSelectedItem(event);
-            const itemTitle = item.selected.data("title");
+            const itemName = item.selected.data("name");
             const itemId = item.selected.data("id");
-            appsUtils.deleteApplicationDialog(itemId, itemTitle)
+            appsUtils.deleteApplicationDialog(itemId, itemName)
                 .then(
                     () => {
                         item.selected.remove();
@@ -271,9 +272,9 @@ define([
 
         exportAppConfig (event) {
             const item = this.getSelectedItem(event);
-            const itemTitle = item.selected.data("title");
+            const itemName = item.selected.data("name");
             const itemId = item.selected.data("id");
-            appsUtils.exportConfigDialog(itemId, itemTitle);
+            appsUtils.exportConfigDialog(itemId, itemName);
         },
 
         /* Get selected item (card or row) */
