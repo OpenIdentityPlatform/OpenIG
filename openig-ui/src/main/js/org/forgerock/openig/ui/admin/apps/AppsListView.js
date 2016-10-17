@@ -76,6 +76,10 @@ define([
         model: {
 
         },
+        initialize () {
+            AbstractView.prototype.initialize.call(this);
+            this.listenTo(AppsCollection, "remove", this.removeItem);
+        },
         render (args, callback) {
             const viewThis = this;
 
@@ -312,6 +316,15 @@ define([
                         }
                     });
             });
+        },
+
+        removeItem (model, collection) {
+            const card = this.$el.find(`.card-spacer[data-id='${model.get("_id")}']`);
+            card.remove();
+
+            if (collection.models.length === 0) {
+                this.renderNoItem();
+            }
         }
     });
 
