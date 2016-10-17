@@ -106,12 +106,11 @@ define(
                     event.preventDefault();
 
                     const form = this.$el.find("#capture-form")[0];
-                    const content = this.data.appData.get("content");
                     const capture = this.formToCapture(form);
                     if (this.isCaptureEnabled(capture)) {
-                        content.capture = capture;
+                        this.data.appData.set("capture", capture);
                     } else {
-                        delete content.capture;
+                        this.data.appData.unset("capture");
                     }
                     this.data.appData.save();
 
@@ -149,7 +148,7 @@ define(
                 },
 
                 findCapture () {
-                    let capture = this.data.appData.get("content/capture");
+                    let capture = this.data.appData.get("capture");
                     if (!capture) {
                         capture = this.defaultCapture();
                     }

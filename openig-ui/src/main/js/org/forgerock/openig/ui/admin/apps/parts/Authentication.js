@@ -225,7 +225,7 @@ define([
         },
 
         getFilter () {
-            return _.find(this.data.appData.get("content/filters"),
+            return _.find(this.data.appData.get("filters"),
                 { "type": "OAuth2ClientFilter" }
             );
         },

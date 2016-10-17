@@ -35,10 +35,10 @@ define([
         ],
         initialize (options) {
             this.data = options.parentData;
-            this.data.appId = this.data.appData.get("_id");
-            this.data.title = this.data.appData.get("content/name");
-            this.data.baseURI = this.data.appData.get("content/baseURI");
-            this.data.condition = this.data.appData.get("content/condition");
+            this.data.appId = this.data.appData.get("id");
+            this.data.title = this.data.appData.get("name");
+            this.data.baseURI = this.data.appData.get("baseURI");
+            this.data.condition = this.data.appData.get("condition");
             this.data.overviewItems = [
                 {
                     title: i18n.t("config.AppConfiguration.Navigation.appsSideMenu.capture"),
@@ -78,12 +78,12 @@ define([
             this.parentRender();
         },
         getStatus (route) {
-            const filters = this.data.appData.get("content/filters");
+            const filters = this.data.appData.get("filters");
             let status = i18n.t("templates.apps.filters.Off");
             let filter;
             switch (route) {
                 case "appsCapture":
-                    const capture = this.data.appData.get("content/capture");
+                    const capture = this.data.appData.get("capture");
                     let inbound;
                     if (_.get(capture, "inbound.request") && _.get(capture, "inbound.response")) {
                         inbound = i18n.t("templates.apps.capture.inboundMessages");
@@ -142,7 +142,7 @@ define([
                     }
                     break;
                 case "appsStatistics":
-                    const statistics = this.data.appData.get("content/statistics");
+                    const statistics = this.data.appData.get("statistics");
                     if (_.get(statistics, "enabled")) {
                         status = i18n.t("templates.apps.parts.statistics.fields.status");
                     }

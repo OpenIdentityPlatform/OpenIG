@@ -75,18 +75,18 @@ define([
         render (args, callback) {
             this.data.appPath = Router.getCurrentHash().match(Router.currentRoute.url)[1];
 
-            AppsCollection.byId(this.data.appPath).then(_.bind(function (appData) {
+            AppsCollection.byAppId(this.data.appPath).then(_.bind(function (appData) {
                 if (appData) {
                     this.data.appData = appData;
-                    this.data.appName = appData.get("_id");
+                    this.data.appName = appData.get("id");
                     this.data.deployed = RoutesCollection.isDeployed(this.data.appName);
-                    this.data.deployedDate = appData.get("content/deployedDate");
-                    this.data.pendingChanges = appData.get("content/pendingChanges");
+                    this.data.deployedDate = appData.get("deployedDate");
+                    this.data.pendingChanges = appData.get("pendingChanges");
                     this.data.allowDeploy = !this.data.deployed || this.data.pendingChanges;
                     this.data.treeNavigation = createTreeNavigation(navData,
                         [encodeURIComponent(this.data.appPath)]
                     );
-                    this.data.title = appData.get("content/name");
+                    this.data.title = appData.get("name");
                     this.data.home = `#${Router.getLink(
                         Router.configuration.routes.appsOverview,
                         [encodeURIComponent(this.data.appPath)])}`;

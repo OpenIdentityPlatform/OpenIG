@@ -107,8 +107,8 @@ define([
                 render () {
                     RenderRow.__super__.render.apply(this, arguments);
                     if (this.model) {
-                        this.$el.attr("data-id", this.model.get("_id"));
-                        this.$el.attr("data-name", this.model.get("content/name"));
+                        this.$el.attr("data-id", this.model.get("id"));
+                        this.$el.attr("data-name", this.model.get("name"));
                         this.$el.addClass("app-item");
                     }
                     return this;
@@ -126,7 +126,7 @@ define([
                     })
                 },
                 {
-                    name: "content/baseURI",
+                    name: "baseURI",
                     label: i18n.t("templates.apps.tableColumns.baseURI"),
                     cell: "string",
                     sortable: false,
@@ -174,13 +174,9 @@ define([
                     if (routes) {
                         this.routesList = routes.models;
                         _.each(apps.models, (app) => {
-                            const isDeployed = RoutesCollection.isDeployed(app.id);
-                            let updatedContent = _.clone(app.get("content"));
-                            updatedContent = _.extend(updatedContent, {
-                                deployed: isDeployed,
-                                pendingChanges: isDeployed ? updatedContent.pendingChanges : false
-                            });
-                            app.set("content", updatedContent);
+                            const isDeployed = RoutesCollection.isDeployed(app.get("id"));
+                            app.set("deployed", isDeployed);
+                            app.set("pendingChanges", isDeployed ? app.get("pendingChanges") : false);
                         });
                     }
                 }).always(() => {
@@ -217,15 +213,15 @@ define([
 
         getRenderData (model) {
             return {
-                id: model.get("_id"),
-                uri: model.get("content/baseURI"),
-                name: model.get("content/name"),
+                id: model.get("id"),
+                uri: model.get("baseURI"),
+                name: model.get("name"),
                 status: i18n.t(this.getStatusTextKey(
-                    model.get("content/deployed") === true,
-                    model.get("content/pendingChanges") === true)
+                    model.get("deployed") === true,
+                    model.get("pendingChanges") === true)
                 ),
-                deployed: model.get("content/deployed"),
-                pendingChanges: model.get("content/pendingChanges")
+                deployed: model.get("deployed"),
+                pendingChanges: model.get("pendingChanges")
             };
         },
 
@@ -307,7 +303,7 @@ define([
             const dataFilter = new DataFilter($(event.target).val(), ["id", "uri", "name", "status"]);
             _.each(this.$el.find(".app-item"), (elm) => {
                 const element = $(elm);
-                AppsCollection.byId(element.data("id"))
+                AppsCollection.byAppId(element.data("id"))
                     .then((model) => {
                         if (dataFilter.filter(this.getRenderData(model))) {
                             element.fadeIn();
@@ -319,7 +315,7 @@ define([
         },
 
         removeItem (model, collection) {
-            const card = this.$el.find(`.card-spacer[data-id='${model.get("_id")}']`);
+            const card = this.$el.find(`.card-spacer[data-id='${model.get("id")}']`);
             card.remove();
 
             if (collection.models.length === 0) {
