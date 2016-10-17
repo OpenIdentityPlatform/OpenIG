@@ -52,15 +52,13 @@ define([
     },
 
     isAppIdUniq (appId) {
-        return AppsCollection.byId(appId)
+        return AppsCollection.byAppId(appId)
             .then((appModel) => !appModel);
     },
 
-    checkName (appName) {
+    checkName (name) {
         return AppsCollection.availableApps().then((apps) => {
-            const foundApp = _.find(apps.models, (a) => (
-                a.get("content/name") === appName
-            ));
+            const foundApp = apps.findWhere({ name });
             return foundApp ? "templates.apps.duplicateNameError" : "";
         });
     },
@@ -153,7 +151,7 @@ define([
     },
 
     exportConfigDialog (appId) {
-        AppsCollection.byId(appId).then((appData) => {
+        AppsCollection.byAppId(appId).then((appData) => {
             if (appData) {
                 try {
                     const jsonContent = JSON.stringify(transformService.transformApplication(appData), null, 2);
@@ -170,8 +168,8 @@ define([
     deployApplicationModel (model) {
         const deferred = $.Deferred();
         const promise = deferred.promise();
-        const appId = model.get("_id");
-        const appTitle = model.get("content/name");
+        const appId = model.get("id");
+        const appTitle = model.get("name");
         const jsonConfig = transformService.transformApplication(model);
         RoutesCollection.deploy(appId, jsonConfig).done(() => {
             eventManager.sendEvent(
@@ -199,7 +197,7 @@ define([
     deployApplicationDialog (appId, appTitle) {
         const deferred = $.Deferred();
         const promise = deferred.promise();
-        AppsCollection.byId(appId).then((appData) => {
+        AppsCollection.byAppId(appId).then((appData) => {
             if (appData) {
                 const isDeployed = RoutesCollection.isDeployed(appId);
                 if (!isDeployed) {
@@ -226,7 +224,7 @@ define([
     undeployApplication (appId) {
         const deferred = $.Deferred();
         RoutesCollection.undeploy(appId).done(() => {
-            AppsCollection.byId(appId).then((appData) => {
+            AppsCollection.byAppId(appId).then((appData) => {
                 appData.set("deployedDate", null);
                 appData.set("pendingChanges", false);
                 appData.save();
@@ -271,7 +269,7 @@ define([
 
     deleteApplication (appId, appTitle) {
         const deferred = $.Deferred();
-        AppsCollection.removeById(appId)
+        AppsCollection.removeByAppId(appId)
             .then(
                 () => {
                     eventManager.sendEvent(
@@ -293,7 +291,7 @@ define([
 
     deleteApplicationDialog (appId, appTitle) {
         const deferred = $.Deferred();
-        AppsCollection.byId(appId).then((appModel) => {
+        AppsCollection.byAppId(appId).then((appModel) => {
             if (appModel) {
                 const isDeployed = RoutesCollection.isDeployed(appId);
                 const dialogMessageKey =
@@ -332,17 +330,16 @@ define([
     },
 
     addFilterIntoModel (appModel, filter) {
-        const content = _.clone(appModel.get("content"));
-        const filters = content.filters;
+        let filters = _.clone(appModel.get("filters"));
 
         if (_.includes(filters, filter)) {
             return;
         }
         filters.push(filter);
-        content.filters = _.sortBy(filters, (f) =>
+        filters = _.sortBy(filters, (f) =>
             constants.defaultFiltersOrder[_.get(f, "type", "Unknown")]
         );
-        appModel.set("content", content);
+        appModel.set("filters", filters);
     }
 })
 );

@@ -53,21 +53,21 @@ define([
         },
 
         // Find by Id, also in cache
-        byId (appId) {
+        byAppId (id) {
             const deferred = $.Deferred();
             const promise = deferred.promise();
 
             this.availableApps().then(() => {
-                deferred.resolve(this.get(appId));
+                deferred.resolve(this.findWhere({ id }));
             });
 
             return promise;
         },
 
         // Remove also from local cache
-        removeById (appId) {
+        removeByAppId (id) {
             const deferred = $.Deferred();
-            const item = this.get(appId);
+            const item = this.findWhere({ id });
             item.destroy()
                 .then(
                     (model) => {

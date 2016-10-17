@@ -32,38 +32,35 @@ define([
                 JSON.stringify({
                     "result": [
                         {
-                            "_id": "legacyapp",
+                            "_id": "454545legacyapp",
                             "_rev": "1",
                             "info": {
                                 "created_at": 1234567,
                                 "version": "5.0.0-SNAPSHOT"
                             },
-                            "content": {
-                                "id": "legacyapp",
-                                "name": "Legacy Web App",
-                                "baseURI": "http://www.legacyapp.com:8080",
-                                "condition": "${request.uri == '/lego'}",
-                                "router": "",
-                                "route": "",
 
-                                // Order is as defined by user in "chain"
-                                "filters": []
-                            }
+                            "id": "legacy-web-app",
+                            "name": "Legacy Web App",
+                            "baseURI": "http://www.legacyapp.com:8080",
+                            "condition": "${request.uri.path == '/legacy'}",
+                            "router": "",
+                            "route": "",
+                             // Order is as defined by user in "chain"
+                            "filters": []
                         },
                         {
-                            "_id": "weatherapi",
+                            "_id": "797979weatherapi",
                             "_rev": "1",
                             "info": {
                                 "created_at": 1234567,
                                 "version": "5.0.0-SNAPSHOT"
                             },
-                            "content": {
-                                "name": "weatherAPI",
-                                "baseURI": "http://www.weather.com:8081",
-                                "condition": "",
-                                "deployedDate": new Date(),
-                                "pendingChanges": false
-                            }
+                            "id": "weatherapi",
+                            "name": "weatherAPI",
+                            "baseURI": "http://www.weather.com:8081",
+                            "condition": "${request.uri.path == '/weather'}",
+                            "deployedDate": new Date(),
+                            "pendingChanges": false
                         }
                     ],
                     "resultCount": 2,
@@ -75,7 +72,7 @@ define([
 
         server.respondWith(
             "POST",
-            "/openig/api/system/objects/config/legacyapp",
+            "/openig/api/system/objects/config/454545legacyapp",
             [
                 200,
                 {
@@ -83,9 +80,10 @@ define([
                 },
                 JSON.stringify([
                     {
-                        "name": "Legacy Web App2",
+                        "id": "legacy-web-app",
+                        "name": "Legacy Web App",
                         "baseURI": "http://www.legacyapp.com:8080",
-                        "condition": "/something222",
+                        "condition": "${request.uri.path == '/legacy'}",
                         "status": "undeployed"
                     }
                 ])
@@ -94,7 +92,7 @@ define([
 
         server.respondWith(
             "POST",
-            "/openig/api/system/objects/config/weatherapi",
+            "/openig/api/system/objects/config/797979weatherapi",
             [
                 200,
                 {
@@ -102,9 +100,10 @@ define([
                 },
                 JSON.stringify([
                     {
+                        "id": "weatherapi",
                         "name": "weatherAPI",
                         "baseURI": "http://www.weather.com:8081",
-                        "condition": "/something1",
+                        "condition": "${request.uri.path == '/weather'}",
                         "status": "deployed"
                     }
                 ])
@@ -113,7 +112,7 @@ define([
 
         server.respondWith(
             "DELETE",
-            "/openig/api/system/objects/config/legacyapp?",
+            "/openig/api/system/objects/config/454545legacyapp?",
             [
                 200,
                 {
@@ -121,6 +120,7 @@ define([
                 },
                 JSON.stringify([
                     {
+                        "id": "legacy-web-app",
                         "name": "Legacy Web App",
                         "baseURI": "http://www.legacyapp.com:8080",
                         "condition": "${matches(request.uri.path, '^/legacy')}",
@@ -144,14 +144,14 @@ define([
                             "_id": "weatherapi", // name
                             "_rev": "1",
                             "uptime": 513246, // ms
-                            "condition": "${request.uri.path == '/wordpress'}"
+                            "condition": "${request.uri.path == '/weather'}"
 
                         },
                         {
-                            "_id": "legacyapp", // name
+                            "_id": "legacy-web-app", // name
                             "_rev": "1",
                             "uptime": 513246, // ms
-                            "condition": "${request.uri.path == '/wordpress'}"
+                            "condition": "${request.uri.path == '/legacy'}"
                         }
 
                     ],
@@ -164,28 +164,28 @@ define([
 
         server.respondWith(
             "PUT",
-            "/openig/api/system/objects/_router/routes/legacyapp",
+            "/openig/api/system/objects/_router/routes/legacy-web-app",
             [
                 200,
                 {
                     "Content-Type": "application/json;charset=UTF-8"
                 },
                 JSON.stringify({
-                    "_id": "legacyapp"
+                    "_id": "legacy-web-app"
                 })
             ]
         );
 
         server.respondWith(
             "DELETE",
-            "/openig/api/system/objects/_router/routes/legacyapp?",
+            "/openig/api/system/objects/_router/routes/legacy-web-app?",
             [
                 200,
                 {
                     "Content-Type": "application/json;charset=UTF-8"
                 },
                 JSON.stringify({
-                    "_id": "legacyapp"
+                    "_id": "legacy-web-app"
                 })
             ]
         );

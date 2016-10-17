@@ -32,37 +32,36 @@ define([
     const AppModel = AbstractModel.extend({
         url: `${Constants.apiPath}/config`,
         defaults: {
-            _id: "",
-            content: {
-                id: "",
-                name: "",
-                baseURI: "",
-                condition: "",
 
-                router: "",
-                route: "",
-                deployedDate: undefined,
-                pendingChanges: false,
+            id: "",
+            name: "",
+            baseURI: "",
+            condition: "",
 
-                // Order is as defined by user in "chain"
-                filters: []
-            }
+            router: "",
+            route: "",
+            deployedDate: undefined,
+            pendingChanges: false,
+
+            // Order is as defined by user in "chain"
+            filters: []
+
         },
 
         validate (attrs) {
-            if (attrs._id.trim() === "" || attrs.content.id.trim() === "") {
+            if (attrs.id.trim() === "") {
                 return "appErrorNoId";
             }
 
-            if (!attrs.content.name || attrs.content.name.trim() === "") {
+            if (!attrs.name || attrs.name.trim() === "") {
                 return "appErrorNoName";
             }
 
-            if (!attrs.content.baseURI || attrs.content.baseURI.trim() === "") {
+            if (!attrs.baseURI || attrs.baseURI.trim() === "") {
                 return "appErrorNoUrl";
             }
 
-            if (!attrs.content.condition || attrs.content.condition.trim() === "") {
+            if (!attrs.condition || attrs.condition.trim() === "") {
                 return "appErrorNoCondition";
             }
 

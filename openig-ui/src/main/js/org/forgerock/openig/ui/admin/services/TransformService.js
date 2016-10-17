@@ -169,15 +169,15 @@ define([
 
         // Base route attributes
         const route = {
-            name: app.get("_id"),
-            baseURI: app.get("content/baseURI"),
-            condition: app.get("content/condition"),
-            monitor: this.transformStatistics(app.get("content/statistics"))
+            name: app.get("id"),
+            baseURI: app.get("baseURI"),
+            condition: app.get("condition"),
+            monitor: this.transformStatistics(app.get("statistics"))
         };
 
         // Convert all filters
         const chain = this.chainBuilder();
-        const filters = app.get("content/filters");
+        const filters = app.get("filters");
         _.forEach(filters, (filter) => {
             if (filter.enabled === true) {
                 const generatedFilter = this.transformFilter(filter);
@@ -188,7 +188,7 @@ define([
         });
 
         // Inbound messages capture
-        const capture = app.get("content/capture");
+        const capture = app.get("capture");
         if (capture) {
             if (capture.inbound) {
                 const captured = [];

@@ -50,28 +50,10 @@ define([
             QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail when no '_id' attribute is provided", (assert) => {
-            const applicationWithoutId = new AppModel({
-                _id: "",
-                content: {
-                }
-            });
-
-            assert.throws(() => {
-                transformService.transformApplication(applicationWithoutId);
-            },
-                transformService.TransformServiceException("invalidModel"),
-                "Passing model without ID throws an error"
-            );
-            QUnit.start();
-        });
-
         QUnit.asyncTest("Should fail when no 'name' attribute is provided", (assert) => {
             const applicationWithEmptyName = new AppModel({
-                _id: "modelID",
-                content: {
-                    name: ""
-                }
+                id: "modelID",
+                name: ""
             });
 
             assert.throws(() => {
@@ -85,10 +67,8 @@ define([
 
         QUnit.asyncTest("Should fail when no 'baseURI' attribute is provided", (assert) => {
             const applicationWithEmptyBaseUrl = new AppModel({
-                _id: "modelID",
-                content: {
-                    url: ""
-                }
+                id: "modelID",
+                url: ""
             });
 
             assert.throws(() => {
@@ -102,10 +82,8 @@ define([
 
         QUnit.asyncTest("Should fail when no 'condition' attribute is provided", (assert) => {
             const applicationWithEmptyCondition = new AppModel({
-                _id: "modelID",
-                content: {
-                    condition: ""
-                }
+                id: "modelID",
+                condition: ""
             });
 
             assert.throws(() => {
@@ -119,13 +97,10 @@ define([
 
         QUnit.asyncTest("Should map basic model properties to top level route attributes", (assert) => {
             const app = new AppModel({
-                _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path == '/'}"
-                }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path == '/'}"
             });
 
             assert.deepEqual(transformService.transformApplication(app),
@@ -231,21 +206,19 @@ define([
         QUnit.asyncTest("Should pass eventhough all filters are disabled", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    filters: [
-                        {
-                            enabled: false,
-                            type: "ThrottlingFilter",
-                            numberOfRequests: "60",
-                            durationValue: "1",
-                            durationRange: Constants.timeSlot.MINUTE
-                        }
-                    ]
-                }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                filters: [
+                    {
+                        enabled: false,
+                        type: "ThrottlingFilter",
+                        numberOfRequests: "60",
+                        durationValue: "1",
+                        durationRange: Constants.timeSlot.MINUTE
+                    }
+                ]
             });
 
             assert.deepEqual(transformService.transformApplication(app),
@@ -264,21 +237,19 @@ define([
         QUnit.asyncTest("Should pass only enabled filters", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    filters: [
-                        {
-                            enabled: true,
-                            type: "ThrottlingFilter",
-                            numberOfRequests: "60",
-                            durationValue: "1",
-                            durationRange: Constants.timeSlot.MINUTE
-                        }
-                    ]
-                }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                filters: [
+                    {
+                        enabled: true,
+                        type: "ThrottlingFilter",
+                        numberOfRequests: "60",
+                        durationValue: "1",
+                        durationRange: Constants.timeSlot.MINUTE
+                    }
+                ]
             });
 
             assert.deepEqual(transformService.transformApplication(app),
@@ -312,16 +283,14 @@ define([
         QUnit.asyncTest("Should activate route level request capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        inbound: {
-                            request: true,
-                            response: false
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    inbound: {
+                        request: true,
+                        response: false
                     }
                 }
             });
@@ -343,16 +312,14 @@ define([
         QUnit.asyncTest("Should activate route level response capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        inbound: {
-                            request: false,
-                            response: true
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    inbound: {
+                        request: false,
+                        response: true
                     }
                 }
             });
@@ -374,16 +341,14 @@ define([
         QUnit.asyncTest("Should activate request and response route level capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        inbound: {
-                            request: true,
-                            response: true
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    inbound: {
+                        request: true,
+                        response: true
                     }
                 }
             });
@@ -405,16 +370,14 @@ define([
         QUnit.asyncTest("Should activate outbound request capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        outbound: {
-                            request: true,
-                            response: false
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    outbound: {
+                        request: true,
+                        response: false
                     }
                 }
             });
@@ -443,16 +406,14 @@ define([
         QUnit.asyncTest("Should activate outbound response capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        outbound: {
-                            request: false,
-                            response: true
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    outbound: {
+                        request: false,
+                        response: true
                     }
                 }
             });
@@ -482,16 +443,14 @@ define([
         QUnit.asyncTest("Should activate request and response outbound capture", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    capture: {
-                        outbound: {
-                            request: true,
-                            response: true
-                        }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    outbound: {
+                        request: true,
+                        response: true
                     }
                 }
             });
@@ -521,14 +480,12 @@ define([
         QUnit.asyncTest("Should enable statistics", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    statistics: {
-                        enabled: true
-                    }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                statistics: {
+                    enabled: true
                 }
             });
 
@@ -548,15 +505,13 @@ define([
         QUnit.asyncTest("Should enable statistics and add percentiles", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    statistics: {
-                        enabled: true,
-                        percentiles: "0.99 0.999 0.9999"
-                    }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                statistics: {
+                    enabled: true,
+                    percentiles: "0.99 0.999 0.9999"
                 }
             });
 
@@ -579,15 +534,13 @@ define([
         QUnit.asyncTest("Should disable statistics and remove percentiles", (assert) => {
             const app = new AppModel({
                 _id: "modelID",
-                content: {
-                    id: "modelID",
-                    name: "Router",
-                    baseURI: "http://www.example.com:8081",
-                    condition: "${request.uri.path === '/'}",
-                    statistics: {
-                        enabled: false,
-                        percentiles: "0.99 0.999 0.9999"
-                    }
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                statistics: {
+                    enabled: false,
+                    percentiles: "0.99 0.999 0.9999"
                 }
             });
 

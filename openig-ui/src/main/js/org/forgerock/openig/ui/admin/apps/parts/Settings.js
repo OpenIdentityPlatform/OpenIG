@@ -85,23 +85,23 @@ define([
             this.data.controls = [
                 {
                     name: "name",
-                    value: this.app.get("content/name"),
+                    value: this.app.get("name"),
                     validator: "required spaceCheck customValidator"
                 },
                 {
                     name: "id",
-                    value: this.app.get("_id"),
+                    value: this.app.get("id"),
                     validator: "required spaceCheck urlCompatible customValidator",
                     disabled: this.data.mode === this.formMode.EDIT
                 },
                 {
                     name: "baseURI",
-                    value: this.app.get("content/baseURI"),
+                    value: this.app.get("baseURI"),
                     validator: "required baseURI spaceCheck"
                 },
                 {
                     name: "condition",
-                    value: this.app.get("content/condition"),
+                    value: this.app.get("condition"),
                     placeholder: "templates.apps.parts.settings.fields.conditionPlaceHolder",
                     validator: "required spaceCheck"
                 }
@@ -129,18 +129,19 @@ define([
         },
 
         setupApp (mode, appId) {
-            const app = new AppModel();
+            let app = new AppModel();
             switch (mode) {
                 case this.formMode.DUPLICATE:
-                    AppsCollection.byId(appId)
+                    AppsCollection.byAppId(appId)
                         .then((parentApp) => {
-                            app.set("content", _.clone(parentApp.get("content")));
+                            app = parentApp.clone();
+                            app.unset("_id");
                         });
                     break;
                 case this.formMode.EDIT:
-                    AppsCollection.byId(appId)
+                    AppsCollection.byAppId(appId)
                         .then((parentApp) => {
-                            app.set("content", _.clone(parentApp.get("content")));
+                            app = parentApp.clone();
                             app.set("_id", appId);
                         });
                     break;
@@ -171,9 +172,9 @@ define([
                         modifiedApp
                     ]);
                 } else {
-                    AppsCollection.byId(this.data.appId)
+                    AppsCollection.byAppId(this.data.appId)
                         .then((parentApp) => {
-                            parentApp.set("content", modifiedApp.get("content"));
+                            parentApp.set(modifiedApp.toJSON());
                             parentApp.save();
                         });
                 }
@@ -198,12 +199,10 @@ define([
         fillAppFromFormData () {
             const form = this.$el.find("#appForm")[0];
             const formVal = form2js(form, ".", true);
-            let updatedContent = _.clone(this.app.get("content"));
-            updatedContent = _.extend(updatedContent, formVal);
             if (this.data.mode !== this.formMode.EDIT) {
-                this.app.set("_id", formVal.id);
+                formVal._id = formVal.id;
             }
-            this.app.set("content", updatedContent);
+            this.app.set(formVal);
         },
 
         generateId (evt) {
@@ -227,7 +226,7 @@ define([
         },
 
         validateName (evt) {
-            if (this.app.get("content/name") !== evt.target.value) {
+            if (this.app.get("name") !== evt.target.value) {
                 appsUtils.checkName(evt.target.value)
                     .then((checkResult) => {
                         $(evt.target).data("custom-valid-msg", checkResult || "");

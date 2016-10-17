@@ -109,12 +109,11 @@ define([
         enableStatistics (event) {
             const newState = event.currentTarget.checked;
             const collapseState = newState ? "show" : "hide";
-            const content = this.data.appData.get("content");
             this.$el.find("div[name='statisticsGroup']").collapse(collapseState);
 
             const statistics = this.getStatistics();
             statistics.enabled = newState;
-            content.statistics = statistics;
+            this.data.appData.set("statistics", statistics);
 
             this.data.appData.save();
             this.setFormFooterVisiblity(newState);
@@ -153,9 +152,8 @@ define([
 
         saveClick (event) {
             event.preventDefault();
-            const content = this.data.appData.get("content");
             const form = this.$el.find("#statisticsForm")[0];
-            content.statistics = this.formToStatistics(form);
+            this.data.appData.set("statistics", this.formToStatistics(form));
             this.data.appData.save();
             this.isDataDirty();
 
@@ -174,7 +172,7 @@ define([
 
         // Check entered data against saved
         isDataDirty () {
-            const savedVal = _.get(this.data.appData.get("content"), "statistics.percentiles");
+            const savedVal = _.get(this.data.appData.get("statistics"), "percentiles");
             const form = this.$el.find("#statisticsForm")[0];
             const formVal = this.formToStatistics(form).percentiles;
             const submit = this.$el.find("#submitStatistics");
@@ -205,7 +203,7 @@ define([
         },
 
         getStatistics () {
-            let statistics = this.data.appData.get("content/statistics");
+            let statistics = this.data.appData.get("statistics");
             if (!statistics) {
                 statistics = this.defaultStatistics();
             }
