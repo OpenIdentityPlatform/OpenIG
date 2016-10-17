@@ -17,9 +17,9 @@ package org.forgerock.openig.script;
 
 import static java.lang.String.format;
 import static org.forgerock.openig.el.Bindings.bindings;
-import static org.forgerock.openig.el.Expressions.evaluate;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -36,7 +36,6 @@ import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.el.Bindings;
-import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
@@ -64,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * performing LDAP requests such as LDAP authentication
  * </ul>
  *
- * <p>The provided {@code args} parameters supports runtime expressions evaluation with the
+ * <p>The provided {@code args} parameters supports config-time expressions evaluation with the
  * special addition of a {@link Heap heap} variable that allows the script to get references
  * to other objects available in the heap.
  *
@@ -102,7 +101,8 @@ public class AbstractScriptableHeapObject<V> {
                                           .as(requiredHeapObject(heap, Handler.class));
             component.setClientHandler(clientHandler);
             if (config.isDefined(CONFIG_OPTION_ARGS)) {
-                component.setArgs(config.get(CONFIG_OPTION_ARGS).asMap());
+                Bindings bindings = heap.getProperties().bind("heap", heap);
+                component.setArgs(config.get(CONFIG_OPTION_ARGS).as(evaluated(bindings)).asMap());
             }
 
             if (config.isDefined("httpClient")) {
@@ -262,18 +262,12 @@ public class AbstractScriptableHeapObject<V> {
         }
         bindings.put("ldap", ldapClient);
         if (args != null) {
-            try {
-                final Bindings exprEvalBindings = bindings().bind(enriched)
-                                                            .bind("heap", heap);
-                for (final Entry<String, Object> entry : args.entrySet()) {
-                    final String key = entry.getKey();
-                    if (bindings.containsKey(key)) {
-                        throw new ScriptException("Can't override the binding named " + key);
-                    }
-                    bindings.put(entry.getKey(), evaluate(entry.getValue(), exprEvalBindings));
+            for (final Entry<String, Object> entry : args.entrySet()) {
+                final String key = entry.getKey();
+                if (bindings.containsKey(key)) {
+                    throw new ScriptException("Argument '" + key + "' can't override an existing binding");
                 }
-            } catch (ExpressionException ex) {
-                throw new ScriptException(ex);
+                bindings.put(entry.getKey(), entry.getValue());
             }
         }
 

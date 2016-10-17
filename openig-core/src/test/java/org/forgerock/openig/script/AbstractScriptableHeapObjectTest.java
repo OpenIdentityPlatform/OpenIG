@@ -21,6 +21,8 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.script.Script.GROOVY_MIME_TYPE;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.net.URL;
@@ -28,10 +30,15 @@ import java.util.Collections;
 
 import javax.script.ScriptException;
 
+import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
+import org.forgerock.openig.heap.Heap;
+import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.Promise;
@@ -46,6 +53,8 @@ public class AbstractScriptableHeapObjectTest {
     @BeforeMethod
     public void setUp() throws Exception {
         heap = new HeapImpl(Name.of("heap"));
+        heap.put(Keys.ENVIRONMENT_HEAP_KEY, getEnvironment());
+        heap.put(Keys.CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
     }
 
     @Test
@@ -84,24 +93,51 @@ public class AbstractScriptableHeapObjectTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldGiveAccessToHeapPropertiesInArgs() throws Exception {
+        // given
         heap.init(json(object(field("properties", object(field("bar", 40))))));
 
-        AbstractScriptableHeapObject<Number> scriptableObject = newScriptableObject("return foo");
-        scriptableObject.setArgs(Collections.<String, Object>singletonMap("foo", "${bar + 2}"));
+        JsonValue config = json(object(field("type", GROOVY_MIME_TYPE),
+                                       field("source", "return foo"),
+                                       field("args", object(field("foo", "${bar + 2}")))));
+        AbstractScriptableHeapObject<Number> scriptableObject =
+                (AbstractScriptableHeapObject<Number>) newScriptableHeaplet().create(Name.of("script"),
+                                                                                     config,
+                                                                                     heap);
 
+        // when
         Number value = scriptableObject.runScript(bindings(), null, Number.class)
                                        .getOrThrow();
 
+        // then
         assertThat(value).isEqualTo(42L);
     }
 
+    private static AbstractScriptableHeapObject.AbstractScriptableHeaplet newScriptableHeaplet() {
+        return new AbstractScriptableHeapObject.AbstractScriptableHeaplet() {
+            @Override
+            protected AbstractScriptableHeapObject<Number> newInstance(final Script script, final Heap heap)
+                    throws HeapException {
+                return new AbstractScriptableHeapObject<>(script, heap, "script");
+            }
+        };
+    }
+
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldResolveHeapObjectReferencedFromArgs() throws Exception {
+        // given
         heap.put("referenced", "I'm here");
 
-        AbstractScriptableHeapObject<String> scriptableObject = newScriptableObject("return ref");
-        scriptableObject.setArgs(Collections.<String, Object>singletonMap("ref", "${heap['referenced']}"));
+        JsonValue config = json(object(field("type", GROOVY_MIME_TYPE),
+                                       field("source", "return foo"),
+                                       field("args", object(field("foo", "${heap['referenced']}")))));
+
+        AbstractScriptableHeapObject<String> scriptableObject =
+                (AbstractScriptableHeapObject<String>) newScriptableHeaplet().create(Name.of("script"),
+                                                                                     config,
+                                                                                     heap);
 
         String value = scriptableObject.runScript(bindings(), null, String.class)
                                        .getOrThrow();
@@ -134,7 +170,7 @@ public class AbstractScriptableHeapObjectTest {
     private <T> AbstractScriptableHeapObject<T> newScriptableObject(final String... sourceLines)
             throws Exception {
         final Environment environment = getEnvironment();
-        final Script script = Script.fromSource(environment, Script.GROOVY_MIME_TYPE, sourceLines);
+        final Script script = Script.fromSource(environment, GROOVY_MIME_TYPE, sourceLines);
         return new AbstractScriptableHeapObject<>(script, heap, "myScript");
     }
 
