@@ -226,78 +226,41 @@ define([
         },
 
         duplicateAppConfig (event) {
-            const item = this.getSelectedItem(event);
-            const itemName = item.selected.data("name");
-            const itemId = item.selected.data("id");
-            appsUtils.duplicateAppDialog(itemId, itemName);
+            const itemData = this.getSelectedItemData(event);
+            appsUtils.duplicateAppDialog(itemData.id, itemData.name);
         },
 
         deployApp (event) {
-            const item = this.getSelectedItem(event);
-            const itemName = item.selected.data("name");
-            const itemId = item.selected.data("id");
-            appsUtils.deployApplicationDialog(itemId, itemName).done(() => {
+            const itemData = this.getSelectedItemData(event);
+            appsUtils.deployApplicationDialog(itemData.id, itemData.name).done(() => {
                 this.render();
             });
         },
 
         undeployApp (event) {
-            const item = this.getSelectedItem(event);
-            const itemName = item.selected.data("name");
-            const itemId = item.selected.data("id");
-            appsUtils.undeployApplicationDialog(itemId, itemName).done(() => {
+            const itemData = this.getSelectedItemData(event);
+            appsUtils.undeployApplicationDialog(itemData.id, itemData.name).done(() => {
                 this.render();
             });
         },
 
         deleteApps (event) {
-            const item = this.getSelectedItem(event);
-            const itemName = item.selected.data("name");
-            const itemId = item.selected.data("id");
-            appsUtils.deleteApplicationDialog(itemId, itemName)
-                .then(
-                    () => {
-                        item.selected.remove();
-                        if (item.alternate) {
-                            item.alternate.remove();
-                        }
-                        AppsCollection.availableApps().then((apps) => {
-                            if (apps.models.length === 0) {
-                                this.renderNoItem();
-                            }
-                        });
-                    }
-                );
+            const itemData = this.getSelectedItemData(event);
+            appsUtils.deleteApplicationDialog(itemData.id, itemData.name);
         },
 
         exportAppConfig (event) {
-            const item = this.getSelectedItem(event);
-            const itemName = item.selected.data("name");
-            const itemId = item.selected.data("id");
-            appsUtils.exportConfigDialog(itemId, itemName);
+            const itemData = this.getSelectedItemData(event);
+            appsUtils.exportConfigDialog(itemData.id, itemData.name);
         },
 
         /* Get selected item (card or row) */
-        getSelectedItem (event) {
+        getSelectedItemData (event) {
             let selectedItem = $(event.currentTarget).parents(".card-spacer");
-            let alternateItem;
-
-            if (selectedItem.length > 0) {
-                _.each(this.$el.find(".backgrid tbody tr"), (row) => {
-                    if ($(row).attr("data-id") === selectedItem.attr("data-id")) {
-                        alternateItem = $(row);
-                    }
-                });
-            } else {
+            if (!selectedItem.length) {
                 selectedItem = $(event.currentTarget).parents("tr");
-
-                _.each(this.$el.find(".card-spacer"), (card) => {
-                    if ($(card).attr("data-id") === selectedItem.attr("data-id")) {
-                        alternateItem = $(card);
-                    }
-                });
             }
-            return { selected: selectedItem, alternate: alternateItem };
+            return selectedItem.data();
         },
 
         /* switch cards and grid */
