@@ -32,6 +32,8 @@ import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
+import static org.forgerock.openig.http.RunMode.PRODUCTION;
 import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
@@ -39,7 +41,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.forgerock.guava.common.base.Ticker;
 import org.forgerock.http.DescribedHttpApplication;
@@ -87,6 +91,7 @@ public class AdminHttpApplication implements DescribedHttpApplication {
     private final JsonValue config;
     private final Router openigRouter;
     private final Environment environment;
+    private final RunMode mode;
     private HeapImpl heap;
     private Factory<Buffer> storage;
 
@@ -96,13 +101,15 @@ public class AdminHttpApplication implements DescribedHttpApplication {
      * @param adminPrefix the prefix to use in the URL to access the admin endpoints
      * @param config the admin configuration
      * @param environment the OpenIG environment
+     * @param mode OpenIG run mode
      * @throws IOException when initialization failed
      */
-    public AdminHttpApplication(String adminPrefix, JsonValue config, Environment environment)
+    public AdminHttpApplication(String adminPrefix, JsonValue config, Environment environment, RunMode mode)
             throws IOException {
         this.adminPrefix = adminPrefix;
         this.config = config;
         this.environment = environment;
+        this.mode = mode;
         this.openigRouter = new Router();
 
         // Provide the base tree:
@@ -117,12 +124,14 @@ public class AdminHttpApplication implements DescribedHttpApplication {
         addSubRouter(systemRouter, "objects", systemObjectsRouter);
         systemObjectsRouter.addRoute(requestUriMatcher(EQUALS, ""), Handlers.NO_CONTENT);
 
-        // Expose a UI-only storage service
-        File data = new File(environment.getBaseDirectory(), "data/ui/records");
-        RecordProvider provider = new RecordProvider(new RecordService(data));
-        Handler recordHandler = newHttpHandler(newCrestApplication(newHandler(provider),
-                                                                   "frapi:openig:internal:ui:record"));
-        systemObjectsRouter.addRoute(requestUriMatcher(STARTS_WITH, "ui/record"), recordHandler);
+        if (EVALUATION.equals(mode)) {
+            // Expose a UI-only storage service
+            File data = new File(environment.getBaseDirectory(), "data/ui/records");
+            RecordProvider provider = new RecordProvider(new RecordService(data));
+            Handler recordHandler = newHttpHandler(newCrestApplication(newHandler(provider),
+                                                                       "frapi:openig:internal:ui:record"));
+            systemObjectsRouter.addRoute(requestUriMatcher(STARTS_WITH, "ui/record"), recordHandler);
+        }
 
         // Expose Server info service
         Handler infoHandler = newHttpHandler(newCrestApplication(newHandler(new ServerInfoSingletonProvider()),
@@ -153,13 +162,7 @@ public class AdminHttpApplication implements DescribedHttpApplication {
             heap.put(CAPTURE_HEAP_KEY, new CaptureDecorator(CAPTURE_HEAP_KEY, false, false));
             heap.put(TIMER_HEAP_KEY, new TimerDecorator(TIMER_HEAP_KEY));
 
-            heap.init(config, "temporaryStorage", "prefix");
-
-            // Protect the /openig namespace
-            Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);
-            if (protector == null) {
-                protector = new LoopbackAddressOnlyFilter();
-            }
+            heap.init(config, "temporaryStorage", "prefix", "mode");
 
             // As all heaplets can specify their own storage,
             // the following line provide custom storage available.
@@ -167,7 +170,19 @@ public class AdminHttpApplication implements DescribedHttpApplication {
                             .defaultTo(TEMPORARY_STORAGE_HEAP_KEY)
                             .as(requiredHeapObject(heap, Factory.class));
 
-            return chainOf(openigRouter, protector, new OpenApiRequestFilter());
+            // Honor protection if declared in the configuration
+            List<Filter> filters = new ArrayList<>();
+            Filter protector = heap.get(API_PROTECTION_FILTER_HEAP_KEY, Filter.class);
+            if (protector == null && PRODUCTION.equals(mode)) {
+                // Force protection of the OpenIG API "namespace" when in production mode
+                protector = new LoopbackAddressOnlyFilter();
+            }
+            if (protector != null) {
+                filters.add(protector);
+            }
+
+            filters.add(new OpenApiRequestFilter());
+            return chainOf(openigRouter, filters);
         } catch (HeapException e) {
             throw new HttpApplicationException(e);
         }

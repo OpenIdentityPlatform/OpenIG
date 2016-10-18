@@ -82,6 +82,11 @@ public final class Keys {
     public static final String FORGEROCK_CLIENT_HANDLER_HEAP_KEY = "ForgeRockClientHandler";
 
     /**
+     * Key to retrieve the {@link org.forgerock.openig.http.RunMode} from the {@link org.forgerock.openig.heap.Heap}.
+     */
+    public static final String RUNMODE_HEAP_KEY = "RunMode";
+
+    /**
      * Key to retrieve the default {@link java.util.concurrent.ScheduledExecutorService} instance from the
      * {@link org.forgerock.openig.heap.Heap}.
      */

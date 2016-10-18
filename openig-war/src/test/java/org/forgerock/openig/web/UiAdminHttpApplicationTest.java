@@ -19,6 +19,7 @@ package org.forgerock.openig.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
 import static org.forgerock.openig.web.OpenIGInitializerTest.getRelative;
 import static org.forgerock.services.context.ClientContext.newInternalClientContext;
 
@@ -42,7 +43,7 @@ public class UiAdminHttpApplicationTest {
     @Test
     public void shouldServeTheUi() throws Exception {
         Environment env = new DefaultEnvironment(getRelative(getClass(), "doesnt-exist"));
-        UiAdminHttpApplication module = new UiAdminHttpApplication("openig", json(object()), env);
+        UiAdminHttpApplication module = new UiAdminHttpApplication("openig", json(object()), env, EVALUATION);
         Handler handler = module.start();
 
         Response response = handler.handle(newInternalClientContext(newUriRouterContext(new RootContext())),
