@@ -389,16 +389,9 @@ public class PolicyEnforcementFilterTest {
                               realm != null ? realm.trim() : "");
     }
 
-    @DataProvider
-    private static Object[][] invalidCacheMaxExpiration() {
-        return new Object[][] {
-            { "0 seconds" },
-            { "unlimited" } };
-    }
-
-    @Test(dataProvider = "invalidCacheMaxExpiration", expectedExceptions = HeapException.class)
-    public void shouldFailToUseCacheForRequestedResource(final String cacheMaxExpiration) throws Exception {
-        buildPolicyEnforcementFilter(buildHeapletConfiguration(cacheMaxExpiration));
+    @Test(expectedExceptions = HeapException.class)
+    public void shouldFailToUseCacheForRequestedResource() throws Exception {
+        buildPolicyEnforcementFilter(buildHeapletConfiguration("unlimited"));
     }
 
     @Test
