@@ -120,7 +120,9 @@ import org.slf4j.LoggerFactory;
  *          "claimsSubject"          :    map/expression,     [OPTIONAL - must be specified if no jwtSubject or
  *                                                                        ssoTokenSubject - instance of
  *                                                                        Map<String, Object> JWT claims ]
- *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute ]
+ *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute. use zero or disabled to
+ *                                                                        deactivate caching, any 0 valued duration will
+ *                                                                        also deactivate it.]
  *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
  *          "environment"            :    map/expression,     [OPTIONAL - instance of Map<String, List<Object>>]
  *          "executor"               :    executor,           [OPTIONAL - by default uses 'ScheduledThreadPool'
@@ -550,15 +552,19 @@ public class PolicyEnforcementFilter implements Filter {
                                                           .as(evaluatedWithHeapProperties())
                                                           .defaultTo(defaultExpiration)
                                                           .as(duration());
-                if (cacheMaxExpiration.isZero() || cacheMaxExpiration.isUnlimited()) {
-                    throw new HeapException("The max expiration value cannot be set to 0 or to 'unlimited'");
+                if (cacheMaxExpiration.isUnlimited()) {
+                    throw new HeapException("The max expiration value cannot be set to 'unlimited'");
                 }
-                ScheduledExecutorService executor = config.get("executor")
-                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
-                                                          .as(requiredHeapObject(heap, ScheduledExecutorService.class));
-                cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
-                cache.setMaxTimeout(cacheMaxExpiration);
-                requestHandler = new FilterChain(requestHandler, new CachePolicyDecisionFilter(cache));
+
+                if (!cacheMaxExpiration.isZero()) {
+                    ScheduledExecutorService executor = config.get("executor")
+                                                              .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                              .as(requiredHeapObject(heap,
+                                                                                     ScheduledExecutorService.class));
+                    cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
+                    cache.setMaxTimeout(cacheMaxExpiration);
+                    requestHandler = new FilterChain(requestHandler, new CachePolicyDecisionFilter(cache));
+                }
 
                 Handler failureHandler = Handlers.FORBIDDEN;
                 if (config.isDefined("failureHandler")) {
