@@ -37,6 +37,7 @@ import org.forgerock.openig.handler.resources.FileResourceSet;
 import org.forgerock.openig.handler.resources.ResourceHandler;
 import org.forgerock.openig.handler.resources.ResourceSet;
 import org.forgerock.openig.http.AdminHttpApplication;
+import org.forgerock.openig.http.RunMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +54,15 @@ class UiAdminHttpApplication extends AdminHttpApplication {
      * @param prefix the prefix to use in the URL to access the admin endpoints
      * @param config the admin configuration
      * @param environment the OpenIG environment
+     * @param mode OpenIG run mode
      * @throws IOException when unpack fails
      */
-    UiAdminHttpApplication(final String prefix, final JsonValue config, final Environment environment)
+    UiAdminHttpApplication(final String prefix,
+                           final JsonValue config,
+                           final Environment environment,
+                           final RunMode mode)
             throws IOException {
-        super(prefix, config, environment);
+        super(prefix, config, environment, mode);
 
         // Grab the openig-ui.jar as a classloader resource
         URL url = getClass().getResource("/openig-ui.jar");

@@ -30,6 +30,7 @@ import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.RUNMODE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SESSION_FACTORY_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
@@ -37,6 +38,7 @@ import static org.forgerock.openig.heap.Keys.TICKER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIMER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TRANSACTION_ID_OUTBOUND_FILTER_HEAP_KEY;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.ArrayList;
@@ -55,10 +57,11 @@ import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.decoration.capture.CaptureDecorator;
 import org.forgerock.openig.decoration.timer.TimerDecorator;
+import org.forgerock.openig.heap.EnvironmentHeap;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
-import org.forgerock.openig.heap.EnvironmentHeap;
 import org.forgerock.util.Factory;
+import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,20 +95,31 @@ public final class GatewayHttpApplication implements HttpApplication {
     private Environment environment;
     private final JsonValue config;
     private final EndpointRegistry endpointRegistry;
+    private final RunMode mode;
+
+    @VisibleForTesting
+    GatewayHttpApplication(final Environment environment,
+                           final JsonValue config,
+                           final EndpointRegistry registry) {
+        this(environment, config, registry, EVALUATION);
+    }
 
     /**
      * Construct a {@link GatewayHttpApplication}.
      *
      * @param environment the environment to lookup for configuration
      * @param config the gateway configuration
-     * @param endpointRegistry the endpoint registry to bind the API endpoints
+     * @param registry the endpoint registry to bind the API endpoints
+     * @param mode OpenIG run mode
      */
     public GatewayHttpApplication(final Environment environment,
                                   final JsonValue config,
-                                  final EndpointRegistry endpointRegistry) {
+                                  final EndpointRegistry registry,
+                                  final RunMode mode) {
         this.environment = environment;
         this.config = config;
-        this.endpointRegistry = endpointRegistry;
+        this.endpointRegistry = registry;
+        this.mode = mode;
     }
 
     @SuppressWarnings("unchecked")
@@ -125,6 +139,7 @@ public final class GatewayHttpApplication implements HttpApplication {
             heap.put(ENVIRONMENT_HEAP_KEY, environment);
             heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
             heap.put(TICKER_HEAP_KEY, Ticker.systemTicker());
+            heap.put(RUNMODE_HEAP_KEY, mode);
 
             // can be overridden in config
             heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());

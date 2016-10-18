@@ -23,6 +23,8 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
+import static org.forgerock.openig.http.RunMode.PRODUCTION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -208,6 +210,7 @@ public class RouterHandlerTest {
         heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
         heap.put(Keys.ENVIRONMENT_HEAP_KEY, new DefaultEnvironment(new File("dont-care")));
         heap.put(Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, Executors.newScheduledThreadPool(1));
+        heap.put(Keys.RUNMODE_HEAP_KEY, EVALUATION);
 
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
@@ -234,6 +237,30 @@ public class RouterHandlerTest {
         Request request2 = new Request().setUri(uri);
         Response response2 = router.handle(context(), request2).get();
         assertThat(response2.getEntity().getString()).isEqualTo("Pong");
+    }
+
+    @Test
+    public void testRouterRoutesEndpointIsNotRegisteredInProductionMode() throws Exception {
+        Router router = new Router();
+        heap.put(Keys.ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(router, ""));
+        heap.put(Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, Executors.newScheduledThreadPool(1));
+        heap.put(Keys.RUNMODE_HEAP_KEY, PRODUCTION);
+
+        RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
+        heaplet.create(Name.of("this-router"),
+                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                                   field("scanInterval", "disabled"))),
+                       heap);
+        heaplet.start();
+
+        // Ping the 'routes' and intermediate endpoints
+        assertStatusOnUri(router, "/this-router", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/with-name/objects", Status.NO_CONTENT);
+        assertStatusOnUri(router, "/this-router/routes/with-name/objects/register", Status.NO_CONTENT);
+
+        // Only /routes and /routes/routeId should not be exposed
+        assertStatusOnUri(router, "/this-router/routes?_queryFilter=true", Status.NOT_FOUND);
+        assertStatusOnUri(router, "/this-router/routes/with-name", Status.NOT_FOUND);
     }
 
     @Test

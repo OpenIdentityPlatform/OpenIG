@@ -24,7 +24,9 @@ import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.handler.router.Route.routeName;
 import static org.forgerock.openig.heap.Keys.ENVIRONMENT_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.RUNMODE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
 import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.readJson;
@@ -57,6 +59,7 @@ import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.http.EndpointRegistry;
+import org.forgerock.openig.http.RunMode;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
 import org.forgerock.util.promise.NeverThrowsException;
@@ -450,13 +453,15 @@ public class RouterHandler implements FileChangeListener, Handler {
                                                       directoryMonitor);
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
 
-            // Register the /routes/* endpoint
-            final RequestHandler routesCollection = newHandler(new RoutesCollectionProvider(handler));
-            registration = registry.register("routes",
-                                             newHttpHandler(newCrestApplication(routesCollection,
-                                                                                "frapi:openig:router-handler")));
-            logger.info("Routes endpoint available at '{}'", registration.getPath());
-
+            RunMode mode = heap.get(RUNMODE_HEAP_KEY, RunMode.class);
+            if (EVALUATION.equals(mode)) {
+                // Register the /routes/* endpoint
+                final RequestHandler routesCollection = newHandler(new RoutesCollectionProvider(handler));
+                registration = registry.register("routes",
+                                                 newHttpHandler(newCrestApplication(routesCollection,
+                                                                                    "frapi:openig:router-handler")));
+                logger.info("Routes endpoint available at '{}'", registration.getPath());
+            }
             return handler;
         }
 

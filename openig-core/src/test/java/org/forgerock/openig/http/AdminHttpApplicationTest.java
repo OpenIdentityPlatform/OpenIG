@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
+import static org.forgerock.openig.http.RunMode.PRODUCTION;
 import static org.forgerock.openig.util.JsonValues.readJson;
 import static org.forgerock.services.context.ClientContext.buildExternalClientContext;
 
@@ -47,6 +49,7 @@ import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -55,9 +58,9 @@ public class AdminHttpApplicationTest {
     private static final String ADMIN_PREFIX = "/openig";
 
     @Test
-    public void shouldSupportConfigurationOfEndpointProtection() throws Exception {
+    public void shouldHonorApiProtectionFilterIfSpecified() throws Exception {
         Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "protection"));
-        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, adminConfig(env), env);
+        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, adminConfig(env), env, EVALUATION);
         Handler handler = application.start();
 
         // The new filter expects an 'access_token=ae32f' parameter
@@ -69,10 +72,34 @@ public class AdminHttpApplicationTest {
                 .isEqualTo(Status.NO_CONTENT);
     }
 
+    @DataProvider
+    public static Object[][] modes() {
+        // @Checkstyle:off
+        return new Object[][] {
+                { EVALUATION, Status.NO_CONTENT },
+                { PRODUCTION, Status.FORBIDDEN }
+        };
+        // @Checkstyle:on
+    }
+
+    @Test(dataProvider = "modes")
+    public void shouldProtectOrNotTheEndpointsWhenNoApiProtectionFilterIfSpecified(RunMode mode, Status status)
+            throws Exception {
+        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "ignored"));
+        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, json(object()), env, mode);
+        Handler handler = application.start();
+
+        // Build a request "from the outside" that is accepted by default in eval mode and rejected in prod mode
+        Context context = buildExternalContext();
+        Request request = new Request().setUri("/");
+        assertThat(handler.handle(context, request).get().getStatus())
+                .isEqualTo(status);
+    }
+
     @Test
     public void shouldProvideOpenIgApiStructure() throws Exception {
         Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "ignored"));
-        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, json(object()), env);
+        AdminHttpApplication application = new AdminHttpApplication(ADMIN_PREFIX, json(object()), env, EVALUATION);
         Handler handler = application.start();
 
         // This request must not be handled by the root handler

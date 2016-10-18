@@ -16,7 +16,11 @@
 
 package org.forgerock.openig.web;
 
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
 import static org.forgerock.openig.http.GatewayEnvironment.BASE_SYSTEM_PROPERTY;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
+import static org.forgerock.openig.http.RunMode.PRODUCTION;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -31,8 +35,10 @@ import javax.servlet.ServletRegistration;
 import org.forgerock.http.servlet.HttpFrameworkServlet;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.http.AdminHttpApplication;
 import org.forgerock.openig.http.GatewayEnvironment;
 import org.forgerock.openig.http.GatewayHttpApplication;
+import org.forgerock.openig.http.RunMode;
 import org.forgerock.openig.util.JsonValues;
 import org.forgerock.util.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -76,13 +82,33 @@ public class OpenIGInitializer implements ServletContainerInitializer {
 
             URL adminConfigURL = selectConfigurationUrl("admin.json");
             JsonValue adminConfig = JsonValues.readJson(adminConfigURL);
+
+            // Read OpenIG mode (will trigger exceptions if unknown values are used)
+            RunMode mode = adminConfig.get("mode")
+                                      .as(evaluated())
+                                      .defaultTo(EVALUATION.name())
+                                      .as(enumConstant(RunMode.class));
+
             String adminPrefix = adminConfig.get("prefix").defaultTo("openig").asString();
-            UiAdminHttpApplication admin = new UiAdminHttpApplication(adminPrefix, adminConfig, environment);
+
+            // Expose the studio only in evaluation mode
+            AdminHttpApplication admin;
+            if (EVALUATION.equals(mode)) {
+                logger.warn("The product is running in {} mode - by default, all endpoints are open and accessible. "
+                            + "Do not use this mode for a production environment. To prevent this message, add the "
+                            + "top-level attribute '\"mode\": \"{}\"' to '${openig.base}/config/admin.json.'",
+                            EVALUATION.name(),
+                            PRODUCTION.name());
+                admin = new UiAdminHttpApplication(adminPrefix, adminConfig, environment, mode);
+            } else {
+                admin = new AdminHttpApplication(adminPrefix, adminConfig, environment, mode);
+            }
 
             URL gatewayConfigURL = selectConfigurationUrl("config.json");
             GatewayHttpApplication gateway = new GatewayHttpApplication(environment,
                                                                         JsonValues.readJson(gatewayConfigURL),
-                                                                        admin.getEndpointRegistry());
+                                                                        admin.getEndpointRegistry(),
+                                                                        mode);
 
             ServletRegistration.Dynamic gwRegistration = context.addServlet("Gateway",
                                                                             new HttpFrameworkServlet(gateway));
