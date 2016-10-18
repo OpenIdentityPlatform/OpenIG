@@ -13,20 +13,9 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-package org.forgerock.openig.util;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.testng.annotations.Test;
-
-@SuppressWarnings("javadoc")
-public class VersionUtilTest {
-
-    @Test
-    public void shouldLoadProperties() {
-        assertThat(VersionUtil.getVersion()).isNotEmpty();
-        assertThat(VersionUtil.getBranch()).isNotEmpty();
-        assertThat(VersionUtil.getRevision()).isNotEmpty();
-        assertThat(VersionUtil.getTimeStamp()).isGreaterThanOrEqualTo(0);
-    }
+{
+    "version": "${project.version}",
+    "revision": "${buildNumber}",
+    "branch": "${scmBranch}",
+    "timestamp": ${timestamp}
 }

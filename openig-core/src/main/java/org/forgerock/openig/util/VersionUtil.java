@@ -15,10 +15,14 @@
  */
 package org.forgerock.openig.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.util.JsonValues.readJson;
 
+import java.io.IOException;
+
+import org.forgerock.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,25 +33,22 @@ public final class VersionUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(VersionUtil.class);
 
-    private static final Properties PROPERTIES;
+    private static final JsonValue VERSION_INFO = json(object(field("branch", "n/a"),
+                                                              field("revision", "n/a"),
+                                                              field("timestamp", 0),
+                                                              field("version", "latest")));
     static {
-        PROPERTIES = new Properties();
-        try (final InputStream is = VersionUtil.class.getResourceAsStream("/org/forgerock/openig/build.properties")) {
-            PROPERTIES.load(is);
+        final String versionInfoPath = "/org/forgerock/openig/build.json";
+        try {
+            // mutate the info with real values
+            VERSION_INFO.setObject(readJson(VersionUtil.class.getResource(versionInfoPath)).getObject());
         } catch (IOException e) {
-            logger.error("Unable to load build properties file", e);
-            setDefaultProperties();
+            logger.error("Unable to load the version info file '{}'", versionInfoPath, e);
         }
     }
 
     private VersionUtil() { }
 
-    private static void setDefaultProperties() {
-        PROPERTIES.setProperty("branch", "n/a");
-        PROPERTIES.setProperty("revision", "n/a");
-        PROPERTIES.setProperty("timestamp", "0");
-        PROPERTIES.setProperty("version", "latest");
-    }
 
     /**
      * Returns the OpenIG version.
@@ -55,7 +56,7 @@ public final class VersionUtil {
      * @return the OpenIG version.
      */
     public static String getVersion() {
-        return PROPERTIES.getProperty("version");
+        return VERSION_INFO.get("version").asString();
     }
 
     /**
@@ -64,7 +65,7 @@ public final class VersionUtil {
      * @return the branch name.
      */
     public static String getBranch() {
-        return PROPERTIES.getProperty("branch");
+        return VERSION_INFO.get("branch").asString();
     }
 
     /**
@@ -73,7 +74,7 @@ public final class VersionUtil {
      * @return the revision.
      */
     public static String getRevision() {
-        return PROPERTIES.getProperty("revision");
+        return VERSION_INFO.get("revision").asString();
     }
 
     /**
@@ -82,6 +83,6 @@ public final class VersionUtil {
      * @return the timestamp.
      */
     public static long getTimeStamp() {
-        return Long.valueOf(PROPERTIES.getProperty("timestamp"));
+        return VERSION_INFO.get("timestamp").asLong();
     }
 }
