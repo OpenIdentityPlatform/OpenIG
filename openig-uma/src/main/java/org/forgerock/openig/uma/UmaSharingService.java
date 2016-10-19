@@ -27,6 +27,7 @@ import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 
 import java.io.IOException;
@@ -42,7 +43,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forgerock.http.Handler;
-import org.forgerock.http.MutableUri;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
@@ -144,30 +144,13 @@ public class UmaSharingService {
             throws URISyntaxException {
         this.protectionApiHandler = protectionApiHandler;
         this.templates.addAll(templates);
-        this.authorizationServer = appendTrailingSlash(authorizationServer);
+        this.authorizationServer = authorizationServer;
         // TODO Should find theses values looking at the .well-known/uma-configuration endpoint
         this.introspectionEndpoint = authorizationServer.resolve("oauth2/introspect");
         this.ticketEndpoint = authorizationServer.resolve("uma/permission_request");
         this.resourceSetEndpoint = authorizationServer.resolve("oauth2/resource_set");
         this.clientId = clientId;
         this.clientSecret = clientSecret;
-    }
-
-    /**
-     * Append a trailing {@literal /} if missing.
-     *
-     * @param uri
-     *         URI to be "normalized"
-     * @return a URI with a trailing {@literal /}
-     * @throws URISyntaxException should never happen
-     */
-    private static URI appendTrailingSlash(final URI uri) throws URISyntaxException {
-        if (!uri.getPath().endsWith("/")) {
-            MutableUri mutable = new MutableUri(uri);
-            mutable.setRawPath(uri.getRawPath().concat("/"));
-            return mutable.asURI();
-        }
-        return uri;
     }
 
     /**
@@ -386,13 +369,16 @@ public class UmaSharingService {
         @Override
         public Object create() throws HeapException {
             Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
-            URI uri = config.get("authorizationServerUri").as(evaluatedWithHeapProperties()).required().as(uri());
+            URI authorizationServerUri = config.get("authorizationServerUri").as(evaluatedWithHeapProperties())
+                                                                             .required()
+                                                                             .as(slashEnded())
+                                                                             .as(uri());
             String clientId = config.get("clientId").as(evaluatedWithHeapProperties()).required().asString();
             String clientSecret = config.get("clientSecret").as(evaluatedWithHeapProperties()).required().asString();
             try {
                 UmaSharingService service = new UmaSharingService(handler,
                                                                   createResourceTemplates(),
-                                                                  uri,
+                                                                  authorizationServerUri,
                                                                   clientId,
                                                                   clientSecret);
                 // register admin endpoint

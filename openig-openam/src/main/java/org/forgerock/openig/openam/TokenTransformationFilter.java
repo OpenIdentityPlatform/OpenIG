@@ -16,16 +16,16 @@
 
 package org.forgerock.openig.openam;
 
-import static java.lang.String.format;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
-import static org.forgerock.openig.util.StringUtil.trailingSlash;
+import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.forgerock.util.Reject.checkNotNull;
 
 import java.io.IOException;
@@ -198,13 +198,16 @@ public class TokenTransformationFilter implements Filter {
         public Object create() throws HeapException {
             Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY).required()
                                                        .as(requiredHeapObject(heap, Handler.class));
-            URI baseUri = getOpenamBaseUri();
+            URI openamUri = config.get("openamUri").as(evaluatedWithHeapProperties())
+                                                   .required()
+                                                   .as(slashEnded())
+                                                   .as(uri());
             String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("/").asString();
             String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
             String username = config.get("username").required().as(evaluatedWithHeapProperties()).asString();
             String password = config.get("password").required().as(evaluatedWithHeapProperties()).asString();
             SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
-                                                               baseUri,
+                                                               openamUri,
                                                                realm,
                                                                ssoTokenHeader,
                                                                username,
@@ -216,18 +219,9 @@ public class TokenTransformationFilter implements Filter {
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 
             return new TokenTransformationFilter(Handlers.chainOf(amHandler, ssoTokenFilter),
-                                                 transformationEndpoint(baseUri, realm, instance),
+                                                 transformationEndpoint(openamUri, realm, instance),
                                                  idToken,
                                                  target);
-        }
-
-        private URI getOpenamBaseUri() throws HeapException {
-            String baseUri = config.get("openamUri").as(evaluatedWithHeapProperties()).required().asString();
-            try {
-                return new URI(trailingSlash(baseUri));
-            } catch (URISyntaxException e) {
-                throw new HeapException(format("Cannot append trailing '/' on %s", baseUri), e);
-            }
         }
 
         private static URI transformationEndpoint(final URI baseUri, final String realm, final String instance)

@@ -26,6 +26,7 @@ import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
@@ -50,6 +51,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -252,6 +254,18 @@ public class JsonValuesTest {
         verify(logger).warn(anyString(), any(JsonPointer.class), eq("older"), eq("old"), eq("old"));
         verify(logger).warn(anyString(), any(JsonPointer.class), eq("old"), eq("new"));
         verifyNoMoreInteractions(logger);
+    }
+
+    @DataProvider
+    private static Object[][] values() {
+        return new Object[][]{
+            { json("http://localhost:8090/openam/") },
+            { json("http://localhost:8090/openam") } };
+    }
+
+    @Test(dataProvider = "values")
+    public void shouldEndedSlashUriSucceed(final JsonValue value) throws Exception {
+        assertThat(value.as(slashEnded()).asString()).isEqualTo("http://localhost:8090/openam/");
     }
 
     private static Matcher<JsonValue> hasValue(final Object value) {
