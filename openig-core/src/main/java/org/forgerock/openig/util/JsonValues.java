@@ -19,6 +19,7 @@ package org.forgerock.openig.util;
 import static java.util.Collections.unmodifiableList;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.http.util.Loader.loadList;
+import static org.forgerock.openig.util.StringUtil.trailingSlash;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +46,39 @@ public final class JsonValues {
     /** List of alias service providers found at initialization time. */
     private static final List<ClassAliasResolver> CLASS_ALIAS_RESOLVERS =
             unmodifiableList(loadList(ClassAliasResolver.class));
+
+    private static final Function<JsonValue, JsonValue, JsonValueException> SLASH_ENDED =
+            new Function<JsonValue, JsonValue, JsonValueException>() {
+                @Override
+                public JsonValue apply(JsonValue value) {
+                    final JsonValue copy = value.copy();
+                    if (value.isString()) {
+                        copy.setObject(trailingSlash(value.asString()));
+                    }
+                    return copy;
+                }
+            };
+
+    /**
+     * Returns the JsonValue with its value ended by a slash.
+     * This could be useful when working on uris.
+     *
+     * Example of use:
+     * <pre>
+     * {@code
+     * config.get("openamUri").as(evaluatedWithHeapProperties())
+     *                        .required()
+     *                        .as(slashEnded())
+     *                        .as(uri());
+     * }
+     * </pre>
+     *
+     * @return the string value always ended with a slash.
+     * @throws JsonValueException If the JSON value is not a string.
+     */
+    public static Function<JsonValue, JsonValue, JsonValueException> slashEnded() {
+        return SLASH_ENDED;
+    }
 
     /**
      * Private constructor for utility class.
