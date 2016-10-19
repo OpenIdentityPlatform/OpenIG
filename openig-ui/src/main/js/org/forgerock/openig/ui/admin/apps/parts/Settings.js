@@ -142,7 +142,6 @@ define([
                     AppsCollection.byAppId(appId)
                         .then((parentApp) => {
                             app = parentApp.clone();
-                            app.set("_id", appId);
                         });
                     break;
             }
@@ -167,20 +166,42 @@ define([
                     return;
                 }
                 if (this.data.mode === this.formMode.ADD || this.data.mode === this.formMode.DUPLICATE) {
-                    modifiedApp.save();
-                    AppsCollection.add([
-                        modifiedApp
-                    ]);
+                    modifiedApp.save()
+                        .then(
+                            (newApp) => {
+                                AppsCollection.add([
+                                    newApp
+                                ]);
+                                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
+                                    route: router.configuration.routes.appsOverview, args: [this.app.get("id")]
+                                });
+                            },
+                            () => {
+                                eventManager.sendEvent(
+                                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                                    {
+                                        key: "appCreationFailed"
+                                    }
+                                );
+                            }
+                        );
                 } else {
                     AppsCollection.byAppId(this.data.appId)
-                        .then((parentApp) => {
-                            parentApp.set(modifiedApp.toJSON());
-                            parentApp.save();
-                        });
+                        .then(
+                            (parentApp) => {
+                                parentApp.set(modifiedApp.toJSON());
+                                parentApp.save();
+                            },
+                            () => {
+                                eventManager.sendEvent(
+                                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                                    {
+                                        key: "settingsFailed"
+                                    }
+                                );
+                            }
+                        );
                 }
-                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                    route: router.configuration.routes.appsOverview, args: [this.app.id]
-                });
             }
         },
 
@@ -199,9 +220,6 @@ define([
         fillAppFromFormData () {
             const form = this.$el.find("#appForm")[0];
             const formVal = form2js(form, ".", true);
-            if (this.data.mode !== this.formMode.EDIT) {
-                formVal._id = formVal.id;
-            }
             this.app.set(formVal);
         },
 

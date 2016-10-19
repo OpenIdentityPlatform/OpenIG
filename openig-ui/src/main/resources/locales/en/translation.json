@@ -32,7 +32,8 @@
                 "appDeployedSuccess": "Protection for '__title__' was deployed",
                 "appDeployedFailed": "Failed to deploy protection for '__title__'",
                 "appUndeployedSuccess": "Protection for '__title__' was undeployed",
-                "appUndeployedFailed": "Failed to undeploy protection for '__title__'"
+                "appUndeployedFailed": "Failed to undeploy protection for '__title__'",
+                "appCreationFailed": "Failed to create protection"
             }
         },
         "AppConfiguration": {

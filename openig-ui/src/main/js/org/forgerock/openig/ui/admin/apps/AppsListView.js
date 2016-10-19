@@ -168,6 +168,7 @@ define([
             });
 
             this.data.docHelpUrl = externalLinks.backstage.admin.appsList;
+            this.data.cardData = [];
 
             AppsCollection.availableApps().done((apps) => {
                 RoutesCollection.fetchRoutesIds().done((routes) => {
@@ -179,23 +180,26 @@ define([
                             app.set("pendingChanges", isDeployed ? app.get("pendingChanges") : false);
                         });
                     }
-                }).always(() => {
-                    this.data.cardData = [];
+                });
+            }).always((apps) => {
+                if (apps && apps.length > 0) {
                     _.each(apps.models, (app) => {
                         this.data.cardData.push(this.getRenderData(app));
                     });
-
                     this.parentRender(() => {
-                        if (apps.length > 0) {
-                            this.$el.find("#appsGrid").append(appsGrid.render().el);
-                        } else {
-                            this.renderNoItem();
-                        }
+                        this.$el.find("#appsGrid").append(appsGrid.render().el);
                         if (callback) {
                             callback();
                         }
                     });
-                });
+                } else {
+                    this.parentRender(() => {
+                        this.renderNoItem();
+                        if (callback) {
+                            callback();
+                        }
+                    });
+                }
             });
         },
 
