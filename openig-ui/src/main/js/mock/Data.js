@@ -22,8 +22,7 @@ define([
     (server) => {
         server.respondWith(
             "GET",
-            "/openig/api/system/objects/config?_pageSize=10",
-            //not matching params "/openig/api/system/objects/config"
+            "/openig/api/system/objects/ui/record",
             [
                 200,
                 {
@@ -72,7 +71,7 @@ define([
 
         server.respondWith(
             "POST",
-            "/openig/api/system/objects/config/454545legacyapp",
+            "/openig/api/system/objects/ui/record/454545legacyapp",
             [
                 200,
                 {
@@ -92,7 +91,7 @@ define([
 
         server.respondWith(
             "POST",
-            "/openig/api/system/objects/config/797979weatherapi",
+            "/openig/api/system/objects/ui/record/797979weatherapi",
             [
                 200,
                 {
@@ -112,7 +111,7 @@ define([
 
         server.respondWith(
             "DELETE",
-            "/openig/api/system/objects/config/454545legacyapp?",
+            "/openig/api/system/objects/ui/record/454545legacyapp?",
             [
                 200,
                 {
