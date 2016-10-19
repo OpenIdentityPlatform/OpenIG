@@ -16,53 +16,62 @@
 
 define([
     "jquery",
-    "lodash",
+    "backbone",
     "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/commons/ui/common/main/AbstractCollection",
     "org/forgerock/openig/ui/admin/models/AppModel"
 ], (
     $,
-    _,
+    Backbone,
     Constants,
-    AbstractCollection,
     AppModel
 ) => {
     /* Get and keep apps(=app configs)*/
-    // TODO: Save to server
-    const AppsCollection = AbstractCollection.extend({
-        model: AppModel,
-        url: "/openig/api/system/objects/config",
+    class AppsCollection extends Backbone.Collection {
+        constructor () {
+            super();
+            this.url = `${Constants.apiPath}/ui/record`;
+            this.model = AppModel;
+            this.appsCache = {};
+        }
 
-        appsCache: {},
+        parse (response) {
+            return response.result;
+        }
+
         // Get all apps from server and save in local cache
         availableApps () {
             const deferred = $.Deferred();
-            const promise = deferred.promise();
-
             if (this.appsCache.currentApps) {
                 deferred.resolve(this.appsCache.currentApps);
             } else {
-                const appPromise = this.fetch();
-                appPromise.then(() => {
-                    this.appsCache.currentApps = this;
-                    deferred.resolve(this);
-                });
+                this.fetch({
+                    reset: true,
+                    processData: false,
+                    data: $.param({ _queryFilter: true })
+                })
+                .then(
+                    () => {
+                        this.appsCache.currentApps = this;
+                        deferred.resolve(this);
+                    },
+                    () => {
+                        deferred.reject();
+                    }
+                );
             }
 
-            return promise;
-        },
+            return deferred;
+        }
 
         // Find by Id, also in cache
         byAppId (id) {
             const deferred = $.Deferred();
-            const promise = deferred.promise();
-
             this.availableApps().then(() => {
                 deferred.resolve(this.findWhere({ id }));
             });
 
-            return promise;
-        },
+            return deferred;
+        }
 
         // Remove also from local cache
         removeByAppId (id) {
@@ -82,7 +91,7 @@ define([
                 );
             return deferred;
         }
-    });
+    }
 
     return new AppsCollection();
 });

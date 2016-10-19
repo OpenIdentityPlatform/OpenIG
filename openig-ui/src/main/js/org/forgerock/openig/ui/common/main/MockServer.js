@@ -31,7 +31,9 @@ define([
 
         sinon.FakeXMLHttpRequest.useFilters = true;
         sinon.FakeXMLHttpRequest.addFilter((method, url) => {
-            if (url.search("/_router/") > 0) {
+            // Change to true for using mock data
+            const useMockData = false;
+            if (!useMockData) {
                 return true;
             }
             return (/((\.html)|(\.css)|(\.less)|(\.json))$/).test(url);

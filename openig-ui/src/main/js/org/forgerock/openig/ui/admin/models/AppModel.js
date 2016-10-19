@@ -15,41 +15,35 @@
 */
 
 define([
-    "jquery",
-    "underscore",
     "backbone",
-    "org/forgerock/commons/ui/common/main/AbstractModel",
     "org/forgerock/openig/ui/common/util/Constants"
 ], (
-    $,
-    _,
     Backbone,
-    AbstractModel,
     Constants
-    ) => {
-        /* Define App structure + add defaults, constants, orders */
+) => (
+    /* Define App structure + add defaults, constants, orders */
+    class extends Backbone.Model {
+        constructor (options) {
+            super(options);
+            this.url = `${Constants.apiPath}/ui/record`;
+        }
 
-    const AppModel = AbstractModel.extend({
-        url: `${Constants.apiPath}/config`,
-        defaults: {
+        get idAttribute () { return "_id"; }
 
-            id: "",
-            name: "",
-            baseURI: "",
-            condition: "",
-
-            router: "",
-            route: "",
-            deployedDate: undefined,
-            pendingChanges: false,
-
-            // Order is as defined by user in "chain"
-            filters: []
-
-        },
+        get defaults () {
+            return {
+                id: "",
+                name: "",
+                baseURI: "",
+                condition: "",
+                deployedDate: undefined,
+                pendingChanges: false,
+                filters: []
+            };
+        }
 
         validate (attrs) {
-            if (attrs.id.trim() === "") {
+            if (!attrs.id || attrs.id.trim() === "") {
                 return "appErrorNoId";
             }
 
@@ -66,6 +60,25 @@ define([
             }
 
         }
-    });
-    return AppModel;
-});
+
+        getMVCCRev () {
+            return this.get("_rev") || "*";
+        }
+
+        sync (method, model, options) {
+            options = options || {};
+
+            options.headers = {};
+            if (method !== "create") {
+                options.url = `${this.url}/${model.id}`;
+                options.headers = { "If-Match": model.getMVCCRev() };
+            }
+
+            options.headers["Cache-Control"] = "no-cache";
+            options.dataType = "json";
+            options.contentType = "application/json";
+
+            return Backbone.Model.prototype.sync.call(this, method, model, options);
+        }
+    }
+));
