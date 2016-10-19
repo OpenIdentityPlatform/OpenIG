@@ -1,0 +1,86 @@
+{{! Copyright 2016 ForgeRock AS.
+	License terms: https://forgerock.org/cddlv1-0/ }}
+    <div class="container">
+        <div class="page-header">
+            <h1>{{t "templates.welcomePage.title"}}</h1>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="margin-bottom-40">
+                    <p class="lead">{{t "templates.welcomePage.subtitle"}}</p>
+                    <ul class="media-list">
+                        <li class="media">
+                            <div class="media-left">
+                                <i class="fa fa-check-circle fa-lg text-success" aria-hidden="true"></i>
+                            </div>
+                            <div class="media-body">
+                                <h4 class="media-heading">{{t "templates.welcomePage.benefit_1"}}</h4>
+                            </div>
+                        </li>
+                        <li class="media">
+                            <div class="media-left">
+                                <i class="fa fa-check-circle fa-lg text-success" aria-hidden="true"></i>
+                            </div>
+                            <div class="media-body">
+                                <h4 class="media-heading">{{t "templates.welcomePage.benefit_2"}}</h4>
+                            </div>
+                        </li>
+                        <li class="media">
+                            <div class="media-left">
+                                <i class="fa fa-check-circle fa-lg text-success" aria-hidden="true"></i>
+                            </div>
+                            <div class="media-body">
+                                <h4 class="media-heading">{{t "templates.welcomePage.benefit_3"}}</h4>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="margin-bottom-40">
+                    <div class="panel panel-default panel-card">
+                        <div class="panel-body">
+                            <a class="media" href="{{ routeTo 'addAppView' }}">
+                                <div class="media-left">
+                                    <div class="circle-icon circle-icon-sm">
+                                        <i class="fa fa-plus" aria-hidden="true"/>
+                                    </div>
+                                </div>
+                                <div class="media-body media-middle">
+                                    <h3 class="media-heading media-middle">{{t "templates.welcomePage.addApp"}}</h3>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="panel panel-default panel-card">
+                        <div class="panel-body">
+                            <a class="media" href="{{ routeTo 'appsPage' }}">
+                                <div class="media-left">
+                                    <div class="circle-icon circle-icon-sm">
+                                        <i class="fa fa-sitemap" aria-hidden="true"/>
+                                    </div>
+                                </div>
+                                <div class="media-body media-middle">
+                                    <h3 class="media-heading media-middle">{{t "templates.welcomePage.appList"}}</h3>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="panel panel-default panel-card">
+                        <div class="panel-body">
+                            <a class="media" href="{{documentationUrl}}">
+                                <div class="media-left">
+                                    <div class="circle-icon circle-icon-sm">
+                                        <i class="fa fa-question" aria-hidden="true"/>
+                                    </div>
+                                </div>
+                                <div class="media-body media-middle">
+                                    <h3 class="media-heading">{{t "templates.welcomePage.documentation"}}</h3>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

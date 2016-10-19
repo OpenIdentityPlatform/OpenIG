@@ -209,6 +209,16 @@
             "confirmPassword": "Confirm Password",
             "port_network": "port number / network interface",
             "https": "https"
+        },
+        "welcomePage": {
+            "title": "Welcome to ForgeRock Identity Gateway",
+            "subtitle": "The ForgeRock Identity Gateway bridges your applications to the modern digital identity world. With the Identity Gateway Studio you can develop and prototype your application protection configuration.",
+            "benefit_1": "Protect APIs and Applications",
+            "benefit_2": "Enforce Authorization Policies",
+            "benefit_3": "Inspect Access",
+            "addApp": "Create a new application protection",
+            "appList": "View saved routes",
+            "documentation": "View the product documentation"
         }
     },
     "common": {

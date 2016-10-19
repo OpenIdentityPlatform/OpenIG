@@ -38,6 +38,10 @@ define([
         url: "apps/",
         defaults: ["/", ""]
     },
+    "welcomePage": {
+        view: "org/forgerock/openig/ui/admin/apps/WelcomePage",
+        url: "welcome/"
+    },
     "addAppView": {
         view: "org/forgerock/openig/ui/admin/apps/AddAppView",
         url: "apps/add/"
