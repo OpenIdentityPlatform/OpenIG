@@ -15,16 +15,18 @@
  */
 
 define([
-    "lodash",
-    "org/forgerock/openig/ui/common/util/Constants"
-], (_, Constants) => (
-    {
-        // TODO: Add relevant paths
-        backstage: {
-            admin: _.mapValues({
-                documentation: "",
-                appsList: "#configure-apps"
-            }, (hash) => `${Constants.DOC_URL}${hash}`)
+    "org/forgerock/commons/ui/common/main/AbstractView",
+    "org/forgerock/openig/ui/common/util/ExternalLinks"
+], (
+    AbstractView,
+    externalLinks
+) => {
+    class WelcomePage extends AbstractView {
+        get template () { return "templates/openig/admin/apps/WelcomePage.html"; }
+        render () {
+            this.data.documentationUrl = externalLinks.backstage.admin.documentation;
+            this.parentRender();
         }
     }
-));
+    return new WelcomePage();
+});

@@ -25,8 +25,8 @@ define([
                 "org/forgerock/commons/ui/common/main/Router"
             ],
             processDescription (event, router) {
-                // Default route to Apps page - temporary, should be dashboard later
-                router.routeTo(router.configuration.routes.appsPage, { trigger: true });
+                // Default route to Welcome page
+                router.routeTo(router.configuration.routes.welcomePage, { trigger: true });
             }
         }
     ]
