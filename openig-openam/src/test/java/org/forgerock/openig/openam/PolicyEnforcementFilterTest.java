@@ -503,7 +503,7 @@ public class PolicyEnforcementFilterTest {
                       field("sub", "OpenIG"),
                       field("subs", false),
                       field("aud", "http://example.com:8088/openam"),
-                      field("exp", 1300819380L))).asMap() },
+                      field("exp", 1300819380))).asMap() },
             { "${attributes.claimsSubject}", json(object(field("iss", "jwt-bearer-client"))).asMap() } };
     }
 

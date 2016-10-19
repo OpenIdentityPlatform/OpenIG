@@ -62,8 +62,6 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
             object = null;
         } else if (value.isString()) {
             object = transformString(value);
-        } else if (value.isNumber()) {
-            object = transformNumber(value);
         } else if (value.isList()) {
             object = transformList(value);
         } else if (value.isMap()) {
@@ -84,17 +82,6 @@ class ExpressionJsonTransformFunction implements Function<JsonValue, JsonValue, 
             // Malformed expressions are ignored
         }
         return str;
-    }
-
-    private Number transformNumber(JsonValue value) {
-        // Since EL expressions resolve arithmetic expression as Long, to be consistent,
-        // let's upgrade all Integers to Long
-        // This a mandatory to keep the uniqueness of every element in a Set JsonValue
-        Number number = value.asNumber();
-        if (number instanceof Integer) {
-            return value.asLong();
-        }
-        return number;
     }
 
     private Object transformList(JsonValue value) {

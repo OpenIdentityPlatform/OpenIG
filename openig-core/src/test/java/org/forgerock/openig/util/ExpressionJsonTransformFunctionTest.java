@@ -53,7 +53,7 @@ public class ExpressionJsonTransformFunctionTest {
         assertThat(node).isBoolean().isTrue();
 
         node = evaluate(json(1));
-        assertThat(node).isNumber().isLong().isEqualTo(1L);
+        assertThat(node).isNumber().isInteger().isEqualTo(1);
 
         node = evaluate(json("foo"));
         assertThat(node).isString().isEqualTo("foo");
@@ -94,13 +94,6 @@ public class ExpressionJsonTransformFunctionTest {
         JsonValue node = evaluate(json("${1+1}"));
 
         assertThat(node).isNumber().isLong().isEqualTo(2L);
-    }
-
-    @Test
-    public void shouldPromoteExistingIntegerToLong() throws Exception {
-        assertThat(evaluate(json(1))).isNumber().isLong().isEqualTo(1L);
-        // Only the integer nodes are transformed
-        assertThat(evaluate(json(3.5))).isNumber().isDouble().isEqualTo(3.5);
     }
 
     @Test
