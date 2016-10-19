@@ -16,17 +16,24 @@
 package org.forgerock.openig.filter.throttling;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
+import org.forgerock.http.Handler;
 import org.forgerock.http.filter.throttling.ThrottlingRate;
 import org.forgerock.http.protocol.Request;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.RootContext;
@@ -46,6 +53,22 @@ public class ScriptableThrottlingPolicyTest {
 
         ThrottlingRate rate = dataSource.lookup(new RootContext(), new Request()).get();
 
+        assertThat(rate.getNumberOfRequests()).isEqualTo(42);
+    }
+
+    @Test
+    public void shouldConstructThrottlingRateFromArgs() throws Exception {
+        JsonValue config = json(object(field("args", object(field("numberOfRequests", 42))),
+                                       field("type", Script.GROOVY_MIME_TYPE),
+                                       field("source", "return new ThrottlingRate(numberOfRequests, '1 minute')")));
+        HeapImpl heap = new HeapImpl(Name.of("heap"));
+        heap.put(Keys.ENVIRONMENT_HEAP_KEY, getEnvironment());
+        heap.put(Keys.CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
+        ScriptableThrottlingPolicy policy =
+                (ScriptableThrottlingPolicy) new ScriptableThrottlingPolicy.Heaplet().create(Name.of("test"),
+                                                                                             config,
+                                                                                             heap);
+        ThrottlingRate rate = policy.lookup(null, null).getOrThrow();
         assertThat(rate.getNumberOfRequests()).isEqualTo(42);
     }
 
