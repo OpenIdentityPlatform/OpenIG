@@ -28,7 +28,7 @@
   <name>OpenIG User Interface</name>
 
   <properties>
-    <forgerock-ui.version>15.1.2</forgerock-ui.version>
+    <forgerock-ui.version>15.2.2</forgerock-ui.version>
     <node.install.directory>${project.basedir}</node.install.directory>
   </properties>
 
