@@ -62,5 +62,9 @@ define([], () => ({
     "routeUndeployedFailed": {
         msg: "config.messages.OpenIGMessages.routeUndeployedFailed",
         type: "error"
+    },
+    "routeCreationFailed": {
+        msg: "config.messages.OpenIGMessages.routeCreationFailed",
+        type: "error"
     }
 }));
