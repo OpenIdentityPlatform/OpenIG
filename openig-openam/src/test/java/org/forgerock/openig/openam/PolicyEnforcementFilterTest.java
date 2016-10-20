@@ -561,6 +561,7 @@ public class PolicyEnforcementFilterTest {
         assertThat(resources.get("application").asString()).isNotEmpty();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void shouldReturnNullWhenJsonValueInputIsNull() throws Exception {
         Function<Bindings, Map<String, List>, ExpressionException> function =
@@ -571,13 +572,25 @@ public class PolicyEnforcementFilterTest {
     @DataProvider
     public static Object[][] asFunctionProvider() {
         //@Checkstyle:off
-        return new Object[][] {
-                { json("${foo}"), object(field("bar", array(1, 2, 3))) },
-                { json(object(field("quix", "${foo['bar']}"))), object(field("quix", array(1, 2, 3)))}
+        return new Object[][]{
+                {
+                    json("${foo}"),
+                    object(field("bar", array(1, 2, 3)))
+                },
+                {
+                    json(object(field("quix", "${foo['bar']}"))),
+                    object(field("quix", array(1, 2, 3)))
+                },
+                {
+                    // keys with null values will be dropped
+                    json(object(field("foo", null), field("bar", array("quix")))),
+                    object(field("bar", array("quix")))
+                }
         };
         //@Checkstyle:on
     }
 
+    @SuppressWarnings("unchecked")
     @Test(dataProvider = "asFunctionProvider")
     public void shouldEvaluateToMap(JsonValue input, Map<String, Object> expectedOutput) throws Exception {
         Bindings bindings = bindings().bind("foo", object(field("bar", array(1, 2, 3))));
