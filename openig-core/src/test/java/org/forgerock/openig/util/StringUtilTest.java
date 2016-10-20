@@ -88,4 +88,19 @@ public class StringUtilTest {
     public void shouldNotConvertNullTimeUnitToSIAbbreviation() {
         assertThat(toSIAbbreviation(null)).isEqualTo("");
     }
+
+    @DataProvider
+    private static Object[][] texts() {
+        return new Object[][] {
+            { null, null },
+            { "myValue", "myValue/" },
+            { "myValue/", "myValue/" },
+            { "/myValue/", "/myValue/" },
+            { "/myValue//", "/myValue//" } };
+    }
+
+    @Test(dataProvider = "texts")
+    public void shouldTrailingSlash(final String text, final String expected) {
+        assertThat(trailingSlash(text)).isEqualTo(expected);
+    }
 }

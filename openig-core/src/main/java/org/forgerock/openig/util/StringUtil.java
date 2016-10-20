@@ -104,8 +104,7 @@ public final class StringUtil {
      * @return A string ending with a slash.
      */
     public static String trailingSlash(String value) {
-        if (value == null
-                || (value != null && value.endsWith("/"))) {
+        if (value == null || value.endsWith("/")) {
             return value;
         }
         return value.concat("/");
