@@ -21,29 +21,29 @@
                 "tokenNotFound": "Token not found."
             },
             "OpenIGMessages":{
-                "deleteAppSuccess": "Protection for '__title__' was removed",
-                "deleteAppFailed": "Failed to remove protection for '__title__'",
+                "deleteRouteSuccess": "Protection for '__title__' was removed",
+                "deleteRouteFailed": "Failed to remove protection for '__title__'",
                 "settingsFailed": "Settings has failed",
                 "settingsSuccess": "Settings saved",
                 "invalidModel": "Can't create the config file because the model is not valid",
                 "unknownFilterType": "Unknown filter type: '__message__'",
-                "appSettingsSaveSuccess": "__filter__ settings saved",
+                "routeSettingsSaveSuccess": "__filter__ settings saved",
                 "modelTransformationFailed": "Failed to transform the model",
-                "appDeployedSuccess": "Protection for '__title__' was deployed",
-                "appDeployedFailed": "Failed to deploy protection for '__title__'",
-                "appUndeployedSuccess": "Protection for '__title__' was undeployed",
-                "appUndeployedFailed": "Failed to undeploy protection for '__title__'",
-                "appCreationFailed": "Failed to create protection"
+                "routeDeployedSuccess": "Protection for '__title__' was deployed",
+                "routeDeployedFailed": "Failed to deploy protection for '__title__'",
+                "routeUndeployedSuccess": "Protection for '__title__' was undeployed",
+                "routeUndeployedFailed": "Failed to undeploy protection for '__title__'",
+                "routeCreationFailed": "Failed to create protection"
             }
         },
         "AppConfiguration": {
             "Navigation": {
                 "links": {
                     "dashboard": "Dashboards",
-                    "apps": "Protected applications",
+                    "routes": "Routes",
                     "settings": "Settings"
                 },
-                "appsSideMenu": {
+                "routeSideMenu": {
                     "overview": "Overview",
                     "capture": "Capture",
                     "throttling": "Throttling",
@@ -61,11 +61,11 @@
                 "requestedPageCouldNotBeFound": "Can't find the requested page"
             }
         },
-        "apps": {
+        "routes": {
             "title": "Protected applications",
             "description": "Configure OpenIG to protect your applications",
             "filter": "Filter...",
-            "addApp": "Protect an app",
+            "addRoute": "Protect an app",
             "help": "Help",
             "deployedState": "Deployed",
             "undeployedState": "Undeployed",
@@ -80,11 +80,11 @@
             "undeployDialog": "Undeploy protection for '__title__'?",
             "duplicateDialog":"Duplicate protection for '__title__'?",
             "changesPending": "Changes pending",
-            "appSettings": "Protection settings",
+            "routeSettings": "Protection settings",
             "moreOptions": "More options",
             "duplicateNameError": "This name already exists - provide a unique name",
             "duplicateIdError": "This ID already exists - provide a unique ID",
-            "noAppItems": "Protection is not configured for any apps",
+            "noRouteItems": "Protection is not configured for any apps",
             "filters":{
                 "Off": "Off",
                 "OAuth2ClientFilter": "OpenID Connect",
@@ -217,8 +217,8 @@
             "benefit_1": "Protect APIs and Applications",
             "benefit_2": "Enforce Authorization Policies",
             "benefit_3": "Inspect Access",
-            "addApp": "Create a new application protection",
-            "appList": "View saved routes",
+            "addRoute": "Create a new application protection",
+            "routesList": "View saved routes",
             "documentation": "View the product documentation"
         }
     },

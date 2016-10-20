@@ -1,0 +1,40 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+<div class="col-sm-6 col-md-3 card-spacer route-item" data-id="{{id}}" data-name="{{name}}">
+    <div class="card-container" style="z-index: 5;">
+        <div class="card">
+            <div class="card-heading">
+                <div class="btn-group">
+                    <button type="button" id="{{id}}RouteToggle" class="btn btn-link fa-lg dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-ellipsis-v"></i>
+                    </button>
+                    {{> templates/openig/admin/routes/components/RoutePopupMenu }}
+                </div>
+            </div>
+            <div class="card-body">
+                <a href="{{ routeTo 'editRouteView' id }}">
+                    <div class="image circle">
+                        <i class="fa fa-rocket"></i>
+                    </div>
+                    <div class="content">
+                        <div class="main">
+                            <h3 class="name">{{name}}</h3>
+                            <p class="cardtype">{{uri}}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="card-footer">
+                {{#if deployed}}
+                    {{#if pendingChanges}}
+                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i> {{t "templates.routes.changesPending"}}</span>
+                    {{else}}
+                    <span class="text-success"><i class="fa fa-check-circle"></i> {{t "templates.routes.deployedState"}}</span>
+                    {{/if}}
+                {{else}}
+                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i> {{t "templates.routes.undeployedState"}}</span>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>

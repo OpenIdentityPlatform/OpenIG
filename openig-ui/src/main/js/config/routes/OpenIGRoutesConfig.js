@@ -33,88 +33,88 @@ define([
         view: "org/forgerock/commons/ui/common/EnableCookiesView",
         url: "enableCookies/"
     },
-    "appsPage": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsListView",
-        url: "apps/",
+    "listRoutesView": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesListView",
+        url: "routes/",
         defaults: ["/", ""]
     },
     "welcomePage": {
-        view: "org/forgerock/openig/ui/admin/apps/WelcomePage",
+        view: "org/forgerock/openig/ui/admin/routes/WelcomePage",
         url: "welcome/"
     },
-    "addAppView": {
-        view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-        url: "apps/add/"
+    "addRouteView": {
+        view: "org/forgerock/openig/ui/admin/routes/AddRouteView",
+        url: "routes/add/"
     },
-    "duplicateAppView": {
-        view: "org/forgerock/openig/ui/admin/apps/AddAppView",
-        url: /^apps\/duplicate\/(.+?)$/,
-        pattern: "apps/duplicate/?"
+    "duplicateRouteView": {
+        view: "org/forgerock/openig/ui/admin/routes/AddRouteView",
+        url: /^routes\/duplicate\/(.+?)$/,
+        pattern: "routes/duplicate/?"
     },
-    "editAppView": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
+    "editRouteView": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Overview",
         defaults: ["", ""],
-        url: /^apps\/edit\/(.+?)\/(.*)$/,
-        pattern: "apps/edit/?/?"
+        url: /^routes\/edit\/(.+?)\/(.*)$/,
+        pattern: "routes/edit/?/?"
     },
     "settings": {
         view: "org/forgerock/openig/ui/admin/settings/SettingsView",
         url: "settings/"
     },
-    "appsOverview": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Overview",
-        url: /^apps\/edit\/(.+?)\/overview$/,
-        pattern: "apps/edit/?/overview",
+    "routeOverview": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Overview",
+        url: /^routes\/edit\/(.+?)\/overview$/,
+        pattern: "routes/edit/?/overview",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsCapture": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Capture",
-        url: /^apps\/edit\/(.+?)\/capture/,
-        pattern: "apps/edit/?/capture",
+    "routeCapture": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Capture",
+        url: /^routes\/edit\/(.+?)\/capture/,
+        pattern: "routes/edit/?/capture",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsThrottling": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Throttling",
-        url: /^apps\/edit\/(.+?)\/throttling$/,
-        pattern: "apps/edit/?/throttling",
+    "routeThrottling": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Throttling",
+        url: /^routes\/edit\/(.+?)\/throttling$/,
+        pattern: "routes/edit/?/throttling",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsAuthentication": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Authentication",
-        url: /^apps\/edit\/(.+?)\/authentication$/,
-        pattern: "apps/edit/?/authentication",
+    "routeAuthentication": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Authentication",
+        url: /^routes\/edit\/(.+?)\/authentication$/,
+        pattern: "routes/edit/?/authentication",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsAuthorization": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Authorization",
-        url: /^apps\/edit\/(.+?)\/authorization$/,
-        pattern: "apps/edit/?/authorization",
+    "routeAuthorization": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Authorization",
+        url: /^routes\/edit\/(.+?)\/authorization$/,
+        pattern: "routes/edit/?/authorization",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsStatistics": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Statistics",
-        url: /^apps\/edit\/(.+?)\/statistics$/,
-        pattern: "apps/edit/?/statistics",
+    "routeStatistics": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Statistics",
+        url: /^routes\/edit\/(.+?)\/statistics$/,
+        pattern: "routes/edit/?/statistics",
         navGroup: "admin",
         forceUpdate: true
     },
-    "appsSettings": {
-        view: "org/forgerock/openig/ui/admin/apps/AppsTreeNavigationView",
-        page: "org/forgerock/openig/ui/admin/apps/parts/Settings",
-        url: /^apps\/edit\/(.+?)\/settings$/,
-        pattern: "apps/edit/?/settings",
+    "routeSettings": {
+        view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
+        page: "org/forgerock/openig/ui/admin/routes/parts/Settings",
+        url: /^routes\/edit\/(.+?)\/settings$/,
+        pattern: "routes/edit/?/settings",
         navGroup: "admin",
         forceUpdate: true
     }

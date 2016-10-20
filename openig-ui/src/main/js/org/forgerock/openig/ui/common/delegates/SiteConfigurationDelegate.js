@@ -16,12 +16,12 @@
 
 define([], () => ({
     getConfiguration (successCallback) {
-        // Redirect ot Apps List view instead of user profile
+        // Redirect to Routes List view instead of user profile
 
         require.config({
             "map": {
                 "*": {
-                    "AppsView": "org/forgerock/openig/ui/admin/apps/AppsListView"
+                    "listRoutesView": "org/forgerock/openig/ui/admin/routes/RoutesListView"
                 }
             }
         });

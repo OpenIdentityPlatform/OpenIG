@@ -21,56 +21,21 @@ define([
     Backbone,
     Constants
 ) => (
-    /* Define Route structure + add defaults, constants, orders */
-    class extends Backbone.Model {
-        constructor (options) {
-            super(options);
-            this.url = `${Constants.apiPath}/ui/record`;
-        }
-
-        get idAttribute () { return "_id"; }
-
-        get defaults () {
-            return {
-                id: "",
-                name: "",
-                baseURI: "",
-                condition: "",
-                deployedDate: undefined,
-                pendingChanges: false,
-                filters: []
-            };
-        }
-
-        validate (attrs) {
-            if (!attrs.id || attrs.id.trim() === "") {
-                return "routeErrorNoId";
-            }
-
-            if (!attrs.name || attrs.name.trim() === "") {
-                return "routeErrorNoName";
-            }
-
-            if (!attrs.baseURI || attrs.baseURI.trim() === "") {
-                return "routeErrorNoUrl";
-            }
-
-            if (!attrs.condition || attrs.condition.trim() === "") {
-                return "routeErrorNoCondition";
-            }
-
-        }
+    Backbone.Model.extend({
+        url: `${Constants.apiPath}/_router/routes`,
+        idAttribute: "_id",
 
         getMVCCRev () {
             return this.get("_rev") || "*";
-        }
+        },
 
         sync (method, model, options) {
             options = options || {};
-
-            options.headers = {};
-            if (method !== "create") {
-                options.url = `${this.url}/${model.id}`;
+            options.url = `${this.url}/${model.id}`;
+            if (method === "create") {
+                options.type = "PUT";
+                options.headers = { "If-None-Match": "*" };
+            } else {
                 options.headers = { "If-Match": model.getMVCCRev() };
             }
 
@@ -80,5 +45,5 @@ define([
 
             return Backbone.Model.prototype.sync.call(this, method, model, options);
         }
-    }
+    })
 ));

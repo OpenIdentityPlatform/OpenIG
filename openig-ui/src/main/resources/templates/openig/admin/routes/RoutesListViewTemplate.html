@@ -1,0 +1,48 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+<section>
+    <div class="container">
+        <div class="page-header">
+            <h1>{{t "config.AppConfiguration.Navigation.links.routes"}}
+                <div  class="pull-right help-link">
+                    <a href="{{docHelpUrl}}" target="_blank">{{t "templates.routes.help"}} <i class="fa fa-question-circle"></i></a>
+                </div>
+            </h1>
+        </div>
+        <p class="section-help">{{t "templates.routes.description"}}</p>
+        <div class="noItemPlace">
+            <div class="toolbar page-toolbar" role="toolbar" aria-label="...">
+                <div class="btn-group pull-left left-group" role="group" aria-label="...">
+                    <a href="{{ routeTo 'addRouteView' }}"><button type="button" class="btn btn-primary"><i class="fa fa-plus"></i> {{t "templates.routes.addRoute"}}</button></a>
+                </div>
+                <div class="pull-right">
+                    <div class="btn-group btn-icon" data-toggle="btns">
+                        <a class="btn toggle-view-btn fr-btn-secondary {{#equals viewStyle 'card'}}active{{/equals}}" href="#routeCardContainer" data-toggle="tab"><i class="fa fa-th"></i></a>
+                        <a class="btn toggle-view-btn fr-btn-secondary {{#equals viewStyle 'grid'}}active{{/equals}}" href="#routeGridContainer" data-toggle="tab"><i class="fa fa-list"></i></a>
+                    </div>
+                    <div class="toolbar-search">
+                        <div class="form-group has-feedback has-feedback-left">
+                            <input type="text" class="form-control filter-input" aria-label="Route Filter" placeholder="{{t 'templates.routes.filter'}}">
+                            <div class="form-control-feedback "><i class="fa fa-search"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="container">
+                <div class="tab-content tab-content-transparent">
+                    <div id="routeCardContainer" class="tab-pane {{#equals viewStyle 'card'}}active{{/equals}}">
+                        <div class="row">
+                            {{#each cardData}}
+                                {{> templates/openig/admin/routes/components/RouteCard }}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div id="routeGridContainer" class="tab-pane {{#equals viewStyle 'grid'}}active{{/equals}}">
+                        <div id="routesGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

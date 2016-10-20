@@ -18,13 +18,13 @@ define([
     "jquery",
     "underscore",
     "org/forgerock/openig/ui/admin/services/TransformService",
-    "org/forgerock/openig/ui/admin/models/AppModel",
+    "org/forgerock/openig/ui/admin/models/RouteModel",
     "org/forgerock/openig/ui/common/util/Constants"
 ], (
     $,
     _,
     transformService,
-    AppModel,
+    RouteModel,
     Constants
 ) => ({
     executeAll () {
@@ -32,7 +32,7 @@ define([
 
         QUnit.asyncTest("Should fail when transforming undefined model", (assert) => {
             assert.throws(() => {
-                transformService.transformApplication(undefined);
+                transformService.transformRoute(undefined);
             },
                 transformService.TransformServiceException("invalidModel"),
                 "Passing an undefined throws an error"
@@ -42,7 +42,7 @@ define([
 
         QUnit.asyncTest("Should fail when transforming null model", (assert) => {
             assert.throws(() => {
-                transformService.transformApplication(null);
+                transformService.transformRoute(null);
             },
                 transformService.TransformServiceException("invalidModel"),
                 "Passing a null throws an error"
@@ -51,13 +51,13 @@ define([
         });
 
         QUnit.asyncTest("Should fail when no 'name' attribute is provided", (assert) => {
-            const applicationWithEmptyName = new AppModel({
+            const applicationWithEmptyName = new RouteModel({
                 id: "modelID",
                 name: ""
             });
 
             assert.throws(() => {
-                transformService.transformApplication(applicationWithEmptyName);
+                transformService.transformRoute(applicationWithEmptyName);
             },
                 transformService.TransformServiceException("invalidModel"),
                 "Passing model with empty name throws an error"
@@ -66,13 +66,13 @@ define([
         });
 
         QUnit.asyncTest("Should fail when no 'baseURI' attribute is provided", (assert) => {
-            const applicationWithEmptyBaseUrl = new AppModel({
+            const applicationWithEmptyBaseUrl = new RouteModel({
                 id: "modelID",
                 url: ""
             });
 
             assert.throws(() => {
-                transformService.transformApplication(applicationWithEmptyBaseUrl);
+                transformService.transformRoute(applicationWithEmptyBaseUrl);
             },
                 transformService.TransformServiceException("invalidModel"),
                 "Passing model with empty baseURL throws an error"
@@ -81,13 +81,13 @@ define([
         });
 
         QUnit.asyncTest("Should fail when no 'condition' attribute is provided", (assert) => {
-            const applicationWithEmptyCondition = new AppModel({
+            const applicationWithEmptyCondition = new RouteModel({
                 id: "modelID",
                 condition: ""
             });
 
             assert.throws(() => {
-                transformService.transformApplication(applicationWithEmptyCondition);
+                transformService.transformRoute(applicationWithEmptyCondition);
             },
                 transformService.TransformServiceException("invalidModel"),
                 "Passing model with empty condition throws an error"
@@ -96,14 +96,14 @@ define([
         });
 
         QUnit.asyncTest("Should map basic model properties to top level route attributes", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
                 condition: "${request.uri.path == '/'}"
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -204,7 +204,7 @@ define([
         });
 
         QUnit.asyncTest("Should pass eventhough all filters are disabled", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -221,7 +221,7 @@ define([
                 ]
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -235,7 +235,7 @@ define([
         });
 
         QUnit.asyncTest("Should pass only enabled filters", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -252,7 +252,7 @@ define([
                 ]
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -281,7 +281,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate route level request capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -295,7 +295,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -310,7 +310,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate route level response capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -324,7 +324,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -339,7 +339,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate request and response route level capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -353,7 +353,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -368,7 +368,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate outbound request capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -383,7 +383,7 @@ define([
             });
 
             assert.deepEqual(
-                transformService.transformApplication(app),
+                transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -404,7 +404,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate outbound response capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -419,7 +419,7 @@ define([
             });
 
             assert.deepEqual(
-                transformService.transformApplication(app),
+                transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -441,7 +441,7 @@ define([
         });
 
         QUnit.asyncTest("Should activate request and response outbound capture", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -456,7 +456,7 @@ define([
             });
 
             assert.deepEqual(
-                transformService.transformApplication(app),
+                transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -478,7 +478,7 @@ define([
         });
 
         QUnit.asyncTest("Should enable statistics", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -489,7 +489,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -503,7 +503,7 @@ define([
         });
 
         QUnit.asyncTest("Should enable statistics and add percentiles", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -515,7 +515,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
@@ -532,7 +532,7 @@ define([
         });
 
         QUnit.asyncTest("Should disable statistics and remove percentiles", (assert) => {
-            const app = new AppModel({
+            const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
                 name: "Router",
@@ -544,7 +544,7 @@ define([
                 }
             });
 
-            assert.deepEqual(transformService.transformApplication(app),
+            assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",

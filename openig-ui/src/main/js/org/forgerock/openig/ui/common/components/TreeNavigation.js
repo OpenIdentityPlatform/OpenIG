@@ -24,7 +24,7 @@ define([
     const TreeNavigation = AbstractView.extend({
         template: "templates/openig/admin/common/navigation/TreeNavigationTemplate.html",
         partials: [
-            "templates/openig/admin/apps/AppTopBar.html",
+            "templates/openig/admin/routes/RouteTopBar.html",
             "templates/openig/admin/common/navigation/_TreeNavigationLeaf.html"
         ],
         events: {

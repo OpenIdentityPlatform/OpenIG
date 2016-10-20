@@ -71,9 +71,9 @@ define([], () => ({
                 links: {
                     user: {
                         urls: {
-                            "apps": {
-                                "url": "#apps/",
-                                "name": "config.AppConfiguration.Navigation.links.apps",
+                            "routes": {
+                                "url": "#routes/",
+                                "name": "config.AppConfiguration.Navigation.links.routes",
                                 "icon": "fa fa-rocket",
                                 "inactive": false
                             },

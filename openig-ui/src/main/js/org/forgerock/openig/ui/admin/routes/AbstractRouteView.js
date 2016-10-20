@@ -14,12 +14,20 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-// core files needed during startup
-// eslint-disable-next-line requirejs/no-named-define
-define("org/forgerock/openig/ui/main", [
-    "./common/util/Constants",
-    "./common/util/ExternalLinks",
-    "./common/delegates/SiteConfigurationDelegate",
-    "./common/main/MockServer",
-    "./admin/routes/RoutesTreeNavigationView"
-]);
+define([
+    "jquery",
+    "underscore",
+    "org/forgerock/commons/ui/common/main/AbstractView"
+], ($, _, AbstractView) => {
+    const AbstractRouteView = AbstractView.extend({
+        data: {
+        },
+        loadRouteTemplate () {
+                // TODO: init view
+            return;
+        }
+
+    });
+
+    return AbstractRouteView;
+});

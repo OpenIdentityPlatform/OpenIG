@@ -116,7 +116,7 @@ define([
     },
 
     transformFilter (filter) {
-        // Transform Filter from the app model into JSON
+        // Transform Filter from the route model into JSON
         switch (filter.type) {
             case "ThrottlingFilter":
                 return this.throttlingFilter(filter);
@@ -162,22 +162,22 @@ define([
             : statistics.enabled;
     },
 
-    transformApplication (app) {
-        if (app === undefined || app === null || !app.isValid()) {
+    transformRoute (route) {
+        if (route === undefined || route === null || !route.isValid()) {
             throw new this.TransformServiceException("invalidModel");
         }
 
         // Base route attributes
-        const route = {
-            name: app.get("id"),
-            baseURI: app.get("baseURI"),
-            condition: app.get("condition"),
-            monitor: this.transformStatistics(app.get("statistics"))
+        const routeConfig = {
+            name: route.get("id"),
+            baseURI: route.get("baseURI"),
+            condition: route.get("condition"),
+            monitor: this.transformStatistics(route.get("statistics"))
         };
 
         // Convert all filters
         const chain = this.chainBuilder();
-        const filters = app.get("filters");
+        const filters = route.get("filters");
         _.forEach(filters, (filter) => {
             if (filter.enabled === true) {
                 const generatedFilter = this.transformFilter(filter);
@@ -188,7 +188,7 @@ define([
         });
 
         // Inbound messages capture
-        const capture = app.get("capture");
+        const capture = route.get("capture");
         if (capture) {
             if (capture.inbound) {
                 const captured = [];
@@ -198,7 +198,7 @@ define([
                     }
                 });
                 if (!_.isEmpty(captured)) {
-                    route.capture = captured;
+                    routeConfig.capture = captured;
                 }
             }
             if (capture.outbound) {
@@ -209,14 +209,14 @@ define([
                     }
                 });
                 if (!_.isEmpty(captured)) {
-                    this.heapOf(route).push(this.decorate(this.newClientHandler(), "capture", captured));
+                    this.heapOf(routeConfig).push(this.decorate(this.newClientHandler(), "capture", captured));
                 }
             }
         }
 
         // Create the main "handler" attribute with the configured chain
         const terminal = "ClientHandler";
-        route.handler = _.size(chain.filters) === 0 ? terminal : chain.build(terminal);
-        return route;
+        routeConfig.handler = _.size(chain.filters) === 0 ? terminal : chain.build(terminal);
+        return routeConfig;
     }
 }));

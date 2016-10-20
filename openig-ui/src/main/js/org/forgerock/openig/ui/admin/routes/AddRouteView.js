@@ -15,16 +15,32 @@
  */
 
 define([
-    "lodash",
-    "org/forgerock/openig/ui/common/util/Constants"
-], (_, Constants) => (
-    {
-        // TODO: Add relevant paths
-        backstage: {
-            admin: _.mapValues({
-                documentation: "",
-                routesList: "#configure-routes"
-            }, (hash) => `${Constants.DOC_URL}${hash}`)
+    "jquery",
+    "underscore",
+    "form2js",
+    "org/forgerock/openig/ui/admin/routes/AbstractRouteView",
+    "org/forgerock/openig/ui/admin/routes/parts/Settings"
+], (
+    $,
+    _,
+    form2js,
+    AbstractRouteView,
+    Settings) => {
+    const AddRouteView = AbstractRouteView.extend({
+        template: "templates/openig/admin/routes/AddRouteTemplate.html",
+        events: {
+        },
+        data: {
+        },
+        render (args, callback) {
+            this.parentRender(() => {
+                const addPage = new Settings();
+                addPage.element = "#addSettings";
+                addPage.render(args, callback);
+                this.delegateEvents();
+            });
         }
-    }
-));
+    });
+
+    return new AddRouteView();
+});
