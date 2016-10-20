@@ -55,6 +55,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.MutableUri;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ActionRequest;
@@ -617,10 +618,32 @@ public class PolicyEnforcementFilter implements Filter {
                 };
             } else if (node.isMap()) {
                 return new Function<Bindings, Map<String, T>, ExpressionException>() {
+                    // Avoid 'environment' entry's value to be null (cause an error in AM)
+                    Function<JsonValue, JsonValue, JsonException> filterNullMapValues =
+                            new Function<JsonValue, JsonValue, JsonException>() {
+
+                                @Override
+                                public JsonValue apply(JsonValue value) {
+                                    if (!value.isMap()) {
+                                        return value;
+                                    }
+
+                                    Map<String, Object> object = object();
+                                    for (String key : value.keys()) {
+                                        JsonValue entry = value.get(key);
+                                        if (entry.isNotNull()) {
+                                            object.put(key, entry.getObject());
+                                        }
+                                    }
+                                    return new JsonValue(object, value.getPointer());
+                                }
+                            };
 
                     @Override
                     public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return node.as(evaluated(bindings)).asMap(expectedType);
+                        return node.as(evaluated(bindings))
+                                   .as(filterNullMapValues) // see OPENIG-1402 and AME-12483
+                                   .asMap(expectedType);
                     }
                 };
             } else {
