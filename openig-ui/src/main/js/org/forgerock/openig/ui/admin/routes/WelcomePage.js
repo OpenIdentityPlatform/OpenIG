@@ -14,12 +14,19 @@
  * Copyright 2016 ForgeRock AS.
  */
 
-// core files needed during startup
-// eslint-disable-next-line requirejs/no-named-define
-define("org/forgerock/openig/ui/main", [
-    "./common/util/Constants",
-    "./common/util/ExternalLinks",
-    "./common/delegates/SiteConfigurationDelegate",
-    "./common/main/MockServer",
-    "./admin/routes/RoutesTreeNavigationView"
-]);
+define([
+    "org/forgerock/commons/ui/common/main/AbstractView",
+    "org/forgerock/openig/ui/common/util/ExternalLinks"
+], (
+    AbstractView,
+    externalLinks
+) => {
+    class WelcomePage extends AbstractView {
+        get template () { return "templates/openig/admin/routes/WelcomePage.html"; }
+        render () {
+            this.data.documentationUrl = externalLinks.backstage.admin.documentation;
+            this.parentRender();
+        }
+    }
+    return new WelcomePage();
+});

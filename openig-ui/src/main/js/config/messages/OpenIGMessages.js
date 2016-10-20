@@ -15,12 +15,12 @@
  */
 
 define([], () => ({
-    "deleteAppSuccess": {
-        msg: "config.messages.OpenIGMessages.deleteAppSuccess",
+    "deleteRouteSuccess": {
+        msg: "config.messages.OpenIGMessages.deleteRouteSuccess",
         type: "info"
     },
-    "deleteAppFailed": {
-        msg: "config.messages.OpenIGMessages.deleteAppFailed",
+    "deleteRouteFailed": {
+        msg: "config.messages.OpenIGMessages.deleteRouteFailed",
         type: "error"
     },
     "settingsSuccess": {
@@ -39,28 +39,28 @@ define([], () => ({
         msg: "config.messages.OpenIGMessages.unknownFilterType",
         type: "error"
     },
-    "appSettingsSaveSuccess": {
-        msg: "config.messages.OpenIGMessages.appSettingsSaveSuccess",
+    "routeSettingsSaveSuccess": {
+        msg: "config.messages.OpenIGMessages.routeSettingsSaveSuccess",
         type: "info"
     },
     "modelTransformationFailed": {
         msg: "config.messages.OpenIGMessages.modelTransformationFailed",
         type: "error"
     },
-    "appDeployedSuccess": {
-        msg: "config.messages.OpenIGMessages.appDeployedSuccess",
+    "routeDeployedSuccess": {
+        msg: "config.messages.OpenIGMessages.routeDeployedSuccess",
         type: "info"
     },
-    "appDeployedFailed": {
-        msg: "config.messages.OpenIGMessages.appDeployedFailed",
+    "routeDeployedFailed": {
+        msg: "config.messages.OpenIGMessages.routeDeployedFailed",
         type: "error"
     },
-    "appUndeployedSuccess": {
-        msg: "config.messages.OpenIGMessages.appUndeployedSuccess",
+    "routeUndeployedSuccess": {
+        msg: "config.messages.OpenIGMessages.routeUndeployedSuccess",
         type: "info"
     },
-    "appUndeployedFailed": {
-        msg: "config.messages.OpenIGMessages.appUndeployedFailed",
+    "routeUndeployedFailed": {
+        msg: "config.messages.OpenIGMessages.routeUndeployedFailed",
         type: "error"
     }
 }));

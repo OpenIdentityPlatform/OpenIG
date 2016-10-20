@@ -1,0 +1,24 @@
+<!-- Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ -->
+
+<div class="page-header">
+    <h1>{{ pageTitle }}</h1>
+</div>
+<div class="block">
+    <form class="form-horizontal" role="form" id="routeForm">
+        <div class="panel panel-collapse-group has-border">
+            <div class="panel-body">
+            {{#each controls}}
+                {{> (control) }}
+            {{/each}}
+
+            </div>
+            <div class="panel-footer clearfix">
+                <div class="pull-right">
+                    <input id="cancelRoute" class="btn btn-default" type="button" value="{{ cancelBtnTitle }}" />
+                    <input id="submitRoute" name="submitRoute" disabled="true" class="btn btn-primary" type="submit" value="{{ saveBtnTitle }}" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

@@ -16,66 +16,82 @@
 
 define([
     "jquery",
-    "lodash",
     "backbone",
-    "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/commons/ui/common/util/Constants",
     "org/forgerock/openig/ui/admin/models/RouteModel"
 ], (
     $,
-    _,
     Backbone,
     Constants,
     RouteModel
 ) => {
-    /* Collection of routes */
-    const RoutesCollection = Backbone.Collection.extend({
-        url: `${Constants.apiPath}/_router/routes`,
-        model: RouteModel,
+    /* Get and keep Routes */
+    class RoutesCollection extends Backbone.Collection {
+        constructor () {
+            super();
+            this.url = `${Constants.apiPath}/ui/record`;
+            this.model = RouteModel;
+            this.routesCache = {};
+        }
+
         parse (response) {
             return response.result;
-        },
-        fetchRoutesIds () {
-            return this.fetch({
-                reset: true,
-                processData: false,
-                data: $.param({ _queryFilter: true, _fields: "_id" })
-            });
-        },
-        isDeployed (appId) {
-            return _.find(this.models, (route) => (route.id === appId)) !== undefined;
-        },
-        deploy (appId, jsonConfig) {
-            const deferred = $.Deferred();
-            const promise = deferred.promise();
-            const route = new RouteModel(jsonConfig);
-            route.id = appId;
-            route.save().success((deployResult) => {
-                this.add(deployResult);
-                deferred.resolve();
-            }).error((error) => {
-                console.log(error);
-                deferred.reject(error);
-            });
-            return promise;
-        },
-        undeploy (appId) {
-            const deferred = $.Deferred();
-            const promise = deferred.promise();
-            const model = this.get(appId);
-            if (model) {
-                model.destroy().done((model) => {
-                    this.remove(model);
-                    deferred.resolve();
-                }).fail((error) => {
-                    console.log(error);
-                    deferred.reject(error);
-                });
-            } else {
-                deferred.reject();
-            }
-            return promise;
         }
-    });
+
+        // Get all routes from server and save in local cache
+        availableRoutes () {
+            const deferred = $.Deferred();
+            if (this.routesCache.currentRoutes) {
+                deferred.resolve(this.routesCache.currentRoutes);
+            } else {
+                this.fetch({
+                    reset: true,
+                    processData: false,
+                    data: $.param({ _queryFilter: true })
+                })
+                .then(
+                    () => {
+                        this.routesCache.currentRoutes = this;
+                        deferred.resolve(this);
+                    },
+                    () => {
+                        deferred.reject();
+                    }
+                );
+            }
+
+            return deferred;
+        }
+
+        // Find by Id, also in cache
+        byRouteId (id) {
+            const deferred = $.Deferred();
+            this.availableRoutes().then(() => {
+                deferred.resolve(this.findWhere({ id }));
+            });
+
+            return deferred;
+        }
+
+        // Remove also from local cache
+        removeByRouteId (id) {
+            const deferred = $.Deferred();
+            const item = this.findWhere({ id });
+            item.destroy()
+                .then(
+                    (model) => {
+                        this.remove(model);
+                        this.routesCache.currentRoutes.remove(item);
+                        deferred.resolve();
+                    },
+                    (error) => {
+                        console.log(error);
+                        deferred.reject(error);
+                    }
+                );
+            return deferred;
+        }
+    }
 
     return new RoutesCollection();
 });
