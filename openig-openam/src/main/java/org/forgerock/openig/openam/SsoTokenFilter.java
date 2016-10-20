@@ -63,14 +63,14 @@ public class SsoTokenFilter implements Filter {
     private final SsoTokenHolder ssoTokenHolder;
 
     SsoTokenFilter(final Handler ssoClientHandler,
-                   final URI openamUrl,
+                   final URI openamUri,
                    final String realm,
                    final String headerName,
                    final String username,
                    final String password) {
         this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
         final Factory<Request> requestFactory = new Factory<Request>() {
-            final URI authenticateEndpoint = openamUrl.resolve(BASE_ENDPOINT + startsWithSlash(realm)
+            final URI authenticateEndpoint = openamUri.resolve(BASE_ENDPOINT + startsWithSlash(realm)
                                                                + AUTHENTICATION_ENDPOINT);
 
             @Override
