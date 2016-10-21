@@ -4,6 +4,10 @@
         <div class="page-header">
             <h1>{{t "templates.welcomePage.title"}}</h1>
         </div>
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+            {{t "templates.welcomePage.warning"}}
+        </div>
         <div class="row">
             <div class="col-sm-6">
                 <div class="margin-bottom-40">
@@ -31,6 +35,14 @@
                             </div>
                             <div class="media-body">
                                 <h4 class="media-heading">{{t "templates.welcomePage.benefit_3"}}</h4>
+                            </div>
+                        </li>
+                        <li class="media">
+                            <div class="media-left">
+                                <i class="fa fa-check-circle fa-lg text-success" aria-hidden="true"></i>
+                            </div>
+                            <div class="media-body">
+                                <h4 class="media-heading">{{t "templates.welcomePage.benefit_4"}}</h4>
                             </div>
                         </li>
                     </ul>
@@ -71,7 +83,7 @@
                             <a class="media" href="{{documentationUrl}}">
                                 <div class="media-left">
                                     <div class="circle-icon circle-icon-sm">
-                                        <i class="fa fa-question" aria-hidden="true"/>
+                                        <i class="fa fa-file-text-o" aria-hidden="true"/>
                                     </div>
                                 </div>
                                 <div class="media-body media-middle">
