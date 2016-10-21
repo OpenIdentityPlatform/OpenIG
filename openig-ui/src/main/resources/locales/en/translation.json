@@ -213,13 +213,15 @@
         },
         "welcomePage": {
             "title": "Welcome to ForgeRock Identity Gateway",
-            "subtitle": "The ForgeRock Identity Gateway bridges your applications to the modern digital identity world. With the Identity Gateway Studio you can develop and prototype your application protection configuration.",
-            "benefit_1": "Protect APIs and Applications",
+            "subtitle": "ForgeRock Identity Gateway bridges your applications to the digital identity world. Use Identity Gateway Studio to develop and prototype protection for your applications and APIs.",
+            "benefit_1": "Authenticate Users",
             "benefit_2": "Enforce Authorization Policies",
-            "benefit_3": "Inspect Access",
-            "addRoute": "Create a new application protection",
-            "routesList": "View saved routes",
-            "documentation": "View the product documentation"
+            "benefit_3": "Throttle Requests",
+            "benefit_4": "Analyze Access",
+            "addRoute": "Protect an Application",
+            "routesList": "View Saved Protections",
+            "documentation": "View the Documentation",
+            "warning": "Running in evaluation mode - by default, all endpoints are open and accessible. Do not use this mode in a production environment."
         }
     },
     "common": {
