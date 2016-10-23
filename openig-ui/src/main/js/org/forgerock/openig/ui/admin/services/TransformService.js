@@ -123,6 +123,21 @@ define([
             const message = "Either one (or both) of 'ssoTokenSubject' or 'jwtSubject' have to be provided";
             throw new this.TransformServiceException("invalidModel", message);
         }
+
+        const env = {};
+        if (filter.headers && filter.headers !== "") {
+            _.each(filter.headers.split(" "), function (header) {
+                env[`H-${header}`] = "${request.headers['" + header + "']}";
+            });
+        }
+        if (filter.address && filter.address === true) {
+            env["IP"] = ["${contexts.client.remoteAddress}"];
+        }
+
+        if (!_.isEmpty(env)) {
+            declaration.config.environment = env;
+        }
+
         return declaration;
     },
 

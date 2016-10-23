@@ -203,7 +203,7 @@ define([
             QUnit.start();
         });
 
-        QUnit.asyncTest("Should pass eventhough all filters are disabled", (assert) => {
+        QUnit.asyncTest("Should pass even if all filters are disabled", (assert) => {
             const route = new RouteModel({
                 _id: "modelID",
                 id: "modelID",
@@ -553,6 +553,109 @@ define([
                     "monitor": false
                 },
                 "Expecting monitor disabled"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should produce contextual info for multiple headers", (assert) => {
+            const filter = {
+                type: "PolicyEnforcementFilter",
+                openamUrl: "http://openam.example.com/openam",
+                pepUsername: "bob",
+                pepPassword: "the-sponge",
+                pepRealm: "cartoon",
+                realm: "users",
+                ssoTokenSubject: "John",
+                application: "PS",
+                headers: "User-Agent Referer"
+            };
+
+            assert.deepEqual(transformService.policyEnforcementFilter(filter),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "bob",
+                        pepPassword: "the-sponge",
+                        pepRealm: "cartoon",
+                        realm: "users",
+                        ssoTokenSubject: "John",
+                        application: "PS",
+                        environment: {
+                            "H-User-Agent": "${request.headers['User-Agent']}",
+                            "H-Referer": "${request.headers['Referer']}"
+                        }
+                    }
+                },
+                "Expecting policy enforcement filter with headers in environment"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should not produce contextual info for empty header", (assert) => {
+            const filter = {
+                type: "PolicyEnforcementFilter",
+                openamUrl: "http://openam.example.com/openam",
+                pepUsername: "bob",
+                pepPassword: "the-sponge",
+                pepRealm: "cartoon",
+                realm: "users",
+                ssoTokenSubject: "John",
+                application: "PS",
+                headers: ""
+            };
+
+            assert.deepEqual(transformService.policyEnforcementFilter(filter),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "bob",
+                        pepPassword: "the-sponge",
+                        pepRealm: "cartoon",
+                        realm: "users",
+                        ssoTokenSubject: "John",
+                        application: "PS"
+                    }
+                },
+                "Expecting policy enforcement filter with empty environment"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should produce contextual info with client IP address", (assert) => {
+            const filter = {
+                type: "PolicyEnforcementFilter",
+                openamUrl: "http://openam.example.com/openam",
+                pepUsername: "bob",
+                pepPassword: "the-sponge",
+                pepRealm: "cartoon",
+                realm: "users",
+                ssoTokenSubject: "John",
+                application: "PS",
+                address: true
+            };
+
+            assert.deepEqual(transformService.policyEnforcementFilter(filter),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "bob",
+                        pepPassword: "the-sponge",
+                        pepRealm: "cartoon",
+                        realm: "users",
+                        ssoTokenSubject: "John",
+                        application: "PS",
+                        environment: {
+                            "IP": ["${contexts.client.remoteAddress}"]
+                        }
+                    }
+                },
+                "Expecting policy enforcement filter with IP in environment"
             );
             QUnit.start();
         });
