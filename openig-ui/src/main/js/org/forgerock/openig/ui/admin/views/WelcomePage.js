@@ -22,7 +22,7 @@ define([
     externalLinks
 ) => {
     class WelcomePage extends AbstractView {
-        get template () { return "templates/openig/admin/routes/WelcomePage.html"; }
+        get template () { return "templates/openig/admin/WelcomePage.html"; }
         render () {
             this.data.documentationUrl = externalLinks.backstage.admin.documentation;
             this.parentRender();
