@@ -228,8 +228,9 @@ define([
 
         createFilter () {
             return {
-                "type": "OAuth2ClientFilter",
-                "scopes": "openid"
+                type: "OAuth2ClientFilter",
+                scopes: "openid",
+                clientEndpoint: "/openid"
             };
         }
     })
