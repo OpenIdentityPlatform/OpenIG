@@ -39,7 +39,7 @@ define([
         defaults: ["/", ""]
     },
     "welcomePage": {
-        view: "org/forgerock/openig/ui/admin/routes/WelcomePage",
+        view: "org/forgerock/openig/ui/admin/views/WelcomePage",
         url: "welcome/"
     },
     "addRouteView": {
