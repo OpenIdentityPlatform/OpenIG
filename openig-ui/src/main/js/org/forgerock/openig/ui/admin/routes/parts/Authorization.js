@@ -18,6 +18,7 @@ define([
     "jquery",
     "lodash",
     "form2js",
+    "selectize",
     "i18next",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
@@ -29,6 +30,7 @@ define([
     $,
     _,
     form2js,
+    selectize,
     i18n,
     AbstractView,
     validatorsManager,
@@ -44,7 +46,8 @@ define([
             "templates/openig/admin/common/form/EditControl.html",
             "templates/openig/admin/common/form/SliderControl.html",
             "templates/openig/admin/common/form/GroupControl.html",
-            "templates/openig/admin/routes/components/FormFooter.html"
+            "templates/openig/admin/routes/components/FormFooter.html",
+            "templates/openig/admin/common/form/MultiSelectControl.html"
         ],
         events: {
             "click input[name='enabled']": "enableAuthorizationClick",
@@ -122,6 +125,24 @@ define([
                                     value: this.data.authZFilter.jwtSubject
                                 }
                             ]
+                        },
+                        {
+                            name: "contextualAuthGroup",
+                            controlType: "group",
+                            controls: [
+                                {
+                                    name: "headers",
+                                    value: this.data.authZFilter.headers,
+                                    controlType: "multiselect",
+                                    options: "User-Agent Host From Referer Via X-Forwarded-For",
+                                    delimiter: " "
+                                },
+                                {
+                                    name: "address",
+                                    value: this.data.authZFilter.address,
+                                    controlType: "slider"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -136,6 +157,9 @@ define([
             this.parentRender(() => {
                 this.setFormFooterVisiblity(this.data.authZFilter.enabled);
                 validatorsManager.bindValidators(this.$el);
+                _.forEach(this.$el.find(".multi-select-control"), (control) => {
+                    FormUtils.initializeMultiSelect(control);
+                });
             });
         },
 
@@ -210,7 +234,8 @@ define([
 
         createFilter () {
             return {
-                "type": "PolicyEnforcementFilter"
+                type: "PolicyEnforcementFilter",
+                headers: "User-Agent"
             };
         }
     })
