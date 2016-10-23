@@ -47,7 +47,8 @@ define([
             "templates/openig/admin/common/form/SliderControl.html",
             "templates/openig/admin/common/form/GroupControl.html",
             "templates/openig/admin/common/form/CheckboxControl.html",
-            "templates/openig/admin/common/form/MultiSelectControl.html"
+            "templates/openig/admin/common/form/MultiSelectControl.html",
+            "templates/openig/admin/routes/components/FormFooter.html"
         ],
         events: {
             "click input[name='enabled']": "enableAuthenticationClick",
