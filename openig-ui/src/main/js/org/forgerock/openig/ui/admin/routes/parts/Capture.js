@@ -40,13 +40,15 @@ define(
                     "templates/openig/admin/common/form/GroupControl.html"
                 ],
                 events: {
-                    "click #cancel-capture": "cancelClick",
-                    "click #submit-capture": "saveClick",
+                    "click .js-reset-btn": "resetClick",
+                    "click .js-save-btn": "saveClick",
                     "change .checkbox-slider input[type='checkbox']": "onToggleSwitch"
                 },
-                data: {},
+                data: {
+                    formId: "capture-form"
+                },
                 initialize (options) {
-                    this.data = options.parentData;
+                    this.data = _.extend(this.data, options.parentData);
                 },
 
                 render () {
@@ -97,7 +99,7 @@ define(
                     this.parentRender();
                 },
 
-                cancelClick (event) {
+                resetClick (event) {
                     event.preventDefault();
                     this.render();
                 },
@@ -105,7 +107,7 @@ define(
                 saveClick (event) {
                     event.preventDefault();
 
-                    const form = this.$el.find("#capture-form")[0];
+                    const form = this.$el.find(`#${this.data.formId}`)[0];
                     const capture = this.formToCapture(form);
                     if (this.isCaptureEnabled(capture)) {
                         this.data.routeData.set("capture", capture);
@@ -129,8 +131,8 @@ define(
                 onToggleSwitch (event) {
                     event.preventDefault();
 
-                    const form = this.$el.find("#capture-form")[0];
-                    const submit = this.$el.find("#submit-capture");
+                    const form = this.$el.find(`#${this.data.formId}`)[0];
+                    const submit = this.$el.find(".js-save-btn");
 
                     const capture = this.findCapture();
                     const newCapture = this.formToCapture(form);

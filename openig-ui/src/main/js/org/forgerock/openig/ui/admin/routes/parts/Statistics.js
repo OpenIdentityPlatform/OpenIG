@@ -48,14 +48,16 @@ define([
             "templates/openig/admin/common/form/MultiSelectControl.html"
         ],
         events: {
-            "click #cancelStatistics": "cancelClick",
-            "click #submitStatistics": "saveClick",
+            "click .js-reset-btn": "resetClick",
+            "click .js-save-btn": "saveClick",
             "click input[name='enabled']": "enableStatistics",
             "change input[name='percentiles']": "percentilesChange"
         },
-        data: {},
+        data: {
+            formId: "statistics-form"
+        },
         initialize (options) {
-            this.data = options.parentData;
+            this.data = _.extend(this.data, options.parentData);
         },
         spaceDelimiter: " ",
         render () {
@@ -119,7 +121,7 @@ define([
             this.setFormFooterVisiblity(newState);
         },
 
-        cancelClick (event) {
+        resetClick (event) {
             event.preventDefault();
             this.render();
         },
@@ -152,7 +154,7 @@ define([
 
         saveClick (event) {
             event.preventDefault();
-            const form = this.$el.find("#statisticsForm")[0];
+            const form = this.$el.find(`#${this.data.formId}`)[0];
             this.data.routeData.set("statistics", this.formToStatistics(form));
             this.data.routeData.save();
             this.isDataDirty();
@@ -173,9 +175,9 @@ define([
         // Check entered data against saved
         isDataDirty () {
             const savedVal = _.get(this.data.routeData.get("statistics"), "percentiles");
-            const form = this.$el.find("#statisticsForm")[0];
+            const form = this.$el.find(`#${this.data.formId}`)[0];
             const formVal = this.formToStatistics(form).percentiles;
-            const submit = this.$el.find("#submitStatistics");
+            const submit = this.$el.find(".js-save-btn");
 
             submit.attr("disabled",
                 _.isEqual(

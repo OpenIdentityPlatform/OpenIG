@@ -52,8 +52,8 @@ define([
             "templates/openig/admin/common/form/EditControl.html"
         ],
         events: {
-            "click #submitRoute": "routeFormSubmit",
-            "click #cancelRoute": "routeFormCancel",
+            "click .js-save-btn": "saveClick",
+            "click .js-reset-btn": "resetClick",
             "blur input[name='name']": "validateName",
             "onValidate": "onValidate",
             "keyup input[name='name']": "generateId",
@@ -61,11 +61,11 @@ define([
         },
         formMode: { ADD:0, DUPLICATE: 1, EDIT: 2 },
         data: {
+            formId: "settings"
         },
         routeModel: null,
         manualIdChange: false,
         render (args, callback) {
-            this.data = {};
             this.data.routeId = args[0];
             this.data.docHelpUrl = constants.DOC_URL;
 
@@ -155,13 +155,13 @@ define([
             });
         },
 
-        routeFormSubmit (event) {
+        saveClick (event) {
             event.preventDefault();
             const modifiedRoute = this.routeModel;
             if (modifiedRoute && modifiedRoute !== null) {
                 this.fillRouteFromFormData();
                 if (!modifiedRoute.isValid()) {
-                    const form = this.$el.find("#routeForm")[0];
+                    const form = this.$el.find(`#${this.data.formId}`)[0];
                     $(form).find("input").trigger("validate");
                     return;
                 }
@@ -205,7 +205,7 @@ define([
             }
         },
 
-        routeFormCancel () {
+        resetClick () {
             if (this.data.mode === this.formMode.EDIT) {
                 eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
                     route: router.configuration.routes.routeSettings, args: [this.routeModel.id]
@@ -218,7 +218,7 @@ define([
         },
 
         fillRouteFromFormData () {
-            const form = this.$el.find("#routeForm")[0];
+            const form = this.$el.find(`#${this.data.formId}`)[0];
             const formVal = form2js(form, ".", true);
             this.routeModel.set(formVal);
         },

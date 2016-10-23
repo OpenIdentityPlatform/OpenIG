@@ -46,8 +46,8 @@ define([
         "templates/openig/admin/routes/components/ThrottlingControl.html"
     ],
     events: {
-        "click #resetThrottling": "throttlingReset",
-        "click #saveThrottling": "throttlingSave",
+        "click .js-reset-btn": "resetClick",
+        "click .js-save-btn": "saveClick",
         "click input[name='enabled']": "enableThrottlingClick",
         "onValidate": "onValidate"
     },
@@ -57,10 +57,11 @@ define([
         Constants.timeSlot.HOUR
     ],
     data: {
+        formId: "throttling-form"
     },
 
-    initialize (opts) {
-        this.data = opts.parentData;
+    initialize (options) {
+        this.data = _.extend(this.data, options.parentData);
     },
 
     render () {
@@ -114,14 +115,14 @@ define([
         });
     },
 
-    throttlingReset (event) {
+    resetClick (event) {
         event.preventDefault();
         this.render();
     },
 
-    throttlingSave (event) {
+    saveClick (event) {
         event.preventDefault();
-        const form = this.$el.find("#throttForm")[0];
+        const form = this.$el.find(`#${this.data.formId}`)[0];
         FormUtils.isFormValid(form)
             .done(
             () => {
@@ -159,7 +160,7 @@ define([
             this.data.routeData.save();
         } else {
             // Save On state, only when form is valid
-            const form = this.$el.find("#throttForm")[0];
+            const form = this.$el.find(`#${this.data.formId}`)[0];
             FormUtils.isFormValid(form)
                 .done(
                 () => {
