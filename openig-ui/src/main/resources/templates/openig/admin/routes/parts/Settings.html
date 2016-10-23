@@ -5,7 +5,7 @@
     <h1>{{ pageTitle }}</h1>
 </div>
 <div class="block">
-    <form class="form-horizontal" role="form" id="{{formId}}">
+    <form  id="{{formId}}" class="form-horizontal" role="form">
         <div class="panel panel-collapse-group has-border">
             <div class="panel-body">
             {{#each controls}}
@@ -15,8 +15,8 @@
             </div>
             <div class="panel-footer clearfix">
                 <div class="pull-right">
-                    <input class="btn btn-default js-reset-btn" type="button" value="{{ cancelBtnTitle }}" />
-                    <input disabled="true" class="btn btn-primary js-save-btn" type="submit" value="{{ saveBtnTitle }}" />
+                    <input type="button" class="btn btn-default js-reset-btn" value="{{ cancelBtnTitle }}" />
+                    <input type="submit" class="btn btn-primary js-save-btn" value="{{ saveBtnTitle }}" disbled/>
                 </div>
             </div>
         </div>
