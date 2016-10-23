@@ -172,15 +172,15 @@ define(
                 },
 
                 formToCapture (form) {
-                    const formVal = form2js(form, ".", false);
+                    const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
                     return {
                         inbound: {
-                            request: FormUtils.getBoolValue(formVal.inboundRequest),
-                            response: FormUtils.getBoolValue(formVal.inboundResponse)
+                            request: formVal.inboundRequest,
+                            response: formVal.inboundResponse
                         },
                         outbound: {
-                            request: FormUtils.getBoolValue(formVal.outboundRequest),
-                            response: FormUtils.getBoolValue(formVal.outboundResponse)
+                            request: formVal.outboundRequest,
+                            response: formVal.outboundResponse
                         }
                     };
                 }

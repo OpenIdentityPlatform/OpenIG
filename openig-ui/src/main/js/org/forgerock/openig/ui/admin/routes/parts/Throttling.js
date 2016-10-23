@@ -127,9 +127,8 @@ define([
         FormUtils.isFormValid(form)
             .done(
             () => {
-                const formVal = form2js(form, ".", false);
+                const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
                 _.extend(this.data.throttFilter, formVal);
-                this.data.throttFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
                 if (this.data.newFilter) {
                     RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.throttFilter);
                 }
