@@ -51,13 +51,15 @@ define([
         ],
         events: {
             "click input[name='enabled']": "enableAuthenticationClick",
-            "click #cancelAuth": "cancelClick",
-            "click #submitAuth": "saveClick",
+            "click .js-reset-btn": "resetClick",
+            "click .js-save-btn": "saveClick",
             "onValidate": "onValidate"
         },
-        data: {},
+        data: {
+            formId: "authentication-form"
+        },
         initialize (options) {
-            this.data = options.parentData;
+            this.data = _.extend(this.data, options.parentData);
         },
         render () {
             this.data.newFilter = false;
@@ -168,7 +170,7 @@ define([
                 this.data.routeData.save();
             } else {
                 //Save On state, only when form is valid
-                const form = this.$el.find("#authForm")[0];
+                const form = this.$el.find(`#${this.data.formId}`)[0];
                 FormUtils.isFormValid(form)
                     .done(
                     () => {
@@ -188,14 +190,14 @@ define([
             }
         },
 
-        cancelClick () {
+        resetClick () {
             event.preventDefault();
             this.render();
         },
 
         saveClick () {
             event.preventDefault();
-            const form = this.$el.find("#authForm")[0];
+            const form = this.$el.find(`#${this.data.formId}`)[0];
             FormUtils.isFormValid(form)
                 .done(
                 () => {

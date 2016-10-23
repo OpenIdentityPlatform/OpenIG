@@ -5,7 +5,7 @@
     <h1>{{ pageTitle }}</h1>
 </div>
 <div class="block">
-    <form class="form-horizontal" role="form" id="routeForm">
+    <form class="form-horizontal" role="form" id="{{formId}}">
         <div class="panel panel-collapse-group has-border">
             <div class="panel-body">
             {{#each controls}}
@@ -15,8 +15,8 @@
             </div>
             <div class="panel-footer clearfix">
                 <div class="pull-right">
-                    <input id="cancelRoute" class="btn btn-default" type="button" value="{{ cancelBtnTitle }}" />
-                    <input id="submitRoute" name="submitRoute" disabled="true" class="btn btn-primary" type="submit" value="{{ saveBtnTitle }}" />
+                    <input class="btn btn-default js-reset-btn" type="button" value="{{ cancelBtnTitle }}" />
+                    <input disabled="true" class="btn btn-primary js-save-btn" type="submit" value="{{ saveBtnTitle }}" />
                 </div>
             </div>
         </div>
