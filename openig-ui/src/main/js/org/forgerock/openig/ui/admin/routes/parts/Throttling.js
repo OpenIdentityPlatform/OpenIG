@@ -43,7 +43,8 @@ define([
     partials: [
         "templates/openig/admin/common/form/SliderControl.html",
         "templates/openig/admin/common/form/GroupControl.html",
-        "templates/openig/admin/routes/components/ThrottlingControl.html"
+        "templates/openig/admin/routes/components/ThrottlingControl.html",
+        "templates/openig/admin/routes/components/FormFooter.html"
     ],
     events: {
         "click .js-reset-btn": "resetClick",
