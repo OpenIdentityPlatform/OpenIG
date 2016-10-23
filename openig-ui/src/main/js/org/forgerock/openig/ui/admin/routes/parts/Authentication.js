@@ -86,7 +86,8 @@ define([
                             controls: [
                                 {
                                     name: "clientEndpoint",
-                                    value: this.data.authFilter.clientEndpoint
+                                    value: this.data.authFilter.clientEndpoint,
+                                    validator: "required"
                                 }
                             ]
                         },
