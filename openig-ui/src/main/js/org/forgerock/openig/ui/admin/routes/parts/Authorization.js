@@ -89,6 +89,10 @@ define([
                                     validator: "uri required"
                                 },
                                 {
+                                    name: "pepRealm",
+                                    value: this.data.authZFilter.pepRealm
+                                },
+                                {
                                     name: "pepUsername",
                                     value: this.data.authZFilter.pepUsername,
                                     validator: "required"
@@ -97,10 +101,6 @@ define([
                                     name: "pepPassword",
                                     value: this.data.authZFilter.pepPassword,
                                     validator: "required"
-                                },
-                                {
-                                    name: "pepRealm",
-                                    value: this.data.authZFilter.pepRealm
                                 }
                             ]
                         },
@@ -113,13 +113,13 @@ define([
                                     value: this.data.authZFilter.realm
                                 },
                                 {
+                                    name: "application",
+                                    value: this.data.authZFilter.application
+                                },
+                                {
                                     name: "ssoTokenSubject",
                                     value: this.data.authZFilter.ssoTokenSubject,
                                     validator: "required"
-                                },
-                                {
-                                    name: "application",
-                                    value: this.data.authZFilter.application
                                 }
                             ]
                         }
