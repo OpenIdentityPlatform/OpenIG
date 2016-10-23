@@ -118,10 +118,6 @@ define([
         });
     },
 
-    getBoolValue (value) {
-        return value === true || value === "true" || value === "checked" || value === "on";
-    },
-
     isFormValid (form) {
         const deferred = $.Deferred();
         const validatorResults = [];
@@ -170,6 +166,18 @@ define([
             // Succeded
             return deferred.resolve(true);
         }
+    },
+
+    // Callback method for form2js which convert string values into right types
+    convertToJSTypes (element) {
+        if (!element.tagName || element.tagName.toLowerCase() !== "input" || !element.type) {
+            return;
+        }
+        switch (element.type.toLowerCase()) {
+            case "number": return { name: element.name, value: element.valueAsNumber };
+            case "checkbox": return { name: element.name, value: element.checked };
+        }
     }
+
 })
 );

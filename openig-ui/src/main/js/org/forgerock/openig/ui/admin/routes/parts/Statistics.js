@@ -189,9 +189,9 @@ define([
         },
 
         formToStatistics (form) {
-            const formVal = form2js(form, ".", false);
+            const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
             return {
-                enabled: FormUtils.getBoolValue(formVal.enabled),
+                enabled: formVal.enabled,
                 percentiles: formVal.percentiles
             };
         },

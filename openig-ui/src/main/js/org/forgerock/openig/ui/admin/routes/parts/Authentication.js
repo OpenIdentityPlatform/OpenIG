@@ -202,12 +202,8 @@ define([
             FormUtils.isFormValid(form)
                 .done(
                 () => {
-                    const formVal = form2js(form, ".", false);
+                    const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
                     _.extend(this.data.authFilter, formVal);
-                    this.data.authFilter.enabled = FormUtils.getBoolValue(formVal.enabled);
-                    this.data.authFilter.tokenEndpointUseBasicAuth =
-                        FormUtils.getBoolValue(formVal.tokenEndpointUseBasicAuth);
-                    this.data.authFilter.requireHttps = FormUtils.getBoolValue(formVal.requireHttps);
                     if (this.data.newFilter) {
                         RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.authFilter);
                     }

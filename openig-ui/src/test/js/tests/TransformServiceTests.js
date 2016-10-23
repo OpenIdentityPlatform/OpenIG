@@ -118,8 +118,8 @@ define([
 
         QUnit.asyncTest("Should transform ThrottlingFilter", (assert) => {
             assert.deepEqual(transformService.throttlingFilter({
-                numberOfRequests: "60",
-                durationValue: "1",
+                numberOfRequests: 60,
+                durationValue: 1,
                 durationRange: Constants.timeSlot.MINUTE
             }),
                 {
@@ -214,8 +214,8 @@ define([
                     {
                         enabled: false,
                         type: "ThrottlingFilter",
-                        numberOfRequests: "60",
-                        durationValue: "1",
+                        numberOfRequests: 60,
+                        durationValue: 1,
                         durationRange: Constants.timeSlot.MINUTE
                     }
                 ]
@@ -245,8 +245,8 @@ define([
                     {
                         enabled: true,
                         type: "ThrottlingFilter",
-                        numberOfRequests: "60",
-                        durationValue: "1",
+                        numberOfRequests: 60,
+                        durationValue: 1,
                         durationRange: Constants.timeSlot.MINUTE
                     }
                 ]

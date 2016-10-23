@@ -50,7 +50,7 @@ define([
             name: "Throttling",
             config: {
                 rate: {
-                    numberOfRequests: ValueHelper.toNumber(filter.numberOfRequests),
+                    numberOfRequests: filter.numberOfRequests,
                     duration: `${filter.durationValue} ${filter.durationRange}`
                 }
             }
