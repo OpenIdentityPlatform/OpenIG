@@ -16,7 +16,7 @@
 
 define([
     "jquery",
-    "underscore",
+    "lodash",
     "org/forgerock/openig/ui/admin/services/TransformService",
     "org/forgerock/openig/ui/admin/models/RouteModel",
     "org/forgerock/openig/ui/common/util/Constants"

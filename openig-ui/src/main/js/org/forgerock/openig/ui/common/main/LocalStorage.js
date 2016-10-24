@@ -21,7 +21,7 @@
  */
 
 define([
-    "underscore"
+    "lodash"
 ], (_) => {
     const mockPrefix = "forgerock-openig-";
 

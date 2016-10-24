@@ -16,7 +16,7 @@
 
 define([
     "jquery",
-    "underscore",
+    "lodash",
     "form2js",
     "i18next",
     "org/forgerock/openig/ui/admin/routes/AbstractRouteView"

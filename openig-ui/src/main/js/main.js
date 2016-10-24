@@ -63,18 +63,18 @@ require.config({
         sinon: {
             exports: "sinon"
         },
-        underscore: {
+        lodash: {
             exports: "_"
         },
         backbone: {
-            deps: ["underscore"],
+            deps: ["lodash"],
             exports: "Backbone"
         },
         "backbone.paginator": {
             deps: ["backbone"]
         },
         "backgrid": {
-            deps: ["jquery", "underscore", "backbone"],
+            deps: ["jquery", "lodash", "backbone"],
             exports: "Backgrid"
         },
         "backgrid-filter": {
@@ -96,7 +96,7 @@ require.config({
             deps: ["jquery"]
         },
         "bootstrap-dialog": {
-            deps: ["jquery", "underscore", "backbone", "bootstrap"]
+            deps: ["jquery", "lodash", "backbone", "bootstrap"]
         },
         placeholder: {
             deps: ["jquery"]
@@ -152,7 +152,7 @@ require([
 
     // libraries necessary for forgerock-ui (and thus worth bundling)
     "jquery",
-    "underscore",
+    "lodash",
     "handlebars",
     "i18next",
     "spin"
