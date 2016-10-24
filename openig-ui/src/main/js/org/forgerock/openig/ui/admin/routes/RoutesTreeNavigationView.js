@@ -121,7 +121,7 @@ define([
 
         deleteRoute (e) {
             e.preventDefault();
-            RoutesUtils.deleteRouteDialog(this.data.appName, this.data.title)
+            RoutesUtils.deleteRouteDialog(this.data.routeName, this.data.title)
                 .then(
                     () => {
                         EventManager.sendEvent(
