@@ -63,7 +63,7 @@ define([
         ],
         events: {
             "click .route-export": "exportRouteConfig",
-            "click .route-duplicate": "duplicateRouteConfig",
+            "click .route-duplicate": "duplicateRoute",
             "click .route-deploy": "deployRoute",
             "click .route-undeploy": "undeployRoute",
             "click .route-delete": "deleteRoute",
@@ -230,11 +230,13 @@ define([
         },
 
         duplicateRoute (event) {
+            event.preventDefault();
             const itemData = this.getSelectedItemData(event);
             RoutesUtils.duplicateRouteDialog(itemData.id, itemData.name);
         },
 
         deployRoute (event) {
+            event.preventDefault();
             const itemData = this.getSelectedItemData(event);
             RoutesUtils.deployRouteDialog(itemData.id, itemData.name).done(() => {
                 this.render();
@@ -242,6 +244,7 @@ define([
         },
 
         undeployRoute (event) {
+            event.preventDefault();
             const itemData = this.getSelectedItemData(event);
             RoutesUtils.undeployRouteDialog(itemData.id, itemData.name).done(() => {
                 this.render();
@@ -249,11 +252,13 @@ define([
         },
 
         deleteRoute (event) {
+            event.preventDefault();
             const itemData = this.getSelectedItemData(event);
             RoutesUtils.deleteRouteDialog(itemData.id, itemData.name);
         },
 
         exportRouteConfig (event) {
+            event.preventDefault();
             const itemData = this.getSelectedItemData(event);
             RoutesUtils.exportRouteConfigDialog(itemData.id, itemData.name);
         },

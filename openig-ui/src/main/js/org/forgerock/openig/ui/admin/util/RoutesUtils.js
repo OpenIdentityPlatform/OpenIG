@@ -72,7 +72,7 @@ define([
         }
     },
 
-    duplicateRoutesDialog (routeId, routeTitle) {
+    duplicateRouteDialog (routeId, routeTitle) {
         UIUtils.confirmDialog(i18n.t("templates.routes.duplicateDialog", { title: routeTitle }), "danger",
             () => {
                 router.navigate(`routes/duplicate/${routeId}`, true);
