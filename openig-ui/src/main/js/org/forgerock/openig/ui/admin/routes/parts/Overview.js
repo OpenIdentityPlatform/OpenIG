@@ -46,7 +46,7 @@ define([
                     icon: "fa-search"
                 },
                 {
-                    title: $.t("config.AppConfiguration.Navigation.routeSideMenu.throttling"),
+                    title: i18n.t("config.AppConfiguration.Navigation.routeSideMenu.throttling"),
                     route: "routeThrottling",
                     icon: "fa-filter"
                 },
