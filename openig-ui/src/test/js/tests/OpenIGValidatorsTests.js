@@ -15,7 +15,7 @@
  */
 
 define([
-    "underscore",
+    "lodash",
     "i18next"
 ], (
     _,

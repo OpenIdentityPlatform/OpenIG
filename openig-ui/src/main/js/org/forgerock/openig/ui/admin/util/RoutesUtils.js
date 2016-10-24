@@ -16,7 +16,7 @@
 
 define([
     "jquery",
-    "underscore",
+    "lodash",
     "i18next",
     "org/forgerock/commons/ui/common/util/UIUtils",
     "org/forgerock/openig/ui/admin/models/RoutesCollection",

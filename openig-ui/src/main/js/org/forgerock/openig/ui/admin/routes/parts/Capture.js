@@ -16,7 +16,7 @@
 
 define(
     [
-        "underscore",
+        "lodash",
         "form2js",
         "i18next",
         "org/forgerock/commons/ui/common/main/AbstractView",

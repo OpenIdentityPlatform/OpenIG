@@ -16,7 +16,7 @@
 
 define([
     "jquery",
-    "underscore",
+    "lodash",
     "backbone",
     "i18next",
     "bootstrap",
