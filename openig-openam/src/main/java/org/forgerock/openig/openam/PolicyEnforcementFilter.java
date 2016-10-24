@@ -28,6 +28,7 @@ import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.duration;
+import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Responses.newActionResponse;
 import static org.forgerock.json.resource.http.CrestHttp.newRequestHandler;
 import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
@@ -36,7 +37,9 @@ import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
+import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.time.Duration.duration;
@@ -44,7 +47,7 @@ import static org.forgerock.util.time.Duration.duration;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -508,11 +511,11 @@ public class PolicyEnforcementFilter implements Filter {
 
         @Override
         public Object create() throws HeapException {
-
-            final String openamUrl = trailingSlash(config.get("openamUrl")
-                                                         .as(evaluatedWithHeapProperties())
-                                                         .required()
-                                                         .asString());
+            final URI openamUri = config.get("openamUrl")
+                                        .as(evaluatedWithHeapProperties())
+                                        .required()
+                                        .as(slashEnded())
+                                        .as(uri());
             final String pepUsername = config.get("pepUsername")
                                              .required()
                                              .as(evaluatedWithHeapProperties())
@@ -531,85 +534,89 @@ public class PolicyEnforcementFilter implements Filter {
                                       .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
 
-            try {
-                final HeadlessAuthenticationFilter headlessAuthenticationFilter =
-                        new HeadlessAuthenticationFilter(amHandler,
-                                                         new URI(openamUrl),
-                                                         pepRealm,
-                                                         ssoTokenHeader,
-                                                         pepUsername,
-                                                         pepPassword);
+            final HeadlessAuthenticationFilter headlessAuthenticationFilter =
+                    new HeadlessAuthenticationFilter(amHandler,
+                                                     openamUri,
+                                                     pepRealm,
+                                                     ssoTokenHeader,
+                                                     pepUsername,
+                                                     pepPassword);
 
-                amHandler = chainOf(amHandler,
-                                    headlessAuthenticationFilter,
-                                    // /json/policies endpoint has a compatible 'evaluate' action between CREST
-                                    // protocol v1 and v2 (response format unchanged)
-                                    new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1));
+            amHandler = chainOf(amHandler,
+                                headlessAuthenticationFilter,
+                                // /json/policies endpoint has a compatible 'evaluate' action between CREST
+                                // protocol v1 and v2 (response format unchanged)
+                                new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1));
 
-                RequestHandler requestHandler = newRequestHandler(amHandler, normalizeToJsonEndpoint(openamUrl, realm));
-                // Cache requested ?
-                JsonValue cacheMaxExpiration = config.get("cacheMaxExpiration");
-                if (cacheMaxExpiration.isNotNull()) {
-                    String message = format("%s no longer uses a 'cacheMaxExpiration' configuration setting."
-                                                    + "Use the following configuration to define a max expiration :%n"
-                                                    + "\"cache\" {%n"
-                                                    + "  \"enabled\": true%n"
-                                                    + "  \"maxTimeout\": %s%n"
-                                                    + "}%n",
-                                            name,
-                                            cacheMaxExpiration.asString());
-                    logger.warn(message);
-                }
-                JsonValue cacheConfig = config.get("cache").as(evaluatedWithHeapProperties());
-                boolean enabled = cacheConfig.get("enabled").defaultTo(false).asBoolean();
-                if (cacheConfig.isNotNull() && enabled) {
-                    final Duration defaultTimeout = cacheConfig.get("defaultTimeout")
-                                                               .defaultTo("1 minute")
-                                                               .as(duration());
-                    final Duration maxTimeout = cacheConfig.get("maxTimeout")
-                                                           .as(duration());
-                    if (maxTimeout != null) {
-                        if (maxTimeout.isUnlimited() || maxTimeout.isZero()) {
-                            throw new HeapException("The max timeout value cannot be set to 'unlimited' or 'zero'");
-                        }
-                    }
-                    ScheduledExecutorService executor = config.get("executor")
-                                                              .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
-                                                              .as(requiredHeapObject(heap,
-                                                                                     ScheduledExecutorService.class));
-                    TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-                    cacheFilter = new CachePolicyDecisionFilter(executor,
-                                                                timeService,
-                                                                defaultTimeout,
-                                                                maxTimeout);
-                    requestHandler = new FilterChain(requestHandler, cacheFilter);
-                }
-
-                Handler failureHandler = Handlers.FORBIDDEN;
-                if (config.isDefined("failureHandler")) {
-                    failureHandler = config.get("failureHandler").as(requiredHeapObject(heap, Handler.class));
-                }
-
-                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(requestHandler, failureHandler);
-
-                filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
-
-                if (config.get("ssoTokenSubject").isNull()
-                        && config.get("jwtSubject").isNull()
-                        && config.get("claimsSubject").isNull()) {
-                    throw new HeapException(SUBJECT_ERROR);
-                }
-
-                filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
-                filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
-                filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
-
-                filter.setEnvironment(environment(heap.getProperties()));
-
-                return filter;
-            } catch (URISyntaxException e) {
-                throw new HeapException(e);
+            RequestHandler requestHandler = newRequestHandler(amHandler, normalizeToJsonEndpoint(openamUri, realm));
+            // Cache requested ?
+            JsonValue cacheMaxExpiration = config.get("cacheMaxExpiration");
+            if (cacheMaxExpiration.isNotNull()) {
+                String message = format("%s no longer uses a 'cacheMaxExpiration' configuration setting."
+                                                + "Use the following configuration to define a max expiration :%n"
+                                                + "\"cache\" {%n"
+                                                + "  \"enabled\": true%n"
+                                                + "  \"maxTimeout\": %s%n"
+                                                + "}%n",
+                                        name,
+                                        cacheMaxExpiration.asString());
+                logger.warn(message);
             }
+            JsonValue cacheConfig = config.get("cache").as(evaluatedWithHeapProperties());
+            boolean enabled = cacheConfig.get("enabled").defaultTo(false).asBoolean();
+            if (cacheConfig.isNotNull() && enabled) {
+                final Duration defaultTimeout = cacheConfig.get("defaultTimeout")
+                                                           .defaultTo("1 minute")
+                                                           .as(duration());
+                final Duration maxTimeout = cacheConfig.get("maxTimeout")
+                                                       .as(duration());
+                if (maxTimeout != null) {
+                    if (maxTimeout.isUnlimited() || maxTimeout.isZero()) {
+                        throw new HeapException("The max timeout value cannot be set to 'unlimited' or 'zero'");
+                    }
+                }
+                ScheduledExecutorService executor = config.get("executor")
+                                                          .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
+                                                          .as(requiredHeapObject(heap,
+                                                                                 ScheduledExecutorService.class));
+                TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+                cacheFilter = new CachePolicyDecisionFilter(executor,
+                                                            timeService,
+                                                            defaultTimeout,
+                                                            maxTimeout);
+                requestHandler = new FilterChain(requestHandler, cacheFilter);
+            }
+
+            Handler failureHandler = chainOf(failureHandler(), adviceFilters(openamUri, realm));
+
+            final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(requestHandler, failureHandler);
+
+            filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
+
+            if (config.get("ssoTokenSubject").isNull()
+                    && config.get("jwtSubject").isNull()
+                    && config.get("claimsSubject").isNull()) {
+                throw new HeapException(SUBJECT_ERROR);
+            }
+
+            filter.setSsoTokenSubject(config.get("ssoTokenSubject").as(expression(String.class)));
+            filter.setJwtSubject(config.get("jwtSubject").as(expression(String.class)));
+            filter.setClaimsSubject(asFunction(config.get("claimsSubject"), Object.class, heap.getProperties()));
+
+            filter.setEnvironment(environment(heap.getProperties()));
+
+            return filter;
+        }
+
+        private Handler failureHandler() throws HeapException {
+            Handler failureHandler = config.get("failureHandler").as(optionalHeapObject(heap, Handler.class));
+            return failureHandler == null ? Handlers.FORBIDDEN : failureHandler;
+        }
+
+        private static List<Filter> adviceFilters(URI openamUri, String realm) {
+            List<Filter> advicesFilters = new ArrayList<>();
+            advicesFilters.add(new AuthLevelConditionAdviceFilter(openamUri, realm));
+            return advicesFilters;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -668,9 +675,8 @@ public class PolicyEnforcementFilter implements Filter {
         }
 
         @VisibleForTesting
-        static URI normalizeToJsonEndpoint(final String openamUri, final String realm) throws URISyntaxException {
-            final StringBuilder builder = new StringBuilder(openamUri);
-            builder.append("json");
+        static URI normalizeToJsonEndpoint(final URI openamUri, final String realm) {
+            final StringBuilder builder = new StringBuilder("json");
             if (realm == null || realm.trim().isEmpty()) {
                 builder.append("/");
             } else {
@@ -679,7 +685,7 @@ public class PolicyEnforcementFilter implements Filter {
                 }
                 builder.append(trailingSlash(realm.trim()));
             }
-            return new URI(builder.toString());
+            return openamUri.resolve(builder.toString());
         }
 
         @Override
