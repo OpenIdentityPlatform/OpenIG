@@ -52,6 +52,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -391,7 +392,7 @@ public class PolicyEnforcementFilterTest {
 
     @Test(dataProvider = "realms")
     public static void shouldSucceedToCreateBaseUri(final String realm) throws Exception {
-        assertThat(normalizeToJsonEndpoint("http://www.example.com:8090/openam/", realm).toASCIIString())
+        assertThat(normalizeToJsonEndpoint(new URI("http://www.example.com:8090/openam/"), realm).toASCIIString())
             .endsWith("/")
             .containsSequence("http://www.example.com:8090/openam/json/",
                               realm != null ? realm.trim() : "");
