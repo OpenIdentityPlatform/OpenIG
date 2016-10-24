@@ -48,10 +48,18 @@ public final class SampleApplication {
     private static final Logger LOGGER = Logger.getLogger(SampleApplication.class.getName());
     private static final int DEFAULT_PORT = 8081;
     private static final int DEFAULT_SSL_PORT = 8444;
+    private static final String APPLICATION_JAVASCRIPT = "application/javascript";
     /** Name of fake OpenAM cookie. */
     private static final String IPLANET_DIRECTORY_PRO_COOKIE = "iPlanetDirectoryPro";
+    private static final String TEXT_CSS = "text/css";
+    private static final String TEXT_HTML = "text/html";
     /** URL used to contact OpenAM. */
     private static String openamUrl;
+
+    /**
+     * Not used.
+     */
+    private SampleApplication() { }
 
     /**
      * Start an HTTP server.
@@ -98,9 +106,8 @@ public final class SampleApplication {
     private static String getOpenamUrl() {
         if (isNullOrEmpty(openamUrl)) {
             return "http://openam.example.com:8088/openam/oauth2";
-        } else {
-            return openamUrl;
         }
+        return openamUrl;
     }
 
     /**
@@ -226,8 +233,7 @@ public final class SampleApplication {
             sslContextConfigurator.setKeyStorePass("changeit");
             sslContextConfigurator.setKeyPass("changeit");
         } catch (IOException e) {
-            LOGGER.info("Failed to load key store when setting up HTTPS.");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to load key store when setting up HTTPS.", e);
             return null;
         }
 
@@ -238,10 +244,9 @@ public final class SampleApplication {
             sslEngineConfigurator.setNeedClientAuth(false);
             sslEngineConfigurator.setWantClientAuth(false);
             return sslEngineConfigurator;
-        } else {
-            LOGGER.info("Failed to build a valid HTTPS configuration.");
-            return null;
         }
+        LOGGER.info("Failed to build a valid HTTPS configuration.");
+        return null;
     }
 
     /**
@@ -267,7 +272,7 @@ public final class SampleApplication {
 
         @Override
         public void service(Request request, Response response) throws Exception {
-            if (request.getHttpHandlerPath().equalsIgnoreCase("/login")) {
+            if ("/login".equalsIgnoreCase(request.getHttpHandlerPath())) {
                 response.addCookie(new Cookie("login-cookie", "chocolate-chip"));
             }
 
@@ -282,20 +287,19 @@ public final class SampleApplication {
                 }
 
                 if (file.endsWith("css")) {
-                    response.setContentType("text/css");
+                    response.setContentType(TEXT_CSS);
                 } else if (file.endsWith("js")) {
-                    response.setContentType("application/javascript");
+                    response.setContentType(APPLICATION_JAVASCRIPT);
                 } else {
-                    response.setContentType("text/html");
+                    response.setContentType(TEXT_HTML);
                 }
-
                 response.setStatus(200, "OK");
                 response.setContentLength(content.length());
                 response.getWriter().write(content);
                 return;
             }
 
-            if (request.getHttpHandlerPath().equalsIgnoreCase("/.well-known/webfinger")) {
+            if ("/.well-known/webfinger".equalsIgnoreCase(request.getHttpHandlerPath())) {
                 // See http://tools.ietf.org/html/rfc7033
                 // This is not fully compliant. Just enough for an OIDC discovery example.
                 response.setContentType("application/jrd+json");
@@ -331,7 +335,7 @@ public final class SampleApplication {
             // When a fake OpenAM cookie is presented, simulate OpenAM's response.
             // If the cookie smells real, continue processing.
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equalsIgnoreCase(IPLANET_DIRECTORY_PRO_COOKIE)) {
+                if (IPLANET_DIRECTORY_PRO_COOKIE.equalsIgnoreCase(cookie.getName())) {
                     String[] credentials = cookie.getValue().split(":");
                     if (credentials.length == 2) {
                         simulateOpenAMResponse(credentials[0], credentials[1], response);
@@ -342,7 +346,7 @@ public final class SampleApplication {
 
             if (Method.GET == request.getMethod()) {
                 String loginPage = getResourceAsString("/login.html");
-                response.setContentType("text/html");
+                response.setContentType(TEXT_HTML);
                 response.setStatus(200, "OK");
                 response.setContentLength(loginPage.length());
                 response.getWriter().write(loginPage);
@@ -407,7 +411,7 @@ public final class SampleApplication {
                             .replace("HEADERS", headers.toString())
                             .replaceAll("####", EOL);
 
-                    response.setContentType("text/html");
+                    response.setContentType(TEXT_HTML);
                     response.setStatus(200, "OK");
                     response.setContentLength(profilePage.length());
                     response.getWriter().write(profilePage);
@@ -518,27 +522,12 @@ public final class SampleApplication {
      */
     static synchronized String getResourceAsString(final String resource) {
 
-        StringBuilder content = new StringBuilder();
-        InputStream inputStream = SampleHandler.class.getResourceAsStream(resource);
-
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(inputStream);
+        final StringBuilder content = new StringBuilder();
+        try (final Scanner scanner = new Scanner(SampleHandler.class.getResourceAsStream(resource))) {
             while (scanner.hasNextLine()) {
                 content.append(scanner.nextLine()).append(EOL);
             }
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
         }
-
         return content.toString();
-    }
-
-    /**
-     * Not used.
-     */
-    private SampleApplication() {
     }
 }
