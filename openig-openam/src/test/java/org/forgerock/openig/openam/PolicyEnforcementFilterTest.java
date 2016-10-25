@@ -79,8 +79,8 @@ import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.Function;
-import org.forgerock.util.PerItemEvictionStrategyCache;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.time.TimeService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -412,46 +412,50 @@ public class PolicyEnforcementFilterTest {
     public void shouldSucceedToUseCacheForRequestedResourceAllowed() throws Exception {
         // Given
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
-        PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache =
-                new PerItemEvictionStrategyCache<>(executorService, duration(1, TimeUnit.MINUTES));
-        RequestHandler chainedHandler = new FilterChain(requestHandler,
-                                                        new PolicyEnforcementFilter.CachePolicyDecisionFilter(cache));
-        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
-        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
+        try (PolicyEnforcementFilter.CachePolicyDecisionFilter cachePolicyDecisionFilter =
+                new PolicyEnforcementFilter.CachePolicyDecisionFilter(executorService,
+                                                                      mock(TimeService.class),
+                                                                      duration(1, TimeUnit.MINUTES),
+                                                                      null)) {
+            RequestHandler chainedHandler = new FilterChain(requestHandler,
+                                                            cachePolicyDecisionFilter);
+            PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
+            filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
-        when(next.handle(any(Context.class), eq(resourceRequest)))
-                .thenReturn(newResponsePromise(displayResourceResponse()));
+            when(next.handle(any(Context.class), eq(resourceRequest)))
+                    .thenReturn(newResponsePromise(displayResourceResponse()));
 
-        // When first call
-        filter.filter(attributesContext,
-                      resourceRequest,
-                      next).get();
-        // Then
-        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
-        verify(next).handle(attributesContext, resourceRequest);
-        verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
+            // When first call
+            filter.filter(attributesContext,
+                          resourceRequest,
+                          next).get();
+            // Then
+            verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
+            verify(next).handle(attributesContext, resourceRequest);
+            verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
-        // When second call
-        // The policies handler, which provides the policy response, is not called
-        // as the cache entry has not been evicted yet
-        filter.filter(attributesContext,
-                      resourceRequest,
-                      next).get();
+            // When second call
+            // The policies handler, which provides the policy response, is not called
+            // as the cache entry has not been evicted yet
+            filter.filter(attributesContext,
+                          resourceRequest,
+                          next).get();
 
-        verify(next, times(2)).handle(attributesContext, resourceRequest);
-        // No other call to the requestHandler has to be done here
-        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
+            verify(next, times(2)).handle(attributesContext, resourceRequest);
+            // No other call to the requestHandler has to be done here
+            verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
 
-        // Mimic cache expiration
-        captor.getValue().run();
+            // Mimic cache expiration
+            captor.getValue().run();
 
-        // When third call: the requestHandler must do another call to get the policy decision result.
-        filter.filter(attributesContext,
-                      resourceRequest,
-                      next).get();
+            // When third call: the requestHandler must do another call to get the policy decision result.
+            filter.filter(attributesContext,
+                          resourceRequest,
+                          next).get();
 
-        verify(requestHandler, times(2)).handleAction(any(Context.class), any(ActionRequest.class));
-        verify(next, times(3)).handle(attributesContext, resourceRequest);
+            verify(requestHandler, times(2)).handleAction(any(Context.class), any(ActionRequest.class));
+            verify(next, times(3)).handle(attributesContext, resourceRequest);
+        }
     }
 
     @Test
@@ -459,26 +463,29 @@ public class PolicyEnforcementFilterTest {
         // Given
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
                 .thenReturn(policyDecisionWithAdvice());
-
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
-        PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache =
-                new PerItemEvictionStrategyCache<>(executorService, duration(1, TimeUnit.MINUTES));
-        RequestHandler chainedHandler = new FilterChain(requestHandler,
-                                                        new PolicyEnforcementFilter.CachePolicyDecisionFilter(cache));
-        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
-        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
+        try (PolicyEnforcementFilter.CachePolicyDecisionFilter cachePolicyDecisionFilter =
+                     new PolicyEnforcementFilter.CachePolicyDecisionFilter(executorService,
+                                                                           mock(TimeService.class),
+                                                                           duration(1, TimeUnit.MINUTES),
+                                                                           null)) {
+            RequestHandler chainedHandler = new FilterChain(requestHandler,
+                                                            cachePolicyDecisionFilter);
+            PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
+            filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
-        when(next.handle(any(Context.class), eq(resourceRequest)))
-                .thenReturn(newResponsePromise(displayResourceResponse()));
+            when(next.handle(any(Context.class), eq(resourceRequest)))
+                    .thenReturn(newResponsePromise(displayResourceResponse()));
 
-        // When first call
-        filter.filter(attributesContext,
-                      resourceRequest,
-                      next).get();
-        // Then
-        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
-        verifyZeroInteractions(next);
-        verifyZeroInteractions(executorService);
+            // When first call
+            filter.filter(attributesContext,
+                          resourceRequest,
+                          next).get();
+            // Then
+            verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
+            verifyZeroInteractions(next);
+            verifyZeroInteractions(executorService);
+        }
     }
 
     @DataProvider
@@ -760,8 +767,10 @@ public class PolicyEnforcementFilterTest {
     }
 
     private static JsonValue buildHeapletConfiguration(final String givenMaxCacheExpiration) {
-        return buildMinimalHeapletConfiguration().put("application", "myApplication")
-                                                 .put("cacheMaxExpiration", givenMaxCacheExpiration);
+        return buildMinimalHeapletConfiguration()
+                .put("application", "myApplication")
+                .put("cache", object(field("enabled", true),
+                                     field("maxTimeout", givenMaxCacheExpiration)));
     }
 
     private PolicyEnforcementFilter buildPolicyEnforcementFilter(final JsonValue config) throws Exception {
