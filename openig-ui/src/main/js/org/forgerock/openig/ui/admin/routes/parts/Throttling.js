@@ -49,8 +49,7 @@ define([
     events: {
         "click .js-reset-btn": "resetClick",
         "click .js-save-btn": "saveClick",
-        "click input[name='enabled']": "enableThrottlingClick",
-        "onValidate": "onValidate"
+        "click input[name='enabled']": "enableThrottlingClick"
     },
     options: [
         Constants.timeSlot.SECOND,

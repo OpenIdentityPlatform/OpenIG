@@ -49,8 +49,7 @@ define([
         events: {
             "click input[name='enabled']": "enableAuthorizationClick",
             "click .js-reset-btn": "cancelClick",
-            "click .js-save-btn": "saveClick",
-            "onValidate": "onValidate"
+            "click .js-save-btn": "saveClick"
         },
         data: {
             formId: "authorization-form"

@@ -55,7 +55,6 @@ define([
             "click .js-save-btn": "saveClick",
             "click .js-reset-btn": "resetClick",
             "blur input[name='name']": "validateName",
-            "onValidate": "onValidate",
             "keyup input[name='name']": "generateId",
             "keyup input[name='id']": "validateId"
         },
