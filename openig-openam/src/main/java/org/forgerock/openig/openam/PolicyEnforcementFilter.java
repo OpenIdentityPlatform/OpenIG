@@ -34,6 +34,7 @@ import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -41,6 +42,8 @@ import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.time.Duration.duration;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
@@ -83,6 +86,7 @@ import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.Duration;
+import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,14 +124,21 @@ import org.slf4j.LoggerFactory;
  *          "claimsSubject"          :    map/expression,     [OPTIONAL - must be specified if no jwtSubject or
  *                                                                        ssoTokenSubject - instance of
  *                                                                        Map<String, Object> JWT claims ]
- *          "cacheMaxExpiration"     :    duration,           [OPTIONAL - default to 1 minute. use zero or disabled to
- *                                                                        deactivate caching, any 0 valued duration will
- *                                                                        also deactivate it.]
  *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
  *          "environment"            :    map/expression,     [OPTIONAL - instance of Map<String, List<Object>>]
  *          "executor"               :    executor,           [OPTIONAL - by default uses 'ScheduledThreadPool'
  *                                                                        heap object]
- *          "failureHandler          :    handler             [OPTIONAL - default to 403]
+ *          "failureHandler          :    handler,            [OPTIONAL - default to 403]
+ *          "cache"                  :    object,             [OPTIONAL - cache configuration. Default is no caching.]
+ *              "enabled"            :    boolean,            [OPTIONAL - default to true. Enable or not the caching of
+ *                                                                        the policy decisions.]
+ *              "defaultTimeout"     :    duration,           [OPTIONAL - default to 1 minute. If no valid ttl value is
+ *                                                                        provided by the policy decision, we'll cache
+ *                                                                        it during that duration.]
+ *              "maxTimeout"         :    duration,           [OPTIONAL - If a value is provided by the policy decision
+ *                                                                        but is greater that this value then we'll use
+ *                                                                        that value. ("zero" and "unlimited" are not
+ *                                                                        acceptable values).]
  *      }
  *  }
  *  }
@@ -381,7 +392,7 @@ public class PolicyEnforcementFilter implements Filter {
         };
     }
 
-    static class CachePolicyDecisionFilter extends NotSupportedFilter {
+    static class CachePolicyDecisionFilter extends NotSupportedFilter implements Closeable {
 
         public static final Function<ActionResponse, ActionResponse, ResourceException> COPY_ACTION_RESPONSE =
                 new Function<ActionResponse, ActionResponse, ResourceException>() {
@@ -394,9 +405,15 @@ public class PolicyEnforcementFilter implements Filter {
 
         private final PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache;
 
-        public CachePolicyDecisionFilter(
-                PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache) {
-            this.cache = checkNotNull(cache);
+        public CachePolicyDecisionFilter(ScheduledExecutorService executor,
+                                         TimeService timeService,
+                                         Duration defaultTimeout,
+                                         Duration maxTimeout) {
+            this.cache = new PerItemEvictionStrategyCache<>(executor,
+                                                            extractDurationFromTtl(defaultTimeout, timeService));
+            if (maxTimeout != null) {
+                cache.setMaxTimeout(maxTimeout);
+            }
         }
 
         @Override
@@ -428,7 +445,7 @@ public class PolicyEnforcementFilter implements Filter {
                             }
                         };
                 try {
-                    return cache.getValue(key, callable, extractDurationFromTtl())
+                    return cache.getValue(key, callable)
                                 .then(copyActionResponse());
                 } catch (InterruptedException | ExecutionException e) {
                     return new InternalServerErrorException(e).asPromise();
@@ -437,7 +454,7 @@ public class PolicyEnforcementFilter implements Filter {
             return next.handleAction(context, request);
         }
 
-        private Function<ActionResponse, ActionResponse, ResourceException> copyActionResponse() {
+        private static Function<ActionResponse, ActionResponse, ResourceException> copyActionResponse() {
             return COPY_ACTION_RESPONSE;
         }
 
@@ -461,32 +478,42 @@ public class PolicyEnforcementFilter implements Filter {
             return "";
         }
 
-        private AsyncFunction<Promise<ActionResponse, ResourceException>, Duration, Exception>
-        extractDurationFromTtl() {
+        @VisibleForTesting
+        static AsyncFunction<Promise<ActionResponse, ResourceException>, Duration, Exception>
+        extractDurationFromTtl(final Duration defaultTimeout, final TimeService timeService) {
             //@Checkstyle:off
             return new AsyncFunction<Promise<ActionResponse, ResourceException>, Duration, Exception>() {
 
                 @Override
                 public Promise<Duration, Exception> apply(Promise<ActionResponse, ResourceException> promise)
                         throws Exception {
-                    return promise.then(providedTtl(), zeroTtl());
+                    return promise.then(providedTtl(defaultTimeout), zeroTtl());
                 }
 
-                private Function<ActionResponse, Duration, Exception> providedTtl() {
+                private Function<ActionResponse, Duration, Exception> providedTtl(final Duration defaultTimeout) {
                     return new Function<ActionResponse, Duration, Exception>() {
-                                            @Override
-                                            public Duration apply(ActionResponse response) throws Exception {
-                                                // The policy response is an array
-                                                JsonValue policyDecision = response.getJsonContent().get(0);
-                                                JsonValue advices = policyDecision.get("advices")
-                                                                                  .defaultTo(object())
-                                                                                  .expect(Map.class);
-                                                if (advices.size() > 0) {
-                                                    // Do not cache policy decisions that contain any advices
-                                                    return Duration.ZERO;
-                                                }
-                                                return duration(policyDecision.get("ttl").asLong(), MILLISECONDS);
-                                            }
+                        @Override
+                        public Duration apply(ActionResponse response) throws Exception {
+                            // The policy response is an array
+                            JsonValue policyDecision = response.getJsonContent().get(0);
+                            JsonValue advices = policyDecision.get("advices")
+                                                              .defaultTo(object())
+                                                              .expect(Map.class);
+                            if (advices.size() > 0) {
+                                // Do not cache policy decisions that contain any advices
+                                return Duration.ZERO;
+                            }
+                            long ttl = policyDecision.get("ttl").defaultTo(Long.MAX_VALUE).asLong();
+                            if (ttl == Long.MAX_VALUE) {
+                                return defaultTimeout;
+                            }
+                            long difference = ttl - timeService.now();
+                            if (difference <= 0) {
+                                // No need to cache the policy decision as it is already over.
+                                return Duration.ZERO;
+                            }
+                            return duration(difference, MILLISECONDS);
+                        }
                     };
                 }
 
@@ -503,12 +530,16 @@ public class PolicyEnforcementFilter implements Filter {
             //@Checkstyle:on
         }
 
+        @Override
+        public void close() throws IOException {
+            cache.clear();
+        }
     }
 
     /** Creates and initializes a policy enforcement filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
-        private PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache;
+        private CachePolicyDecisionFilter cacheFilter;
 
         @Override
         public Object create() throws HeapException {
@@ -557,23 +588,41 @@ public class PolicyEnforcementFilter implements Filter {
 
                 RequestHandler requestHandler = newRequestHandler(amHandler, normalizeToJsonEndpoint(openamUrl, realm));
                 // Cache requested ?
-                String defaultExpiration = "1 minute";
-                final Duration cacheMaxExpiration = config.get("cacheMaxExpiration")
-                                                          .as(evaluatedWithHeapProperties())
-                                                          .defaultTo(defaultExpiration)
-                                                          .as(duration());
-                if (cacheMaxExpiration.isUnlimited()) {
-                    throw new HeapException("The max expiration value cannot be set to 'unlimited'");
+                JsonValue cacheMaxExpiration = config.get("cacheMaxExpiration");
+                if (cacheMaxExpiration.isNotNull()) {
+                    String message = format("%s no longer uses a 'cacheMaxExpiration' configuration setting."
+                                                    + "Use the following configuration to define a max expiration :%n"
+                                                    + "\"cache\" {%n"
+                                                    + "  \"enabled\": true%n"
+                                                    + "  \"maxTimeout\": %s%n"
+                                                    + "}%n",
+                                            name,
+                                            cacheMaxExpiration.asString());
+                    logger.warn(message);
                 }
-
-                if (!cacheMaxExpiration.isZero()) {
+                JsonValue cacheConfig = config.get("cache").as(evaluatedWithHeapProperties());
+                boolean enabled = cacheConfig.get("enabled").defaultTo(true).asBoolean();
+                if (cacheConfig.isNotNull() && enabled) {
+                    final Duration defaultTimeout = cacheConfig.get("defaultTimeout")
+                                                               .defaultTo("1 minute")
+                                                               .as(duration());
+                    final Duration maxTimeout = cacheConfig.get("maxTimeout")
+                                                           .as(duration());
+                    if (maxTimeout != null) {
+                        if (maxTimeout.isUnlimited() || maxTimeout.isZero()) {
+                            throw new HeapException("The max timeout value cannot be set to 'unlimited' or 'zero'");
+                        }
+                    }
                     ScheduledExecutorService executor = config.get("executor")
                                                               .defaultTo(SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY)
                                                               .as(requiredHeapObject(heap,
                                                                                      ScheduledExecutorService.class));
-                    cache = new PerItemEvictionStrategyCache<>(executor, duration(defaultExpiration));
-                    cache.setMaxTimeout(cacheMaxExpiration);
-                    requestHandler = new FilterChain(requestHandler, new CachePolicyDecisionFilter(cache));
+                    TimeService timeService = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
+                    cacheFilter = new CachePolicyDecisionFilter(executor,
+                                                                timeService,
+                                                                defaultTimeout,
+                                                                maxTimeout);
+                    requestHandler = new FilterChain(requestHandler, cacheFilter);
                 }
 
                 Handler failureHandler = Handlers.FORBIDDEN;
@@ -677,8 +726,12 @@ public class PolicyEnforcementFilter implements Filter {
 
         @Override
         public void destroy() {
-            if (cache != null) {
-                cache.clear();
+            if (cacheFilter != null) {
+                try {
+                    cacheFilter.close();
+                } catch (IOException e) {
+                    logger.warn("An error occurred while close the cache filter.", e);
+                }
             }
         }
     }
