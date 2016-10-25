@@ -42,6 +42,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 public class SampleApplicationTest {
 
     private static final Logger logger = Logger.getLogger(SampleApplicationTest.class.getName());
+    public static final String HOME_TITLE = "Sample application home page";
     private static final String LOGIN_TITLE = "Howdy, Anonymous User";
     private static final String PROFILE_TITLE = "Howdy, demo";
 
@@ -77,11 +78,22 @@ public class SampleApplicationTest {
     }
 
     @Test
+    public void testGetHomePage() throws Exception {
+        logger.info("Testing equivalent of curl --verbose " + httpServerPath + "/home");
+
+        final WebRequest webRequest = new WebRequest(new URL(httpServerPath + "/home"), GET);
+        final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+        assertEquals(webResponse.getStatusCode(), 200);
+        assertTrue(webResponse.getContentAsString().contains(HOME_TITLE));
+    }
+
+    @Test
     public void testGetLoginPage() throws Exception {
         // Check for HTTP 200 OK and the Login page in the body of the response
         logger.info("Testing equivalent of curl --verbose " + httpServerPath);
 
-        final WebRequest webRequest = new WebRequest(new URL(httpsServerPath), GET);
+        final WebRequest webRequest = new WebRequest(new URL(httpServerPath), GET);
         final WebResponse webResponse = webClient.loadWebResponse(webRequest);
 
         assertEquals(webResponse.getStatusCode(), 200);

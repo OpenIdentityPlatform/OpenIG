@@ -17,6 +17,7 @@
 package org.forgerock.openig.doc;
 
 import java.io.ByteArrayOutputStream;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -344,12 +345,23 @@ public final class SampleApplication {
                 }
             }
 
+            if (Method.GET == request.getMethod()
+                    && request.getRequestURI().startsWith("/home")) {
+                String homePage = replacePlaceHolders(getResourceAsString("/home.html"), null, request);
+                response.setContentType("text/html");
+                response.setStatus(200, "OK");
+                response.setContentLength(homePage.length());
+                response.getWriter().write(homePage);
+                return;
+            }
+
             if (Method.GET == request.getMethod()) {
                 String loginPage = getResourceAsString("/login.html");
                 response.setContentType(TEXT_HTML);
                 response.setStatus(200, "OK");
                 response.setContentLength(loginPage.length());
                 response.getWriter().write(loginPage);
+                return;
             }
 
             if (Method.POST == request.getMethod()) {
@@ -391,38 +403,61 @@ public final class SampleApplication {
                 }
 
                 if (credentialsAreValid(username, password)) {
-
                     // Replace profile page placeholders and respond.
-                    final StringBuilder headers = new StringBuilder();
-                    for (String name : request.getHeaderNames()) {
-                        for (String header : request.getHeaders(name)) {
-                            headers.append(name)
-                                    .append(": ")
-                                    .append(header)
-                                    .append("<br>");
-                        }
-                    }
-
-                    String profilePage = getResourceAsString("/profile.html")
-                            .replaceAll(EOL, "####")
-                            .replaceAll("USERNAME", username)
-                            .replace("METHOD", request.getMethod().getMethodString())
-                            .replace("REQUEST_URI", request.getDecodedRequestURI())
-                            .replace("HEADERS", headers.toString())
-                            .replaceAll("####", EOL);
-
-                    response.setContentType(TEXT_HTML);
+                    String profilePage = replacePlaceHolders(getResourceAsString("/profile.html"), username, request);
+                    response.setContentType("text/html");
                     response.setStatus(200, "OK");
                     response.setContentLength(profilePage.length());
                     response.getWriter().write(profilePage);
+                    return;
 
                 } else {
                     final String forbidden = "Forbidden";
                     response.setStatus(403, forbidden);
                     response.setContentLength(forbidden.length() + EOL.length());
                     response.getWriter().write(forbidden + EOL);
+                    return;
                 }
             }
+        }
+
+        private static String replacePlaceHolders(final String resource, final String username, final Request request)
+                throws CharConversionException {
+            return resource.replaceAll(EOL, "####")
+                           .replaceAll("USERNAME", username)
+                           .replace("METHOD", request.getMethod().getMethodString())
+                           .replace("REQUEST_URI", request.getDecodedRequestURI())
+                           .replace("COOKIES", extractCookies(request.getHeaders("cookie")))
+                           .replace("HEADERS", extractHeaders(request))
+                           .replaceAll("####", EOL);
+        }
+
+        private static String extractCookies(final Iterable<String> cookieHeader) {
+            final StringBuilder cookies = new StringBuilder();
+            for (final String line : cookieHeader) {
+                for (final String cookie : line.split(";")) {
+                    cookies.append("<b>")
+                           .append(cookie)
+                           .append("</b>")
+                           .append("<br>");
+                }
+            }
+            return cookies.toString();
+        }
+
+        private static String extractHeaders(final Request request) {
+            final StringBuilder headers = new StringBuilder();
+            for (final String name : request.getHeaderNames()) {
+                for (final String header : request.getHeaders(name)) {
+                    headers.append("<b>")
+                           .append(name)
+                           .append("</b>")
+                           .append(": ")
+                           .append(header)
+                           .append("<br>");
+                }
+            }
+            return headers.toString();
         }
     }
 
