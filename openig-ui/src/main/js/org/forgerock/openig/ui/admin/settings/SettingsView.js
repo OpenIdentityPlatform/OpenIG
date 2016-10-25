@@ -38,8 +38,7 @@ define([
     const SettingsView = AbstractView.extend({
         template: "templates/openig/admin/settings/SettingsTemplate.html",
         events: {
-            "click #submitSettings": "settingsFormSubmit",
-            "onValidate": "onValidate"
+            "click #submitSettings": "settingsFormSubmit"
         },
         data: {
 
