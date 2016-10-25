@@ -209,7 +209,7 @@ define([
                 } else {
                     UIUtils.confirmDialog(i18n.t("templates.routes.deployDialog", { title }), "danger",
                         () => {
-                            this.deployRoutesModel(routeData).done(() => {
+                            this.deployRouteModel(routeData).done(() => {
                                 deferred.resolve();
                             }).fail(() => {
                                 deferred.reject();
