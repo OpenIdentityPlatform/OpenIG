@@ -48,15 +48,6 @@ public class HeapImplTest {
         heap.destroy();
     }
 
-    @Test(description = "OPENIG-380")
-    public void shouldAllowLegacyObjectsArray() throws Exception {
-        final HeapImpl heap = buildDefaultHeap();
-        heap.init(asJson("heap-object-with-legacy-objects-array.json"));
-        final HeapObject heapObject = heap.get("CustomHeapObject", HeapObject.class);
-        assertThat(heapObject.message).isEqualTo("Custom Message");
-        heap.destroy();
-    }
-
     @Test
     public void shouldAllowNoConfigAttribute() throws Exception {
         final HeapImpl heap = buildDefaultHeap();
@@ -97,7 +88,7 @@ public class HeapImplTest {
     }
 
     @Test(expectedExceptions = JsonValueException.class,
-            expectedExceptionsMessageRegExp = ".*Expecting a java\\.util\\.Map")
+          expectedExceptionsMessageRegExp = ".*Expecting a java\\.util\\.Map")
     public void shouldNotAllowInvalidConfig() throws Exception {
 
         final HeapImpl heap = buildDefaultHeap();
@@ -343,8 +334,8 @@ public class HeapImplTest {
                                   field("type", "org.forgerock.openig.heap.domain.Architect"),
                                   field("config", object(field("name", "Hello"))));
         Object matrix2 = object(field("name", "Matrix"),
-                               field("type", "org.forgerock.openig.heap.domain.Matrix"),
-                               field("config", object(field("architect-ref", architect))));
+                                field("type", "org.forgerock.openig.heap.domain.Matrix"),
+                                field("config", object(field("architect-ref", architect))));
 
         heap.init(json(object(field("heap", array(matrix, matrix2)))));
     }

@@ -27,7 +27,6 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.GLOBAL_DECORATOR_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asClass;
 import static org.forgerock.openig.util.JsonValues.bindings;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.heapObjectNameOrPointer;
 import static org.forgerock.openig.util.JsonValues.resolvedLocation;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -184,19 +183,6 @@ public class HeapImpl implements Heap {
                                    .expect(Map.class)
                                    .as(bindings(getProperties())));
         JsonValue heap = config.get("heap").defaultTo(emptyList());
-        if (heap.isMap()) {
-            /*
-             * In OpenIG < 3.1 the heap objects were listed in a child "objects"
-             * array. The extra nesting was found to be redundant and removed in
-             * 3.1. We continue to allow it in order to maintain backwards
-             * compatibility.
-             */
-            heap = heap.get("objects").required();
-            logger.warn("The configuration field heap/objects has been deprecated. Heap objects "
-                                + "should now be listed directly in the top level \"heap\" field, "
-                                + "e.g. { \"heap\" : [ objects... ] }.");
-        }
-
         for (JsonValue object : heap.expect(List.class)) {
             addDeclaration(object);
         }
@@ -548,8 +534,7 @@ public class HeapImpl implements Heap {
      * @throws HeapException if object resolution failed
      */
     public Handler getHandler() throws HeapException {
-        JsonValue reference = getWithDeprecation(config, logger, "handler", "handlerObject");
-        Handler handler = resolve(reference, Handler.class);
+        Handler handler = resolve(config.get("handler"), Handler.class);
         // FIXME: how to grab the decoration context of this object (it may not origin from this heap) ?
         DecorationContext context = new DecorationContext(this,
                                                           name.child("top-level-handler"),

@@ -38,7 +38,6 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2Utils.saveSession;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
@@ -893,7 +892,7 @@ public final class OAuth2ClientFilter implements Filter {
                                                             .as(expression(String.class));
 
             final List<ClientRegistration> clients = new LinkedList<>();
-            final JsonValue regs = getWithDeprecation(config, logger, "registrations", "registration");
+            final JsonValue regs = config.get("registrations");
             if (regs.isNotNull()) {
                 if (regs.isString() || regs.isMap()) {
                     clients.add(regs.as(requiredHeapObject(heap, ClientRegistration.class)));

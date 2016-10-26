@@ -19,7 +19,6 @@ package org.forgerock.openig.filter.throttling;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.Locale;
@@ -114,9 +113,9 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                           .defaultTo("5 seconds")
                                           .as(duration());
 
-        final Expression<String> requestGroupingPolicy =
-                getWithDeprecation(config, logger, "requestGroupingPolicy", "partitionKey")
-                        .defaultTo("").as(expression(String.class));
+        final Expression<String> requestGroupingPolicy = config.get("requestGroupingPolicy")
+                                                               .defaultTo("")
+                                                               .as(expression(String.class));
 
         ThrottlingPolicy throttlingRatePolicy;
         if (config.isDefined("rate")) {

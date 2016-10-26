@@ -105,12 +105,6 @@ public class AbstractScriptableHeapObject<V> {
                 component.setArgs(config.get(CONFIG_OPTION_ARGS).as(evaluated(bindings)).asMap());
             }
 
-            if (config.isDefined("httpClient")) {
-                logger.warn("'{}' no longer uses a 'httpClient' attribute: 'clientHandler' "
-                                    + "has to be used instead with a reference to a Handler",
-                            name);
-            }
-
             return component;
         }
 
