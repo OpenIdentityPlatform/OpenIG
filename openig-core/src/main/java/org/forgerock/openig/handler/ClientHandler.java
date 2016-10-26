@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_CONNECT_TIMEOUT;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_HOSTNAME_VERIFIER;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_KEY_MANAGERS;
+import static org.forgerock.http.handler.HttpClientHandler.OPTION_LOADER;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_MAX_CONNECTIONS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_RETRY_REQUESTS;
 import static org.forgerock.http.handler.HttpClientHandler.OPTION_REUSE_CONNECTIONS;
@@ -50,6 +51,7 @@ import org.forgerock.http.apache.async.AsyncHttpClientProvider;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.spi.Loader;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -183,6 +185,15 @@ public class ClientHandler implements Handler {
             final Options options = Options.defaultOptions();
             final JsonValue evaluated = config.as(evaluatedWithHeapProperties());
 
+            // Force the HTTP client to be the asynchronous one.
+            // We can't rely on the ServiceLoader as it depends on where the JAR files are stored.
+            options.set(OPTION_LOADER, new Loader() {
+                @Override
+                public <S> S load(Class<S> service, Options options) {
+                    return service.cast(new AsyncHttpClientProvider());
+                }
+            });
+
             if (evaluated.isDefined("connections")) {
                 options.set(OPTION_MAX_CONNECTIONS, evaluated.get("connections").asInteger());
             }
@@ -223,7 +234,6 @@ public class ClientHandler implements Handler {
             }
 
             if (evaluated.isDefined("numberOfWorkers")) {
-
                 options.set(AsyncHttpClientProvider.OPTION_WORKER_THREADS,
                             evaluated.get("numberOfWorkers").asInteger());
             }
