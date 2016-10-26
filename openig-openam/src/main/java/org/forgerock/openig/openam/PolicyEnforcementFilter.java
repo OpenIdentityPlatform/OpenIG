@@ -35,7 +35,6 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
 import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
@@ -521,9 +520,9 @@ public class PolicyEnforcementFilter implements Filter {
                                           .as(evaluatedWithHeapProperties())
                                           .defaultTo(realm)
                                           .asString();
-            Handler amHandler = getWithDeprecation(config, logger, "amHandler", "policiesHandler")
-                                        .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
-                                        .as(requiredHeapObject(heap, Handler.class));
+            Handler amHandler = config.get("amHandler")
+                                      .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
+                                      .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
 
             @SuppressWarnings("rawtypes")

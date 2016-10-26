@@ -245,13 +245,6 @@ public class ClientHandler implements Handler {
             options.set(OPTION_KEY_MANAGERS, getKeyManagers());
             options.set(OPTION_TRUST_MANAGERS, getTrustManagers());
 
-            if (evaluated.isDefined("httpClient")) {
-                String message = format("%s no longer uses a 'httpClient' attribute. All former 'HttpClient' "
-                                                + "config attributes must now be set in 'ClientHandler' instead.",
-                                        name);
-                logger.warn(message);
-            }
-
             try {
                 httpClientHandler = new HttpClientHandler(options);
                 return new ClientHandler(httpClientHandler);
