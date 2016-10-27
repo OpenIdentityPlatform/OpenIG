@@ -62,11 +62,9 @@ define([
             this.data = _.extend(this.data, options.parentData);
         },
         render () {
-            this.data.newFilter = false;
             this.data.authFilter = this.getFilter();
             if (!this.data.authFilter) {
                 this.data.authFilter = this.createFilter();
-                this.data.newFilter = true;
             }
 
             this.data.controls = [
@@ -203,7 +201,7 @@ define([
                 () => {
                     const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
                     _.extend(this.data.authFilter, formVal);
-                    if (this.data.newFilter) {
+                    if (!this.getFilter()) {
                         RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.authFilter);
                     }
                     this.data.routeData.save();
