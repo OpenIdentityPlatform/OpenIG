@@ -65,11 +65,9 @@ define([
     },
 
     render () {
-        this.data.newFilter = false;
         this.data.throttFilter = this.getFilter();
         if (!this.data.throttFilter) {
             this.data.throttFilter = this.createFilter();
-            this.data.newFilter = true;
         }
 
         this.data.controls = [
@@ -128,7 +126,7 @@ define([
             () => {
                 const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
                 _.extend(this.data.throttFilter, formVal);
-                if (this.data.newFilter) {
+                if (!this.getFilter()) {
                     RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.throttFilter);
                 }
                 this.data.routeData.save();
