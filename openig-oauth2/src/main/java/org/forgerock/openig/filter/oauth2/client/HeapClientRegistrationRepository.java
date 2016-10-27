@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
  * attributes.
  *
  * @see <a href="https://bugster.forgerock.org/jira/browse/OPENIG-953">OPENIG-953</a>
+ * @deprecated Since 5.0. ClientRegistrations must be declared in OAuth2ClientFilter
+ * 'registrations' attributes.
  */
+@Deprecated
 class HeapClientRegistrationRepository extends ClientRegistrationRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(HeapClientRegistrationRepository.class);
