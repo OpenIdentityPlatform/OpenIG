@@ -80,5 +80,17 @@ define([
 
             return Backbone.Model.prototype.sync.call(this, method, model, options);
         }
+
+        getStatusTextKey () {
+            if (this.get("deployed") === true) {
+                if (this.get("pendingChanges") === true) {
+                    return "templates.routes.changesPending";
+                } else {
+                    return "templates.routes.deployedState";
+                }
+            } else {
+                return "templates.routes.undeployedState";
+            }
+        }
     }
 ));
