@@ -22,7 +22,7 @@
                     </div>
                     <div class="toolbar-search">
                         <div class="form-group has-feedback has-feedback-left">
-                            <input type="text" class="form-control filter-input" aria-label="Route Filter" placeholder="{{t 'templates.routes.filter'}}">
+                            <input type="text" class="form-control filter-input" aria-label="Route Filter" placeholder="{{t 'templates.routes.filter'}}" value="{{filter}}">
                             <div class="form-control-feedback "><i class="fa fa-search"></i></div>
                         </div>
                     </div>
@@ -32,11 +32,7 @@
             <div class="container">
                 <div class="tab-content tab-content-transparent">
                     <div id="routeCardContainer" class="tab-pane {{#equals viewStyle 'card'}}active{{/equals}}">
-                        <div class="row">
-                            {{#each cardData}}
-                                {{> templates/openig/admin/routes/components/RouteCard }}
-                            {{/each}}
-                        </div>
+                        <div id="routeCardList"></div>
                     </div>
                     <div id="routeGridContainer" class="tab-pane {{#equals viewStyle 'grid'}}active{{/equals}}">
                         <div id="routesGrid"></div>

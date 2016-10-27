@@ -27,13 +27,13 @@
             <div class="card-footer">
                 {{#if deployed}}
                     {{#if pendingChanges}}
-                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i> {{t "templates.routes.changesPending"}}</span>
+                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i>
                     {{else}}
-                    <span class="text-success"><i class="fa fa-check-circle"></i> {{t "templates.routes.deployedState"}}</span>
+                    <span class="text-success"><i class="fa fa-check-circle"></i>
                     {{/if}}
                 {{else}}
-                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i> {{t "templates.routes.undeployedState"}}</span>
-                {{/if}}
+                    <span data-title="{{error}}" class="text-danger resource-unavailable"><i class="fa fa-exclamation-circle"></i>
+                {{/if}} {{t status}}</span>
             </div>
         </div>
     </div>

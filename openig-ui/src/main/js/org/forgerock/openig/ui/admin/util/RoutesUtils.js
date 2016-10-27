@@ -176,8 +176,11 @@ define([
                 constants.EVENT_DISPLAY_MESSAGE_REQUEST,
                 { key: "routeDeployedSuccess", title }
             );
-            model.set("deployedDate", new Date());
-            model.set("pendingChanges", false);
+            model.set({
+                deployed: true,
+                deployedDate: new Date(),
+                pendingChanges: false
+            });
             model.save();
             deferred.resolve();
         }).fail((errorResponse) => {
@@ -225,8 +228,11 @@ define([
         const deferred = $.Deferred();
         ServerRoutesCollection.undeploy(id).done(() => {
             RoutesCollection.byRouteId(id).then((routeData) => {
-                routeData.set("deployedDate", null);
-                routeData.set("pendingChanges", false);
+                routeData.set({
+                    deployed: false,
+                    deployedDate: null,
+                    pendingChanges: false
+                });
                 routeData.save();
                 deferred.resolve();
             });

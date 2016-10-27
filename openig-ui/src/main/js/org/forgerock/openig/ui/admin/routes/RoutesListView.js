@@ -33,7 +33,8 @@ define([
     "org/forgerock/openig/ui/admin/models/ServerRoutesCollection",
     "org/forgerock/openig/ui/admin/views/common/NoItemBox",
     "org/forgerock/commons/ui/common/util/CookieHelper",
-    "org/forgerock/openig/ui/admin/util/DataFilter"
+    "org/forgerock/openig/ui/admin/util/DataFilter",
+    "org/forgerock/openig/ui/admin/routes/parts/CardsList"
 ], (
     $,
     _,
@@ -53,12 +54,12 @@ define([
     ServerRoutesCollection,
     NoItemBox,
     CookieHelper,
-    DataFilter
+    DataFilter,
+    CardsList
 ) => {
     const RoutesListView = AbstractView.extend({
         template: "templates/openig/admin/routes/RoutesListViewTemplate.html",
         partials: [
-            "templates/openig/admin/routes/components/RouteCard.html",
             "templates/openig/admin/routes/components/RoutePopupMenu.html"
         ],
         events: {
@@ -68,8 +69,8 @@ define([
             "click .route-undeploy": "undeployRoute",
             "click .route-delete": "deleteRoute",
             "click .toggle-view-btn": "toggleButtonChange",
-            "keyup .filter-input": "filterRoutes",
-            "paste .filter-input": "filterRoutes"
+            "keyup .filter-input": "routesFilterChanged",
+            "paste .filter-input": "routesFilterChanged"
         },
         viewStyleTypes: { card: "card", grid: "grid" },
         listStyleCookieName: "openig-ui-routes-list-style",
@@ -78,7 +79,7 @@ define([
         },
         initialize () {
             AbstractView.prototype.initialize.call(this);
-            this.listenTo(RoutesCollection, "remove", this.removeItem);
+            this.listenTo(RoutesCollection, "change", this.renderItems);
         },
         render (args, callback) {
             const viewThis = this;
@@ -160,7 +161,7 @@ define([
                 }
             ];
 
-            const routesGrid = new Backgrid.Grid({
+            this.routesGrid = new Backgrid.Grid({
                 className: "table backgrid",
                 row: RenderRow,
                 columns: tableColumns,
@@ -168,7 +169,6 @@ define([
             });
 
             this.data.docHelpUrl = externalLinks.backstage.admin.routesList;
-            this.data.cardData = [];
 
             RoutesCollection.availableRoutes().done((routes) => {
                 ServerRoutesCollection.fetchRoutesIds().done((serverRoutes) => {
@@ -176,30 +176,20 @@ define([
                         this.routesList = serverRoutes.models;
                         _.each(routes.models, (route) => {
                             const isDeployed = ServerRoutesCollection.isDeployed(route.get("id"));
-                            route.set("deployed", isDeployed);
-                            route.set("pendingChanges", isDeployed ? route.get("pendingChanges") : false);
+                            route.set({
+                                deployed: isDeployed,
+                                pendingChanges: isDeployed ? route.get("pendingChanges") : false
+                            });
                         });
                     }
                 });
-            }).always((routes) => {
-                if (routes && routes.length > 0) {
-                    _.each(routes.models, (route) => {
-                        this.data.cardData.push(this.getRenderData(route));
-                    });
-                    this.parentRender(() => {
-                        this.$el.find("#routesGrid").append(routesGrid.render().el);
-                        if (callback) {
-                            callback();
-                        }
-                    });
-                } else {
-                    this.parentRender(() => {
-                        this.renderNoItem();
-                        if (callback) {
-                            callback();
-                        }
-                    });
-                }
+            }).always(() => {
+                this.parentRender(() => {
+                    this.renderItems();
+                    if (callback) {
+                        callback();
+                    }
+                });
             });
         },
 
@@ -220,10 +210,7 @@ define([
                 id: model.get("id"),
                 uri: model.get("baseURI"),
                 name: model.get("name"),
-                status: i18n.t(this.getStatusTextKey(
-                    model.get("deployed") === true,
-                    model.get("pendingChanges") === true)
-                ),
+                status: i18n.t(model.getStatusTextKey()),
                 deployed: model.get("deployed"),
                 pendingChanges: model.get("pendingChanges")
             };
@@ -238,17 +225,13 @@ define([
         deployRoute (event) {
             event.preventDefault();
             const itemData = this.getSelectedItemData(event);
-            RoutesUtils.deployRouteDialog(itemData.id, itemData.name).done(() => {
-                this.render();
-            });
+            RoutesUtils.deployRouteDialog(itemData.id, itemData.name);
         },
 
         undeployRoute (event) {
             event.preventDefault();
             const itemData = this.getSelectedItemData(event);
-            RoutesUtils.undeployRouteDialog(itemData.id, itemData.name).done(() => {
-                this.render();
-            });
+            RoutesUtils.undeployRouteDialog(itemData.id, itemData.name);
         },
 
         deleteRoute (event) {
@@ -295,21 +278,14 @@ define([
             );
         },
 
-        getStatusTextKey (deployed, pendingChnages) {
-            if (deployed === true) {
-                if (pendingChnages === true) {
-                    return "templates.routes.changesPending";
-                } else {
-                    return "templates.routes.deployedState";
-                }
-            } else {
-                return "templates.routes.undeployedState";
-            }
+        routesFilterChanged (event) {
+            this.data.filter = $(event.target).val();
+            this.filterRoutes(this.data.filter);
         },
 
         /* Filter cards and rows */
-        filterRoutes (event) {
-            const dataFilter = new DataFilter($(event.target).val(), ["id", "uri", "name", "status"]);
+        filterRoutes (filterText) {
+            const dataFilter = new DataFilter(filterText, ["id", "uri", "name", "status"]);
             _.each(this.$el.find(".route-item"), (elm) => {
                 const element = $(elm);
                 RoutesCollection.byRouteId(element.data("id"))
@@ -323,12 +299,21 @@ define([
             });
         },
 
-        removeItem (model, collection) {
-            const card = this.$el.find(`.card-spacer[data-route-id='${model.get("id")}']`);
-            card.remove();
-
-            if (collection.models.length === 0) {
+        /* Render Cards and Table */
+        renderItems () {
+            if (RoutesCollection.length === 0) {
                 this.renderNoItem();
+                return;
+            }
+            const cardsList = new CardsList({
+                collection: RoutesCollection,
+                getRenderData: this.getRenderData
+            });
+            cardsList.element = "#routeCardList";
+            cardsList.render();
+            this.$el.find("#routesGrid").append(this.routesGrid.render().el);
+            if (this.data.filter) {
+                this.filterRoutes(this.data.filter);
             }
         }
     });
