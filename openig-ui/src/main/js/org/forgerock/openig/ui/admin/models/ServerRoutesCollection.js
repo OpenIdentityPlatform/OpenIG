@@ -46,17 +46,27 @@ define([
         },
         deploy (id, jsonConfig) {
             const deferred = $.Deferred();
-            const promise = deferred.promise();
-            const serverRoute = new ServerRouteModel(jsonConfig);
-            serverRoute.id = id;
-            serverRoute.save().success((deployResult) => {
-                this.add(deployResult);
-                deferred.resolve();
-            }).error((error) => {
-                console.log(error);
-                deferred.reject(error);
-            });
-            return promise;
+            // Refresh list of deployed routes
+            this.fetchRoutesIds()
+                .then(() => {
+                    let serverRoute = this.get(id);
+                    if (!serverRoute) {
+                        serverRoute = new ServerRouteModel(jsonConfig);
+                        serverRoute.id = id;
+                    } else {
+                        serverRoute.set(jsonConfig);
+                    }
+                    serverRoute.save().success((deployResult) => {
+                        if (serverRoute.isNew()) {
+                            this.add(deployResult);
+                        }
+                        deferred.resolve();
+                    }).error((error) => {
+                        console.log(error);
+                        deferred.reject(error);
+                    });
+                });
+            return deferred;
         },
         undeploy (id) {
             const deferred = $.Deferred();
