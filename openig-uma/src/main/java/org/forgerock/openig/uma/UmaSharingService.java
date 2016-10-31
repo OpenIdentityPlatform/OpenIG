@@ -26,6 +26,7 @@ import static org.forgerock.json.JsonValueFunctions.setOf;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.json.resource.Resources.newHandler;
 import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
+import static org.forgerock.openig.util.CrestUtil.newCrestApplication;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
@@ -382,7 +383,9 @@ public class UmaSharingService {
                                                                   clientId,
                                                                   clientSecret);
                 // register admin endpoint
-                Handler httpHandler = newHttpHandler(newHandler(new ShareCollectionProvider(service)));
+                Handler httpHandler = newHttpHandler(
+                        newCrestApplication(newHandler(new ShareCollectionProvider(service)),
+                                            "frapi:openig:uma:share"));
                 EndpointRegistry.Registration share = endpointRegistry().register("share", httpHandler);
                 logger.info("UMA Share endpoint available at '{}'", share.getPath());
 

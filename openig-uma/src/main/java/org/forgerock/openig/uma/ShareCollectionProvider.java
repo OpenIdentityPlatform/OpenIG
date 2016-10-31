@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2015 ForgeRock AS.
+ * Copyright 2015-2016 ForgeRock AS.
  */
 
 package org.forgerock.openig.uma;
@@ -25,6 +25,18 @@ import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
+import org.forgerock.api.annotations.ApiError;
+import org.forgerock.api.annotations.CollectionProvider;
+import org.forgerock.api.annotations.Create;
+import org.forgerock.api.annotations.Delete;
+import org.forgerock.api.annotations.Handler;
+import org.forgerock.api.annotations.Operation;
+import org.forgerock.api.annotations.Query;
+import org.forgerock.api.annotations.Read;
+import org.forgerock.api.annotations.Schema;
+import org.forgerock.api.enums.CreateMode;
+import org.forgerock.api.enums.QueryType;
+import org.forgerock.api.enums.Stability;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
@@ -53,6 +65,11 @@ import org.forgerock.util.promise.Promise;
  * <p>Supported operations: {@literal CREATE}, {@literal READ}, {@literal DELETE}
  * and {@literal QUERY} (simple shares list, no filtering).
  */
+@CollectionProvider(details = @Handler(id = "share",
+                                       resourceSchema = @Schema(schemaResource = "share.json", id = "share"),
+                                       title = "i18n:#service.title",
+                                       description = "i18n:#service.desc",
+                                       mvccSupported = false))
 class ShareCollectionProvider implements CollectionResourceProvider {
 
     private final UmaSharingService service;
@@ -68,6 +85,17 @@ class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Create(operationDescription = @Operation(description = "i18n:#create.desc",
+                                              stability = Stability.EVOLVING,
+                                              errors = {
+                                                      @ApiError(id = "NotSupported",
+                                                                code = 401,
+                                                                description = "i18n:#not-supported.desc"),
+                                                      @ApiError(id = "BadRequest",
+                                                                code = 400,
+                                                                description = "i18n:#bad-request.desc")
+                                              }),
+            modes = CreateMode.ID_FROM_SERVER)
     public Promise<ResourceResponse, ResourceException> createInstance(final Context context,
                                                                        final CreateRequest request) {
         if (request.getNewResourceId() != null) {
@@ -98,6 +126,11 @@ class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Delete(operationDescription = @Operation(description = "i18n:#delete.desc",
+                                              stability = Stability.EVOLVING,
+                                              errors = { @ApiError(id = "NotFound",
+                                                                   code = 404,
+                                                                   description = "i18n:#not-found.desc") }))
     public Promise<ResourceResponse, ResourceException> deleteInstance(final Context context,
                                                                        final String resourceId,
                                                                        final DeleteRequest request) {
@@ -116,6 +149,12 @@ class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Query(operationDescription = @Operation(description = "i18n:#query.desc",
+                                             stability = Stability.EVOLVING,
+                                             errors = { @ApiError(id = "NotSupported",
+                                                                  code = 401,
+                                                                  description = "i18n:#not-supported.desc") }),
+           type = QueryType.FILTER)
     public Promise<QueryResponse, ResourceException> queryCollection(final Context context,
                                                                      final QueryRequest request,
                                                                      final QueryResourceHandler handler) {
@@ -135,6 +174,8 @@ class ShareCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Read(operationDescription = @Operation(description = "i18n:#read.desc",
+                                            stability = Stability.EVOLVING))
     public Promise<ResourceResponse, ResourceException> readInstance(final Context context,
                                                                      final String resourceId,
                                                                      final ReadRequest request) {
