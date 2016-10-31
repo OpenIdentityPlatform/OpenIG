@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://forgerock.org/openig/schemas/5.0.0/share.json",
+
+  "title" : "i18n:org/forgerock/openig/uma/share#share.title",
+  "description" : "i18n:org/forgerock/openig/uma/share#share.desc",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "i18n:org/forgerock/openig/uma/share#id.desc",
+      "type": "string"
+    },
+    "pattern": {
+      "description": "i18n:org/forgerock/openig/uma/share#pattern.desc",
+      "type": "string"
+    },
+    "user_access_policy_uri": {
+      "description": "i18n:org/forgerock/openig/uma/share#user_access_policy_uri.desc",
+      "type": "string"
+    },
+    "pat": {
+      "description": "i18n:org/forgerock/openig/uma/share#pat.desc",
+      "type": "string"
+    },
+    "resource_set_id": {
+      "description": "i18n:org/forgerock/openig/uma/share#resource_set_id.desc",
+      "type": "string"
+    }
+  }
+}
