@@ -65,6 +65,11 @@ define([
             return this.get("_rev") || "*";
         }
 
+        save (attr, options) {
+            this.setPendingChanges();
+            return Backbone.Model.prototype.save.call(this, attr, options);
+        }
+
         sync (method, model, options) {
             options = options || {};
 
@@ -91,6 +96,27 @@ define([
             } else {
                 return "templates.routes.undeployedState";
             }
+        }
+
+        setPendingChanges () {
+            if (this.needUnsetPendingChanges()) {
+                // model state changed to undeployed and has pending changes flag
+                this.set("pendingChanges", false);
+                console.log("No pending changes", this.id);
+            } else if (this.needSetPendingChanges()) {
+                // deployed model changed; ignore pendingChanges and deployedDate changes
+                this.set("pendingChanges", true);
+                console.log("Has pending changes", this.id);
+            }
+        }
+
+        needUnsetPendingChanges () {
+            return this.hasChanged("deployed") && this.get("deployed") && this.get("pendingChanges");
+        }
+
+        needSetPendingChanges () {
+            return (!this.hasChanged("pendingChanges") && !this.hasChanged("deployedDate") &&
+                this.get("deployed") && !this.get("pendingChanges"));
         }
     }
 ));
