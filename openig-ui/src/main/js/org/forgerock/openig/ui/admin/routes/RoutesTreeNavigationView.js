@@ -71,7 +71,11 @@ define([
             e.preventDefault();
             EventManager.sendEvent($(e.currentTarget).data().event, this.data.routePath);
         },
-
+        initialize () {
+            TreeNavigation.prototype.initialize.call(this);
+            this.listenTo(RoutesCollection, "change:deployed", this.render);
+            this.listenTo(RoutesCollection, "change:pendingChanges", this.render);
+        },
         render (args, callback) {
             this.data.routePath = Router.getCurrentHash().match(Router.currentRoute.url)[1];
 
@@ -107,16 +111,12 @@ define([
 
         deployRoute (e) {
             e.preventDefault();
-            RoutesUtils.deployRouteDialog(this.data.routeName, this.data.title).done(() => {
-                this.render();
-            });
+            RoutesUtils.deployRouteDialog(this.data.routeName, this.data.title);
         },
 
         undeployRoute (e) {
             e.preventDefault();
-            RoutesUtils.undeployRouteDialog(this.data.routeName, this.data.title).done(() => {
-                this.render();
-            });
+            RoutesUtils.undeployRouteDialog(this.data.routeName, this.data.title);
         },
 
         deleteRoute (e) {
