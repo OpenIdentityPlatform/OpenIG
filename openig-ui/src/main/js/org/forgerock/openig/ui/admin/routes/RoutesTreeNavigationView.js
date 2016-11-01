@@ -80,23 +80,29 @@ define([
             this.data.routePath = Router.getCurrentHash().match(Router.currentRoute.url)[1];
 
             RoutesCollection.byRouteId(this.data.routePath).then(_.bind(function (routeData) {
-                if (routeData) {
-                    this.data.routeData = routeData;
-                    this.data.routeName = routeData.get("id");
-                    this.data.deployed = ServerRoutesCollection.isDeployed(this.data.routeName);
-                    this.data.deployedDate = routeData.get("deployedDate");
-                    this.data.pendingChanges = routeData.get("pendingChanges");
-                    this.data.allowDeploy = !this.data.deployed || this.data.pendingChanges;
-                    this.data.treeNavigation = createTreeNavigation(navData,
-                        [encodeURIComponent(this.data.routePath)]
+                if (!routeData) {
+                    // Back to list when route not found
+                    EventManager.sendEvent(
+                        Constants.EVENT_CHANGE_VIEW,
+                        { route: Router.configuration.routes.listRoutesView }
                     );
-                    this.data.title = routeData.get("name");
-                    this.data.home = `#${Router.getLink(
-                        Router.configuration.routes.routeOverview,
-                        [encodeURIComponent(this.data.routePath)])}`;
-
-                    TreeNavigation.prototype.render.call(this, args, callback);
+                    return;
                 }
+                this.data.routeData = routeData;
+                this.data.routeName = routeData.get("id");
+                this.data.deployed = ServerRoutesCollection.isDeployed(this.data.routeName);
+                this.data.deployedDate = routeData.get("deployedDate");
+                this.data.pendingChanges = routeData.get("pendingChanges");
+                this.data.allowDeploy = !this.data.deployed || this.data.pendingChanges;
+                this.data.treeNavigation = createTreeNavigation(navData,
+                    [encodeURIComponent(this.data.routePath)]
+                );
+                this.data.title = routeData.get("name");
+                this.data.home = `#${Router.getLink(
+                    Router.configuration.routes.routeOverview,
+                    [encodeURIComponent(this.data.routePath)])}`;
+
+                TreeNavigation.prototype.render.call(this, args, callback);
             }, this));
         },
         exportRouteConfig (e) {
