@@ -20,6 +20,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.FORBIDDEN;
@@ -66,11 +67,11 @@ import org.forgerock.json.resource.ActionResponse;
 import org.forgerock.json.resource.FilterChain;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.json.resource.ResourceException;
-import org.forgerock.json.resource.Responses;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.el.LeftValueExpression;
+import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Name;
@@ -135,7 +136,7 @@ public class PolicyEnforcementFilterTest {
         target = LeftValueExpression.valueOf("${attributes.policy}", Map.class);
 
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
-                .thenReturn(newActionResponse(json(policyDecision())).asPromise());
+                .thenReturn(policyDecision());
 
         resourceRequest = new Request().setMethod("GET").setUri(RESOURCE_URI);
     }
@@ -251,7 +252,7 @@ public class PolicyEnforcementFilterTest {
     private static Object[][] invalidParameters() throws ExpressionException {
         return new Object[][] {
             { LeftValueExpression.valueOf("${attributes.policy}", Map.class), null, mock(Handler.class) },
-            { mock(LeftValueExpression.class), mock(RequestHandler.class), null },
+            { LeftValueExpression.valueOf("${attributes.policy}", Map.class), mock(RequestHandler.class), null },
             { null, mock(RequestHandler.class), mock(Handler.class) } };
     }
 
@@ -266,22 +267,21 @@ public class PolicyEnforcementFilterTest {
 
     @Test
     public void shouldInvokeFailureHandlerWhenAccessDenied() throws Exception {
-        RequestHandler requestHandler = mock(RequestHandler.class);
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
-                .thenReturn(Responses.newActionResponse(json(policyDecision())).asPromise());
+                .thenReturn(policyDecisionWithAdvice());
 
-        Handler failureHandler = mock(Handler.class);
         PolicyEnforcementFilter filter = new PolicyEnforcementFilter(LeftValueExpression.valueOf("${attributes.policy}",
                                                                                                  Map.class),
                                                                      requestHandler,
-                                                                     failureHandler);
+                                                                     Handlers.FORBIDDEN);
         Expression<String> subject = Expression.valueOf("foo", String.class);
         filter.setSsoTokenSubject(subject);
 
         Request request = new Request().setMethod("POST").setUri(RESOURCE_URI);
         filter.filter(attributesContext, request, next);
 
-        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
+        assertThatAttributesAreStoredInAttributesContext();
+        assertThatAdvicesAreStoredInAttributesContext();
         verifyZeroInteractions(next);
     }
 
@@ -292,7 +292,7 @@ public class PolicyEnforcementFilterTest {
 
         // Given
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
-                .thenReturn(newActionResponse(json(emptyPolicyDecision(resource))).asPromise());
+                .thenReturn(emptyPolicyDecision(resource));
 
         final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
 
@@ -327,17 +327,25 @@ public class PolicyEnforcementFilterTest {
         verify(next).handle(any(Context.class), any(Request.class));
         assertThat(finalResponse.getStatus()).isEqualTo(OK);
         assertThat(finalResponse.getEntity().getString()).isEqualTo(RESOURCE_CONTENT);
-        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
+        assertThatAttributesAreStoredInAttributesContext();
     }
 
     @Test
     public void shouldNotAuthorizeAccessToRequestedResource() throws Exception {
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(policyDecisionWithAdvice());
+
         // Given
         final Request request = new Request();
         request.setMethod("POST"); // The POST action is denied by policy decision.
         request.setUri(RESOURCE_URI);
 
-        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(LeftValueExpression.valueOf("${attributes.policy}",
+                                                                                                 Map.class),
+                                                                     requestHandler,
+                                                                     Handlers.FORBIDDEN);
+        Expression<String> subject = Expression.valueOf("foo", String.class);
+        filter.setSsoTokenSubject(subject);
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
@@ -346,7 +354,8 @@ public class PolicyEnforcementFilterTest {
         // Then
         verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
         assertThat(finalResponse.getStatus()).isEqualTo(FORBIDDEN);
-        assertThatAttributesAndAdvicesAreStoredInAttributesContext();
+        assertThatAttributesAreStoredInAttributesContext();
+        assertThatAdvicesAreStoredInAttributesContext();
     }
 
     @Test
@@ -355,7 +364,12 @@ public class PolicyEnforcementFilterTest {
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
                 .thenReturn(newResourceException(GATEWAY_TIMEOUT.getCode(), "").<ActionResponse>asPromise());
 
-        final PolicyEnforcementFilter filter = buildPolicyEnforcementFilter();
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(LeftValueExpression.valueOf("${attributes.policy}",
+                                                                                                 Map.class),
+                                                                     requestHandler,
+                                                                     mock(Handler.class));
+        Expression<String> subject = Expression.valueOf("foo", String.class);
+        filter.setSsoTokenSubject(subject);
 
         // When
         final Response finalResponse = filter.filter(attributesContext,
@@ -395,7 +409,7 @@ public class PolicyEnforcementFilterTest {
     }
 
     @Test
-    public void shouldSucceedToUseCacheForRequestedResource() throws Exception {
+    public void shouldSucceedToUseCacheForRequestedResourceAllowed() throws Exception {
         // Given
         ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
         PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache =
@@ -406,7 +420,7 @@ public class PolicyEnforcementFilterTest {
         filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
 
         when(next.handle(any(Context.class), eq(resourceRequest)))
-            .thenReturn(newResponsePromise(displayResourceResponse()));
+                .thenReturn(newResponsePromise(displayResourceResponse()));
 
         // When first call
         filter.filter(attributesContext,
@@ -438,6 +452,33 @@ public class PolicyEnforcementFilterTest {
 
         verify(requestHandler, times(2)).handleAction(any(Context.class), any(ActionRequest.class));
         verify(next, times(3)).handle(attributesContext, resourceRequest);
+    }
+
+    @Test
+    public void shouldNotCachePolicyDecisionForRequestedResourceDeniedWithAdvices() throws Exception {
+        // Given
+        when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
+                .thenReturn(policyDecisionWithAdvice());
+
+        ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+        PerItemEvictionStrategyCache<String, Promise<ActionResponse, ResourceException>> cache =
+                new PerItemEvictionStrategyCache<>(executorService, duration(1, TimeUnit.MINUTES));
+        RequestHandler chainedHandler = new FilterChain(requestHandler,
+                                                        new PolicyEnforcementFilter.CachePolicyDecisionFilter(cache));
+        PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target, chainedHandler);
+        filter.setSsoTokenSubject(Expression.valueOf("${attributes.ssoTokenSubject}", String.class));
+
+        when(next.handle(any(Context.class), eq(resourceRequest)))
+                .thenReturn(newResponsePromise(displayResourceResponse()));
+
+        // When first call
+        filter.filter(attributesContext,
+                      resourceRequest,
+                      next).get();
+        // Then
+        verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
+        verifyZeroInteractions(next);
+        verifyZeroInteractions(executorService);
     }
 
     @DataProvider
@@ -616,18 +657,22 @@ public class PolicyEnforcementFilterTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void assertThatAttributesAndAdvicesAreStoredInAttributesContext() {
-        final Map<String, ?> policyExtraAttributes = (Map<String, ?>) attributesContext.getAttributes()
-                                                                                       .get(DEFAULT_POLICY_KEY);
-        assertThat(policyExtraAttributes).containsOnlyKeys("attributes", "advices");
-        assertThat((Map<String, List<String>>) policyExtraAttributes.get("attributes"))
-            .containsOnlyKeys("customAttribute").containsEntry("customAttribute",
-                                                               singletonList("myCustomAttribute"));
+    private void assertThatAdvicesAreStoredInAttributesContext() {
+        assertThat(assertPolicyExtraAttributes().get("advices"))
+                .containsExactly(entry("AuthLevelConditionAdvice", singletonList("3")));
+    }
 
-        assertThat((Map<String, List<String>>) policyExtraAttributes.get("advices"))
-            .containsOnlyKeys("AuthLevelConditionAdvice").containsEntry("AuthLevelConditionAdvice",
-                                                                        singletonList("3"));
+    private void assertThatAttributesAreStoredInAttributesContext() {
+        assertThat(assertPolicyExtraAttributes().get("attributes"))
+                .containsExactly(entry("customAttribute", singletonList("myCustomAttribute")));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Map<String, List<String>>> assertPolicyExtraAttributes() {
+        final Map<String, Map<String, List<String>>> policyExtraAttributes =
+                (Map<String, Map<String, List<String>>>) attributesContext.getAttributes().get(DEFAULT_POLICY_KEY);
+        assertThat(policyExtraAttributes).containsOnlyKeys("attributes", "advices");
+        return policyExtraAttributes;
     }
 
     /**
@@ -643,7 +688,6 @@ public class PolicyEnforcementFilterTest {
      *      "resource": "http://example.com/resource.jpg",
      *      "actions": {
      *          "POST": false,
-     *          "GET": true
      *      },
      *      "attributes": {
      *          "customAttribute": [ "myCustomAttribute" ]
@@ -651,12 +695,23 @@ public class PolicyEnforcementFilterTest {
      * }]
      * }</pre>
      */
-    private static Object policyDecision() {
-        return array(object(field("advices", object(field("AuthLevelConditionAdvice", array("3")))),
-                            field("ttl", Long.MAX_VALUE),
-                            field("resource", RESOURCE_URI),
-                            field("actions", object(field("POST", false), field("GET", true))),
-                            field("attributes", object(field("customAttribute", array("myCustomAttribute"))))));
+    private static Promise<ActionResponse, ResourceException> policyDecisionWithAdvice() {
+        List<Object> content = array(
+                object(field("advices", object(field("AuthLevelConditionAdvice", array("3")))),
+                       field("ttl", Long.MAX_VALUE),
+                       field("resource", RESOURCE_URI),
+                       field("actions", object(field("POST", false), field("GET", false))),
+                       field("attributes", object(field("customAttribute", array("myCustomAttribute"))))));
+        return newActionResponse(json(content)).asPromise();
+    }
+
+    private static Promise<ActionResponse, ResourceException> policyDecision() {
+        List<Object> content = array(object(field("ttl", Long.MAX_VALUE),
+                                            field("resource", RESOURCE_URI),
+                                            field("actions", object(field("GET", true))),
+                                            field("attributes", object(field("customAttribute",
+                                                                             array("myCustomAttribute"))))));
+        return newActionResponse(json(content)).asPromise();
     }
 
     /**
@@ -672,12 +727,13 @@ public class PolicyEnforcementFilterTest {
      * }]
      * }</pre>
      */
-    private static Object emptyPolicyDecision(final String resource) {
-        return array(object(field("advices", object()),
-                            field("ttl", Long.MAX_VALUE),
-                            field("resource", resource),
-                            field("actions", object()),
-                            field("attributes", object())));
+    private static Promise<ActionResponse, ResourceException> emptyPolicyDecision(final String resource) {
+        List<Object> content = array(object(field("advices", object()),
+                                            field("ttl", Long.MAX_VALUE),
+                                            field("resource", resource),
+                                            field("actions", object()),
+                                            field("attributes", object())));
+        return newActionResponse(json(content)).asPromise();
     }
 
     private static Response displayResourceResponse() {

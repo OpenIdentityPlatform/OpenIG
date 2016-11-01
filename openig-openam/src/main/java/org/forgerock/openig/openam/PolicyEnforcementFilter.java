@@ -371,8 +371,10 @@ public class PolicyEnforcementFilter implements Filter {
                     extra.put("advices", policyDecision.get("advices").asMap());
                     target.set(bindings(context, request), extra);
 
-                    JsonValue action = policyDecision.get("actions").get(request.getMethod());
-                    return action.isNotNull() && action.asBoolean();
+                    return policyDecision.get("actions")
+                                         .get(request.getMethod())
+                                         .defaultTo(false)
+                                         .asBoolean();
                 }
                 return false;
             }
@@ -475,10 +477,17 @@ public class PolicyEnforcementFilter implements Filter {
                                             @Override
                                             public Duration apply(ActionResponse response) throws Exception {
                                                 // The policy response is an array
-                                                return duration(response.getJsonContent().get(0).get("ttl").asLong(),
-                                                                MILLISECONDS);
+                                                JsonValue policyDecision = response.getJsonContent().get(0);
+                                                JsonValue advices = policyDecision.get("advices")
+                                                                                  .defaultTo(object())
+                                                                                  .expect(Map.class);
+                                                if (advices.size() > 0) {
+                                                    // Do not cache policy decisions that contain any advices
+                                                    return Duration.ZERO;
+                                                }
+                                                return duration(policyDecision.get("ttl").asLong(), MILLISECONDS);
                                             }
-                                        };
+                    };
                 }
 
                 private Function<ResourceException, Duration, Exception> zeroTtl() {
