@@ -54,7 +54,7 @@ define([
     "editRouteView": {
         view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
         page: "org/forgerock/openig/ui/admin/routes/parts/Overview",
-        defaults: ["", ""],
+        defaults: ["", "overview"],
         url: /^routes\/edit\/(.+?)\/(.*)$/,
         pattern: "routes/edit/?/?"
     },
