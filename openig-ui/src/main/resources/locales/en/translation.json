@@ -261,7 +261,7 @@
             "actions": "Actions",
             "complete": "Complete",
             "reset": "Reset",
-            "copyright": "Copyright (c) 2010-16 ForgeRock, all rights reserved.",
+            "copyright": "Copyright (c) 2016 ForgeRock, all rights reserved.",
             "sessionExpired": "Session Expired",
             "enableCookies": "Cookies must be enabled to login",
             "reloadGrid": "Reload Grid",
@@ -335,6 +335,10 @@
             "m": "minute(s)",
             "h": "hour(s)",
             "d": "day(s)"
+        },
+        "footer":{
+            "versionInfo": "OpenIG __version__ Build __revision__ (__date__)",
+            "versionDate": "yyyy-MMMM-dd HH:mm"
         }
     }
 }
