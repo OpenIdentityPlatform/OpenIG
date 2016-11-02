@@ -20,7 +20,9 @@ define([
 
     commonConstants.context = "openig";
 
-    commonConstants.apiPath = "/openig/api/system/objects";
+    commonConstants.apiPath = "/openig/api";
+
+    commonConstants.systemObjectsPath = `${commonConstants.apiPath}/system/objects`;
 
     commonConstants.DOC_URL = "https://backstage.forgerock.com/#!/docs/openig/5.0/";
 

@@ -29,7 +29,7 @@ define([
 ) => {
     /* Collection of routes */
     const ServerRoutesCollection = Backbone.Collection.extend({
-        url: `${Constants.apiPath}/_router/routes`,
+        url: `${Constants.systemObjectsPath}/_router/routes`,
         model: ServerRouteModel,
         parse (response) {
             return response.result;

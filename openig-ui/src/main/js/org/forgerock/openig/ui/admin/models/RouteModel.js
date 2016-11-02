@@ -25,7 +25,7 @@ define([
     class extends Backbone.Model {
         constructor (options) {
             super(options);
-            this.url = `${Constants.apiPath}/ui/record`;
+            this.url = `${Constants.systemObjectsPath}/ui/record`;
         }
 
         get idAttribute () { return "_id"; }

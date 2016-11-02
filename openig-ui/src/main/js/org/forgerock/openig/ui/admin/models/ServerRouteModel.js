@@ -22,7 +22,7 @@ define([
     Constants
 ) => (
     Backbone.Model.extend({
-        url: `${Constants.apiPath}/_router/routes`,
+        url: `${Constants.systemObjectsPath}/_router/routes`,
         idAttribute: "_id",
 
         getMVCCRev () {
