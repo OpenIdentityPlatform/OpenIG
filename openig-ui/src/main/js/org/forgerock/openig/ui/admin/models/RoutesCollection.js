@@ -29,7 +29,7 @@ define([
     class RoutesCollection extends Backbone.Collection {
         constructor () {
             super();
-            this.url = `${Constants.apiPath}/ui/record`;
+            this.url = `${Constants.systemObjectsPath}/ui/record`;
             this.model = RouteModel;
             this.routesCache = {};
         }
