@@ -203,5 +203,21 @@ define([
             ]
         );
 
+        server.respondWith(
+            "GET",
+            "/openig/api/info",
+            [
+                200,
+                {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                JSON.stringify({
+                    "version": "5.0.0-SNAPSHOT",
+                    "revision": "bd4dc8a7622433ca56b995f85c0d51a2ed210a56",
+                    "branch": "bugfix/openig-1413-pending-changes",
+                    "timestamp": 1478037537460
+                })
+            ]
+        );
     }
 ));

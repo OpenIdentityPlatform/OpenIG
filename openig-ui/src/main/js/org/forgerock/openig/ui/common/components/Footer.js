@@ -15,7 +15,38 @@
  */
 
 define([
-    "org/forgerock/commons/ui/common/components/Footer"
-], (Footer) => (
-     new Footer()
-));
+    "org/forgerock/commons/ui/common/components/Footer",
+    "org/forgerock/openig/ui/admin/services/ServerInfoService",
+    "i18next",
+    "xdate"
+], (
+    Footer,
+    ServerInfoService,
+    i18n,
+    XDate
+) => {
+    class InfoFooter extends Footer {
+        getVersion () {
+            return ServerInfoService.getInfo()
+                .then((data) => {
+                    if (!data) {
+                        return;
+                    }
+                    const date = new XDate(data.timestamp).toString(i18n.t("common.footer.versionDate"));
+                    return i18n.t("common.footer.versionInfo",
+                        {
+                            version: data.version,
+                            revision: data.revision.slice(0, 10),
+                            date
+                        }
+                    );
+                });
+        }
+
+        showVersion () {
+            return true;
+        }
+    }
+
+    return new InfoFooter();
+});
