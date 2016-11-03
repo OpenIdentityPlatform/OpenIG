@@ -201,11 +201,11 @@ public class AuthenticationFilter implements Filter {
                                             .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                             .as(requiredHeapObject(heap, Handler.class));
 
-            return new AuthenticationFilter(openamUri,
-                                            cookieName,
-                                            realm,
-                                            newRequestHandler(chainOf(amHandler,
-                                                                      new ApiVersionProtocolHeaderFilter(
+            return new SingleSignOnFilter(openamUri,
+                                          cookieName,
+                                          realm,
+                                          newRequestHandler(chainOf(amHandler,
+                                                                    new ApiVersionProtocolHeaderFilter(
                                                                               PROTOCOL_VERSION_1)),
                                                               openamUri)
             );
