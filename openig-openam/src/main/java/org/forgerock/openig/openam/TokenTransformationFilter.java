@@ -206,19 +206,19 @@ public class TokenTransformationFilter implements Filter {
             String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
             String username = config.get("username").required().as(evaluatedWithHeapProperties()).asString();
             String password = config.get("password").required().as(evaluatedWithHeapProperties()).asString();
-            SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
-                                                               openamUri,
-                                                               realm,
-                                                               ssoTokenHeader,
-                                                               username,
-                                                               password);
+            HeadlessAuthenticationFilter headlessAuthenticationFilter = new HeadlessAuthenticationFilter(amHandler,
+                                                                                                         openamUri,
+                                                                                                         realm,
+                                                                                                         ssoTokenHeader,
+                                                                                                         username,
+                                                                                                         password);
 
             Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
             LeftValueExpression<String> target = config.get("target").required().as(leftValueExpression(String.class));
 
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 
-            return new TokenTransformationFilter(Handlers.chainOf(amHandler, ssoTokenFilter),
+            return new TokenTransformationFilter(Handlers.chainOf(amHandler, headlessAuthenticationFilter),
                                                  transformationEndpoint(openamUri, realm, instance),
                                                  idToken,
                                                  target);

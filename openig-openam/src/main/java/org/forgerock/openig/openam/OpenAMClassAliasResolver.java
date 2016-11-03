@@ -28,8 +28,8 @@ public class OpenAMClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
-        ALIASES.put("AuthenticationFilter", AuthenticationFilter.class);
         ALIASES.put("PolicyEnforcementFilter", PolicyEnforcementFilter.class);
+        ALIASES.put("SingleSignOnFilter", SingleSignOnFilter.class);
         ALIASES.put("TokenTransformationFilter", TokenTransformationFilter.class);
     }
 

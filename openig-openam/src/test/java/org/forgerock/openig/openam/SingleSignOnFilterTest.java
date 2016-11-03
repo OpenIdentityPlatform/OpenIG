@@ -64,7 +64,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class AuthenticationFilterTest {
+public class SingleSignOnFilterTest {
 
     private static final URI OPENAM_URI = URI.create("http://www.example.com:8090/openam/");
     private static final String COOKIE_NAME = "iPlanetDirectoryPro";
@@ -110,10 +110,10 @@ public class AuthenticationFilterTest {
 
     @Test(dataProvider = "validConfigurations")
     public void shouldSucceedToCreateHeaplet(final JsonValue config) throws Exception {
-        final AuthenticationFilter.Heaplet heaplet = new AuthenticationFilter.Heaplet();
-        final Filter filter = (AuthenticationFilter) heaplet.create(Name.of("myFilter"),
-                                                                    config,
-                                                                    buildDefaultHeap());
+        final SingleSignOnFilter.Heaplet heaplet = new SingleSignOnFilter.Heaplet();
+        final Filter filter = (SingleSignOnFilter) heaplet.create(Name.of("myFilter"),
+                                                                  config,
+                                                                  buildDefaultHeap());
         assertThat(filter).isNotNull();
     }
 
@@ -129,7 +129,7 @@ public class AuthenticationFilterTest {
     @Test(dataProvider = "invalidConfigurations",
           expectedExceptions = { JsonValueException.class, HeapException.class })
     public void shouldFailToCreateHeaplet(final JsonValue invalidConfiguration) throws Exception {
-        final AuthenticationFilter.Heaplet heaplet = new AuthenticationFilter.Heaplet();
+        final SingleSignOnFilter.Heaplet heaplet = new SingleSignOnFilter.Heaplet();
         heaplet.create(Name.of("myFilter"), invalidConfiguration, buildDefaultHeap());
     }
 
@@ -142,15 +142,15 @@ public class AuthenticationFilterTest {
     }
 
     @Test(dataProvider = "invalidParameters", expectedExceptions = NullPointerException.class)
-    public void shouldFailToCreateAuthenticationFilter(final URI openamUrl,
-                                                       final Handler amHandler) {
-        new AuthenticationFilter(openamUrl, MY_REALM, COOKIE_NAME, newRequestHandler(amHandler, openamUrl));
+    public void shouldFailToCreateSingleSignOnFilter(final URI openamUrl,
+                                                     final Handler amHandler) {
+        new SingleSignOnFilter(openamUrl, MY_REALM, COOKIE_NAME, newRequestHandler(amHandler, openamUrl));
     }
 
     @Test
     public void shouldRedirectToOpenAmWhenNoCookiePresent() throws Exception {
         // When
-        final Response response = buildAuthenticationFilter().filter(context, request, next).get();
+        final Response response = buildSingleSignOnFilter().filter(context, request, next).get();
 
         // Then
         verifyZeroInteractions(next, requestHandler);
@@ -162,7 +162,7 @@ public class AuthenticationFilterTest {
     @Test
     public void shouldSucceedToRetrieveSsoTokenAndContinue() {
         // Given
-        final Filter filter = buildAuthenticationFilter();
+        final Filter filter = buildSingleSignOnFilter();
         appendRequestSsoTokenCookie(request, COOKIE_NAME);
         when(requestHandler.handleAction(eq(context), any(ActionRequest.class)))
                 .thenReturn(validSsoToken());
@@ -184,7 +184,7 @@ public class AuthenticationFilterTest {
     @Test
     public void shouldSucceedToRetrieveSsoTokenAndRedirect() throws Exception {
         // Given
-        final Filter filter = buildAuthenticationFilter();
+        final Filter filter = buildSingleSignOnFilter();
         appendRequestSsoTokenCookie(request, COOKIE_NAME);
         // The token is present but the validation is false. Session outdated.
         when(requestHandler.handleAction(eq(context), any(ActionRequest.class)))
@@ -204,7 +204,7 @@ public class AuthenticationFilterTest {
     @Test
     public void shouldSucceedWhenMultipleCookieHeadersFoundAndContinue() {
         // Given
-        final Filter filter = buildAuthenticationFilter();
+        final Filter filter = buildSingleSignOnFilter();
         // Add twice the same request cookie
         appendRequestSsoTokenCookie(request, COOKIE_NAME, TOKEN);
         appendRequestSsoTokenCookie(request, COOKIE_NAME, "invalidToken");
@@ -236,7 +236,7 @@ public class AuthenticationFilterTest {
     @Test(dataProvider = "sessionValidationFailsFromServer")
     public void shouldFailWhenCallingForSessionValidationFails(final JsonValue content) throws Exception {
         // Given
-        final Filter filter = buildAuthenticationFilter();
+        final Filter filter = buildSingleSignOnFilter();
         appendRequestSsoTokenCookie(request, COOKIE_NAME);
 
         when(requestHandler.handleAction(any(Context.class), any(ActionRequest.class)))
@@ -251,8 +251,8 @@ public class AuthenticationFilterTest {
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
     }
 
-    private AuthenticationFilter buildAuthenticationFilter() {
-        return new AuthenticationFilter(OPENAM_URI, COOKIE_NAME, MY_REALM, requestHandler);
+    private SingleSignOnFilter buildSingleSignOnFilter() {
+        return new SingleSignOnFilter(OPENAM_URI, COOKIE_NAME, MY_REALM, requestHandler);
     }
 
     private static void appendRequestSsoTokenCookie(final Request request, final String cookieName) {
