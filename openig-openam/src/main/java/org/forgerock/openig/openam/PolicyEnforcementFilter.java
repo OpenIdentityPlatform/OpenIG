@@ -135,7 +135,7 @@ import org.slf4j.LoggerFactory;
  * (*) "pepUsername" and "pepPassword" are the credentials, and "pepRealm" is the
  * realm of the user who has access to perform the operation.
  * <p>
- * This heaplet adds an SsoTokenFilter to the amHandler's chain and its
+ * This heaplet adds an HeadlessAuthenticationFilter to the amHandler's chain and its
  * role is to retrieve and set the SSO token header of this given user (REST API
  * calls must present the session token, aka SSO Token, in an HTTP header as
  * proof of authentication).
@@ -531,15 +531,16 @@ public class PolicyEnforcementFilter implements Filter {
                                                  .as(leftValueExpression(Map.class));
 
             try {
-                final SsoTokenFilter ssoTokenFilter = new SsoTokenFilter(amHandler,
-                                                                         new URI(openamUrl),
-                                                                         pepRealm,
-                                                                         ssoTokenHeader,
-                                                                         pepUsername,
-                                                                         pepPassword);
+                final HeadlessAuthenticationFilter headlessAuthenticationFilter =
+                        new HeadlessAuthenticationFilter(amHandler,
+                                                         new URI(openamUrl),
+                                                         pepRealm,
+                                                         ssoTokenHeader,
+                                                         pepUsername,
+                                                         pepPassword);
 
                 amHandler = chainOf(amHandler,
-                                    ssoTokenFilter,
+                                    headlessAuthenticationFilter,
                                     // /json/policies endpoint has a compatible 'evaluate' action between CREST
                                     // protocol v1 and v2 (response format unchanged)
                                     new ApiVersionProtocolHeaderFilter(PROTOCOL_VERSION_1));

@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  *
  * <pre>
  * {@code {
- *    "type": "AuthenticationFilter",
+ *    "type": "SingleSignOnFilter",
  *    "config": {
  *        "openamUrl"              :    uriExpression      [REQUIRED]
  *        "cookieName"             :    String             [OPTIONAL - by default is 'iPlanetDirectoryPro']
@@ -82,9 +82,9 @@ import org.slf4j.LoggerFactory;
  *  }
  * </pre>
  **/
-public class AuthenticationFilter implements Filter {
+public class SingleSignOnFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SingleSignOnFilter.class);
 
     private static final String DEFAULT_COOKIE_NAME = "iPlanetDirectoryPro";
     private static final Version RESOURCE_VERSION_1_1 = version(1, 1);
@@ -96,10 +96,10 @@ public class AuthenticationFilter implements Filter {
     private final String realm;
     private final RequestHandler requestHandler;
 
-    AuthenticationFilter(final URI openamUri,
-                         final String cookieName,
-                         final String realm,
-                         final RequestHandler requestHandler) {
+    SingleSignOnFilter(final URI openamUri,
+                       final String cookieName,
+                       final String realm,
+                       final RequestHandler requestHandler) {
         this.openamUri = checkNotNull(openamUri, "The openamUrl must be specified");
         this.cookieName = checkNotNull(cookieName, "The cookie name must be specified");
         this.realm = checkNotNull(realm, "The realm must be specified");

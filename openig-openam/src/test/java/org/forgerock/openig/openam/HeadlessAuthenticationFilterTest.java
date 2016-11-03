@@ -50,7 +50,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
-public class SsoTokenFilterTest {
+public class HeadlessAuthenticationFilterTest {
 
     static final private URI OPENAM_URI = URI.create("http://www.example.com:8090/openam/");
     static final private URI APP_URI = URI.create("http://www.example.com/app");
@@ -86,12 +86,12 @@ public class SsoTokenFilterTest {
     @SuppressWarnings("unused")
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldFailToCreateFilterWithInvalidRealm() throws Exception {
-        new SsoTokenFilter(authenticate,
-                           OPENAM_URI,
-                           "   >>invalid<<    ",
-                           DEFAULT_HEADER_NAME,
-                           "bjensen",
-                           "hifalutin");
+        new HeadlessAuthenticationFilter(authenticate,
+                                         OPENAM_URI,
+                                         "   >>invalid<<    ",
+                                         DEFAULT_HEADER_NAME,
+                                         "bjensen",
+                                         "hifalutin");
     }
 
     @DataProvider
@@ -104,12 +104,12 @@ public class SsoTokenFilterTest {
     @Test(dataProvider = "nullRequiredParameters", expectedExceptions = NullPointerException.class)
     public void shouldFailToCreateFilterWithNullRequiredParameters(final Handler handler,
                                                                    final URI openAmUri) throws Exception {
-        new SsoTokenFilter(handler,
-                           openAmUri,
-                           "/",
-                           DEFAULT_HEADER_NAME,
-                           "bjensen",
-                           "hifalutin");
+        new HeadlessAuthenticationFilter(handler,
+                                         openAmUri,
+                                         "/",
+                                         DEFAULT_HEADER_NAME,
+                                         "bjensen",
+                                         "hifalutin");
     }
 
     @DataProvider
@@ -126,7 +126,7 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
-        buildSsoTokenFilter(givenSsoTokenHeaderName).filter(context, request, next);
+        buildHeadlessAuthenticationFilter(givenSsoTokenHeaderName).filter(context, request, next);
 
         // Then
         verify(authenticate).handle(same(context), any(Request.class));
@@ -143,9 +143,9 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
 
         // When
-        final Response finalResponse = buildSsoTokenFilter().filter(context,
-                                                                    request,
-                                                                    next).get();
+        final Response finalResponse = buildHeadlessAuthenticationFilter().filter(context,
+                                                                                  request,
+                                                                                  next).get();
 
         // Then
         verify(authenticate, times(2)).handle(same(context), any(Request.class));
@@ -162,10 +162,10 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(same(context), any(Request.class)))
             .thenReturn(newResponsePromise(badRequestResponse));
 
-        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+        final HeadlessAuthenticationFilter headlessAuthenticationFilter = buildHeadlessAuthenticationFilter();
 
         // When
-        final Response finalResponse = ssoTokenFilter.filter(context, request, next).get();
+        final Response finalResponse = headlessAuthenticationFilter.filter(context, request, next).get();
 
         // Then
         verifyZeroInteractions(next);
@@ -181,11 +181,11 @@ public class SsoTokenFilterTest {
         when(authenticate.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(authenticated));
         when(next.handle(context, request)).thenReturn(newResponsePromise(new Response(OK)));
 
-        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+        final HeadlessAuthenticationFilter headlessAuthenticationFilter = buildHeadlessAuthenticationFilter();
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                ssoTokenFilter.filter(context, request, next);
+                headlessAuthenticationFilter.filter(context, request, next);
             }
         };
         final int taskNumber = 10;
@@ -215,12 +215,12 @@ public class SsoTokenFilterTest {
                                                                  newResponsePromise(unauthorized),
                                                                  newResponsePromise(new Response(OK)));
 
-        final SsoTokenFilter ssoTokenFilter = buildSsoTokenFilter();
+        final HeadlessAuthenticationFilter headlessAuthenticationFilter = buildHeadlessAuthenticationFilter();
 
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                ssoTokenFilter.filter(context, request, next);
+                headlessAuthenticationFilter.filter(context, request, next);
             }
         };
         final int taskNumber = 10;
@@ -230,7 +230,7 @@ public class SsoTokenFilterTest {
 
         // When
         // First call
-        ssoTokenFilter.filter(context, request, next).get();
+        headlessAuthenticationFilter.filter(context, request, next).get();
         // before workers...
         for (int i = 0; i < taskNumber; i++) {
             executorService.execute(new Worker(action, started, finished));
@@ -266,7 +266,7 @@ public class SsoTokenFilterTest {
         when(next.handle(same(context), any(Request.class))).thenReturn(newResponsePromise(new Response(OK)));
 
         // When
-        final SsoTokenFilter filter = buildSsoTokenFilter();
+        final HeadlessAuthenticationFilter filter = buildHeadlessAuthenticationFilter();
         final Response failureResponse = filter.filter(context, firstRequest, next).get();
         final Response successfulResponse = filter.filter(context, secondRequest, next).get();
 
@@ -313,16 +313,16 @@ public class SsoTokenFilterTest {
         }
     }
 
-    private static SsoTokenFilter buildSsoTokenFilter() {
-        return buildSsoTokenFilter(null);
+    private static HeadlessAuthenticationFilter buildHeadlessAuthenticationFilter() {
+        return buildHeadlessAuthenticationFilter(null);
     }
 
-    private static SsoTokenFilter buildSsoTokenFilter(final String headerName) {
-        return new SsoTokenFilter(authenticate,
-                                  OPENAM_URI,
-                                  null,
-                                  headerName,
-                                  "bjensen",
-                                  "hifalutin");
+    private static HeadlessAuthenticationFilter buildHeadlessAuthenticationFilter(final String headerName) {
+        return new HeadlessAuthenticationFilter(authenticate,
+                                                OPENAM_URI,
+                                                null,
+                                                headerName,
+                                                "bjensen",
+                                                "hifalutin");
     }
 }

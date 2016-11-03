@@ -51,9 +51,9 @@ import org.slf4j.LoggerFactory;
  * @see <a href="https://forgerock.org/openam/doc/bootstrap/dev-guide/index.html#rest-api-status-codes">OPENAM REST
  * API status codes</a>
  */
-public class SsoTokenFilter implements Filter {
+public class HeadlessAuthenticationFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(SsoTokenFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadlessAuthenticationFilter.class);
 
     static final String BASE_ENDPOINT = "json";
     static final String AUTHENTICATION_ENDPOINT = "/authenticate";
@@ -62,12 +62,12 @@ public class SsoTokenFilter implements Filter {
     private final String headerName;
     private final SsoTokenHolder ssoTokenHolder;
 
-    SsoTokenFilter(final Handler ssoClientHandler,
-                   final URI openamUri,
-                   final String realm,
-                   final String headerName,
-                   final String username,
-                   final String password) {
+    HeadlessAuthenticationFilter(final Handler ssoClientHandler,
+                                 final URI openamUri,
+                                 final String realm,
+                                 final String headerName,
+                                 final String username,
+                                 final String password) {
         this.headerName = headerName != null ? headerName : DEFAULT_HEADER_NAME;
         final Factory<Request> requestFactory = new Factory<Request>() {
             final URI authenticateEndpoint = openamUri.resolve(BASE_ENDPOINT + startsWithSlash(realm)

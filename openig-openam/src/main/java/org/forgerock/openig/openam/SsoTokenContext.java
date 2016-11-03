@@ -26,7 +26,7 @@ import org.forgerock.services.context.Context;
 
 /**
  * An {@link SsoTokenContext} could be used to store and retrieve an token.
- * <p>The {@link AuthenticationFilter} uses this context to store the token and
+ * <p>The {@link SingleSignOnFilter} uses this context to store the token and
  * its validation information.
  */
 public class SsoTokenContext extends AbstractContext {
