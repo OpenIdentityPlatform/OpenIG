@@ -94,7 +94,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MappedThrottlingPolicy", MappedThrottlingPolicyHeaplet.class);
         ALIASES.put("PasswordReplayFilter", PasswordReplayFilterHeaplet.class);
-        ALIASES.put("RedirectFilter", LocationHeaderFilter.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);
         ALIASES.put("ScheduledExecutorService", ScheduledExecutorServiceHeaplet.class);
