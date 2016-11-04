@@ -556,5 +556,110 @@ define([
             );
             QUnit.start();
         });
+
+        QUnit.asyncTest("Should transform PolicyEnforcementFilter with ssoTokenSubject", (assert) => {
+            assert.deepEqual(transformService.policyEnforcementFilter(
+                {
+                    openamUrl: "http://openam.example.com/openam",
+                    pepUsername: "amadmin",
+                    pepPassword: "secret",
+                    pepRealm: "/",
+                    realm: "/",
+                    application: "My Policy Set",
+                    ssoTokenSubject: "${attributes.ssoToken.value}"
+                }),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "amadmin",
+                        pepPassword: "secret",
+                        pepRealm: "/",
+                        realm: "/",
+                        application: "My Policy Set",
+                        ssoTokenSubject: "${attributes.ssoToken.value}"
+                    }
+                },
+                "Wrong JSON for PolicyEnforcementFilter"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should transform PolicyEnforcementFilter with jwtSubject", (assert) => {
+            assert.deepEqual(transformService.policyEnforcementFilter(
+                {
+                    openamUrl: "http://openam.example.com/openam",
+                    pepUsername: "amadmin",
+                    pepPassword: "secret",
+                    pepRealm: "/",
+                    realm: "/",
+                    application: "My Policy Set",
+                    jwtSubject: "${attributes.openid.id_token}"
+                }),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "amadmin",
+                        pepPassword: "secret",
+                        pepRealm: "/",
+                        realm: "/",
+                        application: "My Policy Set",
+                        jwtSubject: "${attributes.openid.id_token}"
+                    }
+                },
+                "Wrong JSON for PolicyEnforcementFilter"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should transform PolicyEnforcementFilter with both jwt and sso Token Subject", (assert) => {
+            assert.deepEqual(transformService.policyEnforcementFilter(
+                {
+                    openamUrl: "http://openam.example.com/openam",
+                    pepUsername: "amadmin",
+                    pepPassword: "secret",
+                    pepRealm: "/",
+                    realm: "/",
+                    application: "My Policy Set",
+                    ssoTokenSubject: "${attributes.ssoToken.value}",
+                    jwtSubject: "${attributes.openid.id_token}"
+                }),
+                {
+                    type: "PolicyEnforcementFilter",
+                    name: "PEPFilter",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "amadmin",
+                        pepPassword: "secret",
+                        pepRealm: "/",
+                        realm: "/",
+                        application: "My Policy Set",
+                        ssoTokenSubject: "${attributes.ssoToken.value}",
+                        jwtSubject: "${attributes.openid.id_token}"
+                    }
+                },
+                "Wrong JSON for PolicyEnforcementFilter"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should fail to transform PolicyEnforcementFilter with no subject", (assert) => {
+            const inBlock = () => {
+                transformService.policyEnforcementFilter(
+                    {
+                        openamUrl: "http://openam.example.com/openam",
+                        pepUsername: "amadmin",
+                        pepPassword: "secret",
+                        pepRealm: "/",
+                        realm: "/",
+                        application: "My Policy Set"
+                    });
+            };
+            assert.throws(inBlock, transformService.TransformServiceException("invalidModel"), "Must provide subject");
+            QUnit.start();
+        });
     }
 }));

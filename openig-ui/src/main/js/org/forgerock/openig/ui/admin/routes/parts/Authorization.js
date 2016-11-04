@@ -115,8 +115,11 @@ define([
                                 },
                                 {
                                     name: "ssoTokenSubject",
-                                    value: this.data.authZFilter.ssoTokenSubject,
-                                    validator: "required"
+                                    value: this.data.authZFilter.ssoTokenSubject
+                                },
+                                {
+                                    name: "jwtSubject",
+                                    value: this.data.authZFilter.jwtSubject
                                 }
                             ]
                         }

@@ -164,6 +164,8 @@
                         "realmHint": "OpenAM realm where the policy set and policies are configured",
                         "ssoTokenSubject": "OpenAM SSO token ID",
                         "ssoTokenSubjectHint": "Expression evaluating to the OpenAM SSO token ID string that authenticates the user making the request",
+                        "jwtSubject": "OpenId Connect id_token",
+                        "jwtSubjectHint": "Expression evaluating to the OpenId Connect 'id_token' that the user received after consent",
                         "application": "Policy set",
                         "applicationHint": "Policy set to query for the policy decision"
                     }

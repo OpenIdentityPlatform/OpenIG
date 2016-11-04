@@ -87,7 +87,7 @@ define([
     },
 
     policyEnforcementFilter (filter) {
-        return {
+        const declaration = {
             type: "PolicyEnforcementFilter",
             name: "PEPFilter",
             config: {
@@ -96,10 +96,25 @@ define([
                 pepPassword: filter.pepPassword,
                 pepRealm: filter.pepRealm,
                 realm: filter.realm,
-                ssoTokenSubject: filter.ssoTokenSubject,
                 application: filter.application
             }
         };
+
+        const emptySsoSubject = _.isEmpty(filter.ssoTokenSubject);
+        if (!emptySsoSubject) {
+            declaration.config.ssoTokenSubject = filter.ssoTokenSubject;
+        }
+
+        const emptyJwtToken = _.isEmpty(filter.jwtSubject);
+        if (!emptyJwtToken) {
+            declaration.config.jwtSubject = filter.jwtSubject;
+        }
+
+        if (emptySsoSubject && emptyJwtToken) {
+            const message = "Either one (or both) of 'ssoTokenSubject' or 'jwtSubject' have to be provided";
+            throw new this.TransformServiceException("invalidModel", message);
+        }
+        return declaration;
     },
 
     // In this version is the createFailureHandler method hardcoded
