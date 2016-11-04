@@ -23,7 +23,6 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.JsonValues.slashEnded;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -40,7 +39,6 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -65,7 +63,6 @@ import org.slf4j.LoggerFactory;
  *             "username": "${attributes.username}",
  *             "password": "${attributes.password}",
  *             "idToken": "${attributes.id_token}",
- *             "target": "${attributes.saml_assertions}",
  *             "instance": "oidc-to-saml",
  *             "amHandler": "#Handler"
  *         }
@@ -83,15 +80,15 @@ import org.slf4j.LoggerFactory;
  * <p>The {@literal idToken} attribute is an {@link Expression} specifying where to get the JWT id_token.
  * Note that the referenced value has to be a {@code String} (the JWT encoded value).
  *
- * <p>The {@literal target} attribute is an {@link Expression} specifying where to place the
- * result of the transformation. Note that the pointed location will contains a {@code String}.
- *
  * <p>The {@literal instance} attribute is the name of an STS instance: a pre-configured transformation available
  * under a specific REST endpoint.
  *
  * <p>The {@literal amHandler} attribute is a reference to a {@link Handler} heap object. That handler will be used
  * for all REST calls to OpenAM (as opposed to the {@code next} Handler of the filter method that is dedicated to
  * continue the execution flow through the chain).
+ *
+ * <p>After transformation, the returned {@literal issued_token} (at the moment it is a {@code String} that contains
+ * the XML of the generated SAML assertions), is made available in the {@link StsContext} for downstream handlers.
  *
  * <p>If errors are happening during the token transformation, the error response is returned as-is to the caller,
  * and informative messages are being logged for the administrator.
@@ -103,7 +100,6 @@ public class TokenTransformationFilter implements Filter {
     private final Handler handler;
     private final URI endpoint;
     private final Expression<String> idToken;
-    private final LeftValueExpression<String> target;
 
     /**
      * Constructs a new TokenTransformationFilter transforming the OpenID Connect id_token from {@code idToken}
@@ -112,16 +108,13 @@ public class TokenTransformationFilter implements Filter {
      * @param handler pipeline used to send the STS transformation request
      * @param endpoint Fully qualified URI of the STS instance (including the {@literal _action=translate} query string)
      * @param idToken Expression for reading OpenID Connect id_token (expects a {@code String})
-     * @param target Expression for writing SAML 2.0 token (expects a {@code String})
      */
     public TokenTransformationFilter(final Handler handler,
                                      final URI endpoint,
-                                     final Expression<String> idToken,
-                                     final LeftValueExpression<String> target) {
+                                     final Expression<String> idToken) {
         this.handler = checkNotNull(handler);
         this.endpoint = checkNotNull(endpoint);
         this.idToken = checkNotNull(idToken);
-        this.target = checkNotNull(target);
     }
 
     @Override
@@ -161,10 +154,9 @@ public class TokenTransformationFilter implements Filter {
                         logger.error("STS issued_token is null");
                         return newResponsePromise(newInternalServerError());
                     }
-                    target.set(bindings(context, request, response), token);
 
                     // Forward the initial request
-                    return next.handle(context, request);
+                    return next.handle(new StsContext(context, token), request);
                 } catch (IOException e) {
                     logger.error("Can't get JSON back from {}", endpoint, e);
                     return newResponsePromise(newInternalServerError(e));
@@ -214,14 +206,12 @@ public class TokenTransformationFilter implements Filter {
                                                                                                          password);
 
             Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
-            LeftValueExpression<String> target = config.get("target").required().as(leftValueExpression(String.class));
 
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
 
             return new TokenTransformationFilter(Handlers.chainOf(amHandler, headlessAuthenticationFilter),
                                                  transformationEndpoint(openamUri, realm, instance),
-                                                 idToken,
-                                                 target);
+                                                 idToken);
         }
 
         private static URI transformationEndpoint(final URI baseUri, final String realm, final String instance)

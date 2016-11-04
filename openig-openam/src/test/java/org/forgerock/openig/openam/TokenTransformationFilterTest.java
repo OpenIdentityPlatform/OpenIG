@@ -17,7 +17,6 @@
 package org.forgerock.openig.openam;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.json.JsonValue.field;
@@ -25,6 +24,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +43,6 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
-import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
 import org.forgerock.openig.heap.Name;
@@ -82,17 +81,18 @@ public class TokenTransformationFilterTest {
     @Captor
     private ArgumentCaptor<Request> captor;
 
-    private AttributesContext attributesContext;
-    private Context context;
+    @Captor
+    private ArgumentCaptor<Context> contextCaptor;
+
+    private AttributesContext context;
 
     private HeapImpl heap;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        attributesContext = new AttributesContext(new RootContext());
-        context = attributesContext;
-        attributesContext.getAttributes().put("id_token", ID_TOKEN_JWT);
+        context = new AttributesContext(new RootContext());
+        context.getAttributes().put("id_token", ID_TOKEN_JWT);
         heap = new HeapImpl(Name.of("heap"));
         heap.put(Keys.TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
         heap.put("#mock-handler", transformationHandler);
@@ -142,7 +142,6 @@ public class TokenTransformationFilterTest {
                                        field("username", "guillaume"),
                                        field("password", "s3cr3t"),
                                        field("idToken", "${attributes.id_token}"),
-                                       field("target", "${attributes.saml}"),
                                        field("instance", instance),
                                        field("amHandler", "#mock-handler")));
         Filter filter = (Filter) new TokenTransformationFilter.Heaplet().create(Name.of("this"), config, heap);
@@ -162,10 +161,7 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}",
-                                                                 String.class),
-                                              LeftValueExpression.valueOf("${attributes.saml_token}",
-                                                                          String.class));
+                                              Expression.valueOf("${attributes.id_token}", String.class));
 
         Request request = new Request();
         filter.filter(context, request, next);
@@ -175,10 +171,11 @@ public class TokenTransformationFilterTest {
         JsonValue transformation = new JsonValue(transformationRequest.getEntity().getJson());
         assertThat(transformation.get(new JsonPointer("input_token_state/oidc_id_token")).asString())
                 .isEqualTo(ID_TOKEN_JWT);
-        assertThat(attributesContext.getAttributes()).contains(entry("saml_token", SAML_ASSERTIONS));
 
-        // Original request has to be forwarded
-        verify(next).handle(context, request);
+        // Original request has to be forwarded with an additional context
+        verify(next).handle(contextCaptor.capture(), same(request));
+        StsContext stsContext = contextCaptor.getValue().asContext(StsContext.class);
+        assertThat(stsContext.getIssuedToken()).isEqualTo(SAML_ASSERTIONS);
     }
 
     @Test
@@ -189,10 +186,7 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}",
-                                                                 String.class),
-                                              LeftValueExpression.valueOf("${attributes.saml_token}",
-                                                                 String.class));
+                                              Expression.valueOf("${attributes.id_token}", String.class));
 
         Request request = new Request();
         Response response = filter.filter(context, request, next).get();
