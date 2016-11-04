@@ -558,14 +558,12 @@ define([
         });
 
         QUnit.asyncTest("Should transform PolicyEnforcementFilter with ssoTokenSubject", (assert) => {
+            // Optional values omitted intentionally
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
                     openamUrl: "http://openam.example.com/openam",
                     pepUsername: "amadmin",
                     pepPassword: "secret",
-                    pepRealm: "/",
-                    realm: "/",
-                    application: "My Policy Set",
                     ssoTokenSubject: "${attributes.ssoToken.value}"
                 }),
                 {
@@ -575,9 +573,6 @@ define([
                         openamUrl: "http://openam.example.com/openam",
                         pepUsername: "amadmin",
                         pepPassword: "secret",
-                        pepRealm: "/",
-                        realm: "/",
-                        application: "My Policy Set",
                         ssoTokenSubject: "${attributes.ssoToken.value}"
                     }
                 },
@@ -587,14 +582,15 @@ define([
         });
 
         QUnit.asyncTest("Should transform PolicyEnforcementFilter with jwtSubject", (assert) => {
+            // Optional values set to empty strings intentionally
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
                     openamUrl: "http://openam.example.com/openam",
                     pepUsername: "amadmin",
                     pepPassword: "secret",
-                    pepRealm: "/",
-                    realm: "/",
-                    application: "My Policy Set",
+                    pepRealm: "",
+                    realm: "",
+                    application: "",
                     jwtSubject: "${attributes.openid.id_token}"
                 }),
                 {
@@ -604,9 +600,6 @@ define([
                         openamUrl: "http://openam.example.com/openam",
                         pepUsername: "amadmin",
                         pepPassword: "secret",
-                        pepRealm: "/",
-                        realm: "/",
-                        application: "My Policy Set",
                         jwtSubject: "${attributes.openid.id_token}"
                     }
                 },
@@ -615,14 +608,15 @@ define([
             QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform PolicyEnforcementFilter with both jwt and sso Token Subject", (assert) => {
+        QUnit.asyncTest("Should transform PolicyEnforcementFilter with all properties", (assert) => {
+            // Optional values are correctly valued
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
                     openamUrl: "http://openam.example.com/openam",
                     pepUsername: "amadmin",
                     pepPassword: "secret",
                     pepRealm: "/",
-                    realm: "/",
+                    realm: "/employees",
                     application: "My Policy Set",
                     ssoTokenSubject: "${attributes.ssoToken.value}",
                     jwtSubject: "${attributes.openid.id_token}"
@@ -635,7 +629,7 @@ define([
                         pepUsername: "amadmin",
                         pepPassword: "secret",
                         pepRealm: "/",
-                        realm: "/",
+                        realm: "/employees",
                         application: "My Policy Set",
                         ssoTokenSubject: "${attributes.ssoToken.value}",
                         jwtSubject: "${attributes.openid.id_token}"
@@ -652,10 +646,7 @@ define([
                     {
                         openamUrl: "http://openam.example.com/openam",
                         pepUsername: "amadmin",
-                        pepPassword: "secret",
-                        pepRealm: "/",
-                        realm: "/",
-                        application: "My Policy Set"
+                        pepPassword: "secret"
                     });
             };
             assert.throws(inBlock, transformService.TransformServiceException("invalidModel"), "Must provide subject");

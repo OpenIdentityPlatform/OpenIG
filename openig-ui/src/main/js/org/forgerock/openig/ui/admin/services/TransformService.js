@@ -93,12 +93,21 @@ define([
             config: {
                 openamUrl: filter.openamUrl,
                 pepUsername: filter.pepUsername,
-                pepPassword: filter.pepPassword,
-                pepRealm: filter.pepRealm,
-                realm: filter.realm,
-                application: filter.application
+                pepPassword: filter.pepPassword
             }
         };
+
+        if (!_.isEmpty(filter.pepRealm)) {
+            declaration.config.pepRealm = filter.pepRealm;
+        }
+
+        if (!_.isEmpty(filter.realm)) {
+            declaration.config.realm = filter.realm;
+        }
+
+        if (!_.isEmpty(filter.application)) {
+            declaration.config.application = filter.application;
+        }
 
         const emptySsoSubject = _.isEmpty(filter.ssoTokenSubject);
         if (!emptySsoSubject) {
