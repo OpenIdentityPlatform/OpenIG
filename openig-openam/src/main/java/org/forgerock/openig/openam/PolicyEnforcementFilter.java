@@ -36,7 +36,6 @@ import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.evaluated;
-import static org.forgerock.openig.util.JsonValues.leftValueExpression;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 import static org.forgerock.util.Reject.checkNotNull;
@@ -46,7 +45,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -55,9 +53,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
-import org.forgerock.http.MutableUri;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
@@ -73,7 +71,6 @@ import org.forgerock.json.resource.ResourcePath;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
-import org.forgerock.openig.el.LeftValueExpression;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
@@ -124,7 +121,6 @@ import org.slf4j.LoggerFactory;
  *          "claimsSubject"          :    map/expression,     [OPTIONAL - must be specified if no jwtSubject or
  *                                                                        ssoTokenSubject - instance of
  *                                                                        Map<String, Object> JWT claims ]
- *          "target"                 :    mapExpression,      [OPTIONAL - default is ${attributes.policy} ]
  *          "environment"            :    map/expression,     [OPTIONAL - instance of Map<String, List<Object>>]
  *          "executor"               :    executor,           [OPTIONAL - by default uses 'ScheduledThreadPool'
  *                                                                        heap object]
@@ -152,10 +148,7 @@ import org.slf4j.LoggerFactory;
  * calls must present the session token, aka SSO Token, in an HTTP header as
  * proof of authentication).
  * <p>
- * The target represents a map in the attribute context where the "attributes"
- * and "advices" map fields from the policy decision will be saved in. By
- * default, these values are stored in ${attributes.policy.attributes} and
- * ${attributes.policy.advices}.
+ * The "attributes" and "advices" from the policy decision are saved in a {@link PolicyDecisionContext}.
  * <p>
  * Example of use:
  *
@@ -170,7 +163,6 @@ import org.slf4j.LoggerFactory;
  *          "application": "myApplication",
  *          "ssoTokenSubject": "${attributes.SSOCurrentUser}",
  *          "claimsSubject": "${attributes.claimsSubject}",
- *          "target": "${attributes.currentPolicy}",
  *          "environment": {
  *              "DAY_OF_WEEK": [
  *                  "Saturday"
@@ -188,9 +180,6 @@ public class PolicyEnforcementFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(PolicyEnforcementFilter.class);
 
-    /** The expression which will be used for storing policy decision extra attributes in the context. */
-    public static final String DEFAULT_POLICY_KEY = "policy";
-
     private static final String POLICY_ENDPOINT = "/policies";
     private static final String EVALUATE_ACTION = "evaluate";
     private static final String SUBJECT_ERROR =
@@ -201,32 +190,24 @@ public class PolicyEnforcementFilter implements Filter {
     private Expression<String> ssoTokenSubject;
     private Expression<String> jwtSubject;
     private Function<Bindings, Map<String, Object>, ExpressionException> claimsSubject;
-    @SuppressWarnings("rawtypes")
-    private final LeftValueExpression<Map> target;
     private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment;
     private Handler failureHandler;
 
     @VisibleForTesting
-    PolicyEnforcementFilter(@SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
-                            final RequestHandler requestHandler) {
-        this(target, requestHandler, Handlers.FORBIDDEN);
+    PolicyEnforcementFilter(final RequestHandler requestHandler) {
+        this(requestHandler, Handlers.FORBIDDEN);
     }
 
     /**
      * Creates a new OpenAM enforcement filter.
      *
-     * @param target
-     *            Map which will be used to store policy decision extra
-     *            attributes, not {@code null}.
      * @param requestHandler
      *            the CREST handler to use for asking the policy decisions.
      * @param failureHandler
      *            The handler which will be invoked when policy denies access.
      */
-    public PolicyEnforcementFilter(@SuppressWarnings("rawtypes") final LeftValueExpression<Map> target,
-                                   final RequestHandler requestHandler,
+    public PolicyEnforcementFilter(final RequestHandler requestHandler,
                                    final Handler failureHandler) {
-        this.target = checkNotNull(target);
         this.requestHandler = checkNotNull(requestHandler);
         this.failureHandler = checkNotNull(failureHandler);
     }
@@ -237,9 +218,7 @@ public class PolicyEnforcementFilter implements Filter {
                                                           final Handler next) {
 
         return askForPolicyDecision(context, request)
-                    .then(evaluatePolicyDecision(context, request))
-                    .thenAsync(allowOrDenyAccessToResource(context, request, next),
-                               errorResponse);
+                .thenAsync(enforceDecision(context, request, next), Responses.<ResourceException>internalServerError());
     }
 
     /**
@@ -296,30 +275,6 @@ public class PolicyEnforcementFilter implements Filter {
         this.jwtSubject = jwtSubject;
     }
 
-    private AsyncFunction<ResourceException, Response, NeverThrowsException> errorResponse =
-            new AsyncFunction<ResourceException, Response, NeverThrowsException>() {
-
-                @Override
-                public Promise<Response, NeverThrowsException> apply(ResourceException exception) {
-                    logger.debug("Cannot get the policy evaluation", exception);
-                    return newResponsePromise(newInternalServerError(exception));
-                }
-            };
-
-    private AsyncFunction<Boolean, Response, NeverThrowsException> allowOrDenyAccessToResource(
-            final Context context, final Request request, final Handler next) {
-        return new AsyncFunction<Boolean, Response, NeverThrowsException>() {
-
-            @Override
-            public Promise<Response, NeverThrowsException> apply(final Boolean authorized) {
-                if (authorized) {
-                    return next.handle(context, request);
-                }
-                return failureHandler.handle(context, request);
-            }
-        };
-    }
-
     private Promise<JsonValue, ResourceException> askForPolicyDecision(final Context context,
                                                                        final Request request) {
         final ActionRequest actionRequest = Requests.newActionRequest(ResourcePath.valueOf(POLICY_ENDPOINT),
@@ -337,6 +292,39 @@ public class PolicyEnforcementFilter implements Filter {
 
         return requestHandler.handleAction(context, actionRequest)
                              .then(EXTRACT_POLICY_DECISION_AS_JSON);
+    }
+
+    @SuppressWarnings("raw")
+    private AsyncFunction<JsonValue, Response, NeverThrowsException> enforceDecision(final Context context,
+                                                                                     final Request request,
+                                                                                     final Handler next) {
+        return new AsyncFunction<JsonValue, Response, NeverThrowsException>() {
+            @Override
+            public Promise<Response, NeverThrowsException> apply(final JsonValue policyDecision) {
+                String resource = policyDecision.get("resource").asString();
+                String original = request.getUri().toASCIIString();
+                if (resource.equals(original)) {
+                    PolicyDecisionContext decisionContext =
+                            new PolicyDecisionContext(context,
+                                                      policyDecision.get("attributes").defaultTo(object()),
+                                                      policyDecision.get("advices").defaultTo(object()));
+
+                    boolean actionAllowed = policyDecision.get("actions")
+                                                          .get(request.getMethod())
+                                                          .defaultTo(false)
+                                                          .asBoolean();
+
+                    if (actionAllowed) {
+                        return next.handle(decisionContext, request);
+                    }
+                    return failureHandler.handle(decisionContext, request);
+                }
+
+                // Should never happen
+                logger.error("Returned resource ('{}' does not match current request URI (''))", resource, original);
+                return newResponsePromise(newInternalServerError());
+            }
+        };
     }
 
     @VisibleForTesting
@@ -368,29 +356,6 @@ public class PolicyEnforcementFilter implements Filter {
                     return policyResponse.getJsonContent().get(0);
                 }
             };
-
-    private Function<JsonValue, Boolean, ResourceException> evaluatePolicyDecision(final Context context,
-                                                                                   final Request request) {
-        return new Function<JsonValue, Boolean, ResourceException>() {
-
-            @Override
-            public Boolean apply(final JsonValue policyDecision) {
-                final MutableUri original = request.getUri();
-                if (policyDecision.get("resource").asString().equals(original.toASCIIString())) {
-                    final Map<String, Object> extra = new LinkedHashMap<>(2);
-                    extra.put("attributes", policyDecision.get("attributes").asMap());
-                    extra.put("advices", policyDecision.get("advices").asMap());
-                    target.set(bindings(context, request), extra);
-
-                    return policyDecision.get("actions")
-                                         .get(request.getMethod())
-                                         .defaultTo(false)
-                                         .asBoolean();
-                }
-                return false;
-            }
-        };
-    }
 
     static class CachePolicyDecisionFilter extends NotSupportedFilter implements Closeable {
 
@@ -566,11 +531,6 @@ public class PolicyEnforcementFilter implements Filter {
                                       .as(requiredHeapObject(heap, Handler.class));
             final String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
 
-            @SuppressWarnings("rawtypes")
-            final LeftValueExpression<Map> target = config.get("target")
-                                                 .defaultTo(format("${attributes.%s}", DEFAULT_POLICY_KEY))
-                                                 .as(leftValueExpression(Map.class));
-
             try {
                 final HeadlessAuthenticationFilter headlessAuthenticationFilter =
                         new HeadlessAuthenticationFilter(amHandler,
@@ -630,9 +590,7 @@ public class PolicyEnforcementFilter implements Filter {
                     failureHandler = config.get("failureHandler").as(requiredHeapObject(heap, Handler.class));
                 }
 
-                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(target,
-                                                                                   requestHandler,
-                                                                                   failureHandler);
+                final PolicyEnforcementFilter filter = new PolicyEnforcementFilter(requestHandler, failureHandler);
 
                 filter.setApplication(config.get("application").as(evaluatedWithHeapProperties()).asString());
 
