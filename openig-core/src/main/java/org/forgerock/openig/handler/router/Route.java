@@ -18,8 +18,6 @@ package org.forgerock.openig.handler.router;
 
 import static org.forgerock.openig.el.Bindings.bindings;
 
-import java.util.Map;
-
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -29,7 +27,6 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-import org.slf4j.MDC;
 
 /**
  * A {@link Route} represents a separated configuration file that is loaded from a {@link RouterHandler}. Each route has
@@ -164,17 +161,7 @@ abstract class Route implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
-        Map<String, String> previous = MDC.getCopyOfContextMap();
-        try {
-            MDC.put("routeId", name);
-            return handler.handle(context, request);
-        } finally {
-            if (previous != null) {
-                MDC.setContextMap(previous);
-            } else {
-                MDC.clear();
-            }
-        }
+        return handler.handle(context, request);
     }
 
     /**
