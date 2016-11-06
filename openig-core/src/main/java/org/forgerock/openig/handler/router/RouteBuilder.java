@@ -44,6 +44,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
+import org.forgerock.openig.filter.LogAttachedExceptionFilter;
 import org.forgerock.openig.filter.MdcRouteIdFilter;
 import org.forgerock.openig.filter.RuntimeExceptionFilter;
 import org.forgerock.openig.handler.Handlers;
@@ -178,6 +179,9 @@ class RouteBuilder {
                                                                   "frapi:openig:monitoring")),
                                "Monitoring endpoint available at '{}'");
         }
+
+        // Log exceptions attached to responses
+        filters.add(new LogAttachedExceptionFilter());
 
         // Ensure we always get a Response even in case of RuntimeException
         filters.add(new RuntimeExceptionFilter());
