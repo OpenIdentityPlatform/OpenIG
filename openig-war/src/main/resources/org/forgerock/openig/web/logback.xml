@@ -50,6 +50,9 @@
     </sift>
   </appender>
 
+  <!-- Disable logs of exceptions attached to responses by defining 'level' to OFF -->
+  <logger name="org.forgerock.openig.filter.LogAttachedExceptionFilter" level="INHERITED" />
+
   <root level="INFO">
     <appender-ref ref="SIFT" />
     <appender-ref ref="STDOUT" />
