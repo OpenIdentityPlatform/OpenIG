@@ -29,13 +29,9 @@ import org.forgerock.openig.el.Expression;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
-import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.PromiseImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.slf4j.MDC;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -72,32 +68,6 @@ public class RouteTest {
     public void testRouteIsDelegatingTheRequest() throws Exception {
         Route route = createRoute(null);
         assertThat(route.handle(new RootContext(), new Request())).isSameAs(promise);
-    }
-
-    @Test
-    public void testRouteHasTheMessageDiagnosisContextCorrectlySet() throws Exception {
-        Route route = createRoute(null);
-
-        when(handler.handle(any(Context.class), any(Request.class)))
-                .then(new Answer<Promise<Response, NeverThrowsException>>() {
-                    @Override
-                    public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) {
-                        // MDC is set only within this execution
-                        assertThat(MDC.get("routeId")).isEqualTo(ROUTE_NAME);
-                        return promise;
-                    }
-                });
-
-        final String routeId = "my-enclosing-router";
-        MDC.put("routeId", routeId);
-
-        // 2 routes can be enclosed : a Router can be defined as a Route, so it sets first its routeId in the MDC
-        assertThat(MDC.get("routeId")).isEqualTo(routeId);
-
-        route.handle(new RootContext(), new Request());
-
-        // MDC contains the same value than before having handled the route for routeId
-        assertThat(MDC.get("routeId")).isEqualTo(routeId);
     }
 
     private Route createRoute(final Expression<Boolean> condition) {

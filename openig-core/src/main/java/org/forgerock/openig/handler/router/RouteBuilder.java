@@ -44,6 +44,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.RequestHandler;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.filter.HttpAccessAuditFilter;
+import org.forgerock.openig.filter.MdcRouteIdFilter;
 import org.forgerock.openig.filter.RuntimeExceptionFilter;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.HeapException;
@@ -123,7 +124,7 @@ class RouteBuilder {
 
             final Endpoints endpoints = new Endpoints(slug);
             endpoints.register("objects", objects, null);
-            Handler routeHandler = setupRouteHandler(routeHeap, config, endpoints);
+            Handler routeHandler = setupRouteHandler(routeHeap, config, endpoints, routeId);
             return new Route(routeHandler, routeId, routeName, config, condition) {
 
                 @Override
@@ -146,11 +147,16 @@ class RouteBuilder {
 
     private Handler setupRouteHandler(final HeapImpl routeHeap,
                                       final JsonValue config,
-                                      final Endpoints endpoints) throws HeapException {
+                                      final Endpoints endpoints,
+                                      final String routeId) throws HeapException {
 
         TimeService time = routeHeap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
         List<Filter> filters = new ArrayList<>();
+
+        // Make MDC information available for downstream filters
+        // This has to be the first filter of the chain
+        filters.add(new MdcRouteIdFilter(routeId));
 
         SessionManager sessionManager = config.get("session").as(optionalHeapObject(routeHeap, SessionManager.class));
         if (sessionManager != null) {
