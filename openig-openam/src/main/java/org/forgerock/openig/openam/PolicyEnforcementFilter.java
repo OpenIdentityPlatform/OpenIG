@@ -130,7 +130,7 @@ import org.slf4j.LoggerFactory;
  *                                                                        heap object]
  *          "failureHandler          :    handler,            [OPTIONAL - default to 403]
  *          "cache"                  :    object,             [OPTIONAL - cache configuration. Default is no caching.]
- *              "enabled"            :    boolean,            [OPTIONAL - default to true. Enable or not the caching of
+ *              "enabled"            :    boolean,            [OPTIONAL - default to false. Enable or not the caching of
  *                                                                        the policy decisions.]
  *              "defaultTimeout"     :    duration,           [OPTIONAL - default to 1 minute. If no valid ttl value is
  *                                                                        provided by the policy decision, we'll cache
@@ -601,7 +601,7 @@ public class PolicyEnforcementFilter implements Filter {
                     logger.warn(message);
                 }
                 JsonValue cacheConfig = config.get("cache").as(evaluatedWithHeapProperties());
-                boolean enabled = cacheConfig.get("enabled").defaultTo(true).asBoolean();
+                boolean enabled = cacheConfig.get("enabled").defaultTo(false).asBoolean();
                 if (cacheConfig.isNotNull() && enabled) {
                     final Duration defaultTimeout = cacheConfig.get("defaultTimeout")
                                                                .defaultTo("1 minute")
