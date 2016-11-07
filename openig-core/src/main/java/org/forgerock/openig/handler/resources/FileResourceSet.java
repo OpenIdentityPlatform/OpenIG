@@ -16,13 +16,15 @@
 
 package org.forgerock.openig.handler.resources;
 
-import static org.forgerock.openig.handler.resources.MediaTypes.getMediaType;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static org.forgerock.openig.handler.resources.MediaTypes.extensionOf;
+import static org.forgerock.openig.handler.resources.MediaTypes.getMediaType;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,32 +41,34 @@ public class FileResourceSet implements ResourceSet {
      * Root directory.
      */
     private final File root;
+    private final Path pathRoot;
 
     /**
      * Constructs a file-based {@link ResourceSet}, using the given {@code root} as root directory.
      * @param root root directory
+     * @exception IOException In case an error occurred while getting the real path of the root directory.
      */
-    public FileResourceSet(final File root) {
+    public FileResourceSet(final File root) throws IOException {
         this.root = root;
+        this.pathRoot = root.toPath().toRealPath(NOFOLLOW_LINKS);
     }
 
     @Override
     public Resource find(final String path) {
-        File canonical;
         File resource = new File(root, path);
-        try {
-            canonical = resource.getCanonicalFile();
-        } catch (IOException e) {
-            logger.warn("Can't get canonical path for file {}", resource);
-            return null;
-        }
         // Make sure we don't serve resources outside of the root directory
-        if (canonical.isFile()) {
-            // The resource exists
-            if (canonical.getPath().startsWith(root.getPath())) {
-                return new FileResource(canonical, getMediaType(extensionOf(path)));
-            } else {
-                logger.warn("Blocked attempt to get resource outside of root directory: {}", path);
+        if (resource.isFile()) {
+            try {
+                // The resource exists
+                Path pathResource = resource.toPath().toRealPath(NOFOLLOW_LINKS);
+                if (pathResource.startsWith(pathRoot)) {
+                    return new FileResource(resource, getMediaType(extensionOf(path)));
+                } else {
+                    logger.warn("Blocked attempt to get resource outside of root directory: {}", path);
+                }
+            } catch (IOException e) {
+                logger.error("Unable to get real paths of resource", e);
+                return null;
             }
         }
         return null;
