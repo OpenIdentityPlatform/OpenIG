@@ -39,6 +39,14 @@ define([
         func(); // run the function immediately rather than delayed.
     };
 
+    // TODO: Remove this after upgrade to newer phantomjs
+    if (!Function.prototype.bind) {
+        // eslint-disable-next-line no-extend-native
+        Function.prototype.bind = function (otherThis) {
+            return _.bind(this, otherThis);
+        };
+    }
+
     return function (server) {
 
         eventManager.registerListener(constants.EVENT_APP_INITIALIZED, () => {
