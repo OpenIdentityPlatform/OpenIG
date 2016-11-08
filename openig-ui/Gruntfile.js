@@ -18,6 +18,7 @@
 
 module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-babel");
+    grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-less");
     grunt.loadNpmTasks("grunt-contrib-qunit");
     grunt.loadNpmTasks("grunt-contrib-requirejs");
@@ -31,6 +32,7 @@ module.exports = function (grunt) {
         testTargetDirectory = "target/test",
         compositionDirectory = "target/compose",
         testCompositionDirectory = "target/testcompose",
+        nodeModules = "node_modules",
         watchDirs = [
             "src/main/js",
             "src/main/resources"
@@ -253,12 +255,23 @@ module.exports = function (grunt) {
                     };
                 })
             }
+        },
+        copy: {
+            dependencies: {
+                files: [{
+                    expand: true,
+                    cwd: nodeModules + "/awesome-bootstrap-checkbox",
+                    src: ["*.css"],
+                    dest: compositionDirectory + "/css"
+                }]
+            }
         }
     });
 
     grunt.registerTask("build", [
         "eslint",
         "sync:compose",
+        "copy:dependencies",
         "sync:staticfiles",
         "less",
         "sync:test",
@@ -273,6 +286,7 @@ module.exports = function (grunt) {
     grunt.registerTask("build-dev", [
         "eslint",
         "sync:compose",
+        "copy:dependencies",
         "sync:staticfiles",
         "less",
         "sync:test",

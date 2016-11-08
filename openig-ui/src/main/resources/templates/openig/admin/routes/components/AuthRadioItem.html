@@ -1,0 +1,38 @@
+{{! Copyright 2016 ForgeRock AS.
+    License terms: https://forgerock.org/cddlv1-0/ }}
+<li>
+    <div class="panel panel-default panel-card panel-radio js-radio-item {{#unless enabled}}disabled{{/unless}}">
+        <div class="panel-heading">
+            <div class="radio">
+                <input type="radio" class="input-lg" name="authOption" value="{{name}}" {{#if enabled}}checked{{/if}}>
+                <label></label>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="media">
+                <div class="media-left">
+                    <div class="circle-icon circle-icon-sm">
+                        {{#if icon}}
+                        <i class="fa {{icon}}" aria-hidden="true"></i>
+                        {{else}}
+                        <span>
+                            <img src="{{img}}"/>
+                        </span>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{title}}</h3>
+                    <p class="status text-muted">{{hint}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer js-edit-panel {{#unless enabled}}hidden{{/unless}}">
+            <div class="btn-group">
+                <button type="button" class="btn btn-link js-settings-btn" name="{{name}}">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</li>

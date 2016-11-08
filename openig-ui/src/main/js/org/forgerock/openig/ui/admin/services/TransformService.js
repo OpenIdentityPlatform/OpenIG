@@ -86,6 +86,18 @@ define([
         };
     },
 
+    pickNonEmpty (filter, values) {
+        return _.omit(_.pick(filter, values), _.isEmpty);
+    },
+
+    singleSignOnFilter (filter) {
+        return {
+            type: "SingleSignOnFilter",
+            name: "SingleSignOn",
+            config: this.pickNonEmpty(filter, ["openamUrl", "realm", "cookieName"])
+        };
+    },
+
     policyEnforcementFilter (filter) {
         const declaration = {
             type: "PolicyEnforcementFilter",
@@ -163,6 +175,8 @@ define([
                 return this.oAuth2ClientFilter(filter);
             case "PolicyEnforcementFilter":
                 return this.policyEnforcementFilter(filter);
+            case "SingleSignOnFilter":
+                return this.singleSignOnFilter(filter);
             default:
                 throw new this.TransformServiceException("unknownFilterType", filter.type);
         }

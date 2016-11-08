@@ -25,6 +25,10 @@ define([
 ) => {
     const AbstractRouteView = AbstractView.extend({
         element: ".main",
+        events: {
+            "validationSuccessful": "validationSuccessful",
+            "validationFailed": "validationFailed"
+        },
         NOTIFICATION_TYPE: {
             SaveSuccess: "routeSettingsSaveSuccess",
             SaveFailed: "routeSettingsSaveFailed",

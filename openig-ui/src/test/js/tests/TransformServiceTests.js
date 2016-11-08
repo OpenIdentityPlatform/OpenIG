@@ -755,5 +755,45 @@ define([
             assert.throws(inBlock, transformService.TransformServiceException("invalidModel"), "Must provide subject");
             QUnit.start();
         });
+
+        QUnit.asyncTest("Transform SingleSignOnFilter", (assert) => {
+            assert.deepEqual(transformService.singleSignOnFilter(
+                {
+                    type: "SingleSignOnFilter",
+                    openamUrl: "http://openam.example.com/openam",
+                    realm: "/",
+                    cookieName: "iPlanetDirectoryPro"
+                }),
+                {
+                    type: "SingleSignOnFilter",
+                    name: "SingleSignOn",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam",
+                        realm: "/",
+                        cookieName: "iPlanetDirectoryPro"
+                    }
+                },
+                "SingleSignOnFilter with all properties"
+            );
+
+            assert.deepEqual(transformService.singleSignOnFilter(
+                {
+                    type: "SingleSignOnFilter",
+                    openamUrl: "http://openam.example.com/openam",
+                    realm: "",
+                    cookieName: ""
+                }),
+                {
+                    type: "SingleSignOnFilter",
+                    name: "SingleSignOn",
+                    config: {
+                        openamUrl: "http://openam.example.com/openam"
+                    }
+                },
+                "SingleSignOnFilter with only openamUrl"
+            );
+            QUnit.start();
+        });
+
     }
 }));

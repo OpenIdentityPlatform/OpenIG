@@ -21,9 +21,10 @@ define([
     "selectize",
     "i18next",
     "org/forgerock/openig/ui/admin/routes/AbstractRouteView",
-    "org/forgerock/commons/ui/common/main/ValidatorsManager",
-    "org/forgerock/openig/ui/admin/util/RoutesUtils",
-    "org/forgerock/openig/ui/admin/util/FormUtils"
+    "org/forgerock/commons/ui/common/components/BootstrapDialog",
+    "org/forgerock/commons/ui/common/util/UIUtils",
+    "org/forgerock/openig/ui/admin/routes/parts/OpenIDAuthentication",
+    "org/forgerock/openig/ui/admin/routes/parts/OpenAmSsoAuthentication"
 ], (
     $,
     _,
@@ -31,202 +32,170 @@ define([
     selectize,
     i18n,
     AbstractRouteView,
-    validatorsManager,
-    RoutesUtils,
-    FormUtils
-    ) => (
-    AbstractRouteView.extend({
-        template: "templates/openig/admin/routes/parts/Authentication.html",
-        partials: [
-            "templates/openig/admin/common/form/EditControl.html",
-            "templates/openig/admin/common/form/SliderControl.html",
-            "templates/openig/admin/common/form/GroupControl.html",
-            "templates/openig/admin/common/form/CheckboxControl.html",
-            "templates/openig/admin/common/form/MultiSelectControl.html",
-            "templates/openig/admin/routes/components/FormFooter.html"
-        ],
-        events: {
-            "click input[name='enabled']": "enableAuthenticationClick",
-            "click .js-reset-btn": "resetClick",
-            "click .js-save-btn": "saveClick"
-        },
-        data: {
-            formId: "authentication-form"
-        },
-        initialize (options) {
-            this.data = _.extend(this.data, options.parentData);
-            this.filterCondition = { "type": "OAuth2ClientFilter" };
-            this.settingTitle = i18n.t("templates.routes.parts.authentication.title");
-        },
-        render () {
-            this.data.authFilter = this.getFilter();
-            if (!this.data.authFilter) {
-                this.data.authFilter = this.createFilter();
-            }
+    BootstrapDialog,
+    UIUtils,
+    OpenIDAuthentication,
+    OpenAmSsoAuthentication
+) => (
+    class Authentication extends AbstractRouteView {
+        get template () {
+            return "templates/openig/admin/routes/parts/Authentication.html";
+        }
 
-            this.data.controls = [
+        get partials () {
+            return [
+                "templates/openig/admin/common/form/SliderControl.html",
+                "templates/openig/admin/routes/components/AuthRadioItem.html"
+            ];
+        }
+
+        get events () {
+            return {
+                "click #enableAuthentication": "enableAuthenticationClick",
+                "click .js-settings-btn": "settingsClick",
+                "click input[type='radio']": "radioClick"
+            };
+        }
+
+        initialize (options) {
+            this.data = options.parentData;
+            this.settingTitle = i18n.t("templates.routes.parts.authentication.title");
+            this.filters = {
+                openid: new OpenIDAuthentication({ data: this.data }),
+                sso: new OpenAmSsoAuthentication({ data: this.data })
+            };
+            this.prevFilterName = this.getActiveFilterName();
+        }
+
+        render () {
+            this.data.items = [
                 {
-                    name: "enabled",
-                    value:  this.data.authFilter.enabled,
-                    controlType: "slider",
-                    hint: false
+                    icon: "fa-openid",
+                    title: i18n.t("templates.routes.parts.authentication.fields.openID"),
+                    hint: i18n.t("templates.routes.parts.authentication.fields.openIDHint"),
+                    name: "openid",
+                    enabled: this.filters.openid.isFilterEnabled()
                 },
                 {
-                    name: "authGroup",
-                    title: "",
-                    controlType: "group",
-                    cssClass: this.data.authFilter.enabled ? "collapse in" : "collapse",
-                    controls: [
-                        {
-                            name: "clientFilterGroup",
-                            controlType: "group",
-                            controls: [
-                                {
-                                    name: "clientEndpoint",
-                                    value: this.data.authFilter.clientEndpoint,
-                                    validator: "required"
-                                }
-                            ]
-                        },
-                        {
-                            name: "clientRegistrationGroup",
-                            controlType: "group",
-                            controls: [
-                                {
-                                    name: "clientId",
-                                    value: this.data.authFilter.clientId,
-                                    validator: "required"
-                                },
-                                {
-                                    name: "clientSecret",
-                                    value: this.data.authFilter.clientSecret,
-                                    validator: "required"
-                                },
-                                {
-                                    name: "scopes",
-                                    value: this.data.authFilter.scopes,
-                                    controlType: "multiselect",
-                                    options: "openid profile email address phone offline_access",
-                                    delimiter: " ",
-                                    mandatory: "openid"
-                                },
-                                {
-                                    name: "tokenEndpointUseBasicAuth",
-                                    value: this.data.authFilter.tokenEndpointUseBasicAuth,
-                                    controlType: "slider"
-                                },
-                                {
-                                    name: "requireHttps",
-                                    value: this.data.authFilter.requireHttps,
-                                    controlType: "slider"
-                                }
-                            ]
-                        },
-                        {
-                            title: "Issuer",
-                            name: "issuerGroup",
-                            controlType: "group",
-                            controls: [
-                                {
-                                    name: "issuerWellKnownEndpoint",
-                                    value: this.data.authFilter.issuerWellKnownEndpoint,
-                                    validator: "required uri"
-                                }
-                            ]
-                        }
-                    ]
+                    img: "img/forgerock-mark-white.png",
+                    title: i18n.t("templates.routes.parts.authentication.fields.sso"),
+                    hint: i18n.t("templates.routes.parts.authentication.fields.ssoHint"),
+                    name: "sso",
+                    enabled: this.filters.sso.isFilterEnabled()
                 }
             ];
-            FormUtils.extendControlsSettings(this.data.controls, {
-                autoTitle: true,
-                autoHint: true,
-                translatePath: "templates.routes.parts.authentication.fields",
-                defaultControlType: "edit"
+            this.data.enabled = _.some(this.data.items, { enabled: true });
+            if (this.data.enabled) {
+                this.setFilterOption(_.find(this.data.items, { enabled: true }).name);
+            }
+            this.parentRender();
+        }
+
+        getActiveFilterName () {
+            let filterName;
+            _.find(this.filters, (filter, name) => {
+                if (filter.isFilterEnabled()) {
+                    filterName = name;
+                    return true;
+                }
             });
-            FormUtils.fillPartialsByControlType(this.data.controls);
-            this.parentRender(() => {
-                this.setFormFooterVisibility(this.data.authFilter.enabled);
-                validatorsManager.bindValidators(this.$el);
-                _.forEach(this.$el.find(".multi-select-control"), (control) => {
-                    FormUtils.initializeMultiSelect(control);
-                });
-            });
-        },
+            return filterName;
+        }
+
+        refreshOptions () {
+            this.setFilterOption(this.getActiveFilterName());
+        }
 
         enableAuthenticationClick (event) {
             const newState = event.currentTarget.checked;
-            const collapseState = newState ? "show" : "hide";
-            this.$el.find("div[name='authGroup']").collapse(collapseState);
-
-            // Save Enabled or disabled state immediately
-            this.data.authFilter.enabled = newState;
+            this.$el.find("#authOptions").toggle(newState);
             if (!newState) {
-                //Save Off state
-                this.data.authFilter.enabled = newState;
-                this.data.routeData.setFilter(this.data.authFilter, this.filterCondition);
+                this.setFilterOption();
+            }
+        }
+
+        radioClick (event) {
+            this.setFilterOption(event.currentTarget.value);
+        }
+
+        setFilterOption (checkedName) {
+            let dialogNotification = false;
+            this.prevFilterName = this.getActiveFilterName();
+            _.each(this.$el.find("input[type='radio']"), (radio) => {
+                const item = $(radio).closest(".js-radio-item");
+                const edit = item.find(".js-edit-panel");
+                const checked = checkedName === radio.value;
+                const filterItem = this.filters[radio.value];
+                const filter = filterItem.getFilter();
+                item.toggleClass("disabled", !checked);
+                edit.toggleClass("hidden", !checked);
+                if (filter) {
+                    filterItem.toggleFilter(checked);
+                } else if (checked) {
+                    this.showSettingsDialog(filterItem);
+                    dialogNotification = true;
+                }
+                radio.checked = checked;
+            });
+            if (this.prevFilterName !== checkedName) {
                 this.data.routeData.save()
                     .then(
                         () => {
-                            this.showNotification(this.NOTIFICATION_TYPE.Disabled);
+                            if (!dialogNotification) {
+                                this.showNotification(
+                                    checkedName ? this.NOTIFICATION_TYPE.SaveSuccess : this.NOTIFICATION_TYPE.Disabled
+                                );
+                            }
                         },
                         () => {
                             this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
                         }
                     );
-            } else {
-                //Save On state, only when form is valid
-                const form = this.$el.find(`#${this.data.formId}`)[0];
-                FormUtils.isFormValid(form)
-                    .done(
-                    () => {
-                        this.data.authFilter.enabled = newState;
-                        this.data.routeData.setFilter(this.data.authFilter, this.filterCondition);
-                        this.data.routeData.save();
-                    });
             }
-            this.setFormFooterVisibility(newState);
-        },
-
-        saveClick (event) {
-            event.preventDefault();
-            const form = this.$el.find(`#${this.data.formId}`)[0];
-            FormUtils.isFormValid(form)
-                .done(
-                () => {
-                    const formVal = form2js(form, ".", false, FormUtils.convertToJSTypes);
-                    _.extend(this.data.authFilter, formVal);
-                    if (!this.getFilter()) {
-                        RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.authFilter);
-                    }
-                    this.data.routeData.setFilter(this.data.authFilter, this.filterCondition);
-                    this.data.routeData.save()
-                        .then(
-                            () => {
-                                const submit = this.$el.find(".js-save-btn");
-                                submit.attr("disabled", true);
-                                this.showNotification(this.NOTIFICATION_TYPE.SaveSuccess);
-                            },
-                            () => {
-                                this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
-                            }
-                    );
-                })
-                .fail(
-                () => {
-                    $(form).find("input").trigger("validate");
-                });
-        },
-
-        getFilter () {
-            return this.data.routeData.getFilter(this.filterCondition);
-        },
-
-        createFilter () {
-            return {
-                type: "OAuth2ClientFilter",
-                scopes: "openid",
-                clientEndpoint: "/openid"
-            };
         }
-    })
+
+        settingsClick (event) {
+            this.showSettingsDialog(this.filters[event.currentTarget.name]);
+        }
+
+        showSettingsDialog (settings) {
+            const message = $("<div></div>");
+            settings.element = message;
+            settings.render();
+            this.delegateEvents();
+
+            BootstrapDialog.show({
+                title: i18n.t(`${settings.translatePath}.dialogTitle`),
+                message,
+                cssClass: "filter-dialog",
+                animate: false,
+                closable: false,
+                size: BootstrapDialog.SIZE_WIDE,
+                buttons: [
+                    {
+                        label: i18n.t("common.form.cancel"),
+                        action: (dialog) => {
+                            if (!settings.isFilterEnabled()) {
+                                this.setFilterOption(this.prevFilterName);
+                            }
+                            dialog.close();
+                        }
+                    },
+                    {
+                        label: i18n.t("common.form.save"),
+                        cssClass: "btn-primary",
+                        action: (dialog) => {
+                            settings.toggleFilter(true);
+                            settings.save().then(
+                                () => {
+                                    this.refreshOptions();
+                                    dialog.close();
+                                }
+                            );
+                        }
+                    }
+                ]
+            });
+        }
+    }
 ));

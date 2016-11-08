@@ -131,6 +131,13 @@ define([
                     if (filter) {
                         status = i18n.t("templates.routes.filters.OAuth2ClientFilter");
                     }
+                    filter = _.find(filters, {
+                        "type": "SingleSignOnFilter",
+                        "enabled": true
+                    });
+                    if (filter) {
+                        status = i18n.t("templates.routes.filters.SingleSignOnFilter");
+                    }
                     break;
                 case "routeAuthorization":
                     filter = _.find(filters, {

@@ -29,6 +29,7 @@ define([
     commonConstants.defaultFiltersOrder = {
         ThrottlingFilter: 0,
         OAuth2ClientFilter: 100,
+        SingleSignOnFilter: 100,
         PolicyEnforcementFilter: 200,
         Unknown: 10000
     };

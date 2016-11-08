@@ -1,0 +1,221 @@
+.panel-card {
+    display: block;
+	position: relative;
+	-webkit-transition: border-color 0.3s ease-in-out;
+    -o-transition: border-color 0.3s ease-in-out;
+    -moz-transition: border-color 0.3s ease-in-out;
+    -ms-transition: border-color 0.3s ease-in-out;
+    transition: border-color 0.3s ease-in-out;
+
+    .card-menu {
+        button.btn-link{
+            color: @navbar-toggle-color;
+            &:hover, &:focus{
+                color: darken(@base-theme-color, 5%);
+            }
+        }
+    }
+
+    .card-body {
+        .card-subtext {
+            color: @navbar-toggle-color;
+        }
+    }
+
+    .card-footer {
+        border-top: 1px solid #ddd;
+        color: @navbar-toggle-color;
+        .text-success {
+            color: darken(@base-theme-color, 5%);
+        }
+    }
+
+    &:hover {
+        border: 1px solid @base-theme-color;
+        .card-icon-circle {
+            background-color: darken(@base-theme-color, 5%);
+        }
+    }
+
+    &:hover, &:focus {
+        border-color: #519387;
+        -webkit-transition: border-color 0.3s ease-in-out;
+        -o-transition: border-color 0.3s ease-in-out;
+        -moz-transition: border-color 0.3s ease-in-out;
+        -ms-transition: border-color 0.3s ease-in-out;
+        transition: border-color 0.3s ease-in-out;
+        text-decoration: none;
+    }
+
+    .panel-body {
+	    padding: 15px !important;
+    }
+
+    &.add-card {
+	    height: auto;
+        padding: 0;
+        text-align: left;
+
+        .circle-icon {
+        	background-color: #ccc;
+        }
+    }
+
+    a:hover, a:focus {
+	    text-decoration: none;
+    }
+    
+    h3.media-heading {
+	    font-size: 18px;
+        margin-top: 5px;
+    }
+
+    &.active {
+	    border-color: #519387;
+    }
+
+    .circle-icon {
+        -webkit-transition: background-color 0.3s ease-in-out;
+        -o-transition: background-color 0.3s ease-in-out;
+        -moz-transition: background-color 0.3s ease-in-out;
+        -ms-transition: background-color 0.3s ease-in-out;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    &.panel-card-static:hover, 
+    &.panel-card-static:focus {
+        border-color: #ddd;
+    }
+
+    .form {
+	    padding-top: 15px;
+    }
+
+    &.disabled .circle-icon {
+	    background-color: #ccc;
+    }
+
+    &:not(.disabled):hover .circle-icon:not(.circle-icon-muted),
+    &:not(.disabled):focus .circle-icon:not(.circle-icon-muted) {
+        background-color: #3f7269;
+        -webkit-transition: background-color 0.3s ease-in-out;
+        -o-transition: background-color 0.3s ease-in-out;
+        -moz-transition: background-color 0.3s ease-in-out;
+        -ms-transition: background-color 0.3s ease-in-out;
+        transition: background-color 0.3s ease-in-out;
+    }
+}
+
+.readonly .panel-card:hover,
+.readonly .panel-card:focus {
+	border-color: #ddd;
+    a {
+        cursor: default;
+    }
+}
+
+
+// Panel radio
+.panel-radio-group {
+    margin-bottom: 0;
+    li .panel-card {
+        border: none;
+        border-bottom: 1px solid #ddd;
+        border-radius: 0;
+        margin-bottom: 0;
+        background-color: transparent;
+    }
+
+    li:last-child .panel-card {
+    	border-bottom: 0;
+    }
+}
+
+
+.tree-list .row:first-child .panel-card:before {
+	background-color: transparent;
+	width: auto;
+	height: auto;position: relative;
+	display: none;
+}
+
+.readonly .panel-card:hover:not(.disabled) .circle-icon:not(.circle-icon-muted),
+.readonly .panel-card:focus:not(.disabled) .circle-icon:not(.circle-icon-muted) {
+	background-color: #519387;
+}
+
+.panel-switch.disabled h3, .panel-switch.disabled p.status {
+    color: #777;
+}
+
+.panel-default.panel-card{
+    .btn-group.panel-card-type {
+	    margin-top: 15px;
+    }
+    .media-heading .badge {
+        vertical-align: top;
+    }
+    .panel-body .status {
+    	margin-bottom: 0;
+	    font-weight: 400;
+    }
+    &.panel-radio> .panel-heading {
+        left: 0;
+        width: 50px;
+        padding: 20px 0 0;
+    }
+    &.panel-card-split .panel-heading,
+    >.panel-heading {
+        position: absolute;
+        right: 3px;
+        top: 0;
+        z-index: 5;
+        border: none;
+        padding: 4px 0;
+        overflow: visible;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+    }
+}
+
+.panel-radio {
+     .panel-body {
+        padding-left: 60px !important;
+    }
+    .panel-heading .radio {
+        margin-left: 20px;
+        margin-top: 7px;
+    }
+}
+
+.panel-default.panel-card{
+    &.panel-radio> .panel-footer, 
+    &.panel-switch> .panel-footer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        border-top: none;
+        padding-right: 6px;
+    }
+    >.panel-footer {
+        overflow: visible;
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+}
+
+.radio input[type="radio"].input-lg + label{
+    &:before {
+        width: 24px;
+        height: 24px;
+    }
+    &:after {
+       width: 18px;
+        height: 18px;
+    }
+}
+
+.circle-icon.circle-icon-sm img{
+    width:21px;
+}
