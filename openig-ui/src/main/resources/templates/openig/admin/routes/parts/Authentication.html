@@ -4,11 +4,32 @@
     <h1>{{t "templates.routes.parts.authentication.title"}}</h1>
     <p class="panel-description">{{t "templates.routes.parts.authentication.description"}}</p>
 </div>
-<form id="{{formId}}" class="panel panel-default" role="form">
-    <div class="panel-body">
-    {{#each controls}}
-        {{> (control) }}
-    {{/each}}
+<div class="list-group list-group-directory margin-bottom-30">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class=" control-label col-sm-3">{{t "templates.routes.parts.authentication.fields.enabled"}}</label>
+                    <div class="col-sm-7">
+                        <div class="checkbox checkbox-slider checkbox-slider-md checkbox-slider--b-flat checkbox-slider-primary active-control">
+                            <label><input type="checkbox" id="enableAuthentication" {{#if enabled}}checked{{/if}}><span></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    {{> templates/openig/admin/routes/components/FormFooter }}
-</form>
+</div>
+
+<div id="authOptions" class="collapse {{#if enabled}}in{{/if}}">
+    <h4 class="block-header">{{t "templates.routes.parts.authentication.chooseOption"}}</h4>
+    <div class="panel panel-default panel-content">
+        <div class="radio-list">
+            <ul class="list-unstyled panels panel-radio-group">
+                {{#each items}}
+                    {{> templates/openig/admin/routes/components/AuthRadioItem}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</div>

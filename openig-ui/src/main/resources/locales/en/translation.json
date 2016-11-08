@@ -90,6 +90,7 @@
             "filters":{
                 "Off": "Off",
                 "OAuth2ClientFilter": "OpenID Connect",
+                "SingleSignOnFilter": "Single Sign-On",
                 "PolicyEnforcementFilter":"OpenAM Policy Enforcement",
                 "PasswordReplayFilter":"Password Replay",
                 "ThrottlingFilter": "__numberOfRequests__ requests/__duration__ __durationRange__"
@@ -126,7 +127,19 @@
                 },
                 "authentication":{
                     "title": "Authentication",
-                    "description": "Authenticate users to your application with OpenID Connect",
+                    "description": "Select a option to authenticate users to your application.",
+                    "chooseOption": "Choose an option...",
+                    "fields":{
+                        "enabled": "Enable authentication",
+                        "openID": "OpenID Connect",
+                        "openIDHint": "Authenticate users to your application using OpenID Connect...",
+                        "sso": "Single Sign-On",
+                        "ssoHint": "Use ForgeRock access management to enable single sign-on."
+                    }
+                },
+                "openIDAuthentication":{
+                    "dialogTitle": "Configure OpenID Connect Authentication",
+                    "title": "OpenID Connect Authentication",
                     "fields":{
                         "enabled": "Enable authentication",
                         "clientFilterGroup": "Client Filter",
@@ -145,6 +158,18 @@
                         "issuerWellKnownEndpointHint": "URL to the well-known configuration resource",
                         "requireHttps": "Require HTTPS",
                         "requireHttpsHint": "Require incoming requests to use TLS (HTTPS)"
+                    }
+                },
+                "openAmSsoAuthentication":{
+                    "dialogTitle": "Configure Single Sign-On",
+                    "title": "Single Sign-On",
+                    "fields":{
+                        "openamUrl": "Server URL",
+                        "openamUrlHint": "Server URL",
+                        "realm": "Realm",
+                        "realmHint": "The Access Management realm used for user authentication and token validation",
+                        "cookieName": "SSO Cookie Name",
+                        "cookieNameHint": "The name of the cookie where to expect the SSO Token"
                     }
                 },
                 "authorization":{
