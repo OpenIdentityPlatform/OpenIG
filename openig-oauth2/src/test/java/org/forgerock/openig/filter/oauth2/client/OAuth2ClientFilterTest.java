@@ -21,7 +21,10 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_CLIENT;
+import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_GRANT;
+import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_SCOPE;
 import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_TOKEN;
+import static org.forgerock.http.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.http.oauth2.OAuth2Error.E_TEMPORARILY_UNAVAILABLE;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Status.BAD_GATEWAY;
@@ -31,6 +34,7 @@ import static org.forgerock.http.protocol.Status.FOUND;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.MOVED_PERMANENTLY;
 import static org.forgerock.http.protocol.Status.OK;
+import static org.forgerock.http.protocol.Status.SWITCHING_PROTOCOLS;
 import static org.forgerock.http.protocol.Status.TEAPOT;
 import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.array;
@@ -639,16 +643,24 @@ public class OAuth2ClientFilterTest {
     }
 
     /**
-     * All successful responses are returned without any process.
-     * (not a 5xx Server Error or a 4xx Client Error)
+     * All responses without a specified OAuth2 error are returned without any process.
      */
     @DataProvider
     private static Object[][] okResourceResponses() {
+        //@Checkstyle:off
         return new Object[][] {
-            { new Response(OK) },
-            { new Response(FOUND) },
-            { new Response(MOVED_PERMANENTLY) },
-            { new Response(CREATED) } };
+                { new Response(SWITCHING_PROTOCOLS)},
+                { new Response(OK) },
+                { new Response(FOUND) },
+                { new Response(MOVED_PERMANENTLY) },
+                { new Response(CREATED) },
+                { new Response(TEAPOT) },
+                { new Response(BAD_GATEWAY) },
+                { new Response(FORBIDDEN) },
+                { new Response(INTERNAL_SERVER_ERROR) },
+                { new Response(UNAUTHORIZED) }
+                };
+        //@Checkstyle:on
     }
 
     @Test(dataProvider = "okResourceResponses")
@@ -674,17 +686,19 @@ public class OAuth2ClientFilterTest {
     }
 
     /**
-     * All non 401(and all 401 not about refreshing the access token) error responses
+     * All non 401 (and all 401 not about refreshing the access token) error responses
      * are handled by the failure handler.
      */
     @DataProvider
     private static Object[][] errorResponsesFromAccessingTheResource() {
+        //@Checkstyle:off
         return new Object[][] {
-            { new Response(TEAPOT) },
-            { new Response(BAD_GATEWAY) },
-            { new Response(FORBIDDEN) },
-            { new Response(INTERNAL_SERVER_ERROR) },
-            { buildOAuth2ErrorResponse(UNAUTHORIZED, E_INVALID_CLIENT, "Invalid client") } };
+                { buildOAuth2ErrorResponse(UNAUTHORIZED, E_INVALID_CLIENT, "Invalid client") },
+                { buildOAuth2ErrorResponse(UNAUTHORIZED, E_INVALID_GRANT, "Invalid grant") },
+                { buildOAuth2ErrorResponse(UNAUTHORIZED, E_INVALID_SCOPE, "Invalid scope") },
+                { buildOAuth2ErrorResponse(INTERNAL_SERVER_ERROR, E_SERVER_ERROR, "Server error") },
+        };
+        //@Checkstyle:on
     }
 
     @Test(dataProvider = "errorResponsesFromAccessingTheResource")

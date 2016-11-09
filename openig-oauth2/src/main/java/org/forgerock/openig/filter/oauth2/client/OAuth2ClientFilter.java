@@ -22,7 +22,6 @@ import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_REQUEST;
 import static org.forgerock.http.oauth2.OAuth2Error.E_INVALID_TOKEN;
 import static org.forgerock.http.oauth2.OAuth2Error.E_SERVER_ERROR;
 import static org.forgerock.http.protocol.Status.OK;
-import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
@@ -61,7 +60,6 @@ import org.forgerock.http.oauth2.OAuth2Error;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.ResponseException;
-import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jws.SignedJwt;
@@ -659,13 +657,10 @@ public final class OAuth2ClientFilter implements Filter {
         return new AsyncFunction<Response, Response, NeverThrowsException>() {
             @Override
             public Promise<Response, NeverThrowsException> apply(final Response response) {
-                final Status status = response.getStatus();
-                if (!(status.isServerError() || status.isClientError())) {
-                    // Just forward the response as-is if not an error.
+                final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response).getOAuth2Error();
+                if (error == null) {
+                    // Just forward the response as-is.
                     return newResultPromise(response);
-                }
-                if (!UNAUTHORIZED.equals(status)) {
-                    return handleException(context, request, response.getCause());
                 }
 
                 final OAuth2Session session;
@@ -675,12 +670,12 @@ public final class OAuth2ClientFilter implements Filter {
                     return handleException(context, request, e);
                 }
 
-                final OAuth2Error error = OAuth2BearerWWWAuthenticateHeader.valueOf(response).getOAuth2Error();
                 final ClientRegistration clientRegistration = getClientRegistration(session);
                 if (!error.is(E_INVALID_TOKEN)
                         || (error.is(E_INVALID_TOKEN)
-                                && (clientRegistration == null || session.getRefreshToken() == null))) {
-                    // Unauthorized but not due to an invalid token, forwards it.
+                        && (clientRegistration == null || session.getRefreshToken() == null))) {
+                    // The error is not due to an invalid token.
+                    // OR the token is invalid but we can't refresh it.
                     return handleException(context, request, response.getCause());
                 }
 
