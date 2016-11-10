@@ -20,6 +20,7 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.url;
+import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.readJson;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.net.URL;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
 import org.forgerock.util.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +52,22 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
 
     private static final Logger logger = LoggerFactory.getLogger(ResolveLocationJsonValueFunction.class);
 
+    private final Bindings bindings;
+
+    ResolveLocationJsonValueFunction() {
+        this(Bindings.bindings());
+    }
+
+    ResolveLocationJsonValueFunction(Bindings bindings) {
+        this.bindings = bindings;
+    }
+
     @Override
     public JsonValue apply(JsonValue node) {
         // Lookup for the special case first :  is it a sole element ?
         // { "$location" : "...." }
         if (node.isMap() && node.size() == 1 && node.isDefined("$location")) {
-            return fetch(node.get("$location"));
+            return fetch(node.get("$location").as(evaluated(bindings)));
         }
 
         if (node.isMap()) {

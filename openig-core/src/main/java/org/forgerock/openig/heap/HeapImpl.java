@@ -23,7 +23,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.decoration.global.GlobalDecorator.GLOBAL_DECORATOR_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.asClass;
 import static org.forgerock.openig.util.JsonValues.bindings;
@@ -44,12 +46,14 @@ import java.util.Map.Entry;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.util.MultiValueMap;
+import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.decoration.Context;
 import org.forgerock.openig.decoration.Decorator;
 import org.forgerock.openig.decoration.global.GlobalDecorator;
 import org.forgerock.openig.el.Bindings;
+import org.forgerock.util.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,12 +180,10 @@ public class HeapImpl implements Heap {
             throws HeapException {
         // process configuration object model structure
         this.config = config;
+
         // Register the properties if any provided
-        this.properties.bind(config.get("properties")
-                                   .defaultTo(emptyMap())
-                                   .as(resolvedLocation())
-                                   .expect(Map.class)
-                                   .as(bindings(getProperties())));
+        registerProperties();
+
         JsonValue heap = config.get("heap").defaultTo(emptyList());
         for (JsonValue object : heap.expect(List.class)) {
             addDeclaration(object);
@@ -213,6 +215,37 @@ public class HeapImpl implements Heap {
         // instantiate all objects, recursively allocating dependencies
         for (String name : new ArrayList<>(heaplets.keySet())) {
             get(name, Object.class);
+        }
+    }
+
+    private void registerProperties() {
+        // Transform a JsonValue Map containing several entries to a list of JsonValue Map containing only one entry.
+        // { 'a': 1, 'b': { 'foo': true } } will become [ { 'a': 1 }, { 'b': { 'foo': true } } ]
+        Function<JsonValue, List<JsonValue>, JsonException> mapToList =
+                new Function<JsonValue, List<JsonValue>, JsonException>() {
+                    @Override
+                    public List<JsonValue> apply(JsonValue value) {
+                        if (!value.isMap()) {
+                            throw new JsonException("Expecting a JsonValue Map only.");
+                        }
+                        List<JsonValue> result = new ArrayList<>(value.size());
+                        for (String key : value.keys()) {
+                            JsonValue elem = json(object(field(key, value.get(key))));
+                            result.add(elem);
+                        }
+                        return result;
+                    }
+                };
+
+        JsonValue properties = config.get("properties").defaultTo(emptyMap());
+        for (JsonValue elem : properties.as(mapToList)) {
+            Bindings evaluationBindings = getProperties();
+            // Transform the current element to a binding
+            Bindings elemBinding = elem.as(resolvedLocation(evaluationBindings))
+                                       .expect(Map.class)
+                                       .as(bindings(evaluationBindings));
+
+            this.properties.bind(elemBinding);
         }
     }
 

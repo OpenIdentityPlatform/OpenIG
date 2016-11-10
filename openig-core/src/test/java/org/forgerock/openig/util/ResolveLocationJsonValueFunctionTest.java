@@ -23,15 +23,31 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.test.assertj.AssertJJsonValueAssert.assertThat;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
+import org.forgerock.http.util.Json;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
+import org.forgerock.openig.el.Bindings;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
 public class ResolveLocationJsonValueFunctionTest {
 
-    private static final ResolveLocationJsonValueFunction RESOLVE_LOCATION = new ResolveLocationJsonValueFunction();
+    private final String tempFilename = "openig-test-properties.json";
+    private ResolveLocationJsonValueFunction resolveLocation;
+
+    @BeforeMethod
+    public void setUp() throws Exception {
+        Bindings bindings = Bindings.bindings().bind("tempFilename", tempFilename);
+        resolveLocation = new ResolveLocationJsonValueFunction(bindings);
+    }
 
     /**
      * $location is a value : its content replaces the value
@@ -41,7 +57,7 @@ public class ResolveLocationJsonValueFunctionTest {
         JsonValue value = json(object(field("quix", object(field("$location",
                                                                  urlForFile("bar.json"))))));
 
-        JsonValue resolvedJsonValue = value.as(RESOLVE_LOCATION);
+        JsonValue resolvedJsonValue = value.as(resolveLocation);
 
         assertThat(resolvedJsonValue.get("quix")).isObject().contains(entry("foo", "bar"));
     }
@@ -53,7 +69,7 @@ public class ResolveLocationJsonValueFunctionTest {
     public void shouldReplaceArrayValue() {
         JsonValue value = json(array("pim", object(field("$location", urlForFile("pam.json"))), "poum"));
 
-        JsonValue resolvedJsonValue = value.as(RESOLVE_LOCATION);
+        JsonValue resolvedJsonValue = value.as(resolveLocation);
 
         assertThat(resolvedJsonValue).isArray().contains("pim", array("toto", "titi"), "poum");
     }
@@ -70,7 +86,24 @@ public class ResolveLocationJsonValueFunctionTest {
 
     @Test(dataProvider = "invalidLocations", expectedExceptions = JsonValueException.class)
     public void shouldThrowExceptionIfNotValidURL(JsonValue value) throws Exception {
-        value.as(RESOLVE_LOCATION);
+        value.as(resolveLocation);
+    }
+
+    @Test
+    public void shouldEvaluateExpressions() throws IOException {
+        JsonValue testProperties = json(object(field("testProperty", "testValue")));
+        String tmpDir = System.getProperty("java.io.tmpdir");
+
+        // Create the test file
+        Path targetPath = new File(tmpDir, tempFilename).toPath();
+        byte[] bytes = Json.writeJson(testProperties);
+        Files.write(targetPath, bytes, StandardOpenOption.CREATE).toFile().deleteOnExit();
+
+        JsonValue config = json(object(field("$location", "file://${system['java.io.tmpdir']}/${tempFilename}")));
+        // Parsing $location should correctly derive the path from the system variable java.io.tmpdir and use the
+        // property tempFilename
+        JsonValue result = resolveLocation.apply(config);
+        assertThat(result).isObject().containsExactly(entry("testProperty", "testValue"));
     }
 
     private String urlForFile(String file) {
