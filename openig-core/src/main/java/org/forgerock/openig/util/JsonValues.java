@@ -155,13 +155,24 @@ public final class JsonValues {
     }
 
     /**
-     * Returns a function that will resolve the field "$location".
-     * @return a function that will resolve the field "$location".
+     * Returns a function that will resolve the field {@literal $location}.
+     * @return a function that will resolve the field {@literal $location}.
      *
      * @see ResolveLocationJsonValueFunction
      */
     public static Function<JsonValue, JsonValue, JsonValueException> resolvedLocation() {
         return new ResolveLocationJsonValueFunction();
+    }
+
+    /**
+     * Returns a function that will resolve the field {@literal $location}.
+     * @param bindings The bindings used when evaluating the {@literal $location} value
+     * @return a function that will resolve the field {@literal $location}.
+     *
+     * @see ResolveLocationJsonValueFunction
+     */
+    public static Function<JsonValue, JsonValue, JsonValueException> resolvedLocation(Bindings bindings) {
+        return new ResolveLocationJsonValueFunction(bindings);
     }
 
     /**
