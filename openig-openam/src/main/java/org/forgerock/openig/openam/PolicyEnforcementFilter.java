@@ -554,9 +554,9 @@ public class PolicyEnforcementFilter implements Filter {
             if (cacheMaxExpiration.isNotNull()) {
                 String message = format("%s no longer uses a 'cacheMaxExpiration' configuration setting."
                                                 + "Use the following configuration to define a max expiration :%n"
-                                                + "\"cache\" {%n"
+                                                + "\"cache\": {%n"
                                                 + "  \"enabled\": true%n"
-                                                + "  \"maxTimeout\": %s%n"
+                                                + "  \"maxTimeout\": \"%s\"%n"
                                                 + "}%n",
                                         name,
                                         cacheMaxExpiration.asString());
