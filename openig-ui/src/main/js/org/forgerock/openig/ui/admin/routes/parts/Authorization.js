@@ -59,6 +59,7 @@ define([
         },
         initialize (options) {
             this.data = _.extend(this.data, options.parentData);
+            this.filterCondition = { "type": "PolicyEnforcementFilter" };
         },
         render () {
             this.data.authZFilter = this.getFilter();
@@ -171,6 +172,7 @@ define([
             if (!newState) {
                 //Save Off state
                 this.data.authZFilter.enabled = newState;
+                this.data.routeData.setFilter(this.data.authZFilter, this.filterCondition);
                 this.data.routeData.save();
             } else {
                 //Save On state, only when form is valid
@@ -179,6 +181,7 @@ define([
                     .done(
                     () => {
                         this.data.authZFilter.enabled = newState;
+                        this.data.routeData.setFilter(this.data.authZFilter, this.filterCondition);
                         this.data.routeData.save();
                     });
             }
@@ -210,6 +213,7 @@ define([
                     if (!this.getFilter()) {
                         RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.authZFilter);
                     }
+                    this.data.routeData.setFilter(this.data.authZFilter, this.filterCondition);
                     this.data.routeData.save();
 
                     EventManager.sendEvent(
@@ -227,9 +231,7 @@ define([
         },
 
         getFilter () {
-            return _.find(this.data.routeData.get("filters"),
-                { "type": "PolicyEnforcementFilter" }
-            );
+            return this.data.routeData.getFilter(this.filterCondition);
         },
 
         createFilter () {
