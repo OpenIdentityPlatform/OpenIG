@@ -15,9 +15,11 @@
 */
 
 define([
+    "lodash",
     "backbone",
     "org/forgerock/openig/ui/common/util/Constants"
 ], (
+    _,
     Backbone,
     Constants
 ) => (
@@ -117,6 +119,22 @@ define([
         needSetPendingChanges () {
             return (!this.hasChanged("pendingChanges") && !this.hasChanged("deployedDate") &&
                 this.get("deployed") && !this.get("pendingChanges"));
+        }
+
+        getFilter (condition) {
+            return _.find(this.get("filters"), condition);
+        }
+
+        setFilter (filter, condition) {
+            const filters = this.get("filters");
+            const filterIndex = _.findIndex(filters, condition);
+            filters[filterIndex] = filter;
+            this.set("filters", filters);
+            const hasChanged = !_.isEqual(this.get("filters"), this.previousAttributes().filters);
+            if (hasChanged && this.needSetPendingChanges()) {
+                this.set("pendingChanges", true);
+                console.log("Has pending changes (filters)", this.id);
+            }
         }
     }
 ));
