@@ -36,7 +36,6 @@ define([
     FormUtils
     ) => (
     AbstractRouteView.extend({
-        element: ".main",
         template: "templates/openig/admin/routes/parts/Authentication.html",
         partials: [
             "templates/openig/admin/common/form/EditControl.html",
@@ -146,7 +145,7 @@ define([
             });
             FormUtils.fillPartialsByControlType(this.data.controls);
             this.parentRender(() => {
-                this.setFormFooterVisiblity(this.data.authFilter.enabled);
+                this.setFormFooterVisibility(this.data.authFilter.enabled);
                 validatorsManager.bindValidators(this.$el);
                 _.forEach(this.$el.find(".multi-select-control"), (control) => {
                     FormUtils.initializeMultiSelect(control);
@@ -185,21 +184,7 @@ define([
                         this.data.routeData.save();
                     });
             }
-            this.setFormFooterVisiblity(newState);
-        },
-
-        setFormFooterVisiblity (visible) {
-            const footerPanel = this.$el.find(".panel-footer");
-            if (visible) {
-                footerPanel.show();
-            } else {
-                footerPanel.hide();
-            }
-        },
-
-        resetClick () {
-            event.preventDefault();
-            this.render();
+            this.setFormFooterVisibility(newState);
         },
 
         saveClick () {

@@ -15,14 +15,10 @@
  */
 
 define([
-    "jquery",
-    "lodash",
     "org/forgerock/commons/ui/common/main/AbstractView",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/openig/ui/common/util/Constants"
 ], (
-    $,
-    _,
     AbstractView,
     EventManager,
     Constants
@@ -42,6 +38,20 @@ define([
                     filter: this.settingTitle
                 }
             );
+        },
+
+        setFormFooterVisibility (visible) {
+            const footerPanel = this.$el.find(".panel-footer");
+            if (visible) {
+                footerPanel.show();
+            } else {
+                footerPanel.hide();
+            }
+        },
+
+        resetClick (event) {
+            event.preventDefault();
+            this.render();
         }
     });
 

@@ -30,7 +30,6 @@ define(
 ) => (
         AbstractRouteView.extend(
             {
-                element: ".main",
                 template: "templates/openig/admin/routes/parts/Capture.html",
                 partials: [
                     "templates/openig/admin/common/form/SliderControl.html",
@@ -96,11 +95,6 @@ define(
                     FormUtils.fillPartialsByControlType(this.data.controls);
 
                     this.parentRender();
-                },
-
-                resetClick (event) {
-                    event.preventDefault();
-                    this.render();
                 },
 
                 saveClick (event) {

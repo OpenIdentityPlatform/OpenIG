@@ -27,6 +27,7 @@ define([
     AbstractRouteView,
     Settings) => {
     const AddRouteView = AbstractRouteView.extend({
+        element: "#content",
         template: "templates/openig/admin/routes/AddRouteTemplate.html",
         events: {
         },

@@ -35,7 +35,6 @@ define([
     RoutesUtils,
     FormUtils
 ) => (AbstractRouteView.extend({
-    element: ".main",
     template: "templates/openig/admin/routes/parts/Throttling.html",
     partials: [
         "templates/openig/admin/common/form/SliderControl.html",
@@ -96,7 +95,7 @@ define([
         FormUtils.fillPartialsByControlType(this.data.controls);
         this.parentRender(() => {
             this.createTimeRangeSelect();
-            this.setFormFooterVisiblity(this.data.throttFilter.enabled);
+            this.setFormFooterVisibility(this.data.throttFilter.enabled);
             validatorsManager.bindValidators(this.$el);
         });
     },
@@ -110,11 +109,6 @@ define([
             selectList.appendChild(option);
             selectList.value = this.data.throttFilter.durationRange;
         });
-    },
-
-    resetClick (event) {
-        event.preventDefault();
-        this.render();
     },
 
     saveClick (event) {
@@ -177,16 +171,7 @@ define([
                     this.data.routeData.save();
                 });
         }
-        this.setFormFooterVisiblity(newState);
-    },
-
-    setFormFooterVisiblity (visible) {
-        const footer = this.$el.find(".panel-footer");
-        if (visible) {
-            footer.show();
-        } else {
-            footer.hide();
-        }
+        this.setFormFooterVisibility(newState);
     },
 
     getFilter () {

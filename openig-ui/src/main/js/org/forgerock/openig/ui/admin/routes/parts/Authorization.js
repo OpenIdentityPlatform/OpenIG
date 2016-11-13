@@ -36,7 +36,6 @@ define([
     FormUtils
     ) => (
     AbstractRouteView.extend({
-        element: ".main",
         template: "templates/openig/admin/routes/parts/Authorization.html",
         partials: [
             "templates/openig/admin/common/form/EditControl.html",
@@ -47,7 +46,7 @@ define([
         ],
         events: {
             "click input[name='enabled']": "enableAuthorizationClick",
-            "click .js-reset-btn": "cancelClick",
+            "click .js-reset-btn": "resetClick",
             "click .js-save-btn": "saveClick"
         },
         data: {
@@ -153,7 +152,7 @@ define([
             });
             FormUtils.fillPartialsByControlType(this.data.controls);
             this.parentRender(() => {
-                this.setFormFooterVisiblity(this.data.authZFilter.enabled);
+                this.setFormFooterVisibility(this.data.authZFilter.enabled);
                 validatorsManager.bindValidators(this.$el);
                 _.forEach(this.$el.find(".multi-select-control"), (control) => {
                     FormUtils.initializeMultiSelect(control);
@@ -191,21 +190,7 @@ define([
                         this.data.routeData.save();
                     });
             }
-            this.setFormFooterVisiblity(newState);
-        },
-
-        setFormFooterVisiblity (visible) {
-            const footerPanel = this.$el.find(".panel-footer");
-            if (visible) {
-                footerPanel.show();
-            } else {
-                footerPanel.hide();
-            }
-        },
-
-        cancelClick () {
-            event.preventDefault();
-            this.render();
+            this.setFormFooterVisibility(newState);
         },
 
         saveClick () {
