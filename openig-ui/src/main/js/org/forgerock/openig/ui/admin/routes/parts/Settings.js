@@ -46,7 +46,6 @@ define([
     RoutesCollection
 ) => (
     AbstractRouteView.extend({
-        element: ".main",
         template: "templates/openig/admin/routes/parts/Settings.html",
         partials: [
             "templates/openig/admin/common/form/EditControl.html"
@@ -147,10 +146,9 @@ define([
             return route;
         },
 
-        renderForm (callback) {
+        renderForm () {
             this.parentRender(() => {
                 validatorsManager.bindValidators(this.$el);
-                this.loadRouteTemplate(callback);
             });
         },
 

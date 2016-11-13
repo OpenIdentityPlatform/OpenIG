@@ -40,7 +40,6 @@ define([
     AbstractRouteView
 ) => (
     AbstractRouteView.extend({
-        element: ".main",
         template: "templates/openig/admin/routes/parts/Statistics.html",
         partials: [
             "templates/openig/admin/common/form/SliderControl.html",
@@ -102,7 +101,7 @@ define([
             });
             FormUtils.fillPartialsByControlType(this.data.controls);
             this.parentRender(() => {
-                this.setFormFooterVisiblity(this.getStatistics().enabled);
+                this.setFormFooterVisibility(this.getStatistics().enabled);
                 _.forEach(this.$el.find(".multi-select-control"), (control) => {
                     const multiselect = FormUtils.initializeMultiSelect(control);
                     multiselect[0].selectize.on("item_add", (value) => { this.onItemAdd(value, multiselect); });
@@ -131,12 +130,7 @@ define([
                     }
                 );
 
-            this.setFormFooterVisiblity(newState);
-        },
-
-        resetClick (event) {
-            event.preventDefault();
-            this.render();
+            this.setFormFooterVisibility(newState);
         },
 
         onItemAdd (value, control) {
@@ -208,15 +202,6 @@ define([
                 enabled: formVal.enabled,
                 percentiles: formVal.percentiles
             };
-        },
-
-        setFormFooterVisiblity (visible) {
-            const footerPanel = this.$el.find(".panel-footer");
-            if (visible) {
-                footerPanel.show();
-            } else {
-                footerPanel.hide();
-            }
         },
 
         getStatistics () {
