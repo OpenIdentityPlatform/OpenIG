@@ -41,7 +41,15 @@ define([], () => ({
     },
     "routeSettingsSaveSuccess": {
         msg: "config.messages.OpenIGMessages.routeSettingsSaveSuccess",
-        type: "info"
+        type: "success"
+    },
+    "routeSettingsSaveFailed": {
+        msg: "config.messages.OpenIGMessages.routeSettingsSaveFailed",
+        type: "error"
+    },
+    "routeSettingsDisabled": {
+        msg: "config.messages.OpenIGMessages.routeSettingsDisabled",
+        type: "success"
     },
     "modelTransformationFailed": {
         msg: "config.messages.OpenIGMessages.modelTransformationFailed",

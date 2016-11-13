@@ -17,16 +17,32 @@
 define([
     "jquery",
     "lodash",
-    "org/forgerock/commons/ui/common/main/AbstractView"
-], ($, _, AbstractView) => {
+    "org/forgerock/commons/ui/common/main/AbstractView",
+    "org/forgerock/commons/ui/common/main/EventManager",
+    "org/forgerock/openig/ui/common/util/Constants"
+], (
+    $,
+    _,
+    AbstractView,
+    EventManager,
+    Constants
+) => {
     const AbstractRouteView = AbstractView.extend({
-        data: {
+        element: ".main",
+        NOTIFICATION_TYPE: {
+            SaveSuccess: "routeSettingsSaveSuccess",
+            SaveFailed: "routeSettingsSaveFailed",
+            Disabled: "routeSettingsDisabled"
         },
-        loadRouteTemplate () {
-                // TODO: init view
-            return;
+        showNotification (msgKey) {
+            EventManager.sendEvent(
+                Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                {
+                    key: msgKey,
+                    filter: this.settingTitle
+                }
+            );
         }
-
     });
 
     return AbstractRouteView;

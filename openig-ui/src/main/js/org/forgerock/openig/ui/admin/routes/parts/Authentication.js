@@ -20,26 +20,22 @@ define([
     "form2js",
     "selectize",
     "i18next",
-    "org/forgerock/commons/ui/common/main/AbstractView",
+    "org/forgerock/openig/ui/admin/routes/AbstractRouteView",
     "org/forgerock/commons/ui/common/main/ValidatorsManager",
     "org/forgerock/openig/ui/admin/util/RoutesUtils",
-    "org/forgerock/openig/ui/admin/util/FormUtils",
-    "org/forgerock/commons/ui/common/main/EventManager",
-    "org/forgerock/commons/ui/common/util/Constants"
+    "org/forgerock/openig/ui/admin/util/FormUtils"
 ], (
     $,
     _,
     form2js,
     selectize,
     i18n,
-    AbstractView,
+    AbstractRouteView,
     validatorsManager,
     RoutesUtils,
-    FormUtils,
-    EventManager,
-    Constants
+    FormUtils
     ) => (
-    AbstractView.extend({
+    AbstractRouteView.extend({
         element: ".main",
         template: "templates/openig/admin/routes/parts/Authentication.html",
         partials: [
@@ -61,6 +57,7 @@ define([
         initialize (options) {
             this.data = _.extend(this.data, options.parentData);
             this.filterCondition = { "type": "OAuth2ClientFilter" };
+            this.settingTitle = i18n.t("templates.routes.parts.authentication.title");
         },
         render () {
             this.data.authFilter = this.getFilter();
@@ -168,7 +165,15 @@ define([
                 //Save Off state
                 this.data.authFilter.enabled = newState;
                 this.data.routeData.setFilter(this.data.authFilter, this.filterCondition);
-                this.data.routeData.save();
+                this.data.routeData.save()
+                    .then(
+                        () => {
+                            this.showNotification(this.NOTIFICATION_TYPE.Disabled);
+                        },
+                        () => {
+                            this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
+                        }
+                    );
             } else {
                 //Save On state, only when form is valid
                 const form = this.$el.find(`#${this.data.formId}`)[0];
@@ -209,14 +214,16 @@ define([
                         RoutesUtils.addFilterIntoModel(this.data.routeData, this.data.authFilter);
                     }
                     this.data.routeData.setFilter(this.data.authFilter, this.filterCondition);
-                    this.data.routeData.save();
-
-                    EventManager.sendEvent(
-                        Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                        {
-                            key: "routeSettingsSaveSuccess",
-                            filter: i18n.t("templates.routes.parts.authentication.title")
-                        }
+                    this.data.routeData.save()
+                        .then(
+                            () => {
+                                const submit = this.$el.find(".js-save-btn");
+                                submit.attr("disabled", true);
+                                this.showNotification(this.NOTIFICATION_TYPE.SaveSuccess);
+                            },
+                            () => {
+                                this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
+                            }
                     );
                 })
                 .fail(

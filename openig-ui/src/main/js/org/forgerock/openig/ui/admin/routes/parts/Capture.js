@@ -19,19 +19,16 @@ define(
         "lodash",
         "form2js",
         "i18next",
-        "org/forgerock/commons/ui/common/main/AbstractView",
-        "org/forgerock/openig/ui/admin/util/FormUtils",
-        "org/forgerock/commons/ui/common/main/EventManager",
-        "org/forgerock/commons/ui/common/util/Constants"
+        "org/forgerock/openig/ui/admin/routes/AbstractRouteView",
+        "org/forgerock/openig/ui/admin/util/FormUtils"
     ],
     (_,
      form2js,
      i18n,
-     AbstractView,
-     FormUtils,
-     EventManager,
-     Constants) => (
-        AbstractView.extend(
+     AbstractRouteView,
+     FormUtils
+) => (
+        AbstractRouteView.extend(
             {
                 element: ".main",
                 template: "templates/openig/admin/routes/parts/Capture.html",
@@ -50,6 +47,7 @@ define(
                 },
                 initialize (options) {
                     this.data = _.extend(this.data, options.parentData);
+                    this.settingTitle = i18n.t("templates.routes.parts.capture.title");
                 },
 
                 render () {
@@ -115,18 +113,17 @@ define(
                     } else {
                         this.data.routeData.unset("capture");
                     }
-                    this.data.routeData.save();
-
-                    const submit = this.$el.find("#submit-capture");
-                    submit.attr("disabled", true);
-
-                    EventManager.sendEvent(
-                        Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                        {
-                            key: "routeSettingsSaveSuccess",
-                            filter: i18n.t("templates.routes.parts.capture.title")
-                        }
-                    );
+                    this.data.routeData.save()
+                        .then(
+                            () => {
+                                const submit = this.$el.find("#submit-capture");
+                                submit.attr("disabled", true);
+                                this.showNotification(this.NOTIFICATION_TYPE.SaveSuccess);
+                            },
+                            () => {
+                                this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
+                            }
+                        );
                 },
 
                 onToggleSwitch (event) {
