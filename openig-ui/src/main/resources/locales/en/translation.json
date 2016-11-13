@@ -28,6 +28,8 @@
                 "invalidModel": "Can't create the config file because the model is not valid",
                 "unknownFilterType": "Unknown filter type: '__message__'",
                 "routeSettingsSaveSuccess": "__filter__ settings saved",
+                "routeSettingsSaveFailed": "Failed to save __filter__ settings",
+                "routeSettingsDisabled": "__filter__ disabled",
                 "modelTransformationFailed": "Failed to transform the model",
                 "routeDeployedSuccess": "Protection for '__title__' was deployed",
                 "routeDeployedFailed": "Failed to deploy protection for '__title__'",

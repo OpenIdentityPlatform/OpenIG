@@ -25,7 +25,7 @@ define([
     "org/forgerock/openig/ui/admin/util/ValueHelper",
     "org/forgerock/commons/ui/common/main/EventManager",
     "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/commons/ui/common/main/AbstractView"
+    "org/forgerock/openig/ui/admin/routes/AbstractRouteView"
 ], (
     $,
     _,
@@ -37,9 +37,9 @@ define([
     ValueHelper,
     EventManager,
     Constants,
-    AbstractView
+    AbstractRouteView
 ) => (
-    AbstractView.extend({
+    AbstractRouteView.extend({
         element: ".main",
         template: "templates/openig/admin/routes/parts/Statistics.html",
         partials: [
@@ -59,6 +59,7 @@ define([
         },
         initialize (options) {
             this.data = _.extend(this.data, options.parentData);
+            this.settingTitle = i18n.t("templates.routes.parts.statistics.title");
         },
         spaceDelimiter: " ",
         render () {
@@ -118,7 +119,18 @@ define([
             statistics.enabled = newState;
             this.data.routeData.set("statistics", statistics);
 
-            this.data.routeData.save();
+            this.data.routeData.save()
+                .then(
+                    () => {
+                        if (!newState) {
+                            this.showNotification(this.NOTIFICATION_TYPE.Disabled);
+                        }
+                    },
+                    () => {
+                        this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
+                    }
+                );
+
             this.setFormFooterVisiblity(newState);
         },
 
@@ -157,16 +169,18 @@ define([
             event.preventDefault();
             const form = this.$el.find(`#${this.data.formId}`)[0];
             this.data.routeData.set("statistics", this.formToStatistics(form));
-            this.data.routeData.save();
+            this.data.routeData.save()
+                .then(
+                    () => {
+                        const submit = this.$el.find(".js-save-btn");
+                        submit.attr("disabled", true);
+                        this.showNotification(this.NOTIFICATION_TYPE.SaveSuccess);
+                    },
+                    () => {
+                        this.showNotification(this.NOTIFICATION_TYPE.SaveFailed);
+                    }
+                );
             this.isDataDirty();
-
-            EventManager.sendEvent(
-                Constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                {
-                    key: "routeSettingsSaveSuccess",
-                    filter: i18n.t("templates.routes.parts.statistics.title")
-                }
-            );
         },
 
         percentilesChange () {
