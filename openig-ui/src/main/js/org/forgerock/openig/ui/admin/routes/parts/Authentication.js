@@ -187,7 +187,7 @@ define([
             this.setFormFooterVisibility(newState);
         },
 
-        saveClick () {
+        saveClick (event) {
             event.preventDefault();
             const form = this.$el.find(`#${this.data.formId}`)[0];
             FormUtils.isFormValid(form)
