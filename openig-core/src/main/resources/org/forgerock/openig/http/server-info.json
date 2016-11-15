@@ -22,5 +22,6 @@
       "description": "i18n:org/forgerock/openig/http/server-info#info-timestamp.desc",
       "type": "integer"
     }
-  }
+  },
+  "required": [ "version", "revision", "branch", "timestamp" ]
 }
