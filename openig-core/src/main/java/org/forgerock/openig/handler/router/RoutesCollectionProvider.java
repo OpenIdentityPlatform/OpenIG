@@ -22,6 +22,18 @@ import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.openig.handler.router.Route.routeName;
 import static org.forgerock.util.query.QueryFilter.alwaysTrue;
 
+import org.forgerock.api.annotations.ApiError;
+import org.forgerock.api.annotations.CollectionProvider;
+import org.forgerock.api.annotations.Create;
+import org.forgerock.api.annotations.Delete;
+import org.forgerock.api.annotations.Handler;
+import org.forgerock.api.annotations.Operation;
+import org.forgerock.api.annotations.Query;
+import org.forgerock.api.annotations.Read;
+import org.forgerock.api.annotations.Schema;
+import org.forgerock.api.annotations.Update;
+import org.forgerock.api.enums.CreateMode;
+import org.forgerock.api.enums.QueryType;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
@@ -49,6 +61,12 @@ import org.slf4j.LoggerFactory;
 /**
  * CREST handler used to manage the collection of routes deployed by a {@link RouterHandler}.
  */
+@CollectionProvider(details = @Handler(id = "routes",
+                                       resourceSchema = @Schema(schemaResource = "route.schema.json",
+                                                                id = "route"),
+                                       title = "i18n:#service.title",
+                                       description = "i18n:#service.desc",
+                                       mvccSupported = false))
 class RoutesCollectionProvider implements CollectionResourceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(RoutesCollectionProvider.class);
@@ -72,6 +90,17 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Create(operationDescription = @Operation(description = "i18n:#create.desc",
+                                              errors = { @ApiError(id = "BadRequest",
+                                                                   code = 400,
+                                                                   description = "i18n:#bad-request.desc"),
+                                                         @ApiError(id = "Conflict",
+                                                                   code = 409,
+                                                                   description = "i18n:#conflict.desc"),
+                                                         @ApiError(id = "InternalServerError",
+                                                                   code = 500,
+                                                                   description = "i18n:#internal-server-error.desc") }),
+            modes = CreateMode.ID_FROM_CLIENT)
     public Promise<ResourceResponse, ResourceException> createInstance(Context context, CreateRequest request) {
         String resourceId = request.getNewResourceId();
         if (resourceId == null) {
@@ -98,6 +127,13 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Delete(operationDescription = @Operation(description = "i18n:#delete.desc",
+                                              errors = { @ApiError(id = "NotFound",
+                                                                   code = 404,
+                                                                   description = "i18n:#not-found.desc"),
+                                                         @ApiError(id = "InternalServerError",
+                                                                   code = 500,
+                                                                   description = "i18n:#internal-server-error.desc") }))
     public Promise<ResourceResponse, ResourceException> deleteInstance(Context context,
                                                                        String resourceId,
                                                                        DeleteRequest request) {
@@ -125,6 +161,11 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Query(operationDescription = @Operation(description = "i18n:#query.desc",
+                                             errors = { @ApiError(id = "NotSupported",
+                                                                  code = 401,
+                                                                  description = "i18n:#not-supported.desc") }),
+           type = QueryType.FILTER)
     public Promise<QueryResponse, ResourceException> queryCollection(Context context,
                                                                      QueryRequest request,
                                                                      QueryResourceHandler resourceHandler) {
@@ -143,6 +184,13 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Read(operationDescription = @Operation(description = "i18n:#read.desc",
+                                            errors = { @ApiError(id = "NotFound",
+                                                                 code = 404,
+                                                                 description = "i18n:#not-found.desc"),
+                                                       @ApiError(id = "InternalServerError",
+                                                                 code = 500,
+                                                                 description = "i18n:#internal-server-error.desc") }))
     public Promise<ResourceResponse, ResourceException> readInstance(Context context,
                                                                      String resourceId,
                                                                      ReadRequest request) {
@@ -163,6 +211,13 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
     }
 
     @Override
+    @Update(operationDescription = @Operation(description = "i18n:#update.desc",
+                                              errors = { @ApiError(id = "NotFound",
+                                                                   code = 404,
+                                                                   description = "i18n:#not-found.desc"),
+                                                         @ApiError(id = "InternalServerError",
+                                                                   code = 500,
+                                                                   description = "i18n:#internal-server-error.desc") }))
     public Promise<ResourceResponse, ResourceException> updateInstance(Context context,
                                                                        String resourceId,
                                                                        UpdateRequest request) {
