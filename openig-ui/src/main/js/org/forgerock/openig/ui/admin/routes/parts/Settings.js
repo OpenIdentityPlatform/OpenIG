@@ -79,41 +79,51 @@ define([
                 this.data.cancelBtnTitle = i18n.t("common.form.cancel");
             }
 
-            this.routeModel = this.setupRoute(this.data.mode, this.data.routeId);
-            this.data.controls = [
-                {
-                    name: "name",
-                    value: this.routeModel.get("name"),
-                    validator: "required spaceCheck customValidator"
-                },
-                {
-                    name: "id",
-                    value: this.routeModel.get("id"),
-                    validator: "required spaceCheck urlCompatible customValidator",
-                    disabled: this.data.mode === this.formMode.EDIT
-                },
-                {
-                    name: "baseURI",
-                    value: this.routeModel.get("baseURI"),
-                    validator: "required baseURI spaceCheck"
-                },
-                {
-                    name: "condition",
-                    value: this.routeModel.get("condition"),
-                    placeholder: "templates.routes.parts.settings.fields.conditionPlaceHolder",
-                    validator: "required spaceCheck"
-                }
-            ];
+            this.setupRoute(this.data.mode, this.data.routeId)
+                .then((route) => {
+                    if (!route) {
+                        eventManager.sendEvent(
+                            constants.EVENT_CHANGE_VIEW,
+                            { route: router.configuration.routes.listRoutesView }
+                        );
+                        return;
+                    }
+                    this.routeModel = route;
+                    this.data.controls = [
+                        {
+                            name: "name",
+                            value: this.routeModel.get("name"),
+                            validator: "required spaceCheck customValidator"
+                        },
+                        {
+                            name: "id",
+                            value: this.routeModel.get("id"),
+                            validator: "required spaceCheck urlCompatible customValidator",
+                            disabled: this.data.mode === this.formMode.EDIT
+                        },
+                        {
+                            name: "baseURI",
+                            value: this.routeModel.get("baseURI"),
+                            validator: "required baseURI spaceCheck"
+                        },
+                        {
+                            name: "condition",
+                            value: this.routeModel.get("condition"),
+                            placeholder: "templates.routes.parts.settings.fields.conditionPlaceHolder",
+                            validator: "required spaceCheck"
+                        }
+                    ];
 
-            FormUtils.extendControlsSettings(this.data.controls, {
-                autoTitle: true,
-                autoHint: true,
-                translatePath: "templates.routes.parts.settings.fields",
-                defaultControlType: "edit"
-            });
-            FormUtils.fillPartialsByControlType(this.data.controls);
+                    FormUtils.extendControlsSettings(this.data.controls, {
+                        autoTitle: true,
+                        autoHint: true,
+                        translatePath: "templates.routes.parts.settings.fields",
+                        defaultControlType: "edit"
+                    });
+                    FormUtils.fillPartialsByControlType(this.data.controls);
 
-            this.renderForm(callback);
+                    this.renderForm(callback);
+                });
         },
 
         getFormMode () {
@@ -126,24 +136,32 @@ define([
             }
         },
 
+        /**
+         * Obtains the model to work on, depending on the current formMode:
+         *
+         * * DUPLICATE will clone the existing route
+         * * EDIT just returns the existing route
+         * * ADD creates a new model instance
+         *
+         * @param {!int} mode specify how do we get the model
+         * @param {?String} routeId identifier of the route (only required with DUPLICATE and EDIT)
+         * @returns {Promise.<RouteModel>} the promise of the RouteModel to work with (route may be undefined if
+         * routeId is incorrect)
+         */
         setupRoute (mode, routeId) {
-            let route = new RouteModel();
             switch (mode) {
                 case this.formMode.DUPLICATE:
-                    RoutesCollection.byRouteId(routeId)
-                        .then((parentRoute) => {
-                            route = parentRoute.clone();
-                            route.unset("_id");
+                    return RoutesCollection.byRouteId(routeId)
+                        .then((original) => {
+                            const duplicate = original.clone();
+                            duplicate.unset("_id");
+                            return duplicate;
                         });
-                    break;
                 case this.formMode.EDIT:
-                    RoutesCollection.byRouteId(routeId)
-                        .then((parentRoute) => {
-                            route = parentRoute.clone();
-                        });
-                    break;
+                    return RoutesCollection.byRouteId(routeId);
+                case this.formMode.ADD:
+                    return RouteModel.newRouteModel();
             }
-            return route;
         },
 
         renderForm () {
