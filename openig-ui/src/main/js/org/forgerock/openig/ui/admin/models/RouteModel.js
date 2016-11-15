@@ -15,16 +15,20 @@
 */
 
 define([
+    "jquery",
     "lodash",
     "backbone",
-    "org/forgerock/openig/ui/common/util/Constants"
+    "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/ServerInfoService"
 ], (
+    $,
     _,
     Backbone,
-    Constants
+    Constants,
+    server
 ) => (
     /* Define Route structure + add defaults, constants, orders */
-    class extends Backbone.Model {
+    class RouteModel extends Backbone.Model {
         constructor (options) {
             super(options);
             this.url = `${Constants.systemObjectsPath}/ui/record`;
@@ -42,6 +46,21 @@ define([
                 pendingChanges: false,
                 filters: []
             };
+        }
+
+        /**
+         * Builds a new RouteModel that will be enriched with server version information.
+         * @param {Object} options default values
+         * @returns {Promise.<RouteModel>} a promise of a RouteModel
+         */
+        static newRouteModel (options) {
+            return server.getInfo().then((info) => {
+                const model = new RouteModel(options);
+                if (info) {
+                    model.set("version", info.version);
+                }
+                return model;
+            });
         }
 
         validate (attrs) {
