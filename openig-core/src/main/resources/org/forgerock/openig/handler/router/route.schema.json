@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "i18n:org/forgerock/openig/handler/router/route#schema.desc",
+
+  "properties": {
+    "handler": {
+        "description": "i18n:org/forgerock/openig/handler/router/route#handler.desc",
+        "type": "string"
+    },
+    "condition": {
+      "description": "i18n:org/forgerock/openig/handler/router/route#condition.desc",
+      "type": "string"
+    },
+    "heap": {
+      "description": "i18n:org/forgerock/openig/handler/router/route#heap.desc",
+      "type": "array",
+      "items": {
+        "description": "i18n:org/forgerock/openig/handler/router/route#heap-object.desc",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "i18n:org/forgerock/openig/handler/router/route#heap-object-name.desc",
+            "type": "string"
+          },
+          "type": {
+            "description": "i18n:org/forgerock/openig/handler/router/route#heap-object-type.desc",
+            "type": "string"
+          },
+          "config": {
+            "description": "i18n:org/forgerock/openig/handler/router/route#heap-object-config.desc",
+            "type": "object"
+          }
+        },
+        "required": [ "name", "type" ]
+      }
+    },
+    "name": {
+      "description": "i18n:org/forgerock/openig/handler/router/route#name.desc",
+      "type": "string"
+    }
+  },
+  "required": [ "handler" ]
+}
