@@ -238,7 +238,6 @@ class RoutesCollectionProvider implements CollectionResourceProvider {
         }
     }
 
-
     private static ResourceResponse routeResourceResponse(String routeId, JsonValue routeConfig) {
         return newResourceResponse(routeId, null, routeConfig);
     }
