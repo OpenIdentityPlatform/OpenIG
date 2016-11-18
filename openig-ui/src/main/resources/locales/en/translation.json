@@ -23,8 +23,6 @@
             "OpenIGMessages":{
                 "deleteRouteSuccess": "Protection for '__title__' was removed",
                 "deleteRouteFailed": "Failed to remove protection for '__title__'",
-                "settingsFailed": "Settings has failed",
-                "settingsSuccess": "Settings saved",
                 "invalidModel": "Can't create the config file because the model is not valid",
                 "unknownFilterType": "Unknown filter type: '__message__'",
                 "routeSettingsSaveSuccess": "__filter__ settings saved",
@@ -42,8 +40,7 @@
             "Navigation": {
                 "links": {
                     "dashboard": "Dashboards",
-                    "routes": "Routes",
-                    "settings": "Settings"
+                    "routes": "Routes"
                 },
                 "routeSideMenu": {
                     "overview": "Overview",
@@ -234,17 +231,6 @@
                     }
                 }
             }
-        },
-        "settings":{
-            "settingsTitle": "Settings",
-            "authentication": "Authentication",
-            "adminChannel": "Admin Channel",
-            "functionalChannel": "Functional Channel",
-            "currentPassword": "Current Password",
-            "newPassword": "New Password",
-            "confirmPassword": "Confirm Password",
-            "port_network": "port number / network interface",
-            "https": "https"
         },
         "welcomePage": {
             "title": "Welcome to ForgeRock Identity Gateway",
