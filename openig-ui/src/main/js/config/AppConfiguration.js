@@ -74,7 +74,7 @@ define([], () => ({
                             "routes": {
                                 "url": "#routes/",
                                 "name": "config.AppConfiguration.Navigation.links.routes",
-                                "icon": "fa fa-rocket",
+                                "icon": "fa fa-sitemap",
                                 "inactive": false
                             },
                             "settings": {
