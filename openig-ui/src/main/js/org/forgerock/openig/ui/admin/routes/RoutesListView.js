@@ -197,7 +197,7 @@ define([
             const noItemBox = new NoItemBox(
                 {
                     route: "addRouteView",
-                    icon: "fa-rocket",
+                    icon: "fa-sitemap",
                     message: "templates.routes.noRouteItems",
                     buttonText: "templates.routes.addRoute"
                 });
