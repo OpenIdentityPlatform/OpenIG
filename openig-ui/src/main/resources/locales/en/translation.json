@@ -39,7 +39,6 @@
         "AppConfiguration": {
             "Navigation": {
                 "links": {
-                    "dashboard": "Dashboards",
                     "routes": "Routes"
                 },
                 "routeSideMenu": {
