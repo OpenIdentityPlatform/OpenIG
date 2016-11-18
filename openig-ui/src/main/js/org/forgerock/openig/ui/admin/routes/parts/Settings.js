@@ -206,14 +206,6 @@ define([
                             (parentRoute) => {
                                 parentRoute.set(modifiedRoute.toJSON());
                                 parentRoute.save();
-                            },
-                            () => {
-                                eventManager.sendEvent(
-                                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                                    {
-                                        key: "settingsFailed"
-                                    }
-                                );
                             }
                         );
                 }

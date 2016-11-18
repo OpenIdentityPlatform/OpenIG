@@ -58,10 +58,6 @@ define([
         url: /^routes\/edit\/(.+?)\/(.*)$/,
         pattern: "routes/edit/?/?"
     },
-    "settings": {
-        view: "org/forgerock/openig/ui/admin/settings/SettingsView",
-        url: "settings/"
-    },
     "routeOverview": {
         view: "org/forgerock/openig/ui/admin/routes/RoutesTreeNavigationView",
         page: "org/forgerock/openig/ui/admin/routes/parts/Overview",

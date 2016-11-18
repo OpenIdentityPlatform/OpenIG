@@ -23,14 +23,6 @@ define([], () => ({
         msg: "config.messages.OpenIGMessages.deleteRouteFailed",
         type: "error"
     },
-    "settingsSuccess": {
-        msg: "config.messages.OpenIGMessages.settingsSuccess",
-        type: "info"
-    },
-    "settingsFailed": {
-        msg: "config.messages.OpenIGMessages.settingsFailed",
-        type: "error"
-    },
     "invalidModel": {
         msg: "config.messages.OpenIGMessages.invalidModel",
         type: "error"

@@ -76,12 +76,6 @@ define([], () => ({
                                 "name": "config.AppConfiguration.Navigation.links.routes",
                                 "icon": "fa fa-sitemap",
                                 "inactive": false
-                            },
-                            "settings": {
-                                "url": "#settings/",
-                                "name": "config.AppConfiguration.Navigation.links.settings",
-                                "icon": "fa fa-cog",
-                                "inactive": false
                             }
                         }
                     }
