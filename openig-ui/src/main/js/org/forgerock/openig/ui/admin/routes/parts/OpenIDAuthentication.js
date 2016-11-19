@@ -53,6 +53,11 @@ define([
                         {
                             name: "clientEndpoint",
                             value: this.data.filter.clientEndpoint
+                        },
+                        {
+                            name: "requireHttps",
+                            value: this.data.filter.requireHttps,
+                            controlType: "slider"
                         }
                     ]
                 },
@@ -82,11 +87,6 @@ define([
                             name: "tokenEndpointUseBasicAuth",
                             value: this.data.filter.tokenEndpointUseBasicAuth,
                             controlType: "slider"
-                        },
-                        {
-                            name: "requireHttps",
-                            value: this.data.filter.requireHttps,
-                            controlType: "slider"
                         }
                     ]
                 },
@@ -108,7 +108,9 @@ define([
         createFilter () {
             return {
                 type: "OAuth2ClientFilter",
-                scopes: "openid"
+                scopes: "openid",
+                requireHttps: true,
+                tokenEndpointUseBasicAuth: true
             };
         }
     }
