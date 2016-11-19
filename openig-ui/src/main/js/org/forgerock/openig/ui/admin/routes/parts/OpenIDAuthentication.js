@@ -91,7 +91,6 @@ define([
                     ]
                 },
                 {
-                    title: "Issuer",
                     name: "issuerGroup",
                     controlType: "group",
                     controls: [

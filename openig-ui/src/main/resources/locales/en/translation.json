@@ -144,6 +144,7 @@
                         "enabled": "Enable authentication",
                         "clientFilterGroup": "Client Filter",
                         "clientRegistrationGroup": "Client Registration",
+                        "issuerGroup": "Issuer",
                         "clientEndpoint": "Client Endpoint",
                         "clientEndpointHint": "Base URI for OpenID Connect services.",
                         "clientId": "Client ID",
