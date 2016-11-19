@@ -29,7 +29,6 @@ define([
                 "templates/openig/admin/common/form/EditControl.html",
                 "templates/openig/admin/common/form/SliderControl.html",
                 "templates/openig/admin/common/form/GroupControl.html",
-                "templates/openig/admin/common/form/CheckboxControl.html",
                 "templates/openig/admin/common/form/MultiSelectControl.html"
             ];
         }

@@ -60,7 +60,6 @@ define([
                 switch (this.controlType) {
                     case "slider": return "templates/openig/admin/common/form/SliderControl";
                     case "edit": return "templates/openig/admin/common/form/EditControl";
-                    case "checkbox": return "templates/openig/admin/common/form/CheckboxControl";
                     case "multiselect": return "templates/openig/admin/common/form/MultiSelectControl";
                     case "group":
                         self.fillPartialsByControlType(c.controls);
