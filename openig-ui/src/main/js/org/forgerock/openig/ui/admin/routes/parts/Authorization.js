@@ -230,7 +230,10 @@ define([
         createFilter () {
             return {
                 type: "PolicyEnforcementFilter",
-                headers: "User-Agent"
+                headers: "User-Agent",
+                pepRealm: "/",
+                realm: "/",
+                application: "iPlanetAMWebAgentService"
             };
         }
     })
