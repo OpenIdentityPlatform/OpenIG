@@ -24,6 +24,9 @@ define([
     executeAll () {
         module("OpenIG Tests");
 
+         // when validators invoke `callback()` without argument, that means the input is valid
+        const isValid = (result) => (result === undefined);
+
         QUnit.asyncTest("BaseURI Validator", (assert) => {
             const moduleClass = "config/validators/OpenIGValidators";
             const validators = require(moduleClass);
@@ -129,12 +132,58 @@ define([
 
             QUnit.start();
         });
+
+        QUnit.asyncTest("lessThanOrEqualMax Validator", (assert) => {
+            const moduleClass = "config/validators/OpenIGValidators";
+            const validators = require(moduleClass);
+            const testMaxValue = (value, max, callbackCheck) => {
+                validators.lessThanOrEqualMax.validator(
+                    undefined,
+                    this.fakeInputElement(value, { max }),
+                    (result) => {
+                        assert.ok(
+                            callbackCheck(result),
+                            `lessThanOrEqualMax check '${value}' <= '${max}' with result: ${(result || "ok")}`
+                        );
+                    }
+                );
+            };
+
+            // Valid values
+            testMaxValue(0, 1, isValid);
+            testMaxValue(-5, 1, isValid);
+            testMaxValue(9000, 65000, isValid);
+            testMaxValue(100, 100, isValid);
+
+            // Invalid values
+            testMaxValue(5, 1, (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.numberLessThanOrEqual",
+                    {
+                        maxAttr: 1
+                    }
+                )])
+            ));
+
+            testMaxValue(1, -1, (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.numberLessThanOrEqual",
+                    {
+                        maxAttr: -1
+                    }
+                )])
+            ));
+
+            QUnit.start();
+        });
     },
+
     // Create object with val() method to fake real input
-    fakeInputElement (value) {
+    fakeInputElement (value, htmlAttrs) {
         return {
             val () {
                 return value;
+            },
+            attr (name) {
+                return htmlAttrs[name];
             }
         };
     },

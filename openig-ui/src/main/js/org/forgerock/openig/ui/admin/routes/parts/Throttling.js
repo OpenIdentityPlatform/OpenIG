@@ -85,7 +85,9 @@ define([
                         controlType: "throttling",
                         requests: this.data.throttFilter.numberOfRequests,
                         duration: this.data.throttFilter.durationValue,
-                        validator: "required greaterThanOrEqualMin",
+                        minNumber: 1,
+                        maxNumber: 2147483647,
+                        validator: "required greaterThanOrEqualMin lessThanOrEqualMax",
                         template: "templates/openig/admin/routes/components/ThrottlingControl"
                     }
                 ]

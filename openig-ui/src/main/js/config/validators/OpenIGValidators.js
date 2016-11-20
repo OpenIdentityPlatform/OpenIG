@@ -59,6 +59,20 @@ define([
             })]);
         }
     },
+    "lessThanOrEqualMax": {
+        "name": "Less than or equal max field value",
+        "dependencies": [],
+        "validator" (el, input, callback) {
+            const max = input.attr("max");
+            if (Number(max) >= input.val()) {
+                callback();
+                return;
+            }
+            callback([i18n.t("common.form.validation.numberLessThanOrEqual", {
+                maxAttr: max
+            })]);
+        }
+    },
     "urlCompatible": {
         "name": "Url compatible value",
         "dependencies": [],
