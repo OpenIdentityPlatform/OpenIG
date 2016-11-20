@@ -79,7 +79,7 @@ define([
         },
         initialize () {
             AbstractView.prototype.initialize.call(this);
-            this.listenTo(RoutesCollection, "change", this.renderItems);
+            this.listenTo(RoutesCollection, "change remove", this.renderItems);
         },
         render (args, callback) {
             const viewThis = this;
