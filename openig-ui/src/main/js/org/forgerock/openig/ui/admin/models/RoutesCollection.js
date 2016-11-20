@@ -91,6 +91,11 @@ define([
                 );
             return deferred;
         }
+
+        comparator (item) {
+            // Sort by name
+            return item.get("name");
+        }
     }
 
     return new RoutesCollection();
