@@ -305,6 +305,7 @@ define([
                 this.renderNoItem();
                 return;
             }
+            RoutesCollection.sort();
             const cardsList = new CardsList({
                 collection: RoutesCollection,
                 getRenderData: this.getRenderData
