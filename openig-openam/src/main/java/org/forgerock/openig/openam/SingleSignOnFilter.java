@@ -197,7 +197,6 @@ public class SingleSignOnFilter implements Filter {
                                        .asString();
 
             final Handler amHandler = config.get("amHandler")
-                                            .as(evaluatedWithHeapProperties())
                                             .defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                             .as(requiredHeapObject(heap, Handler.class));
 
