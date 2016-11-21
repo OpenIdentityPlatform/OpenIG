@@ -838,7 +838,9 @@ public final class OAuth2ClientFilter implements Filter {
         // Override these with effective values.
         info.put("client_registration", session.getClientRegistrationName());
         info.put("client_endpoint", session.getClientEndpoint());
-        info.put("expires_in", session.getExpiresIn());
+        if (session.getExpiresIn() != null) {
+            info.put("expires_in", session.getExpiresIn());
+        }
         info.put("scope", session.getScopes());
         final SignedJwt idToken = session.getIdToken();
         if (idToken != null) {
