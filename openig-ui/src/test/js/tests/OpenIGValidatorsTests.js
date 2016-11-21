@@ -133,6 +133,50 @@ define([
             QUnit.start();
         });
 
+
+        QUnit.asyncTest("greaterThanOrEqualMin Validator", (assert) => {
+            const moduleClass = "config/validators/OpenIGValidators";
+            const validators = require(moduleClass);
+            const testMinValue = (value, min, callbackCheck) => {
+                validators.greaterThanOrEqualMin.validator(
+                    undefined,
+                    this.fakeInputElement(value, { min }),
+                    (result) => {
+                        assert.ok(
+                            callbackCheck(result),
+                            `greaterThanOrEqualMin check '${value}' >= '${min}' with result: ${(result || "ok")}`
+                        );
+                    }
+                );
+            };
+
+            // Valid values
+            testMinValue(0, 0, isValid);
+            testMinValue(1, 0, isValid);
+            testMinValue(5, -10, isValid);
+            testMinValue(100, 10, isValid);
+            testMinValue(200, 200, isValid);
+
+            // Invalid values
+            testMinValue(0, 1, (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.numberGreaterThanOrEqual",
+                    {
+                        minAttr: 1
+                    }
+                )])
+            ));
+
+            testMinValue(-10, 0, (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.numberGreaterThanOrEqual",
+                    {
+                        minAttr: 0
+                    }
+                )])
+            ));
+
+            QUnit.start();
+        });
+
         QUnit.asyncTest("lessThanOrEqualMax Validator", (assert) => {
             const moduleClass = "config/validators/OpenIGValidators";
             const validators = require(moduleClass);
