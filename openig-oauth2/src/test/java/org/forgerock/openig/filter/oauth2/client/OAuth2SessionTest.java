@@ -55,6 +55,7 @@ public class OAuth2SessionTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(time.now()).thenReturn(1000L, 2000L);
     }
 
     @Test
@@ -161,18 +162,14 @@ public class OAuth2SessionTest {
     }
 
     @Test
-    public void testStateAuthorizedWithExpiresInExpressedAsString() throws Exception {
-        when(time.now()).thenReturn(1000L, 2000L);
+    public void shouldStateAuthorizedWithExpiresInExpressedAsStringSucceed() throws Exception {
 
-        // @Checkstyle:off
-        JsonValue accessTokenResponse = json(object(
-                field("access_token", "at"),
-                field("refresh_token", "rt"),
-                field("token_type", "tt"),
-                field("expires_in", "3600"),
-                field("id_token", idToken)
+        JsonValue accessTokenResponse = json(object(field("access_token", "at"),
+                                                    field("refresh_token", "rt"),
+                                                    field("token_type", "tt"),
+                                                    field("expires_in", "3600"),
+                                                    field("id_token", idToken)
         ));
-        // @Checkstyle:on
 
         OAuth2Session session = OAuth2Session.stateNew(time)
                                              .stateAuthorized(accessTokenResponse);
@@ -181,8 +178,22 @@ public class OAuth2SessionTest {
     }
 
     @Test
+    public void shouldStateAuthorizedWithNullExpiresInSucceed() throws Exception {
+
+        JsonValue accessTokenResponse = json(object(field("access_token", "at"),
+                                                    field("refresh_token", "rt"),
+                                                    field("token_type", "tt"),
+                                                    field("id_token", idToken)
+        ));
+
+        OAuth2Session session = OAuth2Session.stateNew(time)
+                                             .stateAuthorized(accessTokenResponse);
+
+        assertThat(session.getExpiresIn()).isNull();
+    }
+
+    @Test
     public void testStateAuthorizedWithDifferentScopes() throws Exception {
-        when(time.now()).thenReturn(1000L, 2000L);
 
         // @formatter:off
         JsonValue accessTokenResponse = json(object(
