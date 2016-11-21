@@ -26,8 +26,8 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.fieldIfNotNull;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
-import static org.forgerock.openig.handler.router.Files.getTestResourceFile;
+import static org.forgerock.openig.Files.getRelativeDirectory;
+import static org.forgerock.openig.Files.getRelativeFile;
 import static org.forgerock.openig.handler.router.MonitoringResourceProvider.DEFAULT_PERCENTILES;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.util.JsonValues.readJson;
@@ -126,7 +126,7 @@ public class RouteBuilderTest {
     @Test(description = "OPENIG-329")
     public void testHandlerCanBeInlinedWithNoHeap() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        File testResourceFile = getTestResourceFile("inlined-handler-route.json");
+        File testResourceFile = getRelativeFile(RouteBuilderTest.class, "inlined-handler-route.json");
         Route route = buildRoute(builder, testResourceFile);
 
         Context context = new RootContext();
@@ -146,19 +146,19 @@ public class RouteBuilderTest {
 
     @Test
     public void testUnnamedRouteLoading() throws Exception {
-        buildRoute(newRouteBuilder(), getTestResourceFile("route.json"));
+        buildRoute(newRouteBuilder(), getRelativeFile(RouteBuilderTest.class, "route.json"));
     }
 
     @Test(expectedExceptions = JsonValueException.class)
     public void testMissingHandlerRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        buildRoute(builder, getTestResourceFile("missing-handler-route.json"));
+        buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "missing-handler-route.json"));
     }
 
     @Test
     public void testConditionalRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, getTestResourceFile("conditional-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "conditional-route.json"));
         route.start();
 
         AttributesContext context = new AttributesContext(new RootContext());
@@ -171,7 +171,7 @@ public class RouteBuilderTest {
     @Test
     public void testNamedRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, getTestResourceFile("named-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "named-route.json"));
         route.start();
         assertThat(route.getName()).isEqualTo("my-route");
     }
@@ -196,7 +196,8 @@ public class RouteBuilderTest {
     @Test
     public void testRouteDestroy() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, new File(getTestResourceDirectory("routes"), "destroy-test.json"));
+        Route route = buildRoute(builder, new File(getRelativeDirectory(RouteBuilderTest.class, "routes"),
+                                                   "destroy-test.json"));
         route.start();
 
         assertThat(DestroyDetectHandler.destroyed).isFalse();
@@ -207,7 +208,7 @@ public class RouteBuilderTest {
     @Test
     public void testRebaseUriRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, getTestResourceFile("rebase-uri-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "rebase-uri-route.json"));
         route.start();
 
         Context context = new RootContext();
@@ -222,7 +223,7 @@ public class RouteBuilderTest {
     @Test
     public void testSessionRouteLoading() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, getTestResourceFile("session-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "session-route.json"));
         route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -241,7 +242,7 @@ public class RouteBuilderTest {
     @Test
     public void testSessionIsReplacingTheSessionForDownStreamHandlers() throws Exception {
         RouteBuilder builder = newRouteBuilder();
-        Route route = buildRoute(builder, getTestResourceFile("session-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "session-route.json"));
         route.start();
 
         SimpleMapSession simpleSession = new SimpleMapSession();
@@ -266,7 +267,7 @@ public class RouteBuilderTest {
 
         Router router = new Router();
         RouteBuilder builder = newRouteBuilder(router);
-        Route route = buildRoute(builder, getTestResourceFile("api-registration.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "api-registration.json"));
         route.start();
 
         // Ensure that api endpoint is working
@@ -288,7 +289,7 @@ public class RouteBuilderTest {
     public void testMonitoringIsEnabled() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
-        Route route = buildRoute(builder, getTestResourceFile("monitored-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "monitored-route.json"));
         route.start();
 
         Request request = new Request().setMethod("GET").setUri("/routes/monitored/monitoring");
@@ -303,7 +304,7 @@ public class RouteBuilderTest {
     public void testMonitoringIsDisabledByDefault() throws Exception {
         Router router = new Router();
         RouteBuilder builder = new RouteBuilder(heap, Name.of("anonymous"), new EndpointRegistry(router, ""));
-        Route route = buildRoute(builder, getTestResourceFile("not-monitored-route.json"));
+        Route route = buildRoute(builder, getRelativeFile(RouteBuilderTest.class, "not-monitored-route.json"));
         route.start();
 
         Request request = new Request().setMethod("GET").setUri("/not-monitored-route/monitoring");

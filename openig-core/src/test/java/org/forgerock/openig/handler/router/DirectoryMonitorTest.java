@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.handler.router;
 
+import static java.lang.String.format;
 import static java.nio.file.Files.createTempDirectory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -23,7 +24,7 @@ import static org.assertj.core.util.Files.contentOf;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
+import static org.forgerock.openig.Files.getRelativeDirectory;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -56,7 +57,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testAddedFilesAreDetectedAndStoredInSnapshot() throws Exception {
-        final File directory = getTestResourceDirectory("added");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "added");
         final HashMap<File, Long> snapshot = new HashMap<>();
         DirectoryMonitor observer = new DirectoryMonitor(directory, snapshot);
         FileChangeSet fileChangeSet = observer.createFileChangeSet();
@@ -68,7 +69,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testNonJsonFilesAreIgnored() throws Exception {
-        final File directory = getTestResourceDirectory("empty");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "empty");
         final HashMap<File, Long> snapshot = new HashMap<>();
         DirectoryMonitor observer = new DirectoryMonitor(directory, snapshot);
 
@@ -78,7 +79,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testRemovedFilesAreDetectedAndRemovedFromSnapshot() throws Exception {
-        final File directory = getTestResourceDirectory("empty");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "empty");
         final HashMap<File, Long> snapshot = new HashMap<>();
         // Mimic a file that was previously detected (so it appears in the snapshot map)
         File jsonFile = new File(directory, "new-file.json");
@@ -93,7 +94,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testModifiedFilesAreDetected() throws Exception {
-        final File directory = getTestResourceDirectory("modified");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "modified");
         final HashMap<File, Long> snapshot = new HashMap<>();
         // Mimic a file that was previously detected (so it appears in the snapshot map)
         File jsonFile = new File(directory, "new-file.json");
@@ -108,7 +109,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testListenerIsNotNotifiedOnEmptyChangeSet() throws Exception {
-        final File directory = getTestResourceDirectory("empty");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "empty");
         FileChangeSet fileChangeSet = new FileChangeSet(directory,
                                                         Collections.<File>emptySet(),
                                                         Collections.<File>emptySet(),
@@ -124,7 +125,7 @@ public class DirectoryMonitorTest {
 
     @Test
     public void testListenerIsNotNotifiedOnNonEmptyChangeSet() throws Exception {
-        final File directory = getTestResourceDirectory("empty");
+        final File directory = getRelativeDirectory(DirectoryMonitorTest.class, "empty");
         FileChangeSet fileChangeSet = new FileChangeSet(directory,
                                                         Collections.singleton(new File("foo.json")),
                                                         Collections.<File>emptySet(),
@@ -160,7 +161,7 @@ public class DirectoryMonitorTest {
         assertThat(files).hasSize(1);
         assertThat(files[0].getName()).isEqualTo("foo.json");
         assertThat(contentOf(files[0], StandardCharsets.UTF_8))
-                .isEqualTo("{\n  \"foo\" : \"bar\"\n}");
+                .isEqualTo(format("{%n  \"foo\" : \"bar\"%n}"));
     }
 
     @Test

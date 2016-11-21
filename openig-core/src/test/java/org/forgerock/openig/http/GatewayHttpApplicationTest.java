@@ -18,6 +18,7 @@ package org.forgerock.openig.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static org.forgerock.openig.Files.getRelative;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.readJson;
 
@@ -32,7 +33,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.handler.router.DestroyDetectHandler;
-import org.forgerock.openig.handler.router.Files;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.testng.annotations.AfterMethod;
@@ -60,7 +60,7 @@ public class GatewayHttpApplicationTest {
     @Test(dataProvider = "invalidConfigurations")
     public void shouldStopTheHeapInCaseOfInvalidConfiguration(String configName) throws Exception {
         try {
-            Environment env = new DefaultEnvironment(Files.getRelative(getClass(), configName));
+            Environment env = new DefaultEnvironment(getRelative(getClass(), configName));
             GatewayHttpApplication application = new GatewayHttpApplication(env, gatewayConfig(env), null);
             application.start();
             failBecauseExceptionWasNotThrown(HttpApplicationException.class);
@@ -71,13 +71,13 @@ public class GatewayHttpApplicationTest {
 
     @Test
     public void shouldStartGatewayAndUseDefaultForgeRockClientHandler() throws Exception {
-        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "forgerock_client_handler"));
+        Environment env = new DefaultEnvironment(getRelative(getClass(), "forgerock_client_handler"));
         new GatewayHttpApplication(env, gatewayConfig(env), null).start();
     }
 
     @Test
     public void shouldStartGatewayAndUseDefaultScheduledServiceExecutor() throws Exception {
-        Environment env = new DefaultEnvironment(Files.getRelative(getClass(), "executor"));
+        Environment env = new DefaultEnvironment(getRelative(getClass(), "executor"));
         new GatewayHttpApplication(env, gatewayConfig(env), null).start();
     }
 

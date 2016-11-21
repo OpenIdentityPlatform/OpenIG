@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.openig.handler.router.Files.getTestResourceDirectory;
+import static org.forgerock.openig.Files.getRelativeDirectory;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.http.RunMode.EVALUATION;
 import static org.forgerock.openig.http.RunMode.PRODUCTION;
@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
@@ -47,6 +48,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.Files;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.heap.HeapImpl;
 import org.forgerock.openig.heap.Keys;
@@ -83,7 +85,7 @@ public class RouterHandlerTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        routes = getTestResourceDirectory("routes");
+        routes = getRelativeDirectory(RouterHandlerTest.class, "routes");
         heap = buildDefaultHeap();
         heap.put(Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY, scheduledExecutorService);
     }
@@ -214,7 +216,7 @@ public class RouterHandlerTest {
 
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
-                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                       json(object(field("directory", endpointsDirectory().getPath()),
                                    field("scanInterval", "disabled"))),
                        heap);
         heaplet.start();
@@ -248,7 +250,7 @@ public class RouterHandlerTest {
 
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
-                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                       json(object(field("directory", endpointsDirectory().getPath()),
                                    field("scanInterval", "disabled"))),
                        heap);
         heaplet.start();
@@ -273,7 +275,7 @@ public class RouterHandlerTest {
 
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
-                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                       json(object(field("directory", endpointsDirectory().getPath()),
                                    field("scanInterval", "3 seconds"))),
                        heap);
         heaplet.destroy();
@@ -285,7 +287,7 @@ public class RouterHandlerTest {
     public void testScheduleOnlyOnceDirectoryMonitoring() throws Exception {
         RouterHandler.Heaplet heaplet = new RouterHandler.Heaplet();
         heaplet.create(Name.of("this-router"),
-                       json(object(field("directory", getTestResourceDirectory("endpoints").getPath()),
+                       json(object(field("directory", endpointsDirectory().getPath()),
                                    field("scanInterval", "disabled"))),
                        heap);
         heaplet.destroy();
@@ -317,4 +319,9 @@ public class RouterHandlerTest {
     private static AttributesContext context() {
         return new AttributesContext(new RootContext());
     }
+
+    private static File endpointsDirectory() throws IOException {
+        return getRelativeDirectory(RouteBuilderTest.class, "endpoints");
+    }
+
 }

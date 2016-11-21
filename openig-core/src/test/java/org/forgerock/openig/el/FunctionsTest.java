@@ -17,8 +17,8 @@
 
 package org.forgerock.openig.el;
 
-import static java.lang.String.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.File;
@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.forgerock.http.protocol.Request;
-import org.forgerock.openig.handler.router.Files;
+import org.forgerock.openig.Files;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -316,6 +316,32 @@ public class FunctionsTest {
     public void combineArrayAndJoin() throws Exception {
         String o = Expression.valueOf("${join(array('a', 'b', 'c'), ':')}", String.class).eval();
         assertThat(o).isEqualTo("a:b:c");
+    }
+
+    @Test
+    public void testPathToUrl() throws Exception {
+        String o = Expression.valueOf("${pathToUrl('../foo')}", String.class).eval();
+        assertThat(o).isEqualTo(new File("../foo").toURI().toURL().toExternalForm());
+    }
+
+    @Test
+    public void testPathToUrlWhenPathIsNull() throws Exception {
+        String o = Expression.valueOf("${pathToUrl(null)}", String.class).eval();
+        assertThat(o).isNull();
+    }
+
+    @Test
+    public void testFileToUrl() throws Exception {
+        File dir = new File("../foo");
+        Bindings bindings = bindings().bind("dir", dir);
+        String o = Expression.valueOf("${fileToUrl(dir)}", String.class).eval(bindings);
+        assertThat(o).isEqualTo(dir.toURI().toURL().toExternalForm());
+    }
+
+    @Test
+    public void testFileToUrlWhenPathIsNull() throws Exception {
+        String o = Expression.valueOf("${fileToUrl(null)}", String.class).eval();
+        assertThat(o).isNull();
     }
 
     /**

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
@@ -408,6 +409,35 @@ public final class Functions {
             return null;
         } finally {
             closeSilently(fis);
+        }
+    }
+
+    /**
+     * Returns the String representation of the URL denoting the given path.
+     * @param path the path to build the URL from.
+     * @return the String representation of the URL denoting the given path.
+     */
+    public static String pathToUrl(String path) {
+        if (path == null) {
+            return null;
+        }
+        return fileToUrl(new File(path));
+    }
+
+    /**
+     * Returns the String representation of the URL denoting the given file.
+     * @param file the file to build the URL from.
+     * @return the String representation of the URL denoting the given file.
+     */
+    public static String fileToUrl(File file) {
+        if (file == null) {
+            return null;
+        }
+        try {
+            return file.toURI().toURL().toExternalForm();
+        } catch (MalformedURLException e) {
+            logger.error("Malformed URL", e);
+            return null;
         }
     }
 
