@@ -16,6 +16,7 @@
 
 package org.forgerock.openig.util;
 
+import static java.lang.String.format;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -101,7 +102,9 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
     private JsonValue fetch(JsonValue location) {
         URL url = location.as(url());
         if (url == null) {
-            throw new JsonValueException(location, "Expecting a valid URL");
+            throw new JsonValueException(location,
+                                         format("$location value ({}) cannot be null (or evaluated to null)",
+                                                location.getObject()));
         }
 
         logger.trace("Fetching " + url);

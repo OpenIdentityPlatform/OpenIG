@@ -40,7 +40,7 @@ import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
-import org.forgerock.openig.handler.router.Files;
+import org.forgerock.openig.Files;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.AttributesContext;

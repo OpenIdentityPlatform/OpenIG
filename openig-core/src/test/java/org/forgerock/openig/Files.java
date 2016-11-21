@@ -11,17 +11,23 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
+ * Copyright 2016 ForgeRock AS.
  */
 
-package org.forgerock.openig.handler.router;
+package org.forgerock.openig;
 
-import static java.lang.String.*;
+import static java.io.File.createTempFile;
+import static java.lang.String.format;
+import static java.nio.file.Files.write;
+import static org.forgerock.http.util.Json.writeJson;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.StandardOpenOption;
+
+import org.forgerock.json.JsonValue;
 
 /**
  * {@link File} related utility methods.
@@ -63,13 +69,11 @@ public final class Files {
         return file;
     }
 
-    public static File getTestResourceDirectory(final String name) throws IOException {
-        return getRelativeDirectory(Files.class, name);
+    public static File temporaryJsonFile(String prefix, JsonValue json) throws IOException {
+        File file = createTempFile(prefix, ".json");
+        file.deleteOnExit();
+        write(file.toPath(), writeJson(json), StandardOpenOption.CREATE);
+
+        return file;
     }
-
-    public static File getTestResourceFile(final String name) throws IOException {
-        return getRelativeFile(Files.class, name);
-    }
-
-
 }

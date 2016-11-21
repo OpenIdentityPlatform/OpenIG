@@ -22,14 +22,12 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.test.assertj.AssertJJsonValueAssert.assertThat;
+import static org.forgerock.openig.Files.temporaryJsonFile;
+import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
-import org.forgerock.http.util.Json;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
@@ -40,13 +38,11 @@ import org.testng.annotations.Test;
 @SuppressWarnings("javadoc")
 public class ResolveLocationJsonValueFunctionTest {
 
-    private final String tempFilename = "openig-test-properties.json";
     private ResolveLocationJsonValueFunction resolveLocation;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        Bindings bindings = Bindings.bindings().bind("tempFilename", tempFilename);
-        resolveLocation = new ResolveLocationJsonValueFunction(bindings);
+        resolveLocation = new ResolveLocationJsonValueFunction();
     }
 
     /**
@@ -91,17 +87,15 @@ public class ResolveLocationJsonValueFunctionTest {
 
     @Test
     public void shouldEvaluateExpressions() throws IOException {
-        JsonValue testProperties = json(object(field("testProperty", "testValue")));
-        String tmpDir = System.getProperty("java.io.tmpdir");
-
         // Create the test file
-        Path targetPath = new File(tmpDir, tempFilename).toPath();
-        byte[] bytes = Json.writeJson(testProperties);
-        Files.write(targetPath, bytes, StandardOpenOption.CREATE).toFile().deleteOnExit();
-
-        JsonValue config = json(object(field("$location", "file://${system['java.io.tmpdir']}/${tempFilename}")));
+        File targetFile = temporaryJsonFile("openig-test-properties",
+                                            json(object(field("testProperty", "testValue"))));
+        JsonValue config = json(object(field("$location",
+                                             "${pathToUrl(system['java.io.tmpdir'])}/${tempFilename}")));
         // Parsing $location should correctly derive the path from the system variable java.io.tmpdir and use the
         // property tempFilename
+        Bindings bindings = bindings().bind("tempFilename", targetFile.getName());
+        ResolveLocationJsonValueFunction resolveLocation = new ResolveLocationJsonValueFunction(bindings);
         JsonValue result = resolveLocation.apply(config);
         assertThat(result).isObject().containsExactly(entry("testProperty", "testValue"));
     }

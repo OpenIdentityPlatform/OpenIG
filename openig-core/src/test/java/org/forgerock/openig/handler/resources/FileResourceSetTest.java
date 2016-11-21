@@ -17,14 +17,14 @@
 package org.forgerock.openig.handler.resources;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.forgerock.openig.handler.router.Files.getRelativeDirectory;
+import static org.forgerock.openig.Files.getRelative;
+import static org.forgerock.openig.Files.getRelativeDirectory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 
 import org.forgerock.openig.handler.ClientHandlerTest;
-import org.forgerock.openig.handler.router.Files;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -78,7 +78,7 @@ public class FileResourceSetTest {
 
     @Test
     public void shouldProduceValidResource() throws Exception {
-        File file = Files.getRelative(getClass(), "README.md");
+        File file = getRelative(getClass(), "README.md");
         FileResourceSet.FileResource resource = new FileResourceSet.FileResource(file, "/path/README.md");
 
         assertThat(resource.getLastModified()).isEqualTo(file.lastModified());

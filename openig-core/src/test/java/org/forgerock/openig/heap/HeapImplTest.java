@@ -18,21 +18,17 @@ package org.forgerock.openig.heap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.util.Files.newTemporaryFolder;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.Files.temporaryJsonFile;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.util.JsonValues.readJson;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.List;
 
-import org.forgerock.http.util.Json;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.decoration.Context;
@@ -429,15 +425,11 @@ public class HeapImplTest {
 
     @Test
     public void shouldResolvePropertiesLocationExpression() throws Exception {
-        // Generate an external file that will be included into the heap's properties
-        File file = new File(newTemporaryFolder(), "my-props.json");
-        try (OutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
-            output.write(Json.writeJson(json(object(field("foo", "bar")))));
-        }
+        File jsonFile = temporaryJsonFile("my-props", json(object(field("foo", "bar"))));
 
         HeapImpl heap = buildDefaultHeap();
-        heap.init(json(object(field("properties", object(field("jsonFile", file.getCanonicalPath()),
-                                                         field("$location", "file://${jsonFile}"))))));
+        heap.init(json(object(field("properties", object(field("jsonFileUrl", jsonFile.toURI().toASCIIString()),
+                                                         field("$location", "${jsonFileUrl}"))))));
         // We assert that the "$location" was correctly and the heap's properties contain the property defined in the
         // external file.
         assertThat(heap.getProperties().asMap()).contains(entry("foo", "bar"));
