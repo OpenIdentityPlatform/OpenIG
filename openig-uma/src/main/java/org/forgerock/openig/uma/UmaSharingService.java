@@ -369,7 +369,7 @@ public class UmaSharingService {
 
         @Override
         public Object create() throws HeapException {
-            Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
+            Handler handler = config.get("protectionApiHandler").as(requiredHeapObject(heap, Handler.class));
             URI authorizationServerUri = config.get("authorizationServerUri").as(evaluatedWithHeapProperties())
                                                                              .required()
                                                                              .as(slashEnded())
