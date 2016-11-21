@@ -16,10 +16,12 @@
 
 define([
     "lodash",
-    "i18next"
+    "i18next",
+    "config/validators/OpenIGValidators"
 ], (
     _,
-    i18n
+    i18n,
+    OpenIGValidators
 ) => ({
     executeAll () {
         module("OpenIG Tests");
@@ -28,50 +30,8 @@ define([
         const isValid = (result) => (result === undefined);
 
         QUnit.asyncTest("BaseURI Validator", (assert) => {
-            const moduleClass = "config/validators/OpenIGValidators";
-            const validators = require(moduleClass);
             const testBaseURI = (value, callbackCheck) => {
-                validators.baseURI.validator(undefined, this.fakeInputElement(value), (result) => {
-                    assert.ok(
-                        callbackCheck(result),
-                        `URI check '${value}' with result: ${(result || "ok")}`
-                    );
-                });
-            };
-
-                // Valid values
-            testBaseURI("http://example", (result) => (result === undefined));
-
-            testBaseURI("http://www.example.org", (result) => (result === undefined));
-
-            testBaseURI("http://example:8080", (result) => (result === undefined));
-
-
-                //Invalid values
-            testBaseURI("111", (result) => (
-                _.difference(result, [i18n.t("common.form.validation.baseURINotValid")]).length === 0
-            ));
-
-            testBaseURI("http://example/subpath", (result) => (
-                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
-            ));
-
-            testBaseURI("http://www.example.org/subpath", (result) => (
-                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
-            ));
-
-            testBaseURI("http://www.example.org:8080/subpath", (result) => (
-                _.difference(result, [i18n.t("common.form.validation.baseURIContainsPath")]).length === 0
-            ));
-
-            QUnit.start();
-        });
-
-        QUnit.asyncTest("urlCompatible Validator", (assert) => {
-            const moduleClass = "config/validators/OpenIGValidators";
-            const validators = require(moduleClass);
-            const testURLCompatible = (value, callbackCheck) => {
-                validators.urlCompatible.validator(undefined, this.fakeInputElement(value), (result) => {
+                OpenIGValidators.baseURI.validator(undefined, this.fakeInputElement(value), (result) => {
                     assert.ok(
                         callbackCheck(result),
                         `URI check '${value}' with result: ${(result || "ok")}`
@@ -80,35 +40,71 @@ define([
             };
 
             // Valid values
-            testURLCompatible("example", (result) => (result === undefined));
+            testBaseURI("http://example", isValid);
 
-            testURLCompatible("example-new-id", (result) => (result === undefined));
+            testBaseURI("http://www.example.org", isValid);
 
-            testURLCompatible("example-new-id123456", (result) => (result === undefined));
+            testBaseURI("http://example:8080", isValid);
 
-            testURLCompatible("123456", (result) => (result === undefined));
 
-            //Invalid values
+            // Invalid values
+            testBaseURI("111", (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.baseURINotValid")])
+            ));
+
+            testBaseURI("http://example/subpath", (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.baseURIContainsPath")])
+            ));
+
+            testBaseURI("http://www.example.org/subpath", (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.baseURIContainsPath")])
+            ));
+
+            testBaseURI("http://www.example.org:8080/subpath", (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.baseURIContainsPath")])
+            ));
+
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("urlCompatible Validator", (assert) => {
+            const testURLCompatible = (value, callbackCheck) => {
+                OpenIGValidators.urlCompatible.validator(undefined, this.fakeInputElement(value), (result) => {
+                    assert.ok(
+                        callbackCheck(result),
+                        `URI check '${value}' with result: ${(result || "ok")}`
+                    );
+                });
+            };
+
+            // Valid values
+            testURLCompatible("example", isValid);
+
+            testURLCompatible("example-new-id", isValid);
+
+            testURLCompatible("example-new-id123456", isValid);
+
+            testURLCompatible("123456", isValid);
+
+            // Invalid values
             testURLCompatible("bad id", (result) => (
-                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+                _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
             ));
 
             testURLCompatible("Bad-Id", (result) => (
-                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+                _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
             ));
 
             testURLCompatible("id=bad", (result) => (
-                result && _.difference(result, [i18n.t("common.form.validation.notUrlCompatible")]).length === 0
+                _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
             ));
 
             QUnit.start();
         });
 
         QUnit.asyncTest("customValidator Validator", (assert) => {
-            const moduleClass = "config/validators/OpenIGValidators";
-            const validators = require(moduleClass);
             const testCustomValidator = (value, callbackCheck) => {
-                validators.customValidator.validator(
+                OpenIGValidators.customValidator.validator(
                     undefined,
                     this.fakeDataAttr("custom-valid-msg", value),
                     (result) => {
@@ -123,11 +119,11 @@ define([
             // Valid values
             testCustomValidator("common.form.validation.baseURINotValid",
                 (result) => (
-                    result && _.difference(result, [i18n.t("common.form.validation.baseURINotValid")])
+                    _.isEqual(result, [i18n.t("common.form.validation.baseURINotValid")])
                 )
             );
 
-            //Invalid values
+            // Invalid values
             testCustomValidator(undefined, (result) => (result === undefined));
 
             QUnit.start();
@@ -135,10 +131,8 @@ define([
 
 
         QUnit.asyncTest("greaterThanOrEqualMin Validator", (assert) => {
-            const moduleClass = "config/validators/OpenIGValidators";
-            const validators = require(moduleClass);
             const testMinValue = (value, min, callbackCheck) => {
-                validators.greaterThanOrEqualMin.validator(
+                OpenIGValidators.greaterThanOrEqualMin.validator(
                     undefined,
                     this.fakeInputElement(value, { min }),
                     (result) => {
@@ -178,10 +172,8 @@ define([
         });
 
         QUnit.asyncTest("lessThanOrEqualMax Validator", (assert) => {
-            const moduleClass = "config/validators/OpenIGValidators";
-            const validators = require(moduleClass);
             const testMaxValue = (value, max, callbackCheck) => {
-                validators.lessThanOrEqualMax.validator(
+                OpenIGValidators.lessThanOrEqualMax.validator(
                     undefined,
                     this.fakeInputElement(value, { max }),
                     (result) => {
