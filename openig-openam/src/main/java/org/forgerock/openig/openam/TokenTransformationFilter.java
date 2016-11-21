@@ -188,7 +188,7 @@ public class TokenTransformationFilter implements Filter {
 
         @Override
         public Object create() throws HeapException {
-            Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY).required()
+            Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
                                                        .as(requiredHeapObject(heap, Handler.class));
             URI openamUri = config.get("openamUri").as(evaluatedWithHeapProperties())
                                                    .required()

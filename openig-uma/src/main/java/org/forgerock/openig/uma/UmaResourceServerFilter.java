@@ -320,9 +320,8 @@ public class UmaResourceServerFilter implements Filter {
         @Override
         public Object create() throws HeapException {
             UmaSharingService service = config.get("umaService")
-                                              .required()
                                               .as(requiredHeapObject(heap, UmaSharingService.class));
-            Handler handler = config.get("protectionApiHandler").required().as(requiredHeapObject(heap, Handler.class));
+            Handler handler = config.get("protectionApiHandler").as(requiredHeapObject(heap, Handler.class));
             String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("uma").asString();
             return new UmaResourceServerFilter(service, handler, realm);
         }

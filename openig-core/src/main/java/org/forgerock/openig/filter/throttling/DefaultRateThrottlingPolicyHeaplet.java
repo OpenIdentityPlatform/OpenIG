@@ -71,7 +71,6 @@ public class DefaultRateThrottlingPolicyHeaplet extends GenericHeaplet {
     @Override
     public Object create() throws HeapException {
         ThrottlingPolicy throttlingPolicy = config.get("delegateThrottlingRatePolicy")
-                                                  .required()
                                                   .as(requiredHeapObject(heap, ThrottlingPolicy.class));
         ThrottlingRate defaultRate = config.get("defaultRate").required().as(throttlingRate(heap.getProperties()));
 
