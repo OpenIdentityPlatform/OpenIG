@@ -204,7 +204,7 @@ final class OAuth2Session {
             expiresIn = expires.asNumber().longValue();
         } else {
             throw new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
-                                           "'expire_in' field value is neither a Number nor a String");
+                                           "'expires_in' field value is neither a Number nor a String");
         }
         final Long expiresAt = expiresIn + now();
 
