@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.handler.router;
 
+import static java.nio.file.Files.createTempDirectory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.util.Files.contentOf;
-import static org.assertj.core.util.Files.newTemporaryFolder;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.testng.reporters.Files.writeFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -137,12 +138,10 @@ public class DirectoryMonitorTest {
         verify(listener).onChanges(same(fileChangeSet));
     }
 
-
     @DataProvider
-    public static Object[][] directories() {
+    public static Object[][] directories() throws IOException {
         // @Checkstyle:off
         return new Object[][]{
-                // assertj creates a new directory
                 { newTemporaryFolder() },
                 // try with a non-existent directory
                 // newTemporaryFolder() creates a new dir at each invocation, so there is no need to do some cleanup
@@ -174,5 +173,11 @@ public class DirectoryMonitorTest {
 
         File[] files = folder.listFiles();
         assertThat(files).isEmpty();
+    }
+
+    private static File newTemporaryFolder() throws IOException {
+        final File folder =  createTempDirectory("temp").toFile();
+        folder.deleteOnExit();
+        return folder;
     }
 }
