@@ -225,6 +225,24 @@ define([
             : statistics.enabled;
     },
 
+    generateCondition (path) {
+        if (path) {
+            return `\${matches(request.uri.path, '^${path}')}`;
+        }
+        return;
+    },
+
+    transformCondition (condition) {
+        if (!condition) {
+            return;
+        }
+        switch (condition.type) {
+            case "path": return this.generateCondition(condition.path);
+            case "expression": return condition.expression;
+        }
+        return condition;
+    },
+
     transformRoute (route) {
         if (route === undefined || route === null || !route.isValid()) {
             throw new this.TransformServiceException("invalidModel");
@@ -234,9 +252,13 @@ define([
         const routeConfig = {
             name: route.get("id"),
             baseURI: route.get("baseURI"),
-            condition: route.get("condition"),
             monitor: this.transformStatistics(route.get("statistics"))
         };
+
+        const condition = this.transformCondition(route.get("condition"));
+        if (condition) {
+            routeConfig.condition = condition;
+        }
 
         // Convert all filters
         const chain = this.chainBuilder();

@@ -80,17 +80,52 @@ define([
             QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail when no 'condition' attribute is provided", (assert) => {
-            const applicationWithEmptyCondition = new RouteModel({
-                id: "modelID",
-                condition: ""
+        QUnit.asyncTest("Should transform 'path condition' attribute", (assert) => {
+            const applicationWithPathCondition = new RouteModel({
+                id: "example",
+                name: "example",
+                baseURI: "http://www.example.com:8081",
+                condition: {
+                    type: "path",
+                    path: "/testpath",
+                    expression: "${request.uri.path === '/'}"
+                }
             });
 
-            assert.throws(() => {
-                transformService.transformRoute(applicationWithEmptyCondition);
-            },
-                transformService.TransformServiceException("invalidModel"),
-                "Passing model with empty condition throws an error"
+            assert.deepEqual(transformService.transformRoute(applicationWithPathCondition),
+                {
+                    "name": "example",
+                    "baseURI": "http://www.example.com:8081",
+                    "handler": "ClientHandler",
+                    "condition": "${matches(request.uri.path, '^/testpath')}",
+                    "monitor": false
+                },
+                "Wrong top level properties"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should transform 'expression condition' attribute", (assert) => {
+            const applicationWithPathCondition = new RouteModel({
+                id: "example",
+                name: "example",
+                baseURI: "http://www.example.com:8081",
+                condition: {
+                    type: "expression",
+                    path: "/testpath",
+                    expression: "${request.uri.path === '/'}"
+                }
+            });
+
+            assert.deepEqual(transformService.transformRoute(applicationWithPathCondition),
+                {
+                    "name": "example",
+                    "baseURI": "http://www.example.com:8081",
+                    "handler": "ClientHandler",
+                    "condition": "${request.uri.path === '/'}",
+                    "monitor": false
+                },
+                "Wrong top level properties"
             );
             QUnit.start();
         });
@@ -99,15 +134,13 @@ define([
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
-                baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path == '/'}"
+                baseURI: "http://www.example.com:8081"
             });
 
             assert.deepEqual(transformService.transformRoute(route),
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path == '/'}",
                     "handler": "ClientHandler",
                     "monitor": false
                 },
@@ -208,7 +241,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 filters: [
                     {
                         enabled: false,
@@ -224,7 +256,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false
                 },
@@ -238,7 +269,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 filters: [
                     {
                         enabled: true,
@@ -254,7 +284,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "monitor": false,
                     "handler": {
                         "type": "Chain",
@@ -283,7 +312,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     inbound: {
                         request: true,
@@ -296,7 +324,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "capture": ["request"]
@@ -311,7 +338,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     inbound: {
                         request: false,
@@ -324,7 +350,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "capture": ["response"]
@@ -339,7 +364,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     inbound: {
                         request: true,
@@ -352,7 +376,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "capture": ["request", "response"]
@@ -367,7 +390,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     outbound: {
                         request: true,
@@ -381,7 +403,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "heap": [
@@ -402,7 +423,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     outbound: {
                         request: false,
@@ -416,7 +436,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "heap": [
@@ -438,7 +457,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 capture: {
                     outbound: {
                         request: true,
@@ -452,7 +470,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false,
                     "heap": [
@@ -534,7 +551,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 statistics: {
                     enabled: true
                 }
@@ -544,7 +560,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": true
                 },
@@ -558,7 +573,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 statistics: {
                     enabled: true,
                     percentiles: "0.99 0.999 0.9999"
@@ -569,7 +583,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": {
                         "enabled": true,
@@ -586,7 +599,6 @@ define([
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
-                condition: "${request.uri.path === '/'}",
                 statistics: {
                     enabled: false,
                     percentiles: "0.99 0.999 0.9999"
@@ -597,7 +609,6 @@ define([
                 {
                     "name": "modelID",
                     "baseURI": "http://www.example.com:8081",
-                    "condition": "${request.uri.path === '/'}",
                     "handler": "ClientHandler",
                     "monitor": false
                 },
@@ -844,5 +855,24 @@ define([
             QUnit.start();
         });
 
+        QUnit.asyncTest("Should return generated expression", (assert) => {
+            const path = "/myApplication";
+
+            assert.deepEqual(transformService.generateCondition(path),
+                "${matches(request.uri.path, '^/myApplication')}",
+                "Expecting condition expression"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should return undefined if no path defined", (assert) => {
+            const path = "";
+
+            assert.equal(transformService.generateCondition(path),
+                undefined,
+                "Expecting undefined"
+            );
+            QUnit.start();
+        });
     }
 }));

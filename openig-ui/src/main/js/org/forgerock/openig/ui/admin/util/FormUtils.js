@@ -61,6 +61,7 @@ define([
                     case "slider": return "templates/openig/admin/common/form/SliderControl";
                     case "edit": return "templates/openig/admin/common/form/EditControl";
                     case "multiselect": return "templates/openig/admin/common/form/MultiSelectControl";
+                    case "dropdownedit": return "templates/openig/admin/common/form/DropdownEditControl";
                     case "group":
                         self.fillPartialsByControlType(c.controls);
                         return "templates/openig/admin/common/form/GroupControl";

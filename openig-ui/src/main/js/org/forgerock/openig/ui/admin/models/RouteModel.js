@@ -41,7 +41,6 @@ define([
                 id: "",
                 name: "",
                 baseURI: "",
-                condition: "",
                 deployedDate: undefined,
                 pendingChanges: false,
                 filters: []
@@ -75,11 +74,6 @@ define([
             if (!attrs.baseURI || attrs.baseURI.trim() === "") {
                 return "routeErrorNoUrl";
             }
-
-            if (!attrs.condition || attrs.condition.trim() === "") {
-                return "routeErrorNoCondition";
-            }
-
         }
 
         getMVCCRev () {

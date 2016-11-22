@@ -2,23 +2,14 @@
 	License terms: https://forgerock.org/cddlv1-0/ }}
 
 <div class="page-header">
-    <h1>{{ pageTitle }}</h1>
+    <h1>{{t 'templates.routes.parts.settings.editTitle'}}</h1>
 </div>
-<div class="block">
-    <form  id="{{formId}}" class="form-horizontal" role="form">
-        <div class="panel panel-collapse-group has-border">
-            <div class="panel-body">
-            {{#each controls}}
-                {{> (control) }}
-            {{/each}}
 
-            </div>
-            <div class="panel-footer clearfix">
-                <div class="pull-right">
-                    <input type="button" class="btn btn-default js-reset-btn" value="{{ cancelBtnTitle }}" />
-                    <input type="submit" class="btn btn-primary js-save-btn" value="{{ saveBtnTitle }}" disbled/>
-                </div>
-            </div>
+<form  id="{{formId}}" class="form-horizontal" role="form">
+    <div class="panel panel-collapse-group has-border">
+        <div class="panel-body">
+            <div id="settingsPanel"></div>
         </div>
-    </form>
-</div>
+        {{> templates/openig/admin/routes/components/FormFooter }}
+    </div>
+</form>

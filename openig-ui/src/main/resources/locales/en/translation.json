@@ -117,9 +117,16 @@
                         "idHint": "Unique ID for the route",
                         "baseURI": "Base URI",
                         "baseURIHint": "Internal URL for the application - OpenIG forwards proxied requests to this URL",
-                        "condition": "Condition",
-                        "conditionHint": "Requests must meet this condition to access the protected application",
-                        "conditionPlaceHolder": "For example, /my-app or ${matches(request.uri.path, '^/my-app')}"
+                        "condition": "Accept Condition",
+                        "conditionHint": "Enter a path or an expression to handle the request",
+                        "conditionPlaceHolder": "For example, /my-app or ${matches(request.uri.path, '^/my-app')}",
+                        "applicationUrl": "Application URL",
+                        "applicationUrlHint": "URL of the application to protect",
+                        "path": "Path",
+                        "expression": "Expression",
+                        "advancedOptions": "Advanced Options",
+                        "basicOptions": "Basic Options",
+                        "conditionModeTooltip": "Accept condition expression is too complex to display in basic mode"
                     }
                 },
                 "authentication":{
@@ -322,7 +329,8 @@
                 "URINotValid": "Not a valid uri",
                 "numberGreaterThanOrEqual": "Value must be greater than or equal to __minAttr__",
                 "numberLessThanOrEqual": "Value must be less than or equal to __maxAttr__",
-                "notUrlCompatible": "Value is not URI compatible. Use only lowercase letters, numbers and dash"
+                "notUrlCompatible": "Value is not URI compatible. Use only lowercase letters, numbers and dash",
+                "invalidApplicationUrl":"Invalid Application Url"
             }
         },
         "modalWindow": {
