@@ -1,0 +1,28 @@
+{{! Copyright 2016 ForgeRock AS.
+	License terms: https://forgerock.org/cddlv1-0/ }}
+
+<div class="form-horizontal">
+    <div class="form-group has-feedback">
+        <label class="control-label col-sm-3">{{t title}}</label>
+        <div class="col-sm-7">
+            <div class="input-group input-group-select">
+                <div class="input-group-btn">
+                    <button type="button" name="{{name}}Button" class="form-dropdown-btn btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{t selectedOption}}
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" name="{{dropdownName}}">
+                    {{#each options}}
+                        <li><a name="{{name}}" href="#">{{title}}</a></li>
+                    {{/each}}
+                    </ul>
+                </div>
+                <input type="text" class="form-control" name="{{name}}" value="{{value}}" data-validator="{{validator}}" data-validator-event="{{validatorEvent}}">
+                <span class="error form-control-feedback"><i class="fa validation-icon"></i></span>
+            </div>
+            <div class="form-control-hint help-block">
+                {{t hint}}
+            </div>
+        </div>
+    </div>
+</div>

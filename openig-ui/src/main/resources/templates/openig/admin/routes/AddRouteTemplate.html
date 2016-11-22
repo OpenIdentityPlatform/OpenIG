@@ -1,4 +1,47 @@
 {{! Copyright 2016 ForgeRock AS.
-	License terms: https://forgerock.org/cddlv1-0/ }}
-<div class="container" id="addSettings">
+    License terms: https://forgerock.org/cddlv1-0/ }}
+<div class="container">
+    <div class="page-header">
+        <h1>{{t "templates.routes.parts.settings.addTitle"}}</h1>
+    </div>
+    <div class="panel panel-collapse-group has-border">
+        <form id="{{formId}}" class="form-horizontal" role="form">
+            <div class="panel-body">
+                <div class="basic-settings {{#if advancedOnly}}hidden{{/if}}">
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">{{t 'templates.routes.parts.settings.fields.applicationUrl'}}</label>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" name="applicationUrl" autofocus>
+                            <span class="error form-control-feedback"><i class="fa validation-icon"></i></span>
+                            <div class="form-control-hint">{{t 'templates.routes.parts.settings.fields.applicationUrlHint'}}
+                                <button type="button" class="btn btn-link pull-right js-advanced-btn">
+                                    {{t 'templates.routes.parts.settings.fields.advancedOptions'}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="advanced-settings {{#unless advancedOnly}}hidden{{/unless}}">
+                    <div id="settingsPanel"></div>
+                    <div class="form-group {{#if advancedOnly}}hidden{{/if}}">
+                        <div class="col-sm-7 col-sm-offset-3">
+                            <span class="pull-right">
+                                <div data-toggle="tooltip" data-placement="top" title="{{t 'templates.routes.parts.settings.fields.conditionModeTooltip'}}">
+                                    <button type="button" class="btn btn-link js-basic-btn">
+                                    {{t 'templates.routes.parts.settings.fields.basicOptions'}}
+                                    </button>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer clearfix">
+                <div class="pull-right">
+                    <input type="button" class="btn btn-default js-cancel-btn" value="{{t 'common.form.cancel'}}" />
+                    <input type="submit" class="btn btn-primary js-create-btn" value="{{t 'templates.routes.parts.settings.addButton'}}" {{#if advancedOnly}}disabled{{/if}}/>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>

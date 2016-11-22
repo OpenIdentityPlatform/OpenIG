@@ -35,7 +35,7 @@ define([
                 this.data.routeId = this.data.routeData.get("id");
                 this.data.title = this.data.routeData.get("name");
                 this.data.baseURI = this.data.routeData.get("baseURI");
-                this.data.condition = this.data.routeData.get("condition");
+                this.data.condition = this.getConditionValue(this.data.routeData);
                 this.data.overviewItems = [
                     {
                         title: i18n.t("config.AppConfiguration.Navigation.routeSideMenu.capture"),
@@ -71,6 +71,14 @@ define([
 
             get partials () {
                 return ["templates/openig/admin/routes/components/OverviewItem.html"];
+            }
+
+            getConditionValue (route) {
+                const condition = route.get("condition");
+                if (!condition || !condition.type) {
+                    return "";
+                }
+                return condition[condition.type];
             }
 
             render () {

@@ -17,246 +17,93 @@
 define([
     "jquery",
     "lodash",
-    "form2js",
     "i18next",
     "org/forgerock/openig/ui/admin/routes/AbstractRouteView",
     "org/forgerock/commons/ui/common/main/EventManager",
-    "org/forgerock/commons/ui/common/main/ValidatorsManager",
     "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/openig/ui/admin/delegates/AppDelegate",
-    "org/forgerock/openig/ui/admin/util/RoutesUtils",
-    "org/forgerock/openig/ui/admin/util/FormUtils",
     "org/forgerock/commons/ui/common/main/Router",
-    "org/forgerock/openig/ui/admin/models/RouteModel",
-    "org/forgerock/openig/ui/admin/models/RoutesCollection"
+    "org/forgerock/openig/ui/admin/models/RoutesCollection",
+    "org/forgerock/openig/ui/admin/routes/parts/SettingsPanel"
 ], (
     $,
     _,
-    form2js,
     i18n,
     AbstractRouteView,
     eventManager,
-    validatorsManager,
     constants,
-    AppDelegate,
-    RoutesUtils,
-    FormUtils,
-    router,
-    RouteModel,
-    RoutesCollection
+    Router,
+    RoutesCollection,
+    SettingsPanel
 ) => (
-    AbstractRouteView.extend({
-        template: "templates/openig/admin/routes/parts/Settings.html",
-        partials: [
-            "templates/openig/admin/common/form/EditControl.html"
-        ],
-        events: {
-            "click .js-save-btn": "saveClick",
-            "click .js-reset-btn": "resetClick",
-            "blur input[name='name']": "validateName",
-            "keyup input[name='name']": "generateId",
-            "keyup input[name='id']": "validateId"
-        },
-        formMode: { ADD:0, DUPLICATE: 1, EDIT: 2 },
-        data: {
-            formId: "settings"
-        },
-        routeModel: null,
-        manualIdChange: false,
-        render (args, callback) {
-            this.data.routeId = args[0];
-            this.data.docHelpUrl = constants.DOC_URL;
+    class Settings extends AbstractRouteView {
+        constructor () {
+            super();
+            this.element = ".main";
+            this.data = _.extend(this.data, { formId: "settings" });
+            this.translationPath = "templates.routes.parts.settings.fields";
+            this.settingsPanel = new SettingsPanel();
+        }
 
-            this.data.mode = this.getFormMode();
+        get template () { return "templates/openig/admin/routes/parts/Settings.html"; }
 
-            if (this.data.mode === this.formMode.EDIT) {
-                this.data.pageTitle = i18n.t("templates.routes.parts.settings.editTitle");
-                this.data.saveBtnTitle = i18n.t("common.form.save");
-                this.data.cancelBtnTitle = i18n.t("common.form.reset");
-            } else {
-                this.data.pageTitle = i18n.t("templates.routes.parts.settings.addTitle");
-                this.data.saveBtnTitle = i18n.t("templates.routes.parts.settings.addButton");
-                this.data.cancelBtnTitle = i18n.t("common.form.cancel");
-            }
+        get partials () {
+            return [
+                "templates/openig/admin/routes/components/FormFooter.html"
+            ];
+        }
 
-            this.setupRoute(this.data.mode, this.data.routeId)
-                .then((route) => {
-                    if (!route) {
-                        eventManager.sendEvent(
-                            constants.EVENT_CHANGE_VIEW,
-                            { route: router.configuration.routes.listRoutesView }
-                        );
-                        return;
-                    }
-                    this.routeModel = route;
-                    this.data.controls = [
-                        {
-                            name: "name",
-                            value: this.routeModel.get("name"),
-                            validator: "required spaceCheck customValidator"
-                        },
-                        {
-                            name: "id",
-                            value: this.routeModel.get("id"),
-                            validator: "required spaceCheck urlCompatible customValidator",
-                            disabled: this.data.mode === this.formMode.EDIT
-                        },
-                        {
-                            name: "baseURI",
-                            value: this.routeModel.get("baseURI"),
-                            validator: "required baseURI spaceCheck"
-                        },
-                        {
-                            name: "condition",
-                            value: this.routeModel.get("condition"),
-                            placeholder: "templates.routes.parts.settings.fields.conditionPlaceHolder",
-                            validator: "required spaceCheck"
-                        }
-                    ];
+        get events () {
+            return {
+                "click .js-save-btn": "saveClick",
+                "click .js-reset-btn": "resetClick"
+            };
+        }
 
-                    FormUtils.extendControlsSettings(this.data.controls, {
-                        autoTitle: true,
-                        autoHint: true,
-                        translatePath: "templates.routes.parts.settings.fields",
-                        defaultControlType: "edit"
+        render () {
+            this.data.routePath = Router.getCurrentHash().match(Router.currentRoute.url)[1];
+            RoutesCollection.byRouteId(this.data.routePath)
+                .then((routeData) => {
+                    this.routeData = routeData;
+                    this.parentRender(() => {
+                        this.settingsPanel.setup({ route: routeData });
+                        this.settingsPanel.render();
                     });
-                    FormUtils.fillPartialsByControlType(this.data.controls);
-
-                    this.renderForm(callback);
                 });
-        },
-
-        getFormMode () {
-            if (router.getURIFragment().match(router.configuration.routes.duplicateRouteView.url)) {
-                return this.formMode.DUPLICATE;
-            } else if (router.getURIFragment().match(router.configuration.routes.routeSettings.url)) {
-                return this.formMode.EDIT;
-            } else {
-                return this.formMode.ADD;
-            }
-        },
-
-        /**
-         * Obtains the model to work on, depending on the current formMode:
-         *
-         * * DUPLICATE will clone the existing route
-         * * EDIT just returns the existing route
-         * * ADD creates a new model instance
-         *
-         * @param {!int} mode specify how do we get the model
-         * @param {?String} routeId identifier of the route (only required with DUPLICATE and EDIT)
-         * @returns {Promise.<RouteModel>} the promise of the RouteModel to work with (route may be undefined if
-         * routeId is incorrect)
-         */
-        setupRoute (mode, routeId) {
-            switch (mode) {
-                case this.formMode.DUPLICATE:
-                    return RoutesCollection.byRouteId(routeId)
-                        .then((original) => {
-                            const duplicate = original.clone();
-                            duplicate.unset("_id");
-                            return duplicate;
-                        });
-                case this.formMode.EDIT:
-                    return RoutesCollection.byRouteId(routeId);
-                case this.formMode.ADD:
-                    return RouteModel.newRouteModel();
-            }
-        },
-
-        renderForm () {
-            this.parentRender(() => {
-                validatorsManager.bindValidators(this.$el);
-            });
-        },
+        }
 
         saveClick (event) {
             event.preventDefault();
-            const modifiedRoute = this.routeModel;
-            if (modifiedRoute && modifiedRoute !== null) {
-                this.fillRouteFromFormData();
-                if (!modifiedRoute.isValid()) {
-                    const form = this.$el.find(`#${this.data.formId}`)[0];
-                    $(form).find("input").trigger("validate");
-                    return;
+            this.settingsPanel.save()
+                .then(
+                () => {
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        {
+                            key: "routeSettingsSaveSuccess",
+                            filter: this.routeData.get("name")
+                        }
+                    );
+                },
+                () => {
+                    eventManager.sendEvent(
+                        constants.EVENT_DISPLAY_MESSAGE_REQUEST,
+                        {
+                            key: "routeSettingsSaveFailed",
+                            filter: this.routeData.get("name")
+                        }
+                    );
                 }
-                if (this.data.mode === this.formMode.ADD || this.data.mode === this.formMode.DUPLICATE) {
-                    modifiedRoute.save()
-                        .then(
-                            (newRoute) => {
-                                RoutesCollection.add([
-                                    newRoute
-                                ]);
-                                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                                    route: router.configuration.routes.routeOverview, args: [this.routeModel.get("id")]
-                                });
-                            },
-                            () => {
-                                eventManager.sendEvent(
-                                    constants.EVENT_DISPLAY_MESSAGE_REQUEST,
-                                    {
-                                        key: "routeCreationFailed"
-                                    }
-                                );
-                            }
-                        );
-                } else {
-                    RoutesCollection.byRouteId(this.data.routeId)
-                        .then(
-                            (parentRoute) => {
-                                parentRoute.set(modifiedRoute.toJSON());
-                                parentRoute.save();
-                            }
-                        );
+                );
+        }
+
+        resetClick (event) {
+            event.preventDefault();
+            eventManager.sendEvent(
+                constants.EVENT_CHANGE_VIEW,
+                {
+                    route: Router.configuration.routes.routeSettings, args: [this.routeData.get("id")]
                 }
-            }
-        },
-
-        resetClick () {
-            if (this.data.mode === this.formMode.EDIT) {
-                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                    route: router.configuration.routes.routeSettings, args: [this.routeModel.id]
-                });
-            } else {
-                eventManager.sendEvent(constants.EVENT_CHANGE_VIEW, {
-                    route: router.configuration.routes.listRoutesView
-                });
-            }
-        },
-
-        fillRouteFromFormData () {
-            const form = this.$el.find(`#${this.data.formId}`)[0];
-            const formVal = form2js(form, ".", true);
-            this.routeModel.set(formVal);
-        },
-
-        generateId (evt) {
-            // Avoid re-generate on tab, after manual change or at edit page
-            if (evt.keyCode === 9 || this.manualIdChange || this.data.mode === this.formMode.EDIT) {
-                return;
-            }
-            this.$el.find("[name='id']").val(RoutesUtils.generateRouteId(evt.target.value));
-        },
-
-        validateId (evt) {
-            if (this.routeModel.id !== evt.target.value) {
-                RoutesUtils.isRouteIdUniq(evt.target.value)
-                    .then((isValid) => {
-                        $(evt.target).data("custom-valid-msg", (isValid ? "" : "templates.routes.duplicateIdError"));
-                    });
-            }
-            if (evt.keyCode !== 9) {
-                this.manualIdChange = true;
-            }
-        },
-
-        validateName (evt) {
-            if (this.routeModel.get("name") !== evt.target.value) {
-                RoutesUtils.checkName(evt.target.value)
-                    .then((checkResult) => {
-                        $(evt.target).data("custom-valid-msg", checkResult || "");
-                    });
-            }
+            );
         }
     })
-));
+);
