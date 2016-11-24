@@ -83,31 +83,9 @@ define([
             let filter;
             switch (route) {
                 case "routeCapture":
-                    const capture = this.data.routeData.get("capture");
-                    let inbound;
-                    if (_.get(capture, "inbound.request") && _.get(capture, "inbound.response")) {
-                        inbound = i18n.t("templates.routes.capture.inboundMessages");
-                    } else if (_.get(capture, "inbound.request")) {
-                        inbound = i18n.t("templates.routes.capture.inboundRequests");
-                    } else if (_.get(capture, "inbound.response")) {
-                        inbound = i18n.t("templates.routes.capture.inboundResponses");
-                    }
-
-                    let outbound;
-                    if (_.get(capture, "outbound.request") && _.get(capture, "outbound.response")) {
-                        outbound = i18n.t("templates.routes.capture.outboundMessages");
-                    } else if (_.get(capture, "outbound.request")) {
-                        outbound = i18n.t("templates.routes.capture.outboundRequests");
-                    } else if (_.get(capture, "outbound.response")) {
-                        outbound = i18n.t("templates.routes.capture.outboundResponses");
-                    }
-
-                    if (inbound && outbound) {
-                        status = `${inbound},  ${outbound}`;
-                    } else if (inbound) {
-                        status = inbound;
-                    } else if (outbound) {
-                        status = outbound;
+                    const captureStatus = this.getCaptureStatus();
+                    if (captureStatus !== "") {
+                        status = captureStatus;
                     }
                     break;
                 case "routeThrottling":
@@ -155,8 +133,46 @@ define([
                     }
             }
             return status;
+        },
+
+        getCaptureStatus () {
+            const capture = this.data.routeData.get("capture");
+            let entity;
+            if (_.get(capture, "entity")) {
+                entity = i18n.t("templates.routes.capture.entity");
+            }
+
+            let inbound;
+            if (_.get(capture, "inbound.request") && _.get(capture, "inbound.response")) {
+                inbound = i18n.t("templates.routes.capture.inboundMessages");
+            } else if (_.get(capture, "inbound.request")) {
+                inbound = i18n.t("templates.routes.capture.inboundRequests");
+            } else if (_.get(capture, "inbound.response")) {
+                inbound = i18n.t("templates.routes.capture.inboundResponses");
+            }
+
+            let outbound;
+            if (_.get(capture, "outbound.request") && _.get(capture, "outbound.response")) {
+                outbound = i18n.t("templates.routes.capture.outboundMessages");
+            } else if (_.get(capture, "outbound.request")) {
+                outbound = i18n.t("templates.routes.capture.outboundRequests");
+            } else if (_.get(capture, "outbound.response")) {
+                outbound = i18n.t("templates.routes.capture.outboundResponses");
+            }
+
+            const messageArr = [entity, inbound, outbound];
+            let messages = "";
+            _.forEach(messageArr, (value) => {
+                if (value) {
+                    if (messages === "") {
+                        messages += value;
+                    } else {
+                        messages += `,  ${value}`;
+                    }
+                }
+            });
+
+            return messages;
         }
-
-
     })
 ));

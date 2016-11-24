@@ -97,7 +97,8 @@
                 "inboundResponses": "Inbound responses",
                 "outboundMessages": "Outbound messages",
                 "outboundRequests": "Outbound requests",
-                "outboundResponses": "Outbound responses"
+                "outboundResponses": "Outbound responses",
+                "entity": "Entity"
             },
             "tableColumns":{
                 "name": "Name",
@@ -209,7 +210,10 @@
                         "inboundResponse": "Capture Response",
                         "outboundGroup": "Outbound Messages",
                         "outboundRequest": "Capture Request",
-                        "outboundResponse": "Capture Response"
+                        "outboundResponse": "Capture Response",
+                        "entityGroup": "General Settings",
+                        "entity": "Capture Entity",
+                        "hint": "Capture the body of requests and responses in addition to messages' headers"
                     }
                 },
                 "throttling":{

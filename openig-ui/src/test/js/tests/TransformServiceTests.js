@@ -477,6 +477,68 @@ define([
             QUnit.start();
         });
 
+        QUnit.asyncTest("Should activate entity capture", (assert) => {
+            const route = new RouteModel({
+                _id: "modelID",
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    entity: true
+                }
+            });
+
+            assert.deepEqual(
+                transformService.transformRoute(route),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "monitor": false,
+                    "heap": [
+                        {
+                            "type": "CaptureDecorator",
+                            "name": "capture",
+                            "config": {
+                                "captureEntity": true
+                            }
+                        }
+                    ]
+
+                },
+                "Expecting entity capture enabled"
+            );
+            QUnit.start();
+        });
+
+        QUnit.asyncTest("Should activate entity capture", (assert) => {
+            const route = new RouteModel({
+                _id: "modelID",
+                id: "modelID",
+                name: "Router",
+                baseURI: "http://www.example.com:8081",
+                condition: "${request.uri.path === '/'}",
+                capture: {
+                    entity: false
+                }
+            });
+
+            assert.deepEqual(
+                transformService.transformRoute(route),
+                {
+                    "name": "modelID",
+                    "baseURI": "http://www.example.com:8081",
+                    "condition": "${request.uri.path === '/'}",
+                    "handler": "ClientHandler",
+                    "monitor": false
+                },
+                "Expecting entity capture enabled"
+            );
+            QUnit.start();
+        });
+
         QUnit.asyncTest("Should enable statistics", (assert) => {
             const route = new RouteModel({
                 _id: "modelID",
