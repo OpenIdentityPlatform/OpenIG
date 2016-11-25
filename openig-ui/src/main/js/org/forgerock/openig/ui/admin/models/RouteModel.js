@@ -18,20 +18,20 @@ define([
     "jquery",
     "lodash",
     "backbone",
-    "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/ServerUrls",
     "org/forgerock/openig/ui/admin/services/ServerInfoService"
 ], (
     $,
     _,
     Backbone,
-    Constants,
+    serverUrls,
     server
 ) => (
     /* Define Route structure + add defaults, constants, orders */
     class RouteModel extends Backbone.Model {
         constructor (options) {
             super(options);
-            this.url = `${Constants.systemObjectsPath}/ui/record`;
+            this.url = `${serverUrls.systemObjectsPath}/ui/record`;
         }
 
         get idAttribute () { return "_id"; }
