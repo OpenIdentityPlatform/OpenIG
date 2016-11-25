@@ -205,7 +205,6 @@ define([
 
         QUnit.asyncTest("Should pass even if all filters are disabled", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -236,7 +235,6 @@ define([
 
         QUnit.asyncTest("Should pass only enabled filters", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -282,7 +280,6 @@ define([
 
         QUnit.asyncTest("Should activate route level request capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -311,7 +308,6 @@ define([
 
         QUnit.asyncTest("Should activate route level response capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -340,7 +336,6 @@ define([
 
         QUnit.asyncTest("Should activate request and response route level capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -369,7 +364,6 @@ define([
 
         QUnit.asyncTest("Should activate outbound request capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -405,7 +399,6 @@ define([
 
         QUnit.asyncTest("Should activate outbound response capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -442,7 +435,6 @@ define([
 
         QUnit.asyncTest("Should activate request and response outbound capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -479,7 +471,6 @@ define([
 
         QUnit.asyncTest("Should activate entity capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -515,7 +506,6 @@ define([
 
         QUnit.asyncTest("Should activate entity capture", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -541,7 +531,6 @@ define([
 
         QUnit.asyncTest("Should enable statistics", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -566,7 +555,6 @@ define([
 
         QUnit.asyncTest("Should enable statistics and add percentiles", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
@@ -595,7 +583,6 @@ define([
 
         QUnit.asyncTest("Should disable statistics and remove percentiles", (assert) => {
             const route = new RouteModel({
-                _id: "modelID",
                 id: "modelID",
                 name: "Router",
                 baseURI: "http://www.example.com:8081",
