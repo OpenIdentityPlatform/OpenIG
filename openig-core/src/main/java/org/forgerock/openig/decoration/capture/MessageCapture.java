@@ -223,8 +223,7 @@ public class MessageCapture {
     }
 
     private void writeEntity(final PrintWriter writer, Message message) {
-        ContentTypeHeader contentType = ContentTypeHeader.valueOf(message);
-        if (message.getEntity() == null || contentType.getType() == null) {
+        if (message.getEntity().isRawContentEmpty()) {
             return;
         }
         writer.println();
@@ -233,6 +232,15 @@ public class MessageCapture {
             writer.println("[entity]");
             return;
         }
+
+        // If we cannot determine the Mime-type of the entity
+        ContentTypeHeader contentType = ContentTypeHeader.valueOf(message);
+        if (contentType.getType() == null) {
+            // simply show presence of an entity
+            writer.println("[content-type not set: entity cannot be displayed]");
+            return;
+        }
+
         if (!isTextualContent(contentType)) {
             writer.println("[binary entity]");
             return;
@@ -268,10 +276,8 @@ public class MessageCapture {
      */
     @VisibleForTesting
     static boolean isTextualContent(final ContentTypeHeader contentType) {
-        String type = (contentType.getType() != null ? contentType.getType().toLowerCase() : null);
-        return contentType.getCharset() != null
-                // text or white-listed type
-                || (type != null && (TEXT_TYPES.contains(type) || type.startsWith("text/")));
+        String type = contentType.getType().toLowerCase();
+        return contentType.getCharset() != null || TEXT_TYPES.contains(type) || type.startsWith("text/");
     }
 
 }
