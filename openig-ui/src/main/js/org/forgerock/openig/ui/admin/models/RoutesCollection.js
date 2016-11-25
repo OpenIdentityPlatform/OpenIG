@@ -17,19 +17,19 @@
 define([
     "jquery",
     "backbone",
-    "org/forgerock/commons/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/ServerUrls",
     "org/forgerock/openig/ui/admin/models/RouteModel"
 ], (
     $,
     Backbone,
-    Constants,
+    serverUrls,
     RouteModel
 ) => {
     /* Get and keep Routes */
     class RoutesCollection extends Backbone.Collection {
         constructor () {
             super();
-            this.url = `${Constants.systemObjectsPath}/ui/record`;
+            this.url = `${serverUrls.systemObjectsPath}/ui/record`;
             this.model = RouteModel;
             this.routesCache = {};
         }

@@ -16,16 +16,16 @@
 
 define([
     "jquery",
-    "org/forgerock/commons/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/ServerUrls",
     "org/forgerock/commons/ui/common/main/AbstractDelegate"
 ], (
     $,
-    Constants,
+    serverUrls,
     AbstractDelegate
 ) => {
     class ServerInfoService {
         constructor () {
-            this.infoDelegate = new AbstractDelegate(`${Constants.apiPath}/info`);
+            this.infoDelegate = new AbstractDelegate(`${serverUrls.apiPath}/info`);
         }
 
         getInfo () {

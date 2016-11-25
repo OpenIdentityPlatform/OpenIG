@@ -1,4 +1,4 @@
-/**
+/*
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance with the
  * License.
@@ -15,33 +15,24 @@
  */
 
 define([
-    "org/forgerock/commons/ui/common/util/Constants"
-], (commonConstants) => {
+    "org/forgerock/commons/ui/common/util/URIUtils"
+], (
+    URIUtils
+) => {
+    class ServerUrls {
+        constructor (pathname) {
+            // Infer base path from URL
+            const index = pathname.indexOf("/studio");
+            this.context = pathname.substring(0, index);
+        }
 
-    commonConstants.DOC_URL = "https://backstage.forgerock.com/#!/docs/openig/5.0/";
+        get apiPath () {
+            return `${this.context}/api`;
+        }
 
-    commonConstants.defaultFiltersOrder = {
-        ThrottlingFilter: 0,
-        OAuth2ClientFilter: 100,
-        SingleSignOnFilter: 100,
-        PolicyEnforcementFilter: 200,
-        Unknown: 10000
-    };
-
-    commonConstants.timeSlot = {
-        NANOSECOND: "ns",
-        MICROSECOND: "us",
-        MILLISECOND: "ms",
-        SECOND: "s",
-        MINUTE: "m",
-        HOUR: "h",
-        DAY: "d"
-    };
-
-    commonConstants.studioUser = "studio";
-
-    // view setting cookie expiration in days
-    commonConstants.viewSettingCookieExpiration = 30;
-
-    return commonConstants;
+        get systemObjectsPath () {
+            return `${this.apiPath}/system/objects`;
+        }
+    }
+    return new ServerUrls(URIUtils.getCurrentPathName());
 });

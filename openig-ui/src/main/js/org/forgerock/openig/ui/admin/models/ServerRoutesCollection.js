@@ -18,18 +18,18 @@ define([
     "jquery",
     "lodash",
     "backbone",
-    "org/forgerock/openig/ui/common/util/Constants",
+    "org/forgerock/openig/ui/admin/services/ServerUrls",
     "org/forgerock/openig/ui/admin/models/ServerRouteModel"
 ], (
     $,
     _,
     Backbone,
-    Constants,
+    serverUrls,
     ServerRouteModel
 ) => {
     /* Collection of routes */
     const ServerRoutesCollection = Backbone.Collection.extend({
-        url: `${Constants.systemObjectsPath}/_router/routes`,
+        url: `${serverUrls.systemObjectsPath}/_router/routes`,
         model: ServerRouteModel,
         parse (response) {
             return response.result;

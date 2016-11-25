@@ -16,13 +16,13 @@
 
 define([
     "backbone",
-    "org/forgerock/openig/ui/common/util/Constants"
+    "org/forgerock/openig/ui/admin/services/ServerUrls"
 ], (
     Backbone,
-    Constants
+    serverUrls
 ) => (
     Backbone.Model.extend({
-        url: `${Constants.systemObjectsPath}/_router/routes`,
+        url: `${serverUrls.systemObjectsPath}/_router/routes`,
         idAttribute: "_id",
 
         getMVCCRev () {
