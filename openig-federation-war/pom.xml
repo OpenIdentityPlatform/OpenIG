@@ -61,13 +61,13 @@
             <scope>compile</scope>
         </dependency>
 	    <dependency>
-            <groupId>com.forgerock.openam</groupId>
+            <groupId>org.forgerock.openam</groupId>
             <artifactId>sharedlib</artifactId>
             <version>${openam.version}</version>
             <scope>compile</scope>
         </dependency>
 	    <dependency>
-            <groupId>com.forgerock.openam</groupId>
+            <groupId>org.forgerock.openam</groupId>
             <artifactId>fedlib</artifactId>
             <version>${openam.version}</version>
             <scope>compile</scope>
