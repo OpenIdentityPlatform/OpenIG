@@ -63,10 +63,6 @@ Web versions:
 
 Issues are handled via the [GitHub issues page for the project](https://github.com/ForgeRock/openig-community-edition-2.1.0/issues).
 
-Share the vision of the need that your project is trying to meet.
-How is it set up? If someone were to pick up your codebase today how would they get everything running in their local environment.
-How is it used? Once it's up and running provide some very descriptive examples of usage.
-Is it in good shape? Do you have code climate, codeship, or other tools running to indicate the health of the project? Include information on dependencies as well.
 
 ## How to Collaborate
 
