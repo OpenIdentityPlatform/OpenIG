@@ -19,19 +19,13 @@
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.forgerock.openig</groupId>
+        <groupId>org.forgerock.ce.openig</groupId>
         <artifactId>openig-project</artifactId>
         <version>2.1.0</version>
     </parent>
     <artifactId>openig-federation-war</artifactId>
     <name>OpenIG Federation web application</name>
     <packaging>war</packaging>
-    <repositories>
-        <repository>
-            <id>forgerock</id>
-            <url>http://repo.forgerock.org</url>
-        </repository>
-    </repositories>
     <properties>
         <openam.version>10.0.0</openam.version>
     </properties>
@@ -55,7 +49,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.forgerock.openig</groupId>
+            <groupId>org.forgerock.ce.openig</groupId>
             <artifactId>openig-core</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
