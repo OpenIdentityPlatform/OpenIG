@@ -19,11 +19,11 @@
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-      <groupId>org.forgerock</groupId>
+      <groupId>org.forgerock.ce</groupId>
       <artifactId>forgerock-parent</artifactId>
       <version>1.0.0</version>
     </parent>
-    <groupId>org.forgerock.openig</groupId>
+    <groupId>org.forgerock.ce.openig</groupId>
     <artifactId>openig-project</artifactId>
     <packaging>pom</packaging>
     <version>2.1.0</version>
@@ -55,7 +55,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.forgerock.commons</groupId>
+                <groupId>org.forgerock.ce.commons</groupId>
                 <artifactId>forgerock-doc-maven-plugin</artifactId>
                 <inherited>false</inherited>
                 <configuration>
@@ -90,12 +90,9 @@
     <repositories>
 <!-- may-be-temporary, based-on our decisions around the content and release of forgerock-parent -->
         <repository>
-            <id>forgerock-staging-repository</id>
+            <id>forgerock-community-repository</id>
             <name>ForgeRock Release Repository</name>
-            <url>http://maven.forgerock.org/repo/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
+            <url>http://maven.forgerock.org/repo/community</url>
         </repository>
 <!-- /may-be-temporary -->
         <repository>

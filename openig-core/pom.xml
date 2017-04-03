@@ -19,7 +19,7 @@
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.forgerock.openig</groupId>
+        <groupId>org.forgerock.ce.openig</groupId>
         <artifactId>openig-project</artifactId>
         <version>2.1.0</version>
     </parent>
@@ -28,13 +28,13 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.forgerock.commons</groupId>
+            <groupId>org.forgerock.ce.commons</groupId>
             <artifactId>json-fluent</artifactId>
             <version>1.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.forgerock.commons</groupId>
+            <groupId>org.forgerock.ce.commons</groupId>
             <artifactId>org.forgerock.util</artifactId>
             <version>1.0.0</version>
             <scope>compile</scope>
