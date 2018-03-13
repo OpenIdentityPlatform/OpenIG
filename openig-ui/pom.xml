@@ -28,8 +28,9 @@
   <name>OpenIG User Interface</name>
 
   <properties>
-    <forgerock-ui.version>15.2.2</forgerock-ui.version>
+    <forgerock-ui.version>16.0.1-SNAPSHOT</forgerock-ui.version>
     <node.install.directory>${project.basedir}</node.install.directory>
+    <codemirror.version>4.10</codemirror.version>
   </properties>
 
   <build>
@@ -41,6 +42,14 @@
       <resource>
         <directory>${basedir}/src/main/js</directory>
         <filtering>true</filtering>
+      </resource>
+      <resource>
+        <directory>${basedir}/..</directory>
+        <filtering>true</filtering>
+        <includes>
+        		<include>logo.png</include>
+        	</includes>
+        	<targetPath>${project.build.directory}/www/images</targetPath>
       </resource>
     </resources>
 
@@ -64,7 +73,7 @@
             <configuration>
               <nodeVersion>v4.2.6</nodeVersion>
               <npmVersion>3.5.3</npmVersion>
-              <npmDownloadRoot>http://maven.forgerock.org/repo/api/npm/npm-virtual/npm/-/</npmDownloadRoot>
+<!--               <npmDownloadRoot>http://maven.forgerock.org/repo/api/npm/npm-virtual/npm/-/</npmDownloadRoot> -->
             </configuration>
           </execution>
           <execution>
@@ -200,6 +209,7 @@
                 <artifactItem>
                   <groupId>org.forgerock.commons.ui.libs</groupId>
                   <artifactId>CodeMirror</artifactId>
+                  <version>${codemirror.version}</version>
                   <type>zip</type>
                 </artifactItem>
               </artifactItems>
@@ -222,7 +232,7 @@
     <dependency>
       <groupId>org.forgerock.commons.ui.libs</groupId>
       <artifactId>CodeMirror</artifactId>
-      <version>4.10</version>
+      <version>${codemirror.version}</version>
       <type>zip</type>
     </dependency>
 

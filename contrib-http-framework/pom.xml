@@ -32,10 +32,14 @@
       <groupId>org.forgerock.http</groupId>
       <artifactId>chf-http-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.forgerock.commons.guava</groupId>
-      <artifactId>forgerock-guava-base</artifactId>
-    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.forgerock.commons.guava</groupId> -->
+<!--       <artifactId>forgerock-guava-base</artifactId> -->
+<!--     </dependency> -->
+		<dependency>
+		    <groupId>com.google.guava</groupId>
+		    <artifactId>guava</artifactId>
+		</dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>

@@ -124,7 +124,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.2.11.v20150529</version>
+        <version>9.4.8.v20171121</version>
         <configuration>
           <scanIntervalSeconds>0</scanIntervalSeconds>
           <webAppConfig>
@@ -166,6 +166,30 @@
           </webResources>
         </configuration>
       </plugin>
+      <plugin>
+			<groupId>org.apache.tomcat.maven</groupId>
+			<artifactId>tomcat7-maven-plugin</artifactId>
+			<version>2.2</version>
+			<configuration>
+				<port>8080</port>
+				<path>/</path>
+<!--				<serverXml>${basedir}/config/tomcat/server.xml</serverXml> -->
+<!--				<tomcatUsers>${basedir}/config/tomcat/tomcat-users.xml</tomcatUsers> -->
+				<useTestClasspath>true</useTestClasspath>
+				<ignorePackaging>true</ignorePackaging>
+				<tomcatLoggingFile>${basedir}/src/test/resources/logging.properties</tomcatLoggingFile>
+<!--				<warDirectory>/tmp/openam</warDirectory> -->
+				<systemProperties>
+<!--					<java.endorsed.dirs>${project.build.directory}/endorsed</java.endorsed.dirs> -->
+					<com.sun.xml.ws.transport.http.HttpAdapter.dump>true</com.sun.xml.ws.transport.http.HttpAdapter.dump>
+					<logback.configurationFile>${basedir}/src/test/resources/logback-test.xml</logback.configurationFile>
+					<com.iplanet.services.debug.level>message</com.iplanet.services.debug.level>
+					<com.iplanet.services.debug.directory />
+					<com.sun.services.debug.mergeall>on</com.sun.services.debug.mergeall>
+					<org.forgerock.openam.slf4j.enableTraceInMessage>true</org.forgerock.openam.slf4j.enableTraceInMessage>
+				</systemProperties>
+			</configuration>
+		</plugin>
     </plugins>
   </build>
 </project>
