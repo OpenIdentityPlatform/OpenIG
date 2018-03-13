@@ -25,7 +25,7 @@
   <artifactId>openig-saml</artifactId>
   <name>OpenIG SAML Support</name>
   <properties>
-    <openam.version>14.0.0-SNAPSHOT</openam.version>
+    <openam.version>14.0.2</openam.version>
   </properties>
   <dependencies>
     <dependency>

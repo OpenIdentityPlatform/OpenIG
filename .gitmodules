@@ -1,3 +1,6 @@
 [submodule "OpenDJ"]
 	path = OpenDJ
 	url = https://github.com/OpenIdentityPlatform/OpenDJ
+[submodule "OpenAM"]
+	path = OpenAM
+	url = https://github.com/OpenIdentityPlatform/OpenAM
