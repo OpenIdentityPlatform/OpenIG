@@ -27,7 +27,7 @@ require.config({
     packages: [
         {
             name: "codemirror",
-            location: "libs/codemirror-4.10",
+            location: "libs/CodeMirror-4.10.0",
             main: "lib/codemirror"
         }
     ],
