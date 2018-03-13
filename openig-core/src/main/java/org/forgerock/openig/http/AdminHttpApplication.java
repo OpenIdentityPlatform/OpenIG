@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.DescribedHttpApplication;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;

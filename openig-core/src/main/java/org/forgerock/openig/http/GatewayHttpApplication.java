@@ -44,7 +44,7 @@ import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplication;

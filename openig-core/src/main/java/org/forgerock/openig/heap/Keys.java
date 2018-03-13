@@ -15,7 +15,7 @@
  */
 package org.forgerock.openig.heap;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.Handler;
 import org.forgerock.http.filter.TransactionIdOutboundFilter;
 import org.forgerock.http.session.SessionManager;
