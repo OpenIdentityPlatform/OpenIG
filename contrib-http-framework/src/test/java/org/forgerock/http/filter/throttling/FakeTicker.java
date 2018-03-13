@@ -20,7 +20,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 
 class FakeTicker extends Ticker {
 

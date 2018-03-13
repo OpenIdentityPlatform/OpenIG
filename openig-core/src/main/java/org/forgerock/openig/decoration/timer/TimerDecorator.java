@@ -25,7 +25,7 @@ import static org.forgerock.util.time.Duration.duration;
 
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;

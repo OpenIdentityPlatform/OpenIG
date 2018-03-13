@@ -20,8 +20,8 @@ import static org.forgerock.openig.util.StringUtil.toSIAbbreviation;
 
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.guava.common.base.Stopwatch;
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Ticker;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;

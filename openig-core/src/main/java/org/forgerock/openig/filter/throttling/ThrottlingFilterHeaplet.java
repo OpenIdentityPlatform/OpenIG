@@ -24,7 +24,7 @@ import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import java.util.Locale;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.filter.throttling.FixedRateThrottlingPolicy;
 import org.forgerock.http.filter.throttling.ThrottlingFilter;
 import org.forgerock.http.filter.throttling.ThrottlingPolicy;

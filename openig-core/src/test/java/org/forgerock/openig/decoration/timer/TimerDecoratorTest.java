@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.forgerock.guava.common.base.Ticker;
+import com.google.common.base.Ticker;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.json.JsonValue;
