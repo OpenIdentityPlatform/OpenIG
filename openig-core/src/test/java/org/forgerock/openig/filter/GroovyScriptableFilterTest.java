@@ -346,96 +346,96 @@ public class GroovyScriptableFilterTest {
         assertThat(handler.request.getUri().toString()).isEqualTo("http://www.example.com/example");
     }
 
-    @Test(enabled = true)
-    public void testLdapClient() throws Exception {
-        // Create mock LDAP server with a single user.
-        // @formatter:off
-        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
-                "dn:",
-                "objectClass: top",
-                "objectClass: extensibleObject",
-                "",
-                "dn: dc=com",
-                "objectClass: domain",
-                "objectClass: top",
-                "dc: com",
-                "",
-                "dn: dc=example,dc=com",
-                "objectClass: domain",
-                "objectClass: top",
-                "dc: example",
-                "",
-                "dn: ou=people,dc=example,dc=com",
-                "objectClass: organizationalUnit",
-                "objectClass: top",
-                "ou: people",
-                "",
-                "dn: uid=bjensen,ou=people,dc=example,dc=com",
-                "objectClass: top",
-                "objectClass: person",
-                "objectClass: organizationalPerson",
-                "objectClass: inetOrgPerson",
-                "cn: Barbara",
-                "sn: Jensen",
-                "uid: bjensen",
-                "description: test user",
-                "userPassword: password"));
-        // @formatter:on
-        final LDAPListener listener =
-                new LDAPListener(0, Connections
-                        .<LDAPClientContext>newServerConnectionFactory(backend));
-        final int port = listener.getPort();
-        try {
-            // @formatter:off
-            final ScriptableFilter filter = newGroovyFilter(
-                    "import org.forgerock.opendj.ldap.*",
-                    "",
-                    "username = request.headers.Username.values[0]",
-                    "password = request.headers.Password.values[0]",
-                    "",
-                    "Response response = new Response(Status.OK)",
-                    "",
-                    "client = ldap.connect('0.0.0.0'," + port + ")",
-                    "try {",
-                    "  user = client.searchSingleEntry('ou=people,dc=example,dc=com',",
-                    "                                  ldap.scope.sub,",
-                    "                                  ldap.filter('(uid=%s)', username))",
-                    "  client.bind(user.name.toString(), password.toCharArray())",
-                    "  response.status = Status.OK",
-                    // Attributes as MetaClass properties
-                    "  user.description = 'some value'",
-                    "  assert user.description.parse().asString() == 'some value'",
-                    "  user.description = ['one', 'two']",
-                    "  assert user.description.parse().asSetOfString() == ['one', 'two'] as Set",
-                    "  user.description += 'three'",
-                    "  assert user.description.parse().asSetOfString() == ['one', 'two', 'three'] as Set",
-                    "} catch (AuthenticationException e) {",
-                    "  response.status = Status.FORBIDDEN",
-                    "} catch (Exception e) {",
-                    "  response.status = Status.INTERNAL_SERVER_ERROR",
-                    "} finally {",
-                    "  client.close()",
-                    "}",
-                    "Response.newResponsePromise(response)");
-            // @formatter:on
-
-            // Authenticate using correct password.
-            Request authorizedRequest = new Request();
-            authorizedRequest.getHeaders().add("Username", "bjensen");
-            authorizedRequest.getHeaders().add("Password", "password");
-            Response response = filter.filter(new RootContext(), authorizedRequest, null).get();
-            assertThat(response.getStatus()).isEqualTo(Status.OK);
-
-            // Authenticate using wrong password.
-            Request request = new Request();
-            request.getHeaders().add("Username", "bjensen");
-            request.getHeaders().add("Password", "wrong");
-            Response response1 = filter.filter(new RootContext(), request, null).get();
-            assertThat(response1.getStatus()).isEqualTo(Status.FORBIDDEN);
-        } finally {
-            listener.close();
-        }
-    }
+//    @Test(enabled = true)
+//    public void testLdapClient() throws Exception {
+//        // Create mock LDAP server with a single user.
+//        // @formatter:off
+//        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
+//                "dn:",
+//                "objectClass: top",
+//                "objectClass: extensibleObject",
+//                "",
+//                "dn: dc=com",
+//                "objectClass: domain",
+//                "objectClass: top",
+//                "dc: com",
+//                "",
+//                "dn: dc=example,dc=com",
+//                "objectClass: domain",
+//                "objectClass: top",
+//                "dc: example",
+//                "",
+//                "dn: ou=people,dc=example,dc=com",
+//                "objectClass: organizationalUnit",
+//                "objectClass: top",
+//                "ou: people",
+//                "",
+//                "dn: uid=bjensen,ou=people,dc=example,dc=com",
+//                "objectClass: top",
+//                "objectClass: person",
+//                "objectClass: organizationalPerson",
+//                "objectClass: inetOrgPerson",
+//                "cn: Barbara",
+//                "sn: Jensen",
+//                "uid: bjensen",
+//                "description: test user",
+//                "userPassword: password"));
+//        // @formatter:on
+//        final LDAPListener listener =
+//                new LDAPListener(0, Connections
+//                        .<LDAPClientContext>newServerConnectionFactory(backend));
+//        final int port = listener.getPort();
+//        try {
+//            // @formatter:off
+//            final ScriptableFilter filter = newGroovyFilter(
+//                    "import org.forgerock.opendj.ldap.*",
+//                    "",
+//                    "username = request.headers.Username.values[0]",
+//                    "password = request.headers.Password.values[0]",
+//                    "",
+//                    "Response response = new Response(Status.OK)",
+//                    "",
+//                    "client = ldap.connect('0.0.0.0'," + port + ")",
+//                    "try {",
+//                    "  user = client.searchSingleEntry('ou=people,dc=example,dc=com',",
+//                    "                                  ldap.scope.sub,",
+//                    "                                  ldap.filter('(uid=%s)', username))",
+//                    "  client.bind(user.name.toString(), password.toCharArray())",
+//                    "  response.status = Status.OK",
+//                    // Attributes as MetaClass properties
+//                    "  user.description = 'some value'",
+//                    "  assert user.description.parse().asString() == 'some value'",
+//                    "  user.description = ['one', 'two']",
+//                    "  assert user.description.parse().asSetOfString() == ['one', 'two'] as Set",
+//                    "  user.description += 'three'",
+//                    "  assert user.description.parse().asSetOfString() == ['one', 'two', 'three'] as Set",
+//                    "} catch (AuthenticationException e) {",
+//                    "  response.status = Status.FORBIDDEN",
+//                    "} catch (Exception e) {",
+//                    "  response.status = Status.INTERNAL_SERVER_ERROR",
+//                    "} finally {",
+//                    "  client.close()",
+//                    "}",
+//                    "Response.newResponsePromise(response)");
+//            // @formatter:on
+//
+//            // Authenticate using correct password.
+//            Request authorizedRequest = new Request();
+//            authorizedRequest.getHeaders().add("Username", "bjensen");
+//            authorizedRequest.getHeaders().add("Password", "password");
+//            Response response = filter.filter(new RootContext(), authorizedRequest, null).get();
+//            assertThat(response.getStatus()).isEqualTo(Status.OK);
+//
+//            // Authenticate using wrong password.
+//            Request request = new Request();
+//            request.getHeaders().add("Username", "bjensen");
+//            request.getHeaders().add("Password", "wrong");
+//            Response response1 = filter.filter(new RootContext(), request, null).get();
+//            assertThat(response1.getStatus()).isEqualTo(Status.FORBIDDEN);
+//        } finally {
+//            listener.close();
+//        }
+//    }
 
     private static class SimpleMapSession extends HashMap<String, Object> implements Session {
         private static final long serialVersionUID = 1L;
@@ -444,82 +444,82 @@ public class GroovyScriptableFilterTest {
         public void save(Response response) throws IOException { }
     }
 
-    @Test(enabled = true)
-    public void testLdapAuthFromFile() throws Exception {
-        // Create mock LDAP server with a single user.
-        // @formatter:off
-        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
-                "dn:",
-                "objectClass: top",
-                "objectClass: extensibleObject",
-                "",
-                "dn: dc=com",
-                "objectClass: domain",
-                "objectClass: top",
-                "dc: com",
-                "",
-                "dn: dc=example,dc=com",
-                "objectClass: domain",
-                "objectClass: top",
-                "dc: example",
-                "",
-                "dn: ou=people,dc=example,dc=com",
-                "objectClass: organizationalUnit",
-                "objectClass: top",
-                "ou: people",
-                "",
-                "dn: uid=bjensen,ou=people,dc=example,dc=com",
-                "objectClass: top",
-                "objectClass: person",
-                "objectClass: organizationalPerson",
-                "objectClass: inetOrgPerson",
-                "cn: Barbara Jensen",
-                "cn: Babs Jensen",
-                "sn: Jensen",
-                "uid: bjensen",
-                "description: test user",
-                "userPassword: hifalutin"));
-        // @formatter:on
-        final LDAPListener listener =
-                new LDAPListener(0, Connections
-                        .<LDAPClientContext>newServerConnectionFactory(backend));
-        final int port = listener.getPort();
-        try {
-            final Map<String, Object> config = newFileConfig("LdapAuthFilter.groovy");
-            final ScriptableFilter filter =
-                    (ScriptableFilter) new Heaplet()
-                            .create(Name.of("test"), new JsonValue(config), getHeap());
-
-            // Authenticate using correct password.
-            AttributesContext attributesContext = new AttributesContext(new RootContext());
-            Request request = new Request();
-            request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
-            // FixMe: Passing the LDAP host and port as headers is wrong.
-            attributesContext.getAttributes().put("ldapHost", "localhost");
-            attributesContext.getAttributes().put("ldapPort", String.valueOf(port));
-            filter.filter(new SessionContext(attributesContext, new SimpleMapSession()), request, mock(Handler.class));
-
-            Set<String> cnValues = new HashSet<>();
-            cnValues.add("Barbara Jensen");
-            cnValues.add("Babs Jensen");
-            assertThat(attributesContext.getAttributes().get("cn")).isEqualTo(cnValues);
-            assertThat(attributesContext.getAttributes().get("description"))
-                    .isEqualTo("New description set by my script");
-            assertThat(request.getHeaders().get("Ldap-User-Dn").getValues())
-                    .containsOnly("uid=bjensen,ou=people,dc=example,dc=com");
-
-            // Authenticate using wrong password.
-            Request request2 = new Request();
-            request2.setUri(new URI("http://test?username=bjensen&password=wrong"));
-            // FixMe: Passing the LDAP host and port as headers is wrong.
-            request2.getHeaders().add("LdapHost", "0.0.0.0");
-            request2.getHeaders().add("LdapPort", "" + port);
-            Response response = filter.filter(attributesContext, request2, mock(Handler.class)).get();
-            assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
-        } finally {
-            listener.close();
-        }
-    }
+//    @Test(enabled = true)
+//    public void testLdapAuthFromFile() throws Exception {
+//        // Create mock LDAP server with a single user.
+//        // @formatter:off
+//        final MemoryBackend backend = new MemoryBackend(new LDIFEntryReader(
+//                "dn:",
+//                "objectClass: top",
+//                "objectClass: extensibleObject",
+//                "",
+//                "dn: dc=com",
+//                "objectClass: domain",
+//                "objectClass: top",
+//                "dc: com",
+//                "",
+//                "dn: dc=example,dc=com",
+//                "objectClass: domain",
+//                "objectClass: top",
+//                "dc: example",
+//                "",
+//                "dn: ou=people,dc=example,dc=com",
+//                "objectClass: organizationalUnit",
+//                "objectClass: top",
+//                "ou: people",
+//                "",
+//                "dn: uid=bjensen,ou=people,dc=example,dc=com",
+//                "objectClass: top",
+//                "objectClass: person",
+//                "objectClass: organizationalPerson",
+//                "objectClass: inetOrgPerson",
+//                "cn: Barbara Jensen",
+//                "cn: Babs Jensen",
+//                "sn: Jensen",
+//                "uid: bjensen",
+//                "description: test user",
+//                "userPassword: hifalutin"));
+//        // @formatter:on
+//        final LDAPListener listener =
+//                new LDAPListener(0, Connections
+//                        .<LDAPClientContext>newServerConnectionFactory(backend));
+//        final int port = listener.getPort();
+//        try {
+//            final Map<String, Object> config = newFileConfig("LdapAuthFilter.groovy");
+//            final ScriptableFilter filter =
+//                    (ScriptableFilter) new Heaplet()
+//                            .create(Name.of("test"), new JsonValue(config), getHeap());
+//
+//            // Authenticate using correct password.
+//            AttributesContext attributesContext = new AttributesContext(new RootContext());
+//            Request request = new Request();
+//            request.setUri(new URI("http://test?username=bjensen&password=hifalutin"));
+//            // FixMe: Passing the LDAP host and port as headers is wrong.
+//            attributesContext.getAttributes().put("ldapHost", "localhost");
+//            attributesContext.getAttributes().put("ldapPort", String.valueOf(port));
+//            filter.filter(new SessionContext(attributesContext, new SimpleMapSession()), request, mock(Handler.class));
+//
+//            Set<String> cnValues = new HashSet<>();
+//            cnValues.add("Barbara Jensen");
+//            cnValues.add("Babs Jensen");
+//            assertThat(attributesContext.getAttributes().get("cn")).isEqualTo(cnValues);
+//            assertThat(attributesContext.getAttributes().get("description"))
+//                    .isEqualTo("New description set by my script");
+//            assertThat(request.getHeaders().get("Ldap-User-Dn").getValues())
+//                    .containsOnly("uid=bjensen,ou=people,dc=example,dc=com");
+//
+//            // Authenticate using wrong password.
+//            Request request2 = new Request();
+//            request2.setUri(new URI("http://test?username=bjensen&password=wrong"));
+//            // FixMe: Passing the LDAP host and port as headers is wrong.
+//            request2.getHeaders().add("LdapHost", "0.0.0.0");
+//            request2.getHeaders().add("LdapPort", "" + port);
+//            Response response = filter.filter(attributesContext, request2, mock(Handler.class)).get();
+//            assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
+//        } finally {
+//            listener.close();
+//        }
+//    }
 
     @Test
     public void testSqlClientFromFile() throws Exception {
