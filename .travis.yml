@@ -66,7 +66,8 @@ before_install:
   - env | sort
   - git log `git describe --tags --abbrev=0 HEAD^ --always`..HEAD --oneline 
 install:
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenDJ/forgerock-parent
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenDJ -P '!man-pages,!distribution'
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ/forgerock-parent
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ -P '!man-pages,!distribution'
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM
 script:
   - mvn -B install 
