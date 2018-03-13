@@ -61,19 +61,20 @@ define([
                     "stylesheets": ["css/bootstrap-3.3.5-custom.css", "css/structure.css", "css/theme.css"],
                     "settings": {
                         "logo": {
-                            "src": "images/logo-horizontal.png",
-                            "title": "ForgeRock",
-                            "alt": "ForgeRock"
+                            "src": "images/logo.png",
+                            "title": "OpenIG",
+                            "width": "210px",
+                            "alt": "OpenIG"
                         },
                         "loginLogo": {
-                            "src": "images/login-logo.png",
-                            "title": "ForgeRock",
-                            "alt": "ForgeRock",
+                            "src": "images/logo.png",
+                            "title": "OpenIG",
+                            "alt": "OpenIG",
                             "height": "104px",
                             "width": "210px"
                         },
                         "footer": {
-                            "mailto": "info@forgerock.com"
+                            "mailto": "open-identity-platform-openig@googlegroups.com"
                         }
                     }
                 });
