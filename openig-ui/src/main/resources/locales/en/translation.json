@@ -138,7 +138,7 @@
                         "openID": "OpenID Connect",
                         "openIDHint": "Authenticate users to your application using OpenID Connect...",
                         "sso": "Single Sign-On",
-                        "ssoHint": "Use ForgeRock access management to enable single sign-on."
+                        "ssoHint": "Use OpenAM to enable single sign-on."
                     }
                 },
                 "openIDAuthentication":{
@@ -243,8 +243,8 @@
             }
         },
         "welcomePage": {
-            "title": "Welcome to ForgeRock Identity Gateway",
-            "subtitle": "ForgeRock Identity Gateway bridges your applications to the digital identity world. Use Identity Gateway Studio to develop and prototype protection for your applications and APIs.",
+            "title": "Welcome to OpenIG",
+            "subtitle": "OpenIG bridges your applications to the digital identity world. Use OpenIG Studio to develop and prototype protection for your applications and APIs.",
             "benefit_1": "Authenticate Users",
             "benefit_2": "Enforce Authorization Policies",
             "benefit_3": "Throttle Requests",
@@ -285,7 +285,7 @@
             "actions": "Actions",
             "complete": "Complete",
             "reset": "Reset",
-            "copyright": "Copyright (c) 2016 ForgeRock, all rights reserved.",
+            "copyright": "",
             "sessionExpired": "Session Expired",
             "enableCookies": "Cookies must be enabled to login",
             "reloadGrid": "Reload Grid",
