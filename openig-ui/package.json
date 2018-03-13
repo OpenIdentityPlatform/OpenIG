@@ -1,6 +1,6 @@
 {
   "name": "openig-ui",
-  "description": "ForgeRock OpenIG UI",
+  "description": "OpenIG UI",
   "private": true,
   "devDependencies": {
     "babel-eslint": "6.1.2",
