@@ -19,7 +19,7 @@
   <parent>
     <artifactId>openig-project</artifactId>
     <groupId>org.forgerock.openig</groupId>
-    <version>5.0.2-SNAPSHOT</version>
+    <version>5.0.3-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
