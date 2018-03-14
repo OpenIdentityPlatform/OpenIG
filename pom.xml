@@ -45,6 +45,7 @@
     <module>openig-uma</module>
     <module>openig-openam</module>
     <module>openig-ui</module>
+    <module>openig-docker</module>
   </modules>
 
   <build>
