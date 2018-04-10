@@ -285,7 +285,7 @@
             "actions": "Actions",
             "complete": "Complete",
             "reset": "Reset",
-            "copyright": "",
+            "copyright": "Join <a href='https://github.com/OpenIdentityPlatform/OpenIG/blob/master/README.md'>OpenIG</a> Community",
             "sessionExpired": "Session Expired",
             "enableCookies": "Cookies must be enabled to login",
             "reloadGrid": "Reload Grid",
