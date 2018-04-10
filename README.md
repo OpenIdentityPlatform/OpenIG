@@ -1,5 +1,5 @@
 ## <img alt="OpenIG Logo" src="https://github.com/OpenIdentityPlatform/OpenIG/raw/master/logo.png" width="300"/>
-[![Latest release](https://img.shields.io/github/release/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/releases/latest)
+[![Latest release](https://img.shields.io/github/release/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/releases)
 [![Build Status](https://travis-ci.org/OpenIdentityPlatform/OpenIG.svg)](https://travis-ci.org/OpenIdentityPlatform/OpenIG)
 [![Issues](https://img.shields.io/github/issues/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 [![Last commit](https://img.shields.io/github/last-commit/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/commits/master)
@@ -34,7 +34,7 @@ modify the target application or the container that it runs in.
 This project is licensed under the [Common Development and Distribution License (CDDL)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md). 
 
 ## Downloads 
-* [OpenIG WAR](https://github.com/OpenIdentityPlatform/OpenIG/releases/latest) (All OS)
+* [OpenIG WAR](https://github.com/OpenIdentityPlatform/OpenIG/releases) (All OS)
 * [OpenIG Docker](https://hub.docker.com/r/openidentityplatform/openig/) (All OS)
 
 Java 1.8+ required
