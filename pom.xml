@@ -26,7 +26,7 @@
   <groupId>org.forgerock.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>5.0.2-SNAPSHOT</version>
+  <version>5.0.3-SNAPSHOT</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -45,6 +45,7 @@
     <module>openig-uma</module>
     <module>openig-openam</module>
     <module>openig-ui</module>
+    <module>openig-docker</module>
   </modules>
 
   <build>
