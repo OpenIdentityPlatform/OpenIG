@@ -43,7 +43,7 @@ Java 1.8+ required
 ```bash
 git clone --recursive  https://github.com/OpenIdentityPlatform/OpenIG.git
 mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ/forgerock-parent
-mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ -P '!man-pages,!distribution'
+mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ -P\!distribution
 mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM
 mvn install -f OpenIG
 ```

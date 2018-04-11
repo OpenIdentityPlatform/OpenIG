@@ -68,8 +68,8 @@ before_install:
 install:
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ/forgerock-parent
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ/forgerock-parent
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ -P '!man-pages,!distribution'
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ -P '!man-pages,!distribution'
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ -P\!distribution
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ -P\!distribution
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM
 script:
