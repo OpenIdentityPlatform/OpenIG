@@ -40,6 +40,11 @@ This project is licensed under the [Common Development and Distribution License 
 Java 1.8+ required
 
 ## How-to build
+For windows use:
+```bash
+git config --system core.longpaths true
+```
+
 ```bash
 git clone --recursive  https://github.com/OpenIdentityPlatform/OpenIG.git
 mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ/forgerock-parent
