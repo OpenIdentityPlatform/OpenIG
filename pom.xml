@@ -175,7 +175,7 @@
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
-    <openam.version>14.1.5</openam.version>
+    <openam.version>14.1.11-SNAPSHOT</openam.version>
   </properties>
 
   <issueManagement>
