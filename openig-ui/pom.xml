@@ -57,7 +57,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.29</version>
+        <version>1.6</version>
         <configuration>
           <installDirectory>${node.install.directory}</installDirectory>
         </configuration>
@@ -71,7 +71,6 @@
             <configuration>
               <nodeVersion>v4.2.6</nodeVersion>
               <npmVersion>3.5.3</npmVersion>
-<!--               <npmDownloadRoot>http://maven.forgerock.org/repo/api/npm/npm-virtual/npm/-/</npmDownloadRoot> -->
             </configuration>
           </execution>
           <execution>
