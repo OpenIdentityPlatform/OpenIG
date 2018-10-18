@@ -65,6 +65,7 @@ mvn -f OpenIG/openig-war tomcat7:run-war
 The next step is then to go to [http://localhost:8080](http://localhost:8080) where you'll see the OpenIG welcome page.
 
 ## Support and Mailing List Information
+* OpenIG Community Wiki: https://github.com/OpenIdentityPlatform/OpenIG/wiki
 * OpenIG Community Mailing List: open-identity-platform-openig@googlegroups.com
 * OpenIG Community Archive: https://groups.google.com/d/forum/open-identity-platform-openig
 * OpenIG Community on Gitter: https://gitter.im/OpenIdentityPlatform/OpenIG
