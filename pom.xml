@@ -157,7 +157,7 @@
       <dependency>
         <groupId>org.glassfish.grizzly</groupId>
         <artifactId>grizzly-http-server</artifactId>
-        <version>2.3.23</version>
+        <version>2.4.4</version>
       </dependency>
       
       <dependency>
@@ -170,6 +170,13 @@
 	      <artifactId>opendj-grizzly</artifactId>
 	      <version>${opendj.version}</version>
 	    </dependency>
+	    
+	    <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -186,8 +193,8 @@
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
-    <openam.version>14.1.11-SNAPSHOT</openam.version>
-    <opendj.version>4.2.2</opendj.version>
+    <openam.version>14.1.17-SNAPSHOT</openam.version>
+    <opendj.version>4.3.3-SNAPSHOT</opendj.version>
   </properties>
 
   <issueManagement>
