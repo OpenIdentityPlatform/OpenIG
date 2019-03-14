@@ -193,8 +193,8 @@
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
-    <openam.version>14.1.17-SNAPSHOT</openam.version>
-    <opendj.version>4.3.3-SNAPSHOT</opendj.version>
+    <openam.version>14.2.2-SNAPSHOT</openam.version>
+    <opendj.version>4.4.2-SNAPSHOT</opendj.version>
   </properties>
 
   <issueManagement>
