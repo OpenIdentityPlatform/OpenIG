@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2018 3A Systems, LLC
  */
 
 package org.forgerock.openig.openam;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.UUID;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -52,9 +54,7 @@ import org.slf4j.LoggerFactory;
  * A {@link TokenTransformationFilter} is responsible to transform a token issued by OpenAM
  * into a token of another type.
  *
- * <p>Currently only the OpenID Connect id_token to SAML 2.0 Token (Assertions) is supported, {@literal BEARER} mode.
- *
- * <pre>
+  * <pre>
  *     {@code {
  *         "type": "TokenTransformationFilter",
  *         "config": {
@@ -63,6 +63,8 @@ import org.slf4j.LoggerFactory;
  *             "username": "${attributes.username}",
  *             "password": "${attributes.password}",
  *             "idToken": "${attributes.id_token}",
+ *             "from": "OPENIDCONNECT",
+ *             "to": "SAML2",
  *             "instance": "oidc-to-saml",
  *             "amHandler": "#Handler"
  *         }
@@ -100,7 +102,8 @@ public class TokenTransformationFilter implements Filter {
     private final Handler handler;
     private final URI endpoint;
     private final Expression<String> idToken;
-
+    private final String from;
+    private final String to;
     /**
      * Constructs a new TokenTransformationFilter transforming the OpenID Connect id_token from {@code idToken}
      * into a SAML 2.0 Assertions structure (into {@code target}).
@@ -111,10 +114,14 @@ public class TokenTransformationFilter implements Filter {
      */
     public TokenTransformationFilter(final Handler handler,
                                      final URI endpoint,
-                                     final Expression<String> idToken) {
+                                     final Expression<String> idToken,
+                                     final String from,
+                                     final String to) {
         this.handler = checkNotNull(handler);
         this.endpoint = checkNotNull(endpoint);
         this.idToken = checkNotNull(idToken);
+        this.from = checkNotNull(from);
+        this.to = checkNotNull(to);
     }
 
     @Override
@@ -124,12 +131,10 @@ public class TokenTransformationFilter implements Filter {
 
         final String resolvedIdToken = idToken.eval(bindings(context, request));
         if (resolvedIdToken == null) {
-            logger.error("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
+            logger.debug("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
             return newResponsePromise(newInternalServerError());
         }
-
-        return handler.handle(context, transformationRequest(resolvedIdToken))
-                      .thenAsync(processIssuedToken(context, request, next));
+        return handler.handle(context, transformationRequest(resolvedIdToken.replaceAll("Bearer ", ""))).thenAsync(processIssuedToken(context, request, next));
     }
 
     private AsyncFunction<Response, Response, NeverThrowsException> processIssuedToken(final Context context,
@@ -141,22 +146,19 @@ public class TokenTransformationFilter implements Filter {
                 try {
                     Map<String, Object> json = parseJsonObject(response);
                     if (response.getStatus() != Status.OK) {
-                        logger.error("Server side error ({}, {}) while transforming id_token:{}",
-                                     response.getStatus(),
-                                     json.get("reason"),
-                                     json.get("message"));
-                        return newResponsePromise(new Response(Status.BAD_GATEWAY));
+                        logger.debug("Server side error ({}, {}) while transforming id_token:{}",response.getStatus(),json.get("reason"),json.get("message"));
+                        return next.handle(new StsContext(context, ""), request);
                     }
 
                     String token = (String) json.get("issued_token");
                     if (token == null) {
                         // Unlikely to happen, since this is an OK response
-                        logger.error("STS issued_token is null");
-                        return newResponsePromise(newInternalServerError());
+                        logger.debug("STS issued_token is null");
+                        return next.handle(new StsContext(context, ""), request);
                     }
 
                     // Forward the initial request
-                    return next.handle(new StsContext(context, token), request);
+                    return next.handle(new StsContext(context, token), request); 
                 } catch (IOException e) {
                     logger.error("Can't get JSON back from {}", endpoint, e);
                     return newResponsePromise(newInternalServerError(e));
@@ -173,14 +175,21 @@ public class TokenTransformationFilter implements Filter {
     private Request transformationRequest(final String resolvedIdToken) {
         return new Request().setUri(endpoint)
                             .setMethod("POST")
-                            .setEntity(transformation(resolvedIdToken));
+                            .setEntity(transformation(resolvedIdToken,from,to));
     }
 
-    private static Object transformation(String idToken) {
-        return object(field("input_token_state", object(field("token_type", "OPENIDCONNECT"),
-                                                        field("oidc_id_token", idToken))),
-                      field("output_token_state", object(field("token_type", "SAML2"),
-                                                         field("subject_confirmation", "BEARER"))));
+    static Object from(String idToken, String from) {
+    	if ("OPENIDCONNECT".equals(from))
+    		return object(field("token_type", from),field("oidc_id_token", idToken));
+    	else if ("OPENAM".equals(from))
+    		return object(field("token_type", from),field("session_id", idToken));
+    	else 
+    		return object(field("token_type", from),field("session_id", idToken)); //TODO check other types
+    }
+    
+    private static Object transformation(String idToken, String from,String to) {
+        return object(field("input_token_state", from(idToken,from)),
+        			field("output_token_state", object(field("token_type", to),field("subject_confirmation", "BEARER"),field("nonce", UUID.randomUUID()),field("allow_access", true))));
     }
 
     /** Creates and initializes a token transformation filter in a heap environment. */
@@ -196,22 +205,17 @@ public class TokenTransformationFilter implements Filter {
                                                    .as(uri());
             String realm = config.get("realm").as(evaluatedWithHeapProperties()).defaultTo("/").asString();
             String ssoTokenHeader = config.get("ssoTokenHeader").as(evaluatedWithHeapProperties()).asString();
-            String username = config.get("username").required().as(evaluatedWithHeapProperties()).asString();
-            String password = config.get("password").required().as(evaluatedWithHeapProperties()).asString();
-            HeadlessAuthenticationFilter headlessAuthenticationFilter = new HeadlessAuthenticationFilter(amHandler,
-                                                                                                         openamUri,
-                                                                                                         realm,
-                                                                                                         ssoTokenHeader,
-                                                                                                         username,
-                                                                                                         password);
 
             Expression<String> idToken = config.get("idToken").required().as(expression(String.class));
-
+            String from=config.get("from").as(evaluatedWithHeapProperties()).defaultTo("OPENIDCONNECT").asString();
+            String to=config.get("to").as(evaluatedWithHeapProperties()).defaultTo("SAML2").asString();
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
-
-            return new TokenTransformationFilter(Handlers.chainOf(amHandler, headlessAuthenticationFilter),
+            
+            if (config.get("username").as(evaluatedWithHeapProperties()).asString()==null)
+            	 return new TokenTransformationFilter(amHandler,transformationEndpoint(openamUri, realm, instance),idToken,from,to);
+            return new TokenTransformationFilter(Handlers.chainOf(amHandler, new HeadlessAuthenticationFilter(amHandler,openamUri,realm,ssoTokenHeader,config.get("username").as(evaluatedWithHeapProperties()).asString(),config.get("password").as(evaluatedWithHeapProperties()).asString())),
                                                  transformationEndpoint(openamUri, realm, instance),
-                                                 idToken);
+                                                 idToken,from,to);
         }
 
         private static URI transformationEndpoint(final URI baseUri, final String realm, final String instance)

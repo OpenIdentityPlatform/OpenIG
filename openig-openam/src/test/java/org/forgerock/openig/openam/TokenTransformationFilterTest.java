@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Copyright 2018 3A Systems, LLC
  */
 
 package org.forgerock.openig.openam;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertNull;
 
 import java.net.URI;
 
@@ -161,7 +163,7 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}", String.class));
+                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2");
 
         Request request = new Request();
         filter.filter(context, request, next);
@@ -186,14 +188,10 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}", String.class));
+                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2");
 
         Request request = new Request();
-        Response response = filter.filter(context, request, next).get();
+        assertNull(filter.filter(context, request, next));
 
-        assertThat(response.getStatus()).isEqualTo(Status.BAD_GATEWAY);
-
-        // Original request has not been forwarded
-        verifyZeroInteractions(next);
     }
 }
