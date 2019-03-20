@@ -132,7 +132,7 @@ public class TokenTransformationFilter implements Filter {
         final String resolvedIdToken = idToken.eval(bindings(context, request));
         if (resolvedIdToken == null) {
             logger.debug("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
-            return newResponsePromise(newInternalServerError());
+            return next.handle(new StsContext(context, ""), request);
         }
         return handler.handle(context, transformationRequest(resolvedIdToken.replaceAll("Bearer ", ""))).thenAsync(processIssuedToken(context, request, next));
     }
