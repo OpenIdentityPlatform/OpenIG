@@ -96,7 +96,10 @@ public class DispatchHandler implements Handler {
             if (binding.condition == null
                     || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(context, request)))) {
                 if (binding.baseURI != null) {
-                    request.getUri().rebase(binding.baseURI);
+                    if (!"".equals(binding.baseURI.getPath())) //rebase path
+                    	request.setUri(binding.baseURI);
+                    else
+                    	request.getUri().rebase(binding.baseURI);
                 }
                 return binding.handler.handle(context, request);
             }
