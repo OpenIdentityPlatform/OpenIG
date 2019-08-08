@@ -112,6 +112,25 @@
 							https://cdnjs.cloudflare.com/ajax/libs/{artifactId}/{version}/{artifactId}.{classifier}.{packaging}
                        	</downloadUrl>
 			        </artifactItem>
+			        <artifactItem>
+						<groupId>org.forgerock.commons.ui.libs</groupId>
+		                <artifactId>sifter</artifactId>
+		                <version>0.4.1</version>
+		                <packaging>js</packaging>
+		                <classifier>min</classifier>
+						<downloadUrl>
+							https://cdnjs.cloudflare.com/ajax/libs/sifter/{version}/{artifactId}.{classifier}.{packaging}
+                       	</downloadUrl>
+                   	</artifactItem>
+                   	<artifactItem>
+						<groupId>org.forgerock.commons.ui.libs</groupId>
+		                <artifactId>microplugin</artifactId>
+		                <version>0.0.3</version>
+		                <packaging>js</packaging>
+						<downloadUrl>
+							https://cdnjs.cloudflare.com/ajax/libs/microplugin/{version}/{artifactId}.{packaging}
+	                     </downloadUrl>
+	                  </artifactItem>
 				</artifactItems>
 			</configuration>
 			<executions>
