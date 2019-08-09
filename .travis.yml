@@ -1,4 +1,7 @@
 language: java
+cache:
+  directories:
+   - $HOME/.m2
 git:
   depth: 9999
 matrix:
@@ -66,8 +69,8 @@ before_install:
 install:
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ/forgerock-parent
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ/forgerock-parent
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ -P\!distribution
-  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ -P\!distribution
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM/OpenDJ
+  - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM/OpenDJ
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM
   - mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM
 script:
