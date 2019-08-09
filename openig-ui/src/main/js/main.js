@@ -39,7 +39,7 @@ require.config({
         "backbone.paginator": "libs/backbone.paginator.min-2.0.2-min",
         "backbone-relational": "libs/backbone-relational-0.9.0-min",
         "backgrid": "libs/backgrid.min-0.3.5-min",
-        "backgrid-filter": "libs/backgrid-filter.min-0.3.5-min",
+        "backgrid-filter": "libs/backgrid-filter.min-0.3.7-min",
         "backgrid-paginator": "libs/backgrid-paginator.min-0.3.5-min",
         selectize: "libs/selectize-0.12.1-min",
         lodash: "libs/lodash-3.10.1-min",
@@ -56,7 +56,9 @@ require.config({
         placeholder: "libs/jquery.placeholder-2.0.8",
         dragula: "libs/dragula-3.6.7-min",
         d3: "libs/d3-3.5.5-min",
-        dimple: "libs/dimple-2.1.2-min"
+        dimple: "libs/dimple-2.1.2-min",
+        "sifter": "libs/sifter-0.4.1-min",
+        "microplugin": "libs/microplugin-0.0.3"
     },
 
     shim: {
@@ -101,8 +103,12 @@ require.config({
         placeholder: {
             deps: ["jquery"]
         },
-        selectize: {
-            deps: ["jquery"]
+        "selectize": {
+            /**
+             * sifter, microplugin is additional dependencies for fix release build.
+             * @see https://github.com/brianreavis/selectize.js/issues/417
+             */
+            deps: ["jquery", "sifter", "microplugin"]
         },
         xdate: {
             exports: "xdate"
