@@ -76,7 +76,7 @@ public class OpenIGInitializer implements ServletContainerInitializer {
     @Override
     public void onStartup(final Set<Class<?>> classes, final ServletContext context) throws ServletException {
         try {
-            setupLogSystem();
+            //setupLogSystem();
 
             logger.info("OpenIG base directory : {}", environment.getBaseDirectory());
 
