@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mockito.Mock;
@@ -52,6 +53,18 @@ public class ResponseAdapterTest {
             public void write(final int b) throws IOException {
                 stream.write(b);
             }
+
+			@Override
+			public boolean isReady() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public void setWriteListener(WriteListener writeListener) {
+				// TODO Auto-generated method stub
+				
+			}
         });
         when(delegate.getOutputStream()).thenReturn(servletStream);
         when(delegate.getCharacterEncoding()).thenReturn("UTF-8");
