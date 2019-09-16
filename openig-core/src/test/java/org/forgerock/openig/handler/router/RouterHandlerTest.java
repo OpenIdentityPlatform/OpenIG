@@ -203,7 +203,7 @@ public class RouterHandlerTest {
                         return input.getId();
                     }
                 })
-                .containsExactly("zzz", "aaa");
+                .containsExactly("aaa","zzz");
     }
 
     @Test

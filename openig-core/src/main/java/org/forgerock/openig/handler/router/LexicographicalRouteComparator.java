@@ -26,6 +26,6 @@ import java.util.Comparator;
 class LexicographicalRouteComparator implements Comparator<Route> {
     @Override
     public int compare(final Route first, final Route second) {
-        return first.getName().compareTo(second.getName());
+        return first.getId().compareTo(second.getId());
     }
 }
