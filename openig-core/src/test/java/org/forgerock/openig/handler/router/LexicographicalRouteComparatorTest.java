@@ -55,7 +55,7 @@ public class LexicographicalRouteComparatorTest {
 
     private Route routeWithName(String name) {
         Route route = mock(Route.class);
-        when(route.getName()).thenReturn(name);
+        when(route.getId()).thenReturn(name);
         return route;
     }
 }
