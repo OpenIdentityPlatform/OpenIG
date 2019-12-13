@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>openig-project</artifactId>
-    <groupId>org.forgerock.openig</groupId>
+    <groupId>org.openidentityplatform.openig</groupId>
     <version>5.0.8-SNAPSHOT</version>
   </parent>
 
@@ -32,81 +32,81 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-util</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-json</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-csv</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-syslog</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-jdbc</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource-http</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-http-servlet</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-http-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-oauth2</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-openam</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-saml</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-uma</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -266,9 +266,9 @@
               <includeDependencySources>true</includeDependencySources>
               <includeTransitiveDependencySources>true</includeTransitiveDependencySources>
               <dependencySourceIncludes>
-                <dependencySourceInclude>org.forgerock.openig:*</dependencySourceInclude>
-                <dependencySourceInclude>org.forgerock.http:*</dependencySourceInclude>
-                <dependencySourceInclude>org.forgerock.commons:*</dependencySourceInclude>
+                <dependencySourceInclude>org.openidentityplatform.openig:*</dependencySourceInclude>
+                <dependencySourceInclude>org.openidentityplatform.http:*</dependencySourceInclude>
+                <dependencySourceInclude>org.openidentityplatform.commons:*</dependencySourceInclude>
               </dependencySourceIncludes>
 
               <author>false</author>

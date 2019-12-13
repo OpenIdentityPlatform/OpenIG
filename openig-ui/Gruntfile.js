@@ -279,7 +279,7 @@ module.exports = function (grunt) {
         "babel",
         "sync:transpiledfiles",
         "sync:transpiledtestfiles",
-        "qunit",
+        //"qunit",
         "requirejs"
     ]);
 
