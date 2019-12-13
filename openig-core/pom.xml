@@ -18,7 +18,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.forgerock.openig</groupId>
+    <groupId>org.openidentityplatform.openig</groupId>
     <artifactId>openig-project</artifactId>
     <version>5.0.8-SNAPSHOT</version>
   </parent>
@@ -41,11 +41,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-http-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-client-apache-async</artifactId>
     </dependency>
     <dependency>
@@ -53,16 +53,16 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-util</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>contrib-http-framework</artifactId>
       <version>${project.version}</version>
     </dependency>
 <!--     <dependency> -->
-<!--       <groupId>org.forgerock.commons.guava</groupId> -->
+<!--       <groupId>org.openidentityplatform.commons.guava</groupId> -->
 <!--       <artifactId>forgerock-guava-base</artifactId> -->
 <!--     </dependency> -->
 	<dependency>
@@ -88,8 +88,7 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>2.5.8</version>
-      <type>pom</type>
+      <version>2.4.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.ivy</groupId>
@@ -97,24 +96,24 @@
       <version>2.4.0</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.opendj</groupId>
+      <groupId>org.openidentityplatform.opendj</groupId>
       <artifactId>opendj-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.opendj</groupId>
+      <groupId>org.openidentityplatform.opendj</groupId>
       <artifactId>opendj-grizzly</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-web-token</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.forgerock.commons</groupId>
+        <groupId>org.openidentityplatform.commons</groupId>
         <artifactId>forgerock-audit-core</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.forgerock.commons</groupId>
+        <groupId>org.openidentityplatform.commons</groupId>
         <artifactId>forgerock-audit-json</artifactId>
     </dependency>
     <dependency>
@@ -123,7 +122,7 @@
       <version>3.1.2</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource-http</artifactId>
     </dependency>
     <dependency>
@@ -164,14 +163,14 @@
      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>contrib-http-framework</artifactId>
       <type>test-jar</type>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-test-utils</artifactId>
       <scope>test</scope>
     </dependency>

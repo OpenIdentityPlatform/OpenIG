@@ -32,9 +32,9 @@
       <useProjectArtifact>true</useProjectArtifact>
       <useStrictFiltering>true</useStrictFiltering>
       <excludes>
-       <exclude>org.forgerock.http:chf-http-core</exclude>
-       <exclude>org.forgerock.openig:openig-oauth2</exclude>
-       <exclude>org.forgerock.openig:openig-saml</exclude>
+       <exclude>org.openidentityplatform.http:chf-http-core</exclude>
+       <exclude>org.openidentityplatform.openig:openig-oauth2</exclude>
+       <exclude>org.openidentityplatform.openig:openig-saml</exclude>
       </excludes>
       <unpack>true</unpack>
       <useTransitiveFiltering>true</useTransitiveFiltering>
