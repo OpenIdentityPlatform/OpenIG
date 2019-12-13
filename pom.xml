@@ -18,12 +18,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.forgerock</groupId>
+    <groupId>org.openidentityplatform</groupId>
     <artifactId>forgerock-parent</artifactId>
     <version>2.0.6</version>
   </parent>
 
-  <groupId>org.forgerock.openig</groupId>
+  <groupId>org.openidentityplatform.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
   <version>5.0.8-SNAPSHOT</version>
@@ -83,7 +83,7 @@
 				<force>false</force>
 				<artifactItems>
                  	<artifactItem>
-			            <groupId>org.forgerock.commons.ui.libs</groupId>
+			            <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			            <artifactId>d3</artifactId>
 			            <version>3.5.5</version>
 			            <packaging>js</packaging>
@@ -93,7 +93,7 @@
                        	</downloadUrl>
 			        </artifactItem>
 			        <artifactItem>
-			            <groupId>org.forgerock.commons.ui.libs</groupId>
+			            <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			            <artifactId>dimple</artifactId>
 			            <version>2.1.2</version>
 			            <packaging>js</packaging>
@@ -103,7 +103,7 @@
                        	</downloadUrl>
 			        </artifactItem>
 			        <artifactItem>
-			            <groupId>org.forgerock.commons.ui.libs</groupId>
+			            <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			            <artifactId>dragula</artifactId>
 			            <version>3.6.7</version>
 			            <packaging>css</packaging>
@@ -113,7 +113,7 @@
                        	</downloadUrl>
 			        </artifactItem>
 			        <artifactItem>
-						<groupId>org.forgerock.commons.ui.libs</groupId>
+						<groupId>org.openidentityplatform.commons.ui.libs</groupId>
 		                <artifactId>sifter</artifactId>
 		                <version>0.4.1</version>
 		                <packaging>js</packaging>
@@ -123,7 +123,7 @@
                        	</downloadUrl>
                    	</artifactItem>
                    	<artifactItem>
-						<groupId>org.forgerock.commons.ui.libs</groupId>
+						<groupId>org.openidentityplatform.commons.ui.libs</groupId>
 		                <artifactId>microplugin</artifactId>
 		                <version>0.0.3</version>
 		                <packaging>js</packaging>
@@ -166,7 +166,7 @@
     <dependencies>
       <!-- ForgeRock commons dependencies -->
       <dependency>
-        <groupId>org.forgerock.commons</groupId>
+        <groupId>org.openidentityplatform.commons</groupId>
         <artifactId>commons-bom</artifactId>
         <version>21.0.0-SNAPSHOT</version>
         <scope>import</scope>
@@ -180,12 +180,12 @@
       </dependency>
       
       <dependency>
-	      <groupId>org.forgerock.opendj</groupId>
+	      <groupId>org.openidentityplatform.opendj</groupId>
 	      <artifactId>opendj-core</artifactId>
 	      <version>${opendj.version}</version>
 	    </dependency>
 	    <dependency>
-	      <groupId>org.forgerock.opendj</groupId>
+	      <groupId>org.openidentityplatform.opendj</groupId>
 	      <artifactId>opendj-grizzly</artifactId>
 	      <version>${opendj.version}</version>
 	    </dependency>

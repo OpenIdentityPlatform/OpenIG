@@ -18,7 +18,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.forgerock.openig</groupId>
+    <groupId>org.openidentityplatform.openig</groupId>
     <artifactId>openig-project</artifactId>
     <version>5.0.8-SNAPSHOT</version>
   </parent>
@@ -43,60 +43,60 @@
       <version>1.2.3</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-http-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.http</groupId>
+      <groupId>org.openidentityplatform.http</groupId>
       <artifactId>chf-http-servlet</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-saml</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-oauth2</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-uma</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-openam</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-csv</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-syslog</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-jdbc</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-jms</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-json</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons</groupId>
+      <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>forgerock-audit-handler-elasticsearch</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -111,7 +111,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-ui</artifactId>
       <version>${project.version}</version>
       <!-- Use provided in order to exclude that file from being placed in WEB-INF/lib -->
