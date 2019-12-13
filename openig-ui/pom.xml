@@ -17,7 +17,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>openig-project</artifactId>
-    <groupId>org.forgerock.openig</groupId>
+    <groupId>org.openidentityplatform.openig</groupId>
     <version>5.0.8-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -69,8 +69,8 @@
             </goals>
             <phase>initialize</phase>
             <configuration>
-              <nodeVersion>v4.2.6</nodeVersion>
-              <npmVersion>3.5.3</npmVersion>
+              <nodeVersion>v10.16.3</nodeVersion>
+              <npmVersion>6.12.0</npmVersion>
             </configuration>
           </execution>
           <execution>
@@ -108,7 +108,7 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.forgerock.commons.ui</groupId>
+                  <groupId>org.openidentityplatform.commons.ui</groupId>
                   <artifactId>forgerock-ui-commons</artifactId>
                   <version>${forgerock-ui.version}</version>
                   <type>zip</type>
@@ -125,7 +125,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <includeGroupIds>org.forgerock.commons.ui.libs</includeGroupIds>
+              <includeGroupIds>org.openidentityplatform.commons.ui.libs</includeGroupIds>
               <excludeArtifactIds>less,qunit,r</excludeArtifactIds>
               <includeTypes>js</includeTypes>
               <outputDirectory>${project.build.directory}/compose/libs</outputDirectory>
@@ -141,7 +141,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <includeGroupIds>org.forgerock.commons.ui.libs</includeGroupIds>
+              <includeGroupIds>org.openidentityplatform.commons.ui.libs</includeGroupIds>
               <excludeArtifactIds>qunit</excludeArtifactIds>
               <includeTypes>css</includeTypes>
               <outputDirectory>${project.build.directory}/compose/css</outputDirectory>
@@ -204,7 +204,7 @@
               <outputDirectory>${project.build.directory}/compose/libs</outputDirectory>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.forgerock.commons.ui.libs</groupId>
+                  <groupId>org.openidentityplatform.commons.ui.libs</groupId>
                   <artifactId>CodeMirror</artifactId>
                   <version>${codemirror.version}</version>
                   <type>zip</type>
@@ -219,7 +219,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.forgerock.commons.ui</groupId>
+      <groupId>org.openidentityplatform.commons.ui</groupId>
       <artifactId>forgerock-ui-commons</artifactId>
       <version>${forgerock-ui.version}</version>
       <type>zip</type>
@@ -227,57 +227,57 @@
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>CodeMirror</artifactId>
       <version>${codemirror.version}</version>
       <type>zip</type>
     </dependency>
 
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>sinon</artifactId>
       <type>js</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>qunit</artifactId>
       <type>js</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>qunit</artifactId>
       <type>css</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>d3</artifactId>
       <version>3.5.5</version>
       <classifier>min</classifier>
       <type>js</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>dimple</artifactId>
       <version>2.1.2</version>
       <classifier>min</classifier>
       <type>js</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>dragula</artifactId>
       <version>3.6.7</version>
       <classifier>min</classifier>
       <type>css</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>sifter</artifactId>
       <version>0.4.1</version>
       <classifier>min</classifier>
       <type>js</type>
     </dependency>
     <dependency>
-      <groupId>org.forgerock.commons.ui.libs</groupId>
+      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>microplugin</artifactId>
       <version>0.0.3</version>
       <type>js</type>
@@ -287,7 +287,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.forgerock.commons.ui</groupId>
+        <groupId>org.openidentityplatform.commons.ui</groupId>
         <artifactId>forgerock-ui</artifactId>
         <version>${forgerock-ui.version}</version>
         <type>pom</type>
