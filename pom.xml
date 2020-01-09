@@ -70,7 +70,7 @@
         </executions>
       </plugin>
      	<plugin>
-			<groupId>com.savage7.maven.plugins</groupId>
+			<groupId>org.openidentityplatform.commons</groupId>
 			<artifactId>maven-external-dependency-plugin</artifactId>
 			<version>0.6-SNAPSHOT</version>
 			<inherited>false</inherited>
