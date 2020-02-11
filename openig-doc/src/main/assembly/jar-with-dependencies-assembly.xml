@@ -32,7 +32,7 @@
       <useProjectArtifact>true</useProjectArtifact>
       <useStrictFiltering>true</useStrictFiltering>
       <excludes>
-       <exclude>org.openidentityplatform.http:chf-http-core</exclude>
+       <exclude>org.openidentityplatform.commons.http-framework:core</exclude>
        <exclude>org.openidentityplatform.openig:openig-oauth2</exclude>
        <exclude>org.openidentityplatform.openig:openig-saml</exclude>
       </excludes>

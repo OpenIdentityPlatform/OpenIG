@@ -47,8 +47,8 @@ git config --system core.longpaths true
 
 ```bash
 git clone --recursive  https://github.com/OpenIdentityPlatform/OpenIG.git
-mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ/forgerock-parent
-mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ -P\!distribution
+#mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ/commons
+#mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ -P\!distribution
 mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM
 mvn install -f OpenIG
 ```
@@ -69,7 +69,7 @@ The next step is then to go to [http://localhost:8080](http://localhost:8080) wh
 * OpenIG Community Mailing List: open-identity-platform-openig@googlegroups.com
 * OpenIG Community Archive: https://groups.google.com/d/forum/open-identity-platform-openig
 * OpenIG Community on Gitter: https://gitter.im/OpenIdentityPlatform/OpenIG
-* OpenIG Commercial support RFP: support@openam.org.ru (English, Russian)
+* OpenIG Commercial support RFP: support@3a-systems.ru (English, Russian)
 
 ## Contributing
 Please, make [Pull request](https://github.com/OpenIdentityPlatform/OpenIG/pulls)

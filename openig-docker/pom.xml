@@ -33,7 +33,7 @@
     </profiles>
 
     <artifactId>opendj-docker</artifactId>
-    <name>OpenDJ Docker Packages Parent</name>
+    <name>OpenIG Docker Packages Parent</name>
 
     <description>
         This module contains configuration and generic plugin calls to generate Docker file for OpenDJ.
