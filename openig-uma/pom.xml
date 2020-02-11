@@ -28,8 +28,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.openidentityplatform.http</groupId>
-      <artifactId>chf-http-core</artifactId>
+      <groupId>org.openidentityplatform.commons.http-framework</groupId>
+      <artifactId>core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.openig</groupId>
@@ -37,13 +37,12 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.openidentityplatform.http</groupId>
-      <artifactId>chf-oauth2</artifactId>
-      <version>21.0.0-SNAPSHOT</version>
+      <groupId>org.openidentityplatform.commons.http-framework</groupId>
+      <artifactId>oauth2</artifactId>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-util</artifactId>
+      <artifactId>util</artifactId>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>

@@ -33,32 +33,32 @@
   <dependencies>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-util</artifactId>
+      <artifactId>util</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-audit-core</artifactId>
+      <groupId>org.openidentityplatform.commons.audit</groupId>
+      <artifactId>core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-audit-json</artifactId>
+      <groupId>org.openidentityplatform.commons.audit</groupId>
+      <artifactId>json</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-audit-handler-csv</artifactId>
+      <groupId>org.openidentityplatform.commons.audit</groupId>
+      <artifactId>handler-csv</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-audit-handler-syslog</artifactId>
+      <groupId>org.openidentityplatform.commons.audit</groupId>
+      <artifactId>handler-syslog</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.commons</groupId>
-      <artifactId>forgerock-audit-handler-jdbc</artifactId>
+      <groupId>org.openidentityplatform.commons.audit</groupId>
+      <artifactId>handler-jdbc</artifactId>
     </dependency>
 
     <dependency>
@@ -72,13 +72,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.http</groupId>
-      <artifactId>chf-http-servlet</artifactId>
+      <groupId>org.openidentityplatform.commons.http-framework</groupId>
+      <artifactId>servlet</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.openidentityplatform.http</groupId>
-      <artifactId>chf-http-core</artifactId>
+      <groupId>org.openidentityplatform.commons.http-framework</groupId>
+      <artifactId>core</artifactId>
     </dependency>
 
     <dependency>

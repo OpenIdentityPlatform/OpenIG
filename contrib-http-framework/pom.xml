@@ -25,21 +25,17 @@
 
   <artifactId>contrib-http-framework</artifactId>
   <name>OpenIG HTTP Framework future contributions </name>
-  <description>This module will temporary hold the file that to be contributed to forgerock-http-framework.</description>
+  <description>This module will temporary hold the file that to be contributed to http-framework.</description>
 
   <dependencies>
     <dependency>
-      <groupId>org.openidentityplatform.http</groupId>
-      <artifactId>chf-http-core</artifactId>
+      <groupId>org.openidentityplatform.commons.http-framework</groupId>
+      <artifactId>core</artifactId>
     </dependency>
-<!--     <dependency> -->
-<!--       <groupId>org.openidentityplatform.commons.guava</groupId> -->
-<!--       <artifactId>forgerock-guava-base</artifactId> -->
-<!--     </dependency> -->
-		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
-		</dependency>
+	<dependency>
+	    <groupId>com.google.guava</groupId>
+	    <artifactId>guava</artifactId>
+	</dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
