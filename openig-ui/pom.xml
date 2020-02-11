@@ -26,7 +26,6 @@
   <name>OpenIG User Interface</name>
 
   <properties>
-    <forgerock-ui.version>16.0.1-SNAPSHOT</forgerock-ui.version>
     <node.install.directory>${project.basedir}</node.install.directory>
     <codemirror.version>4.10</codemirror.version>
   </properties>
@@ -109,8 +108,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>org.openidentityplatform.commons.ui</groupId>
-                  <artifactId>forgerock-ui-commons</artifactId>
-                  <version>${forgerock-ui.version}</version>
+                  <artifactId>commons</artifactId>
                   <type>zip</type>
                   <classifier>www</classifier>
                 </artifactItem>
@@ -220,8 +218,7 @@
   <dependencies>
     <dependency>
       <groupId>org.openidentityplatform.commons.ui</groupId>
-      <artifactId>forgerock-ui-commons</artifactId>
-      <version>${forgerock-ui.version}</version>
+      <artifactId>commons</artifactId>
       <type>zip</type>
       <classifier>www</classifier>
     </dependency>
@@ -236,16 +233,19 @@
     <dependency>
       <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>sinon</artifactId>
+      <version>1.15.4</version>
       <type>js</type>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>qunit</artifactId>
+      <version>1.15.0</version>
       <type>js</type>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons.ui.libs</groupId>
       <artifactId>qunit</artifactId>
+      <version>1.15.0</version>
       <type>css</type>
     </dependency>
     <dependency>
@@ -286,13 +286,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.openidentityplatform.commons.ui</groupId>
-        <artifactId>forgerock-ui</artifactId>
-        <version>${forgerock-ui.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>
