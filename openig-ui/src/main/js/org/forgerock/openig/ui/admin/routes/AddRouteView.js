@@ -143,7 +143,7 @@ define([
         }
 
         getParsedData (applUrl) {
-            const match = /(http[s]?:\/\/[^\/\s]+)(\/\w*)?/i.exec(applUrl);
+            const match = /(http[s]?:\/\/[^/\s]+)(\/\w*)?/i.exec(applUrl);
             if (match) {
                 const path = match[2];
                 const name = path ? path.slice(1) : "";

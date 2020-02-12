@@ -26,7 +26,7 @@ define([
             const v = input.val();
             if (!/^(http|https):\/\/[^ "]+$/.test(v)) {
                 callback([i18n.t("common.form.validation.baseURINotValid")]);
-            } else if (!/^(http|https):\/\/[^ "\/]+$/.test(v)) {
+            } else if (!/^(http|https):\/\/[^ "/]+$/.test(v)) {
                 callback([i18n.t("common.form.validation.baseURIContainsPath")]);
             } else {
                 callback();
