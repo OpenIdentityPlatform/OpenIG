@@ -49,8 +49,8 @@ jobs:
       -   docker push openidentityplatform/openig
       - echo 'build and push Github Docker'
       -   echo "$GITHUBKEY" | docker login -u "Open Identity Platform Community" docker.pkg.github.com --password-stdin
-      -   docker build ./openam-distribution/openam-distribution-docker/target -t docker.pkg.github.com/openidentityplatform/openam/openam:$git_version
-      -   docker push docker.pkg.github.com/openidentityplatform/openam/openam:$git_version
+      -   docker build ./openig-docker/target -t docker.pkg.github.com/openidentityplatform/openig/openig:$git_version
+      -   docker push docker.pkg.github.com/openidentityplatform/openig/openig:$git_version
   - os: osx
     osx_image: xcode9.1
   allow_failures:
