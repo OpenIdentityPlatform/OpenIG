@@ -947,7 +947,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>14.4.3-SNAPSHOT</version>
+            <version>14.5.2-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
