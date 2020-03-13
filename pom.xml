@@ -20,7 +20,7 @@
   <groupId>org.openidentityplatform.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>5.0.8-SNAPSHOT</version>
+  <version>5.0.9-SNAPSHOT</version>
 
   <name>OpenIG Project</name>
   <description>
