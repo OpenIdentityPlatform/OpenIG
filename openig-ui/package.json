@@ -5,7 +5,7 @@
   "devDependencies": {
     "babel-eslint": "6.1.2",
     "babel-preset-es2015": "6.9.0",
-    "eslint": "3.1.1",
+    "eslint": "4.18.2",
     "eslint-config-forgerock": "1.1.1",
     "eslint-formatter-warning-summary": "1.0.1",
     "eslint-plugin-requirejs": "2.0.1",
