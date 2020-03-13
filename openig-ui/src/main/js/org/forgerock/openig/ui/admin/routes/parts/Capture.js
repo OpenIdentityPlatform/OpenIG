@@ -194,6 +194,6 @@ define(
                         response: formVal.outboundResponse
                     }
                 };
-            }}
-        )
+            }
+		})
     );
