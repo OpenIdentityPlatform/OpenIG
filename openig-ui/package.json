@@ -29,6 +29,7 @@
     "dragula": "3.6.7",
     "awesome-bootstrap-checkbox": "0.3.7",
     "cookie-signature": ">=1.0.4",
-    "clean-css": ">=4.1.11"
+    "clean-css": ">=4.1.11",
+    "negotiator": ">=0.6.1"
   }
 }
