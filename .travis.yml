@@ -4,20 +4,20 @@ cache:
    - $HOME/.m2
 git:
   depth: 9999
-matrix:
+jobs:
   include:
   - os: linux
     jdk: openjdk8
-    sudo: required
     services:
       - docker
     before_deploy: 
       - git config --local user.name "Open Identity Platform Community" && git config --local user.email "open-identity-platform-openig@googlegroups.com"
       - git checkout -f $TRAVIS_BRANCH
       - git tag -f $git_version && git tag -d $git_version
-      - mvn -q -B -DreleaseVersion="$git_version" -DtagNameFormat="@{project.version}" -DignoreSnapshots=true  -DpushChanges=false -DscmCommentPrefix="[ci skip] $TRAVIS_REPO_SLUG " -DskipTests -Darguments=-DskipTests -Dresume=false clean release:prepare 
+      - mvn -q -B -DtagNameFormat="$git_version" -DreleaseVersion="$git_version" -DtagNameFormat="@{project.version}" -DignoreSnapshots=true  -DpushChanges=false -DscmCommentPrefix="[ci skip] $TRAVIS_REPO_SLUG " -DskipTests -Darguments=-DskipTests -Dresume=false clean release:prepare 
       - git push --quiet --force https://$GITHUBKEY@github.com/$TRAVIS_REPO_SLUG.git >/dev/null 2>&1
       - git push --quiet --force https://$GITHUBKEY@github.com/$TRAVIS_REPO_SLUG.git $git_version >/dev/null 2>&1
+      - export compare="$(git rev-list -n 1 $git_version_last)...$(git rev-list -n 1 $git_version)" && echo $compare
     deploy:
       provider: releases
       draft: false
@@ -25,9 +25,9 @@ matrix:
       target_commitish: $(git rev-list -n 1 $git_version)
       tag_name: $git_version
       name: $git_version
-      body: "compare: $(git rev-list -n 1 $git_version_last)...$(git rev-list -n 1 $git_version)"
-      api_key:
-       secure: eh6zJBoNPHeaCVxW3/+hRnI/IkxJIexL1Sika91Gh6e4gSe0QehV1q2czeHESJcVFZssih1ErT+P1o9Gzxhoo+P36syWxLEMF0yBhTPW1OCIfx0qocI79PBwQSTsNaMUWFeSnX0mU/9rmkcfAa0kC8pZjRGxW4tZQEs1wsrs5J9AayEj2urfaZuak6WhkwXb49A9Mespt17bI+KM8SiOBJQBdugWMzVU9plq5MaT3zIjeR7c52c6f3L6LFK/SmuV8mKqPudqLF7LigFSH0BNkwDJBYutcSlryEcUusJ4fBt1OIE2tslDi3Xl1YijlrW+vG+Asdp60RUuBx4FA79W+FrA/3AwxQYbPkJS+rEhAwLKT+efxHgnBKGtv3TaY/jnittO9CKZqbO5n7Cm021OCvDisrHv6o2y+yqEPn1uJtJw4T3MHhTU/mWhRijxHZB9J/cVMHuCzJ3eo1vd2Lkzck8pzVuEGMnx2VR+U3tkIwYfZVgnlDsh9m5cZGrkPatQNriW5eTMdX/a7MvHQBUbKMj/GsJeDqfjrabUqlbHryfYEDqP/fuMZEGWAzzMFAu8qu/naT6d4U22nvtrxGtSFSzTzhAXTWO/vBG1TQk+tYy2T908p/xPmtjlYtnL1kwheratDIY1tKI3rVXKfiElg17RbFv24tIbSdYxUavhpR4=
+      body: $compare
+      release_notes: $compare
+      token: $GITHUBKEY
       skip_cleanup: true
       overwrite: true
       file_glob: true
@@ -43,10 +43,14 @@ matrix:
     after_deploy:
       - echo 'after_deploy'
       - echo 'build and push Docker'
-      -   docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-      -   docker build ./openig-docker/target -t $DOCKER_USERNAME/openig -t $DOCKER_USERNAME/openig:$git_version
-      -   docker push $DOCKER_USERNAME/openig:$git_version
-      -   docker push $DOCKER_USERNAME/openig
+      -   echo "$DOCKER_PASSWORD" | docker login -u "openidentityplatformcommunity" --password-stdin
+      -   docker build ./openig-docker/target -t openidentityplatform/openig -t openidentityplatform/openig:$git_version
+      -   docker push openidentityplatform/openig:$git_version
+      -   docker push openidentityplatform/openig
+      - echo 'build and push Github Docker'
+      -   echo "$GITHUBKEY" | docker login -u "Open Identity Platform Community" docker.pkg.github.com --password-stdin
+      -   docker build ./openam-distribution/openam-distribution-docker/target -t docker.pkg.github.com/openidentityplatform/openam/openam:$git_version
+      -   docker push docker.pkg.github.com/openidentityplatform/openam/openam:$git_version
   - os: osx
     osx_image: xcode9.1
   allow_failures:
@@ -72,3 +76,7 @@ install:
   - #mvn -q -B -DskipTests -Dmaven.javadoc.skip=true install -f OpenAM && mvn -q -B -DskipTests -Dmaven.javadoc.skip=true clean -f OpenAM
 script:
   - mvn -q -B install
+after_failure:
+  - echo 'remove build commits'
+  - git reset --hard $TRAVIS_COMMIT
+  - git push --quiet --force https://$GITHUBKEY@github.com/$TRAVIS_REPO_SLUG.git >/dev/null 2>&1
