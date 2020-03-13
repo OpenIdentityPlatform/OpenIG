@@ -31,6 +31,7 @@
     "cookie-signature": ">=1.0.4",
     "clean-css": ">=4.1.11",
     "negotiator": ">=0.6.1",
-    "fresh": ">=0.5.2"
+    "fresh": ">=0.5.2",
+    "send": ">=0.11.1"
   }
 }
