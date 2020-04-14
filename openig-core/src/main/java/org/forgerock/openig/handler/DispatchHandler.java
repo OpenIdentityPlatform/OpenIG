@@ -21,11 +21,13 @@ import static org.forgerock.json.JsonValueFunctions.uri;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.forgerock.http.Handler;
+import org.forgerock.http.MutableUri;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
@@ -96,8 +98,17 @@ public class DispatchHandler implements Handler {
             if (binding.condition == null
                     || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(context, request)))) {
                 if (binding.baseURI != null) {
-                    if (!"".equals(binding.baseURI.getPath())) //rebase path
-                    	request.setUri(binding.baseURI);
+                    if (!"".equals(binding.baseURI.getPath()))  {//rebase path
+                    	String query = request.getUri().getRawQuery();
+                    	MutableUri mutableUri = new MutableUri(binding.baseURI);
+                    	try {
+							mutableUri.setRawQuery(query);
+						} catch (URISyntaxException e) {
+							logger.error("error dispatching to " + binding.baseURI, e);
+							return Promises.newResultPromise(Responses.newInternalServerError(e));
+						}
+                    	request.setUri(mutableUri.asURI());
+                    }
                     else
                     	request.getUri().rebase(binding.baseURI);
                 }
