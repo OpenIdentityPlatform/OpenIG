@@ -61,14 +61,14 @@ public class SampleApplicationTest {
         logger.info("Port: " + port + ", SSL Port: " + sslPort);
         httpServer = SampleApplication.start(Integer.parseInt(port), Integer.parseInt(sslPort));
         webClient = new WebClient();
-        webClient.setUseInsecureSSL(true);
+        webClient.getOptions().setUseInsecureSSL(true);
         httpServerPath = "http://localhost:" + port;
         httpsServerPath = "https://localhost:" + sslPort;
     }
 
     @AfterTest
     public void tearDown() throws Exception {
-        webClient.closeAllWindows();
+        webClient.close();
     }
 
     @AfterClass
