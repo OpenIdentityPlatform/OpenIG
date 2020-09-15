@@ -167,19 +167,6 @@
           </execution>
         </executions>
       </plugin>
-
-      <!--
-        By default, skip Javadoc generation for packages in this module.
-        Javadoc is generated instead with the forgerock-release profile
-        that also builds Javadoc for other modules.
-      -->
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>port-allocator-maven-plugin</artifactId>
