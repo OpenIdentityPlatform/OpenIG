@@ -264,7 +264,7 @@
 			            <artifactItem>
 			              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			              <artifactId>handlebars</artifactId>
-			              <version>4.4.2</version>
+			              <version>4.7.6</version>
 			              <packaging>js</packaging>
 			              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/{version}/{artifactId}.{packaging}</downloadUrl>
 			            </artifactItem>
@@ -434,11 +434,11 @@
 						<artifactItem>
 							<groupId>org.openidentityplatform.commons.ui.libs</groupId>
 							<artifactId>handlebars</artifactId>
-							<version>4.4.2</version>
+							<version>4.7.6</version>
 							<packaging>js</packaging>
 							<classifier>min</classifier>
 							<downloadUrl>
-								https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.4.2/handlebars.min.js
+								https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/{version}/handlebars.min.js
 							</downloadUrl>
 						</artifactItem>
 						<artifactItem>
@@ -538,7 +538,7 @@
 			            <artifactItem>
 			              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			              <artifactId>handlebars</artifactId>
-			              <version>4.4.2</version>
+			              <version>4.7.6</version>
 			              <packaging>js</packaging>
 			              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/{version}/{artifactId}.{packaging}</downloadUrl>
 			            </artifactItem>
@@ -871,7 +871,7 @@
 		    </execution>
 		  </executions>
 		  <configuration>
-		  	<failOnError>false</failOnError>
+		  	<doclint>none</doclint>
 		  </configuration>
 		</plugin>
 		<plugin>
@@ -1029,7 +1029,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>14.5.2</version>
+            <version>14.6.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
