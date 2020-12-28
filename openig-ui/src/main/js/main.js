@@ -49,7 +49,7 @@ require.config({
         jquery: "libs/jquery-2.1.1-min",
         xdate: "libs/xdate-0.8-min",
         doTimeout: "libs/jquery.ba-dotimeout-1.0-min",
-        handlebars: "libs/handlebars-4.4.2",
+        handlebars: "libs/handlebars-4.7.6",
         moment: "libs/moment-2.8.1-min",
         bootstrap: "libs/bootstrap-3.3.5-custom",
         "bootstrap-dialog": "libs/bootstrap-dialog-1.34.4-min",
