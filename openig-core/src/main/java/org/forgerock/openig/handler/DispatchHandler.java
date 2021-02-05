@@ -99,14 +99,16 @@ public class DispatchHandler implements Handler {
                     || Boolean.TRUE.equals(binding.condition.eval(Bindings.bindings(context, request)))) {
                 if (binding.baseURI != null) {
                     if (!"".equals(binding.baseURI.getPath()))  {//rebase path
-                    	String query = request.getUri().getRawQuery();
-                    	MutableUri mutableUri = new MutableUri(binding.baseURI);
-                    	try {
-							mutableUri.setRawQuery(query);
-						} catch (URISyntaxException e) {
-							logger.error("error dispatching to " + binding.baseURI, e);
-							return Promises.newResultPromise(Responses.newInternalServerError(e));
-						}
+                    	final String query = request.getUri().getRawQuery();
+                    	final MutableUri mutableUri = new MutableUri(binding.baseURI);
+                    	if (mutableUri.getRawQuery()==null && query!=null) {
+	                    	try {
+								mutableUri.setRawQuery(query);
+							} catch (URISyntaxException e) {
+								logger.error("error dispatching to " + binding.baseURI, e);
+								return Promises.newResultPromise(Responses.newInternalServerError(e));
+							}
+                    	}
                     	request.setUri(mutableUri.asURI());
                     }
                     else
