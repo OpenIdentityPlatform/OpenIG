@@ -9,7 +9,7 @@
     "eslint-config-forgerock": "1.1.1",
     "eslint-formatter-warning-summary": "1.0.1",
     "eslint-plugin-requirejs": "2.0.1",
-    "grunt": "1.0.4",
+    "grunt": ">=1.3.0",
     "grunt-babel": "6.0.0",
     "grunt-cli": "1.2.0",
     "grunt-contrib-copy": "1.0.0",
@@ -33,6 +33,7 @@
     "negotiator": ">=0.6.1",
     "fresh": ">=0.5.2",
     "send": ">=0.11.1",
-    "dot": ">=1.1.3"
+    "dot": ">=1.1.3",
+	"grunt": ">=1.3.0"
   }
 }
