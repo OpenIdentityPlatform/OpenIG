@@ -1,6 +1,6 @@
 ## <img alt="OpenIG Logo" src="https://github.com/OpenIdentityPlatform/OpenIG/raw/master/logo.png" width="300"/>
 [![Latest release](https://img.shields.io/github/release/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/releases)
-[![Build Status](https://travis-ci.org/OpenIdentityPlatform/OpenIG.svg)](https://travis-ci.org/OpenIdentityPlatform/OpenIG)
+[![Build Status](https://travis-ci.com/OpenIdentityPlatform/OpenIG.svg)](https://travis-ci.com/OpenIdentityPlatform/OpenIG)
 [![Issues](https://img.shields.io/github/issues/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 [![Last commit](https://img.shields.io/github/last-commit/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/commits/master)
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md)
