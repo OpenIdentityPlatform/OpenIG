@@ -47,9 +47,7 @@ git config --system core.longpaths true
 
 ```bash
 git clone --recursive  https://github.com/OpenIdentityPlatform/OpenIG.git
-#mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ/commons
-#mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM/OpenDJ -P\!distribution
-mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG/OpenAM
+mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG
 mvn install -f OpenIG
 ```
 
