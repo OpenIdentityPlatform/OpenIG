@@ -54,7 +54,7 @@ public class ScheduledExecutorServiceHeapletTest {
     public void shouldWaitForTaskToComplete() throws Exception {
 
         JsonValue config = json(object(field("gracefulStop", true),
-                                       field("gracePeriod", "30 ms")));
+                                       field("gracePeriod", "100 ms")));
 
         Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
         ExecutorService service = createExecutorService(heaplet, config);
