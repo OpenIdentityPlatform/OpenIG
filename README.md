@@ -1,6 +1,7 @@
 ## <img alt="OpenIG Logo" src="https://github.com/OpenIdentityPlatform/OpenIG/raw/master/logo.png" width="300"/>
 [![Latest release](https://img.shields.io/github/release/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/releases)
-[![Build](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/maven.yml/badge.svg)](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/maven.yml)
+[![Build](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/build.yml/badge.svg)](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/build.yml)
+[![Deploy](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/deploy.yml/badge.svg)](https://github.com/OpenIdentityPlatform/OpenIG/actions/workflows/deploy.yml)
 [![Issues](https://img.shields.io/github/issues/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 [![Last commit](https://img.shields.io/github/last-commit/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/commits/master)
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md)
