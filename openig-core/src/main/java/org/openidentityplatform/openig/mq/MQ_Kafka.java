@@ -72,7 +72,7 @@ public class MQ_Kafka implements Handler{
 			final Response response = new Response(Status.ACCEPTED);
 		    return Promises.newResultPromise(response);
 		}catch (Exception e) {
-			logger.warn("An error occurred while processing the request", e);
+			logger.warn("An error occurred while processing the request: {}", e.toString());
 			final Response response = new Response(Status.INTERNAL_SERVER_ERROR);
 		    return Promises.newResultPromise(response);
 		}
