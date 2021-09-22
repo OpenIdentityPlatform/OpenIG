@@ -109,7 +109,7 @@ public class DirtyCollectionTest {
         collection.iterator();
         collection.size();
         collection.toArray();
-        collection.toArray(null);
+        collection.toArray((String[])null);
 
         verify(delegate).clear();
         verify(delegate).isEmpty();
@@ -123,6 +123,6 @@ public class DirtyCollectionTest {
         verify(delegate).iterator();
         verify(delegate).size();
         verify(delegate).toArray();
-        verify(delegate).toArray(null);
+        verify(delegate).toArray((String[])null);
     }
 }

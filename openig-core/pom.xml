@@ -51,6 +51,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+      <version>2.10.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
@@ -117,6 +118,30 @@
       <artifactId>metrics-core</artifactId>
       <version>3.1.2</version>
     </dependency>
+<!--     <dependency> -->
+<!-- 	    <groupId>javax.jms</groupId> -->
+<!-- 	    <artifactId>javax.jms-api</artifactId> -->
+<!-- 	    <version>2.0.1</version> -->
+<!-- 	</dependency> -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+	<dependency>
+		<groupId>org.openidentityplatform.commons.http-framework</groupId>
+  		<artifactId>servlet</artifactId>
+	</dependency>
+	<dependency>
+	    <groupId>com.ibm.mq</groupId>
+	    <artifactId>com.ibm.mq.allclient</artifactId>
+	    <version>9.2.3.0</version>
+	</dependency>
+    <dependency>
+	    <groupId>org.apache.kafka</groupId>
+	    <artifactId>kafka_2.13</artifactId>
+	    <version>2.8.1</version>
+	</dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource-http</artifactId>
@@ -136,6 +161,11 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <scope>test</scope>
+	</dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
