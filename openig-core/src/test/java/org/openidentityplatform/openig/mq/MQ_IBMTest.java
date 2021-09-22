@@ -50,7 +50,7 @@ public class MQ_IBMTest {
 	@Test 
 	public void test() throws HeapException, URISyntaxException, InterruptedException {
 	 	ExecutorService pool=Executors.newFixedThreadPool(16);
-   	 	for(int i=0;i<10000;i++) {
+   	 	for(int i=0;i<100;i++) {
    	 		pool.submit(new Runnable() {
    	 			@Override
 				public void run() {
