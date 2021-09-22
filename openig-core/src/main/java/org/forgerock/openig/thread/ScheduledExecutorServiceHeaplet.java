@@ -152,15 +152,16 @@ public class ScheduledExecutorServiceHeaplet extends GenericHeaplet {
             if (!service.isTerminated()) {
                 logger.info("All tasks in ExecutorService have not completed yet");
             }
-        }
-        // Aggressive shutdown:
-        // * Does not accept new jobs
-        // * Clear pending queue (will not be executed)
-        // * Attempt to kill executing jobs (interruption)
-        // * Does not wait for termination
-        List<Runnable> jobs = service.shutdownNow();
-        if (!jobs.isEmpty()) {
-            logger.debug("{} submitted jobs will not be executed", jobs.size());
+        }else {
+	        // Aggressive shutdown:
+	        // * Does not accept new jobs
+	        // * Clear pending queue (will not be executed)
+	        // * Attempt to kill executing jobs (interruption)
+	        // * Does not wait for termination
+	        List<Runnable> jobs = service.shutdownNow();
+	        if (!jobs.isEmpty()) {
+	            logger.debug("{} submitted jobs will not be executed", jobs.size());
+	        }
         }
     }
 }

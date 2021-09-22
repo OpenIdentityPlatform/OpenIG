@@ -60,6 +60,9 @@ import org.forgerock.openig.security.KeyStoreHeaplet;
 import org.forgerock.openig.security.TrustAllManager;
 import org.forgerock.openig.security.TrustManagerHeaplet;
 import org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet;
+import org.openidentityplatform.openig.mq.EmbeddedKafka;
+import org.openidentityplatform.openig.mq.MQ_IBM;
+import org.openidentityplatform.openig.mq.MQ_Kafka;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -111,6 +114,9 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("TrustManager", TrustManagerHeaplet.class);
         ALIASES.put("TrustAllManager", TrustAllManager.class);
         ALIASES.put("WelcomeHandler", WelcomeHandler.class);
+        ALIASES.put("EmbeddedKafka",  EmbeddedKafka.class);
+        ALIASES.put("MQ_Kafka", MQ_Kafka.class);
+        ALIASES.put("MQ_IBM", MQ_IBM.class);
     }
 
     @Override
