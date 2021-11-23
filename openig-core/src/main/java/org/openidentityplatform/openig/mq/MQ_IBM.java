@@ -202,7 +202,7 @@ public class MQ_IBM implements Handler{
 											}
 										}
 									}catch (Exception e) {
-										logger.error("{}",e.toString());
+										logger.error("{}",e);
 										try {
 											Thread.currentThread().sleep(60*1000);
 										} catch (InterruptedException e1) {
