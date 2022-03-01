@@ -53,6 +53,7 @@ public class ThrottlingFilter implements Filter {
     private final AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy;
     private final ThrottlingPolicy throttlingRatePolicy;
     private final ThrottlingStrategy throttlingStrategy;
+    private String name=null;
 
     /**
      * Constructs a ThrottlingFilter.
@@ -72,7 +73,15 @@ public class ThrottlingFilter implements Filter {
         this.throttlingStrategy = checkNotNull(throttlingStrategy);
     }
 
-    /**
+    public ThrottlingFilter(String name, AsyncFunction<ContextAndRequest, String, Exception> requestGroupingPolicy,
+            ThrottlingPolicy throttlingRatePolicy,
+            ThrottlingStrategy throttlingStrategy) {
+		this(requestGroupingPolicy,throttlingRatePolicy,throttlingStrategy);
+		this.name=name;
+		
+	}
+
+	/**
      * Stops this filter and frees the resources.
      */
     public void stop() {
@@ -132,6 +141,13 @@ public class ThrottlingFilter implements Filter {
                         Response response = new Response(Status.TOO_MANY_REQUESTS);
                         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.37
                         response.getHeaders().add("Retry-After", computeRetryAfter(delay));
+                        if (name!=null) {
+                        	response.getHeaders().add("Retry-After-Rule", name);
+                        }
+                        try {
+                        	response.getHeaders().add("Retry-After-Partition", partitionKeyPromise.get());
+                        	response.getHeaders().add("Retry-After-Rate", throttlingRatePromise.get().toString());
+                        }catch (Exception e) {}
                         return response;
                     }
 

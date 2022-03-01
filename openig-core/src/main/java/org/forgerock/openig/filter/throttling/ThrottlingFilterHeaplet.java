@@ -142,7 +142,7 @@ public class ThrottlingFilterHeaplet extends GenericHeaplet {
                                                                    executorService,
                                                                    cleaningInterval);
 
-        return filter = new ThrottlingFilter(new ExpressionRequestAsyncFunction<>(requestGroupingPolicy),
+        return filter = new ThrottlingFilter(name,new ExpressionRequestAsyncFunction<>(requestGroupingPolicy),
                                              throttlingRatePolicy,
                                              throttlingStrategy);
     }
