@@ -1,6 +1,3 @@
-[submodule "OpenDJ"]
-	path = OpenDJ
-	url = https://github.com/OpenIdentityPlatform/OpenDJ
-[submodule "OpenAM"]
-	path = OpenAM
-	url = https://github.com/OpenIdentityPlatform/OpenAM
+[submodule "openig-core/icap-client"]
+	path = openig-core/icap-client
+	url = https://github.com/OpenIdentityPlatform/icap-client.git
