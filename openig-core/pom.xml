@@ -51,7 +51,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.10.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
@@ -69,7 +68,6 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>2.1.210</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -116,7 +114,6 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
-      <version>3.1.2</version>
     </dependency>
 <!--     <dependency> -->
 <!-- 	    <groupId>javax.jms</groupId> -->
@@ -146,6 +143,10 @@
       <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource-http</artifactId>
     </dependency>
+    <dependency>
+		<groupId>commons-io</groupId>
+		<artifactId>commons-io</artifactId>
+	</dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-http-server</artifactId>
@@ -180,7 +181,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
      <groupId>simple-jndi</groupId>
@@ -212,12 +212,30 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.4</version>
         <executions>
           <execution>
             <goals>
               <goal>create</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin> 
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+              	<source>src/main/java</source>
+                <source>icap-client/src/main/java</source>
+              </sources>
+            </configuration>
           </execution>
         </executions>
       </plugin>

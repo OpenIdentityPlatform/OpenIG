@@ -65,6 +65,7 @@ import org.forgerock.util.annotations.VisibleForTesting;
 import org.forgerock.util.time.TimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * Configuration class for configuring the OpenIG Gateway.
@@ -75,6 +76,12 @@ public final class GatewayHttpApplication implements HttpApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayHttpApplication.class);
 
+    static {
+    	logger.debug("redirect jul to slf4j  ...");
+    	SLF4JBridgeHandler.removeHandlersForRootLogger();  
+		SLF4JBridgeHandler.install();
+    }
+    
     private static final JsonValue DEFAULT_CLIENT_HANDLER =
                                         json(object(field("name", CLIENT_HANDLER_HEAP_KEY),
                                                     field("type", "ClientHandler")));
