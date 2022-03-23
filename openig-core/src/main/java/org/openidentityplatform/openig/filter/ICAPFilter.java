@@ -56,9 +56,11 @@ public class ICAPFilter implements Filter {
 			try {
 				final URI uri=new URI(server);
 				filter.icap=new ICAPClient(uri.getHost(), uri.getPort()>0?uri.getPort():1344);
+				filter.icap.setConnectTimeout(Integer.parseInt(config.get("connect_timeout").defaultTo("5000").as(expression(String.class)).eval()));
+				filter.icap.setReadTimeout(Integer.parseInt(config.get("read_timeout").defaultTo("15000").as(expression(String.class)).eval()));
 				filter.service=config.get("service").defaultTo("").as(expression(String.class)).eval();
 				filter.rewrite=Boolean.parseBoolean(config.get("rewrite").defaultTo("true").as(expression(String.class)).eval());
-				logger.info("start {}",uri);
+				logger.info("start {} connect_timeout={} read_timeout={}",uri,filter.icap.getConnectTimeout(),filter.icap.getReadTimeout());
 			} catch (URISyntaxException e) {
 				logger.warn("invalid server format: \"{}\" use icap://server:port",server);
 			}
