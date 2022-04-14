@@ -2,13 +2,7 @@ package org.openidentityplatform.openig.mq;
 
 import java.util.Map.Entry;
 
-import javax.jms.BytesMessage;
-import javax.jms.Destination;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSProducer;
-import javax.jms.Message;
-import javax.jms.Session;
+import javax.jms.*;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -171,7 +165,8 @@ public class MQ_IBM implements Handler{
 									        	try {
 									        		final Request request=new Request();
 									        		request.setMethod(evaluated.get("method").defaultTo("PUT").asString());
-										        	request.setEntity(message.getBody(byte[].class));
+													Object entity = (message instanceof TextMessage) ? ((TextMessage)message).getText() : message.getBody(byte[].class);
+													request.setEntity(entity);
 										        	request.setUri(evaluated.get("uri").defaultTo("/"+name).asString());
 										        	request.getHeaders().add("JMSCorrelationID", message.getJMSCorrelationID());
 										        	 
