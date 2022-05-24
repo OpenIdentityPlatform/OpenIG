@@ -110,7 +110,7 @@ public class ScheduledExecutorServiceHeapletTest {
         // Attempt to destroy the heaplet
         // Should exit quickly without killing the task
         heaplet.destroy();
-
+        Thread.sleep(100);
         // task has been completed (using cancel())
         assertThat(future.isCancelled()).isTrue();
         assertThat(future.isDone()).isTrue();
