@@ -99,7 +99,8 @@ public class TokenBucketThrottlingStrategy implements ThrottlingStrategy {
     @Override
     public Promise<Long, NeverThrowsException> throttle(String partitionKey, ThrottlingRate throttlingRate) {
         TokenBucket bucket = selectTokenBucket(partitionKey, throttlingRate);
-        logger.trace("Applying rate {} ({} remaining tokens)",
+        logger.trace("Applying rate {}: {} ({} remaining tokens)",
+        		     partitionKey,
                      bucket.getThrottlingRate(),
                      bucket.getRemainingTokensCount());
         return newResultPromise(bucket.tryConsume());
