@@ -12,16 +12,29 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyrighted 2022 Open Identity Platform Community
  */
 
 package org.forgerock.openig.web;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
+import static org.forgerock.json.JsonValueFunctions.enumConstant;
+import static org.forgerock.openig.http.GatewayEnvironment.BASE_SYSTEM_PROPERTY;
+import static org.forgerock.openig.http.RunMode.EVALUATION;
+import static org.forgerock.openig.http.RunMode.PRODUCTION;
+import static org.forgerock.openig.util.JsonValues.evaluated;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.Set;
+
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
-import ch.qos.logback.core.util.StatusPrinter;
 import org.forgerock.http.servlet.HttpFrameworkServlet;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
@@ -34,22 +47,10 @@ import org.forgerock.util.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Set;
-
-import static org.forgerock.json.JsonValueFunctions.enumConstant;
-import static org.forgerock.openig.http.GatewayEnvironment.BASE_SYSTEM_PROPERTY;
-import static org.forgerock.openig.http.RunMode.EVALUATION;
-import static org.forgerock.openig.http.RunMode.PRODUCTION;
-import static org.forgerock.openig.util.JsonValues.evaluated;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * This class is called automatically from the JEE container and initializes the whole OpenIG product.
@@ -170,10 +171,10 @@ public class OpenIGInitializer implements ServletContainerInitializer {
     }
 
     private URL findLogBackXml() throws MalformedURLException {
-        final File logbackXml = new File(environment.getConfigDirectory(), "_logback.xml");
+        final File logbackXml = new File(environment.getConfigDirectory(), "logback.xml");
         if (logbackXml.canRead()) {
             return logbackXml.toURI().toURL();
         }
-        return getClass().getResource("_logback.xml");
+        return getClass().getResource("logback.xml");
     }
 }
