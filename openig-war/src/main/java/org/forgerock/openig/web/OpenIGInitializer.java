@@ -24,7 +24,9 @@ import static org.forgerock.openig.util.JsonValues.evaluated;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
@@ -32,6 +34,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
+import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
 import org.forgerock.http.servlet.HttpFrameworkServlet;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
@@ -56,7 +59,7 @@ public class OpenIGInitializer implements ServletContainerInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenIGInitializer.class);
 
-    private Environment environment;
+    private final Environment environment;
 
     /**
      * Default constructor called by the Servlet Framework.
@@ -76,7 +79,7 @@ public class OpenIGInitializer implements ServletContainerInitializer {
     @Override
     public void onStartup(final Set<Class<?>> classes, final ServletContext context) throws ServletException {
         try {
-            //setupLogSystem();
+            setupLogSystem();
 
             logger.info("OpenIG base directory : {}", environment.getBaseDirectory());
 
@@ -85,9 +88,9 @@ public class OpenIGInitializer implements ServletContainerInitializer {
 
             // Read OpenIG mode (will trigger exceptions if unknown values are used)
             RunMode mode = adminConfig.get("mode")
-                                      .as(evaluated())
-                                      .defaultTo(EVALUATION.name())
-                                      .as(enumConstant(RunMode.class));
+                    .as(evaluated())
+                    .defaultTo(EVALUATION.name())
+                    .as(enumConstant(RunMode.class));
 
             String adminPrefix = adminConfig.get("prefix").defaultTo("openig").asString();
 
@@ -95,10 +98,10 @@ public class OpenIGInitializer implements ServletContainerInitializer {
             AdminHttpApplication admin;
             if (EVALUATION.equals(mode)) {
                 logger.warn("The product is running in {} mode - by default, all endpoints are open and accessible. "
-                            + "Do not use this mode for a production environment. To prevent this message, add the "
-                            + "top-level attribute '\"mode\": \"{}\"' to '${openig.base}/config/admin.json.'",
-                            EVALUATION.name(),
-                            PRODUCTION.name());
+                                + "Do not use this mode for a production environment. To prevent this message, add the "
+                                + "top-level attribute '\"mode\": \"{}\"' to '${openig.base}/config/admin.json.'",
+                        EVALUATION.name(),
+                        PRODUCTION.name());
                 admin = new UiAdminHttpApplication(adminPrefix, adminConfig, environment, mode);
             } else {
                 admin = new AdminHttpApplication(adminPrefix, adminConfig, environment, mode);
@@ -106,19 +109,19 @@ public class OpenIGInitializer implements ServletContainerInitializer {
 
             URL gatewayConfigURL = selectConfigurationUrl("config.json");
             GatewayHttpApplication gateway = new GatewayHttpApplication(environment,
-                                                                        JsonValues.readJson(gatewayConfigURL),
-                                                                        admin.getEndpointRegistry(),
-                                                                        mode);
+                    JsonValues.readJson(gatewayConfigURL),
+                    admin.getEndpointRegistry(),
+                    mode);
 
             ServletRegistration.Dynamic gwRegistration = context.addServlet("Gateway",
-                                                                            new HttpFrameworkServlet(gateway));
+                    new HttpFrameworkServlet(gateway));
             gwRegistration.setLoadOnStartup(1);
             gwRegistration.setAsyncSupported(true);
             gwRegistration.addMapping("/*");
 
             // Enable it if requested
             ServletRegistration.Dynamic adminRegistration = context.addServlet("Admin",
-                                                                               new HttpFrameworkServlet(admin));
+                    new HttpFrameworkServlet(admin));
             adminRegistration.setLoadOnStartup(1);
             adminRegistration.setAsyncSupported(true);
             adminRegistration.addMapping("/" + adminPrefix + "/*");
@@ -144,6 +147,13 @@ public class OpenIGInitializer implements ServletContainerInitializer {
     private void setupLogSystem() {
         // Assume SLF4J is bound to logback in the current environment
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        try {
+            URL mainUrl = ConfigurationWatchListUtil.getMainWatchURL(context);
+            if(mainUrl != null && Paths.get(mainUrl.toURI()).toFile().exists()) {
+                return;
+            }
+        } catch (URISyntaxException ignored) {}
 
         try {
             URL logBackXml = findLogBackXml();
