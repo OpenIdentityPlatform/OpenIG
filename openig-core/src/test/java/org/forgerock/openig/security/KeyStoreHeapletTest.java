@@ -43,7 +43,7 @@ public class KeyStoreHeapletTest {
         KeyStore store = (KeyStore) heaplet.create(Name.of(getClass().getName()), config, buildDefaultHeap());
 
         assertThat(store.containsAlias("keypair")).isTrue();
-        assertThat(store.getType()).isEqualToIgnoringCase("JKS");
+        assertThat(store.getType()).isEqualToIgnoringCase(KeyStore.getDefaultType());
     }
 
     @Test

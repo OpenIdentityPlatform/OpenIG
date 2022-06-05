@@ -21,11 +21,10 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
+import static org.mockito.Matchers.any;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.lang.reflect.Field;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,6 +32,8 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Heaplet;
 import org.forgerock.openig.heap.Name;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -91,7 +92,19 @@ public class ScheduledExecutorServiceHeapletTest {
         JsonValue config = json(object(field("gracefulStop", true)));
 
         Heaplet heaplet = new ScheduledExecutorServiceHeaplet();
+
         ExecutorService service = createExecutorService(heaplet, config);
+        Field declaredField = service.getClass().getDeclaredField("delegate");
+        declaredField.setAccessible(true);
+
+        final ScheduledExecutorService scheduledExecutorService =  (ScheduledExecutorService) declaredField.get(service);
+
+        service = Mockito.spy(service);
+
+        Mockito.doAnswer(i -> {
+            Runnable runnable = i.getArgumentAt(0, Runnable.class);
+            return scheduledExecutorService.schedule(runnable, 100, TimeUnit.MILLISECONDS);
+        }).when(service).submit(any(Runnable.class));
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean interrupted = new AtomicBoolean(false);
