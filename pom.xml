@@ -44,6 +44,7 @@
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
+	<java.surefire.options>-server</java.surefire.options>
   </properties>
 
   <organization>
@@ -969,7 +970,7 @@
 			<artifactId>maven-surefire-plugin</artifactId>
 			<version>3.0.0-M4</version>
 			<configuration>
-				<argLine>-server  ${java.surefire.options}</argLine>
+				<argLine>${java.surefire.options}</argLine>
 				<properties>
 					<property>
 						<name>usedefaultlisteners</name>
@@ -1025,6 +1026,7 @@
 	  </activation>
 	  <properties>
 		  <java.surefire.options>
+			  -server
 			  --add-opens java.base/java.lang=ALL-UNNAMED
 			  --add-opens java.base/java.io=ALL-UNNAMED
 		  </java.surefire.options>
