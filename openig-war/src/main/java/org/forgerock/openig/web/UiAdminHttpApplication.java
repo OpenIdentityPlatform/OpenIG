@@ -16,20 +16,6 @@
 
 package org.forgerock.openig.web;
 
-import static java.util.Collections.singletonList;
-import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
-import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-
 import org.forgerock.http.io.IO;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.config.Environment;
@@ -40,6 +26,18 @@ import org.forgerock.openig.http.AdminHttpApplication;
 import org.forgerock.openig.http.RunMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+
+import static java.util.Collections.singletonList;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
+import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
+import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
 
 /**
  * Extension of the admin module that is responsible to serve the UI.
@@ -88,9 +86,9 @@ class UiAdminHttpApplication extends AdminHttpApplication {
         ResourceSet resources = new FileResourceSet(unpack);
 
         // Create a ResourceHandler
-        ResourceHandler handler = new ResourceHandler(getBufferFactory(),
-                                                      singletonList(resources),
-                                                      singletonList("index.html"));
+        ResourceHandler handler = new ResourceHandler(newTemporaryStorage(),
+                singletonList(resources),
+                singletonList("index.html"));
 
         // Register it in the router under the /openig/studio path
         getOpenIGRouter().addRoute(requestUriMatcher(STARTS_WITH, "studio"), handler);
