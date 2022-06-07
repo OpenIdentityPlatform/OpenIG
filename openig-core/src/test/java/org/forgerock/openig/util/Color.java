@@ -20,7 +20,7 @@ import org.forgerock.http.util.Indexed;
 /**
  * This interface is used by the LoaderTest class.
  */
-interface Color extends Indexed<String> {
+public interface Color extends Indexed<String> {
     @Override
     String getKey();
 }
