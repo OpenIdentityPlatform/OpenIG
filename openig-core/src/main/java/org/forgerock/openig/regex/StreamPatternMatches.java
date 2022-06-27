@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Iterates through multiple regular expression matches within a character stream.
@@ -119,12 +120,9 @@ public class StreamPatternMatches implements Closeable {
 
     private void readahead() throws IOException {
         notClosed();
-        while (matches == null || !matches.hasNext()) {
-            String line = input.readLine();
-            if (line == null) {
-                break;
-            }
-            matches = new StringPatternMatches(line, Arrays.asList(patterns), discard);
+        if (matches == null || !matches.hasNext()) {
+            String body = input.lines().collect(Collectors.joining("\n"));
+            matches = new StringPatternMatches(body, Arrays.asList(patterns), discard);
         }
     }
 }
