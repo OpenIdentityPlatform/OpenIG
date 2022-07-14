@@ -6,7 +6,6 @@
     "babel-eslint": "6.1.2",
     "babel-preset-es2015": "6.9.0",
     "eslint": "4.18.2",
-    "eslint-config-forgerock": "1.1.1",
     "eslint-formatter-warning-summary": "1.0.1",
     "eslint-plugin-requirejs": "2.0.1",
     "grunt": ">=1.3.0",
@@ -23,7 +22,8 @@
     "grunt-sync": "0.8.1",
     "less-plugin-clean-css": "1.5.1",
     "lodash": ">=4.17.21",
-    "requirejs": "2.3.2"
+    "requirejs": "2.3.2",
+    "es5-ext": "0.10.53"
   },
   "dependencies": {
     "dragula": "3.6.7",
