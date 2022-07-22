@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -216,7 +217,7 @@ public class MessageCapture {
 
     private static void writeHeaders(final PrintWriter writer, Message message) {
         for (Map.Entry<String, Header> entry : message.getHeaders().asMapOfHeaders().entrySet()) {
-            for (String value : entry.getValue().getValues()) {
+            for (String value : entry.getValue()==null?new ArrayList<String>(0):entry.getValue().getValues()) {
                 writer.println(entry.getKey() + ": " + value);
             }
         }
