@@ -32,11 +32,11 @@
         </profile>
     </profiles>
 
-    <artifactId>opendj-docker</artifactId>
+    <artifactId>openig-docker</artifactId>
     <name>OpenIG Docker Packages Parent</name>
 
     <description>
-        This module contains configuration and generic plugin calls to generate Docker file for OpenDJ.
+        This module contains configuration and generic plugin calls to generate Docker file for OpenIG.
     </description>
 
     <build>
@@ -50,11 +50,11 @@
 				          <tasks>
 				          	<copy todir="${project.build.directory}">
     							<fileset dir="${basedir}">
-        							<include name="Dockerfile" />  <!--NOTE DIFFERENCE HERE-->
+        							<include name="Dockerfile*" />  <!--NOTE DIFFERENCE HERE-->
     							</fileset>
 							</copy>
 				            <replace token="@project_version@" value="${project.version}" dir="target/">                                 
-				              <include name="Dockerfile" />
+				              <include name="Dockerfile*" />
 				            </replace>
 				          </tasks>
 				        </configuration>
