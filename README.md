@@ -54,13 +54,9 @@ mvn install -f OpenIG
 
 ## How-to run after build
 ```bash
-mvn -f OpenIG/openig-war jetty:run
+mvn -f OpenIG/openig-war clean package cargo:run
 ```
-or
 
-```bash
-mvn -f OpenIG/openig-war tomcat7:run-war
-```
 The next step is then to go to [http://localhost:8080](http://localhost:8080) where you'll see the OpenIG welcome page.
 
 ## Support and Mailing List Information

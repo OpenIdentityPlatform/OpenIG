@@ -167,28 +167,73 @@
           </webResources>
         </configuration>
       </plugin>
-      <plugin>
-			<groupId>org.apache.tomcat.maven</groupId>
-			<artifactId>tomcat7-maven-plugin</artifactId>
-			<version>2.2</version>
+		<plugin>
+			<groupId>org.codehaus.cargo</groupId>
+			<artifactId>cargo-maven3-plugin</artifactId>
+			<extensions>true</extensions>
+			<executions>
+				<execution>
+					<id>start</id>
+					<phase>pre-integration-test</phase>
+					<goals>
+						<goal>start</goal>
+					</goals>
+					<configuration>
+						<container>
+							<timeout>180000</timeout>
+						</container>
+					</configuration>
+				</execution>
+				<execution>
+					<id>stop</id>
+					<phase>post-integration-test</phase>
+					<goals>
+						<goal>stop</goal>
+					</goals>
+					<configuration>
+						<container>
+							<timeout>60000</timeout>
+						</container>
+					</configuration>
+				</execution>
+			</executions>
 			<configuration>
-				<port>8080</port>
-				<path>/</path>
-<!--				<serverXml>${basedir}/config/tomcat/server.xml</serverXml> -->
-<!--				<tomcatUsers>${basedir}/config/tomcat/tomcat-users.xml</tomcatUsers> -->
-				<useTestClasspath>true</useTestClasspath>
-				<ignorePackaging>true</ignorePackaging>
-				<tomcatLoggingFile>${basedir}/src/test/resources/logging.properties</tomcatLoggingFile>
-<!--				<warDirectory>/tmp/openam</warDirectory> -->
-				<systemProperties>
-<!--					<java.endorsed.dirs>${project.build.directory}/endorsed</java.endorsed.dirs> -->
-					<com.sun.xml.ws.transport.http.HttpAdapter.dump>true</com.sun.xml.ws.transport.http.HttpAdapter.dump>
-					<logback.configurationFile>${basedir}/src/test/resources/logback-test.xml</logback.configurationFile>
-					<com.iplanet.services.debug.level>message</com.iplanet.services.debug.level>
-					<com.iplanet.services.debug.directory />
-					<com.sun.services.debug.mergeall>on</com.sun.services.debug.mergeall>
-					<org.forgerock.openam.slf4j.enableTraceInMessage>true</org.forgerock.openam.slf4j.enableTraceInMessage>
-				</systemProperties>
+				<descriptor>src/assemble/merge.xml</descriptor>
+				<archive>
+					<addMavenDescriptor>false</addMavenDescriptor>
+					<manifest>
+						<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+					</manifest>
+				</archive>
+				<container>
+					<containerId>tomcat9x</containerId>
+					<!-- 	                    <zipUrlInstaller><url>https://repo.maven.apache.org/maven2/org/apache/tomcat/tomcat/8.5.50/tomcat-8.5.50.zip</url></zipUrlInstaller> -->
+					<systemProperties>
+						<file.encoding>UTF-8</file.encoding>
+						<logback.configurationFile>${basedir}/src/test/resources/logback-test.xml</logback.configurationFile>
+						<com.iplanet.services.debug.level>message</com.iplanet.services.debug.level>
+						<com.iplanet.services.debug.directory />
+						<com.sun.services.debug.mergeall>on</com.sun.services.debug.mergeall>
+						<org.forgerock.openam.slf4j.enableTraceInMessage>true</org.forgerock.openam.slf4j.enableTraceInMessage>
+					</systemProperties>
+				</container>
+				<deployables>
+					<deployable>
+						<type>war</type>
+						<properties>
+							<context>/</context>
+						</properties>
+						<pingURL>http://localhost:8080/openig/</pingURL>
+					</deployable>
+				</deployables>
+				<configuration>
+					<properties>
+						<cargo.rmi.port>8206</cargo.rmi.port>
+						<cargo.servlet.port>8080</cargo.servlet.port>
+						<cargo.jvmargs>${java.surefire.options} -Xmx4g</cargo.jvmargs>
+					</properties>
+				</configuration>
 			</configuration>
 		</plugin>
     </plugins>
