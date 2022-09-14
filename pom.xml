@@ -255,7 +255,7 @@
 			            <artifactItem>
 			              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			              <artifactId>handlebars</artifactId>
-			              <version>4.7.6</version>
+			              <version>4.7.7</version>
 			              <packaging>js</packaging>
 			              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/{version}/{artifactId}.{packaging}</downloadUrl>
 			            </artifactItem>
@@ -425,7 +425,7 @@
 						<artifactItem>
 							<groupId>org.openidentityplatform.commons.ui.libs</groupId>
 							<artifactId>handlebars</artifactId>
-							<version>4.7.6</version>
+							<version>4.7.7</version>
 							<packaging>js</packaging>
 							<classifier>min</classifier>
 							<downloadUrl>
@@ -529,7 +529,7 @@
 			            <artifactItem>
 			              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
 			              <artifactId>handlebars</artifactId>
-			              <version>4.7.6</version>
+			              <version>4.7.7</version>
 			              <packaging>js</packaging>
 			              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/{version}/{artifactId}.{packaging}</downloadUrl>
 			            </artifactItem>
@@ -1043,13 +1043,11 @@
             <type>pom</type>
             <scope>import</scope>
         </dependency>
-
       <dependency>
         <groupId>org.glassfish.grizzly</groupId>
         <artifactId>grizzly-http-server</artifactId>
         <version>2.4.4</version>
       </dependency>
-	    
 	    <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -1061,6 +1059,16 @@
           <artifactId>javax.mail</artifactId>
           <version>1.5.1</version>
       </dependency>
+  		<dependency>
+  			<groupId>io.netty</groupId>
+  			<artifactId>netty-transport-native-epoll</artifactId>
+  			<version>4.1.80.Final</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.apache.zookeeper</groupId>
+  			<artifactId>zookeeper</artifactId>
+  			<version>3.5.10</version>
+  		</dependency>
     </dependencies>
   </dependencyManagement>
 </project>
