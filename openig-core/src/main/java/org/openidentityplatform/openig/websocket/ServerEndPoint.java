@@ -39,7 +39,7 @@ public class ServerEndPoint {
 
 				@Override
 				public String toString() {
-					return "invalid token";
+					return "access revoked";
 				}
 			};
 		}
