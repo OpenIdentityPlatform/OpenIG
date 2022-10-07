@@ -51,6 +51,7 @@ import org.forgerock.http.apache.async.AsyncHttpClientProvider;
 import org.forgerock.http.handler.HttpClientHandler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.http.spi.Loader;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -60,6 +61,7 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.Options;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
+import org.forgerock.util.promise.Promises;
 import org.forgerock.util.promise.ResultHandler;
 import org.forgerock.util.time.Duration;
 import org.slf4j.Logger;
@@ -161,6 +163,10 @@ public class ClientHandler implements Handler {
 
     @Override
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
+    	if ("websocket".equalsIgnoreCase(request.getHeaders().getFirst("upgrade"))) {
+    		final Response response=new Response(Status.SWITCHING_PROTOCOLS);
+    		return Promises.newResultPromise(response);
+    	}
         return delegate.handle(context, request)
                        .thenOnResult(new ResultHandler<Response>() {
                            @Override
