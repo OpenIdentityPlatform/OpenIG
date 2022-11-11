@@ -146,7 +146,7 @@ public class MQ_IBM implements Handler{
 						handler.cf.setStringProperty(entry.getKey(),entry.getValue().toString());
 					}
 				} 
-				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()).asInteger();
+				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*8).asInteger();
 				if (core>0 && evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
 					consumeService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
 					for(int i=1;i<=core;i++) {
