@@ -45,42 +45,6 @@ public class MQ_IBM implements Handler{
 
     JmsConnectionFactory cf;
     
-    JMSContext producerContext=null;
-    JMSContext getProducerContext() {
-    	if (producerContext==null) {
-    		synchronized (this) {
-    			if (producerContext==null) {
-    				producerContext=cf.createContext(Session.AUTO_ACKNOWLEDGE);
-    			}
-			}
-    	}
-    	return producerContext;
-    }
-    
-    JMSProducer producer=null;
-    JMSProducer getProducer() {
-    	if (producer==null) {
-    		synchronized (this) {
-    			if (producer==null) {
-    				producer=getProducerContext().createProducer();
-    			}
-			}
-    	}
-    	return producer;
-    }
-    
-    Destination dest=null;
-    Destination getDestination() {
-    	if (dest==null) {
-    		synchronized (this) {
-    			if (dest==null) {
-    				dest=getProducerContext().createQueue(topic);
-    			}
-			}
-    	}
-    	return dest;
-    }
-	
     @Override
 	public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
 		try {
@@ -89,7 +53,9 @@ public class MQ_IBM implements Handler{
 				Response response = new Response(Status.NOT_IMPLEMENTED);
 			    return Promises.newResultPromise(response);
 			}
-			final BytesMessage jmsMessage=getProducerContext().createBytesMessage();
+			final JMSContext producerContext=cf.createContext(Session.AUTO_ACKNOWLEDGE);
+			
+			final BytesMessage jmsMessage=producerContext.createBytesMessage();
 	        jmsMessage.setJMSCorrelationID(UUID.randomUUID().toString()); 
 	        //jmsMessage.setJMSReplyTo(receive);
 	        for (Entry<String, Header> entry: request.getHeaders().asMapOfHeaders().entrySet()) {
@@ -97,8 +63,11 @@ public class MQ_IBM implements Handler{
 	        }
 	        jmsMessage.writeBytes(request.getEntity().getBytes());
 	        
-	        getProducer().send(getDestination(), jmsMessage);
-
+	        final JMSProducer producer=producerContext.createProducer();
+	        final Destination dest=producerContext.createQueue(topic);
+	        producer.send(dest, jmsMessage);
+	        producerContext.close();
+	        
 			Response response = new Response(Status.ACCEPTED);
 		    return Promises.newResultPromise(response);
 		}catch (Exception e) {
@@ -226,10 +195,6 @@ public class MQ_IBM implements Handler{
 				} catch (InterruptedException e) {}
             	consumeService.shutdownNow();
             	consumeService=null;
-            }
-            if (handler.producerContext!=null) {
-            	handler.producerContext.close();
-            	handler.producerContext=null;
             }
             handler.cf=null;
         }
