@@ -45,6 +45,13 @@ public class MQ_IBM implements Handler{
 
     JmsConnectionFactory cf;
     
+    ThreadLocal<JMSContext> jmsContext=new ThreadLocal<JMSContext>() {
+		@Override
+		protected JMSContext initialValue() {
+			return cf.createContext(Session.AUTO_ACKNOWLEDGE);
+		}
+    };
+    
     @Override
 	public Promise<Response, NeverThrowsException> handle(Context context, Request request) {
 		try {
@@ -53,8 +60,7 @@ public class MQ_IBM implements Handler{
 				Response response = new Response(Status.NOT_IMPLEMENTED);
 			    return Promises.newResultPromise(response);
 			}
-			final JMSContext producerContext=cf.createContext(Session.AUTO_ACKNOWLEDGE);
-			
+			final JMSContext producerContext=jmsContext.get(); 
 			final BytesMessage jmsMessage=producerContext.createBytesMessage();
 	        jmsMessage.setJMSCorrelationID(UUID.randomUUID().toString()); 
 	        //jmsMessage.setJMSReplyTo(receive);
@@ -66,7 +72,6 @@ public class MQ_IBM implements Handler{
 	        final JMSProducer producer=producerContext.createProducer();
 	        final Destination dest=producerContext.createQueue(topic);
 	        producer.send(dest, jmsMessage);
-	        producerContext.close();
 	        
 			Response response = new Response(Status.ACCEPTED);
 		    return Promises.newResultPromise(response);
@@ -104,6 +109,7 @@ public class MQ_IBM implements Handler{
 				
 				handler.cf=JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER).createConnectionFactory();
 				handler.cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+				handler.cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
 				
 				handler.cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, evaluated.get(WMQConstants.WMQ_CONNECTION_NAME_LIST).defaultTo("localhost(1414)").asString() );
 				handler.cf.setStringProperty(WMQConstants.WMQ_CHANNEL, evaluated.get(WMQConstants.WMQ_CHANNEL).defaultTo("DEV.APP.SVRCONN").asString());
@@ -124,7 +130,7 @@ public class MQ_IBM implements Handler{
 							@Override
 							public void run() {
 								while (true) {
-									try (JMSContext jmsc=handler.cf.createContext(Session.AUTO_ACKNOWLEDGE)){
+									try (JMSContext jmsc=handler.jmsContext.get()){
 										try (JMSConsumer consumer=jmsc.createConsumer(jmsc.createQueue(evaluated.get("topic.consume").asString()))){
 											while (true){
 												final Message message=consumer.receive();
