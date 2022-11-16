@@ -40,6 +40,15 @@ import com.ibm.msg.client.wmq.WMQConstants;
 public class MQ_IBM implements Handler{
     private static final Logger logger = LoggerFactory.getLogger(MQ_IBM.class);
     
+    static {
+    	if (System.getProperty("com.ibm.mq.cfg.MQRCVBLKTO")==null) {
+    		System.setProperty("com.ibm.mq.cfg.MQRCVBLKTO","15");
+    	}
+    	if (System.getProperty("com.ibm.mq.cfg.TCP.Connect_Timeout")==null) {
+    		System.setProperty("com.ibm.mq.cfg.TCP.Connect_Timeout","15");
+    	}
+    }
+    
     String name;
     String topic;
 
@@ -48,7 +57,7 @@ public class MQ_IBM implements Handler{
     ThreadLocal<JMSContext> jmsContext=new ThreadLocal<JMSContext>() {
 		@Override
 		protected JMSContext initialValue() {
-			return cf.createContext(Session.AUTO_ACKNOWLEDGE);
+			return cf.createContext();
 		}
     };
     
@@ -62,7 +71,7 @@ public class MQ_IBM implements Handler{
 			}
 			final JMSContext producerContext=jmsContext.get(); 
 			final BytesMessage jmsMessage=producerContext.createBytesMessage();
-	        jmsMessage.setJMSCorrelationID(UUID.randomUUID().toString()); 
+	        jmsMessage.setJMSCorrelationID(request.getHeaders().getFirst("correlation-id")==null? UUID.randomUUID().toString():request.getHeaders().getFirst("correlation-id")); 
 	        //jmsMessage.setJMSReplyTo(receive);
 	        for (Entry<String, Header> entry: request.getHeaders().asMapOfHeaders().entrySet()) {
         		jmsMessage.setStringProperty(entry.getKey().replaceAll("-", "__"), entry.getValue().getFirstValue());
@@ -73,8 +82,9 @@ public class MQ_IBM implements Handler{
 	        final Destination dest=producerContext.createQueue(topic);
 	        producer.send(dest, jmsMessage);
 	        
-			   Response response = new Response(Status.ACCEPTED);
-		    return Promises.newResultPromise(response);
+			final Response response = new Response(Status.ACCEPTED);
+		    response.getHeaders().add("correlation-id", jmsMessage.getJMSCorrelationID());
+			return Promises.newResultPromise(response);
 		}catch (Exception e) {
 			logger.warn("An error occurred while processing the request: {}", e.toString());
 			Response response = new Response(Status.INTERNAL_SERVER_ERROR);
@@ -109,7 +119,7 @@ public class MQ_IBM implements Handler{
 				
 				handler.cf=JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER).createConnectionFactory();
 				handler.cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
-				handler.cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
+				//handler.cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
 				
 				handler.cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, evaluated.get(WMQConstants.WMQ_CONNECTION_NAME_LIST).defaultTo("localhost(1414)").asString() );
 				handler.cf.setStringProperty(WMQConstants.WMQ_CHANNEL, evaluated.get(WMQConstants.WMQ_CHANNEL).defaultTo("DEV.APP.SVRCONN").asString());
@@ -143,7 +153,7 @@ public class MQ_IBM implements Handler{
 													Object entity = (message instanceof TextMessage) ? ((TextMessage)message).getText() : message.getBody(byte[].class);
 													request.setEntity(entity);
 										        	request.setUri(evaluated.get("uri").defaultTo("/"+name).asString());
-										        	request.getHeaders().add("JMSCorrelationID", message.getJMSCorrelationID());
+										        	request.getHeaders().add("correlation-id", message.getJMSCorrelationID()==null?UUID.randomUUID().toString():message.getJMSCorrelationID());
 										        	 
 										        	for (String header : Collections.list((Enumeration<String>)message.getPropertyNames())) {
 										        		request.getHeaders().add(header.replace("__", "-"), message.getStringProperty(header));
