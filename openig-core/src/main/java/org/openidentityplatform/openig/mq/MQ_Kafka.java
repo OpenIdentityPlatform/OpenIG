@@ -18,6 +18,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Request;
@@ -74,8 +75,15 @@ public class MQ_Kafka implements Handler{
 					}
 				});
 			}
-			producer.send(new ProducerRecord<String, byte[]>( topic, null,UUID.randomUUID().toString(),request.getEntity().getBytes(),headers)).get();
+			final String key=request.getHeaders().getFirst("correlation-id")==null?UUID.randomUUID().toString():request.getHeaders().getFirst("correlation-id");
+			final RecordMetadata record=producer.send(new ProducerRecord<String, byte[]>( topic, null,key,request.getEntity().getBytes(),headers)).get();
 			final Response response = new Response(Status.ACCEPTED);
+			response.getHeaders().add("correlation-id", key);
+			response.getHeaders().add("kafka-topic", record.topic());
+			response.getHeaders().add("kafka-key", key);
+			response.getHeaders().add("kafka-offset", ""+record.offset());
+			response.getHeaders().add("kafka-timestamp", ""+record.timestamp());
+			response.getHeaders().add("kafka-timestamp-date", ""+new Date(record.timestamp()));
 		    return Promises.newResultPromise(response);
 		}catch (Exception e) {
 			logger.warn("An error occurred while processing the request: {}", e.toString());
@@ -141,6 +149,7 @@ public class MQ_Kafka implements Handler{
 									        	 request.setEntity(record.value());
 									        	 request.setUri(evaluated.get("uri").defaultTo("/"+name).asString());
 									        	 request.getHeaders().add("kafka-topic", record.topic());
+									        	 request.getHeaders().add("correlation-id", record.key()==null?UUID.randomUUID().toString():record.key());
 									        	 request.getHeaders().add("kafka-key", record.key());
 									        	 request.getHeaders().add("kafka-offset", ""+record.offset());
 									        	 request.getHeaders().add("kafka-timestamp", ""+record.timestamp());
