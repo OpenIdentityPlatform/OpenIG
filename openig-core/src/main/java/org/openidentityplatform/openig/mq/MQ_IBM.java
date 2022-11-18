@@ -119,7 +119,9 @@ public class MQ_IBM implements Handler{
 				
 				handler.cf=JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER).createConnectionFactory();
 				handler.cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
-				//handler.cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
+				handler.cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
+				handler.cf.setIntProperty(WMQConstants.WMQ_SHARE_CONV_ALLOWED, WMQConstants.WMQ_SHARE_CONV_ALLOWED_NO);
+				handler.cf.setIntProperty("SHARECNV", 1);
 				
 				handler.cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, evaluated.get(WMQConstants.WMQ_CONNECTION_NAME_LIST).defaultTo("localhost(1414)").asString() );
 				handler.cf.setStringProperty(WMQConstants.WMQ_CHANNEL, evaluated.get(WMQConstants.WMQ_CHANNEL).defaultTo("DEV.APP.SVRCONN").asString());
@@ -131,6 +133,11 @@ public class MQ_IBM implements Handler{
 						handler.cf.setStringProperty(entry.getKey(),entry.getValue().toString());
 					}
 				} 
+				handler.cf.forEach((key,value)->
+					{ 
+						logger.debug("settings {}: {}={}",name,key,value);
+					}
+				);
 				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*8).asInteger();
 				if (core>0 && evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
 					consumeService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
