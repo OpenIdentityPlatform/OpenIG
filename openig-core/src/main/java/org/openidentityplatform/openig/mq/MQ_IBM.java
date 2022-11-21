@@ -79,6 +79,7 @@ public class MQ_IBM implements Handler{
 	        jmsMessage.writeBytes(request.getEntity().getBytes());
 	        
 	        final JMSProducer producer=producerContext.createProducer();
+	        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 	        final Destination dest=producerContext.createQueue(topic);
 	        producer.send(dest, jmsMessage);
 	        
@@ -138,7 +139,7 @@ public class MQ_IBM implements Handler{
 						logger.debug("settings {}: {}={}",name,key,value);
 					}
 				);
-				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*8).asInteger();
+				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*64).asInteger();
 				if (core>0 && evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
 					consumeService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
 					for(int i=1;i<=core;i++) {
