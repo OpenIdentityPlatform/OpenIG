@@ -116,7 +116,7 @@ public class MQ_Kafka implements Handler{
 		public void start() throws HeapException {
 			super.start();
 			if (evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
-				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*64).asInteger();
+				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*32).asInteger();
 				
 				consumeService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
 				for(int i=1;i<=core;i++) {
