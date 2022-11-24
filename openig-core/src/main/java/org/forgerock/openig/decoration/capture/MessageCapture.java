@@ -133,28 +133,30 @@ public class MessageCapture {
      *         one of {@link CapturePoint#FILTERED_RESPONSE} or {@link CapturePoint#RESPONSE}
      */
     void capture(final Context context, final Response response, final CapturePoint mode) {
-        StringWriter out = new StringWriter();
-        PrintWriter writer = new PrintWriter(out);
-        String id = context.getId();
-        switch (mode) {
-        case RESPONSE:
-            captureResponse(writer, response, id);
-            break;
-        case FILTERED_RESPONSE:
-            captureFilteredResponse(writer, response, id);
-            break;
-        default:
-            throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
-        }
-
-        // Prints the context if required
-        if (captureContext) {
-            writer.println("Context's content as JSON:");
-            captureContextAsJson(writer, context);
-        }
-
-        // Print the message
-        logger.info(out.toString());
+    	if (logger.isDebugEnabled()) {
+	        StringWriter out = new StringWriter();
+	        PrintWriter writer = new PrintWriter(out);
+	        String id = context.getId();
+	        switch (mode) {
+	        case RESPONSE:
+	            captureResponse(writer, response, id);
+	            break;
+	        case FILTERED_RESPONSE:
+	            captureFilteredResponse(writer, response, id);
+	            break;
+	        default:
+	            throw new IllegalArgumentException("The given mode is not accepted: " + mode.name());
+	        }
+	
+	        // Prints the context if required
+	        if (captureContext) {
+	            writer.println("Context's content as JSON:");
+	            captureContextAsJson(writer, context);
+	        }
+	
+	        // Print the message
+	        logger.debug(out.toString());
+    	}
     }
 
     private static void captureContextAsJson(final PrintWriter writer, final Context context) {

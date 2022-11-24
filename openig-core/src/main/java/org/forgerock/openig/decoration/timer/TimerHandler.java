@@ -55,9 +55,11 @@ class TimerHandler implements Handler {
                            @Override
                            public void run() {
                                timeWatch.stop();
-                               logger.info("Elapsed time: {} {}",
-                                           timeWatch.elapsed(timeUnit),
-                                           toSIAbbreviation(timeUnit));
+                               if (logger.isDebugEnabled()) {
+	                               logger.debug("Elapsed time: {} {}",
+	                                           timeWatch.elapsed(timeUnit),
+	                                           toSIAbbreviation(timeUnit));
+                               }
                            }
                        });
     }
