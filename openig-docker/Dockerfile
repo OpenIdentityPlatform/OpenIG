@@ -1,4 +1,4 @@
-FROM tomcat:9-jre8
+FROM tomcat:9-jre17
 
 MAINTAINER Open Identity Platform Community <open-identity-platform-openig@googlegroups.com>
 
@@ -9,7 +9,8 @@ ENV CATALINA_HOME=/usr/local/tomcat
 ENV OPENIG_USER="openig"
 ENV OPENIG_BASE=/var/openig
 ENV PATH=$CATALINA_HOME/bin:$PATH
-ENV CATALINA_OPTS="-XX:+UseG1GC -Xmx2048m -server"
+ENV MAX_MEMORY="1g"
+ENV CATALINA_OPTS="-server -XX:+UseG1GC -Xmx$MAX_MEMORY"
 
 WORKDIR $CATALINA_HOME
 
