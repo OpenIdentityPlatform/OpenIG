@@ -112,79 +112,78 @@ public class MQ_Kafka implements Handler{
         }
 
         ExecutorService consumeService = null;
+        ExecutorService produceService = null;
         @Override
 		public void start() throws HeapException {
 			super.start();
 			if (evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
 				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*32).asInteger();
 				
-				consumeService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
-				for(int i=1;i<=core;i++) {
-					consumeService.submit(  
-					    new Runnable() {
-							@Override
-							public void run() {
-								logger.info("start consumer");
-								final Properties propsConsumer = new Properties();
-								propsConsumer.setProperty("bootstrap.servers", evaluated.get("bootstrap.servers").defaultTo("localhost:9092").asString());
-								propsConsumer.setProperty("group.id", evaluated.get("group.id").defaultTo(Thread.currentThread().getName()).asString());
-								propsConsumer.setProperty("enable.auto.commit", evaluated.get("enable.auto.commit").defaultTo("true").asString());
-								propsConsumer.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-								propsConsumer.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-								for (Entry<String, Object> entry: evaluated.asMap(Object.class).entrySet()) {
-									if (!propsConsumer.containsKey(entry.getKey()) && entry.getValue()!=null) {
-										propsConsumer.setProperty(entry.getKey(),entry.getValue().toString());
-									}
-								} 
-								try (KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(propsConsumer)){
-								    consumer.subscribe(Arrays.asList(evaluated.get("topic.consume").required().asString()));
-									while (true) {
-								         for (ConsumerRecord<String, byte[]> record : consumer.poll(Duration.ofMillis(Long.MAX_VALUE))) {
-								        	 if (logger.isTraceEnabled() ) {
-								        		 logger.trace("consume {}",record);
-								             }
-								        	 try {
-									        	 final Request request=new Request();
-									        	 request.setMethod(evaluated.get("method").defaultTo("PUT").asString());
-									        	 request.setEntity(record.value());
-									        	 request.setUri(evaluated.get("uri").defaultTo("/"+name).asString());
-									        	 request.getHeaders().add("kafka-topic", record.topic());
-									        	 request.getHeaders().add("correlation-id", record.key()==null?UUID.randomUUID().toString():record.key());
-									        	 request.getHeaders().add("kafka-key", record.key());
-									        	 request.getHeaders().add("kafka-offset", ""+record.offset());
-									        	 request.getHeaders().add("kafka-timestamp", ""+record.timestamp());
-									        	 request.getHeaders().add("kafka-timestamp-date", ""+new Date(record.timestamp()));
-									        	 for (org.apache.kafka.common.header.Header header : record.headers()) {
-									        		 request.getHeaders().add(header.key(), new String(header.value(),"UTF-8"));
-									        	 } 
-									        	 
-									        	 if (HttpFrameworkServlet.getRootHandler()!=null) {
-										        	 HttpFrameworkServlet.getRootHandler().handle(new AttributesContext(new RootContext()), request)
-							                           .thenOnResult(new ResultHandler<Response>() {
-							                               @Override
-							                               public void handleResult(Response response) {
-							                               	logger.trace("process done");
-							                               }
-							                           })
-							                           .thenOnRuntimeException(new RuntimeExceptionHandler() {
-							                               @Override
-							                               public void handleRuntimeException(RuntimeException e) {
-							                                   logger.error("RuntimeException caught", e);
-							                               }
-							                           });
-							            		 }else {
-							            			 logger.info("process done: {}",request.getEntity().toString());
-							            		 }
-								        	 }catch (Exception e) {
-								        		 logger.error("error process message {}",e);
-											}
-								         }
-								     }
-								}
+				produceService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-producer-%d").build());
+				consumeService=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
+				consumeService.submit( 
+					() -> { 
+						logger.info("start consumer");
+						final Properties propsConsumer = new Properties();
+						propsConsumer.setProperty("bootstrap.servers", evaluated.get("bootstrap.servers").defaultTo("localhost:9092").asString());
+						propsConsumer.setProperty("group.id", evaluated.get("group.id").defaultTo(Thread.currentThread().getName()).asString());
+						propsConsumer.setProperty("enable.auto.commit", evaluated.get("enable.auto.commit").defaultTo("true").asString());
+						propsConsumer.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+						propsConsumer.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+						for (Entry<String, Object> entry: evaluated.asMap(Object.class).entrySet()) {
+							if (!propsConsumer.containsKey(entry.getKey()) && entry.getValue()!=null) {
+								propsConsumer.setProperty(entry.getKey(),entry.getValue().toString());
 							}
-					    }
-					);
-				}
+						} 
+						try (KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(propsConsumer)){
+						    consumer.subscribe(Arrays.asList(evaluated.get("topic.consume").required().asString()));
+							while (true) {
+						         for (ConsumerRecord<String, byte[]> record : consumer.poll(Duration.ofMillis(Long.MAX_VALUE))) {
+						        	 produceService.submit(() -> {
+						        		 if (logger.isTraceEnabled() ) {
+							        		 logger.trace("consume {}",record);
+							             }
+							        	 try {
+								        	 final Request request=new Request();
+								        	 request.setMethod(evaluated.get("method").defaultTo("PUT").asString());
+								        	 request.setEntity(record.value());
+								        	 request.setUri(evaluated.get("uri").defaultTo("/"+name).asString());
+								        	 request.getHeaders().add("kafka-topic", record.topic());
+								        	 request.getHeaders().add("correlation-id", record.key()==null?UUID.randomUUID().toString():record.key());
+								        	 request.getHeaders().add("kafka-key", record.key());
+								        	 request.getHeaders().add("kafka-offset", ""+record.offset());
+								        	 request.getHeaders().add("kafka-timestamp", ""+record.timestamp());
+								        	 request.getHeaders().add("kafka-timestamp-date", ""+new Date(record.timestamp()));
+								        	 for (org.apache.kafka.common.header.Header header : record.headers()) {
+								        		 request.getHeaders().add(header.key(), new String(header.value(),"UTF-8"));
+								        	 } 
+								        	 
+								        	 if (HttpFrameworkServlet.getRootHandler()!=null) {
+									        	 HttpFrameworkServlet.getRootHandler().handle(new AttributesContext(new RootContext()), request)
+						                           .thenOnResult(new ResultHandler<Response>() {
+						                               @Override
+						                               public void handleResult(Response response) {
+						                               	logger.trace("process done");
+						                               }
+						                           })
+						                           .thenOnRuntimeException(new RuntimeExceptionHandler() {
+						                               @Override
+						                               public void handleRuntimeException(RuntimeException e) {
+						                                   logger.error("RuntimeException caught", e);
+						                               }
+						                           });
+						            		 }else {
+						            			 logger.info("process done: {}",request.getEntity().toString());
+						            		 }
+							        	 }catch (Exception e) {
+							        		 logger.error("error process message {}",e);
+										}
+						        	 });
+						         }
+						     }
+						}
+					}
+				);
 			}else {
 				logger.warn("{} ignore \"topic.consume\"",name);
 			}
@@ -217,6 +216,15 @@ public class MQ_Kafka implements Handler{
 				} catch (InterruptedException e) {}
             	consumeService.shutdownNow();
             	consumeService=null;
+            }
+            
+            if (produceService!=null) {
+            	produceService.shutdown();
+            	try {
+            		produceService.awaitTermination(10, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {}
+            	produceService.shutdownNow();
+            	produceService=null;
             }
             
             if (handler.producer!=null) {
