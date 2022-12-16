@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.Properties;
 import java.util.UUID;
@@ -119,8 +121,8 @@ public class MQ_Kafka implements Handler{
 			if (evaluated.get("topic.consume")!=null && evaluated.get("topic.consume").asString()!=null && !evaluated.get("topic.consume").asString().isEmpty()) {
 				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*32).asInteger();
 				
-				produceService=Executors.newFixedThreadPool(core,new ThreadFactoryBuilder().setNameFormat(name+"-producer-%d").build());
-				consumeService=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
+				produceService=new ThreadPoolExecutor(core, core,0L, TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>(core*32000),new ThreadFactoryBuilder().setNameFormat(name+"-producer-%d").build());
+				consumeService=Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(name+"-consumer-%d").build());
 				consumeService.submit( 
 					() -> { 
 						logger.info("start consumer");
