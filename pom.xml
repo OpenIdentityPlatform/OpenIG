@@ -136,7 +136,7 @@
   <!-- Source Control -->
   <scm>
     <connection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com:OpenIdentityPlatform/OpenIG.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</developerConnection>
     <url>https://github.com/OpenIdentityPlatform/OpenIG</url>
     <tag>HEAD</tag>
   </scm>
