@@ -33,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -50,6 +51,9 @@ import org.forgerock.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 /**
  * A {@link TokenTransformationFilter} is responsible to transform a token issued by OpenAM
  * into a token of another type.
@@ -66,7 +70,9 @@ import org.slf4j.LoggerFactory;
  *             "from": "OPENIDCONNECT",
  *             "to": "SAML2",
  *             "instance": "oidc-to-saml",
- *             "amHandler": "#Handler"
+ *             "amHandler": "#Handler",
+ *             "cache-size": "${32000}",
+ *             "cache-ttl": "${0}",
  *         }
  *     }
  *     }
@@ -92,6 +98,10 @@ import org.slf4j.LoggerFactory;
  * <p>After transformation, the returned {@literal issued_token} (at the moment it is a {@code String} that contains
  * the XML of the generated SAML assertions), is made available in the {@link StsContext} for downstream handlers.
  *
+ * <p>The {@literal cache-size} attribute is an {@link Expression} specifying cache size,  default value 32000 
+ *
+ * <p>The {@literal cache-ttl} attribute is an {@link Expression} specifying cache ttl in ms, default value 0 ms (cache disabled)
+ *
  * <p>If errors are happening during the token transformation, the error response is returned as-is to the caller,
  * and informative messages are being logged for the administrator.
  */
@@ -104,6 +114,7 @@ public class TokenTransformationFilter implements Filter {
     private final Expression<String> idToken;
     private final String from;
     private final String to;
+    private final Cache<String,String> cache;
     /**
      * Constructs a new TokenTransformationFilter transforming the OpenID Connect id_token from {@code idToken}
      * into a SAML 2.0 Assertions structure (into {@code target}).
@@ -116,25 +127,39 @@ public class TokenTransformationFilter implements Filter {
                                      final URI endpoint,
                                      final Expression<String> idToken,
                                      final String from,
-                                     final String to) {
+                                     final String to,
+                                     final Cache<String,String> cache) {
         this.handler = checkNotNull(handler);
         this.endpoint = checkNotNull(endpoint);
         this.idToken = checkNotNull(idToken);
         this.from = checkNotNull(from);
         this.to = checkNotNull(to);
+        this.cache = cache;
     }
 
+    String resolvedIdToken;
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
 
-        final String resolvedIdToken = idToken.eval(bindings(context, request));
+        resolvedIdToken = idToken.eval(bindings(context, request));
         if (resolvedIdToken == null) {
             logger.debug("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
             return next.handle(new StsContext(context, ""), request);
         }
-        return handler.handle(context, transformationRequest(resolvedIdToken.replaceAll("Bearer ", ""))).thenAsync(processIssuedToken(context, request, next));
+        resolvedIdToken=resolvedIdToken.replaceAll("Bearer ", "");
+        if (cache!=null) {
+        	final String issued_token=cache.getIfPresent(resolvedIdToken);
+        	if (issued_token!=null) {
+        		if (logger.isTraceEnabled()) {
+        			logger.trace("get ftrom cache {}", issued_token);
+        		}
+        		return next.handle(new StsContext(context, issued_token), request);
+        	}
+        }
+        final Request transformationRequest=transformationRequest(resolvedIdToken);
+        return handler.handle(context, transformationRequest).thenAsync(processIssuedToken(context, request, next));
     }
 
     private AsyncFunction<Response, Response, NeverThrowsException> processIssuedToken(final Context context,
@@ -145,19 +170,18 @@ public class TokenTransformationFilter implements Filter {
             public Promise<Response, NeverThrowsException> apply(final Response response) {
                 try {
                     Map<String, Object> json = parseJsonObject(response);
+                    String token=null;
                     if (response.getStatus() != Status.OK) {
                         logger.debug("Server side error ({}, {}) while transforming id_token:{}",response.getStatus(),json.get("reason"),json.get("message"));
-                        return next.handle(new StsContext(context, ""), request);
+                    }else {
+                    	token = (String) json.get("issued_token");
                     }
-
-                    String token = (String) json.get("issued_token");
-                    if (token == null) {
-                        // Unlikely to happen, since this is an OK response
-                        logger.debug("STS issued_token is null");
-                        return next.handle(new StsContext(context, ""), request);
+                    if (token==null) {
+                    	token="";
                     }
-
-                    // Forward the initial request
+                    if (cache!=null) {
+                    	cache.put(resolvedIdToken, token);
+                    }
                     return next.handle(new StsContext(context, token), request); 
                 } catch (IOException e) {
                     logger.error("Can't get JSON back from {}", endpoint, e);
@@ -195,6 +219,8 @@ public class TokenTransformationFilter implements Filter {
     /** Creates and initializes a token transformation filter in a heap environment. */
     public static class Heaplet extends GenericHeaplet {
 
+    	Cache<String, String> cache = null;
+    	
         @Override
         public Object create() throws HeapException {
             Handler amHandler = config.get("amHandler").defaultTo(FORGEROCK_CLIENT_HANDLER_HEAP_KEY)
@@ -211,11 +237,19 @@ public class TokenTransformationFilter implements Filter {
             String to=config.get("to").as(evaluatedWithHeapProperties()).defaultTo("SAML2").asString();
             String instance = config.get("instance").as(evaluatedWithHeapProperties()).required().asString();
             
+            final Number cacheTtl=config.get("cache-ttl").as(evaluatedWithHeapProperties()).defaultTo(0).asNumber();
+            if (cacheTtl.longValue()>0) {
+	            cache=CacheBuilder.newBuilder()
+					.maximumSize(config.get("cache-size").as(evaluatedWithHeapProperties()).defaultTo(32000).asLong())
+					.expireAfterWrite(cacheTtl.longValue(), TimeUnit.MILLISECONDS)
+					.recordStats()
+					.build();
+            }
             if (config.get("username").as(evaluatedWithHeapProperties()).asString()==null)
-            	 return new TokenTransformationFilter(amHandler,transformationEndpoint(openamUri, realm, instance),idToken,from,to);
+            	 return new TokenTransformationFilter(amHandler,transformationEndpoint(openamUri, realm, instance),idToken,from,to,cache);
             return new TokenTransformationFilter(Handlers.chainOf(amHandler, new HeadlessAuthenticationFilter(amHandler,openamUri,realm,ssoTokenHeader,config.get("username").as(evaluatedWithHeapProperties()).asString(),config.get("password").as(evaluatedWithHeapProperties()).asString())),
                                                  transformationEndpoint(openamUri, realm, instance),
-                                                 idToken,from,to);
+                                                 idToken,from,to,cache);
         }
 
         private static URI transformationEndpoint(final URI baseUri, final String realm, final String instance)

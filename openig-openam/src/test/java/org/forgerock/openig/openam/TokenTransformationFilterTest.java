@@ -163,7 +163,7 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2");
+                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2",null);
 
         Request request = new Request();
         filter.filter(context, request, next);
@@ -188,7 +188,7 @@ public class TokenTransformationFilterTest {
         TokenTransformationFilter filter =
                 new TokenTransformationFilter(transformationHandler,
                                               new URI("http://openam.example.com/"),
-                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2");
+                                              Expression.valueOf("${attributes.id_token}", String.class),"OPENIDCONNECT","SAML2",null);
 
         Request request = new Request();
         assertNull(filter.filter(context, request, next));
