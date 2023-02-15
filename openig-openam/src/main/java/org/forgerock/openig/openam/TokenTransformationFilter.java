@@ -137,13 +137,12 @@ public class TokenTransformationFilter implements Filter {
         this.cache = cache;
     }
 
-    String resolvedIdToken;
     @Override
     public Promise<Response, NeverThrowsException> filter(final Context context,
                                                           final Request request,
                                                           final Handler next) {
 
-        resolvedIdToken = idToken.eval(bindings(context, request));
+    	String resolvedIdToken = idToken.eval(bindings(context, request));
         if (resolvedIdToken == null) {
             logger.debug("OpenID Connect id_token expression ({}) has evaluated to null", idToken);
             return next.handle(new StsContext(context, ""), request);
@@ -159,10 +158,11 @@ public class TokenTransformationFilter implements Filter {
         	}
         }
         final Request transformationRequest=transformationRequest(resolvedIdToken);
-        return handler.handle(context, transformationRequest).thenAsync(processIssuedToken(context, request, next));
+        return handler.handle(context, transformationRequest).thenAsync(processIssuedToken(resolvedIdToken, context, request, next));
     }
 
-    private AsyncFunction<Response, Response, NeverThrowsException> processIssuedToken(final Context context,
+    private AsyncFunction<Response, Response, NeverThrowsException> processIssuedToken(final String resolvedIdToken,
+    																				   final Context context,
                                                                                        final Request request,
                                                                                        final Handler next) {
         return new AsyncFunction<Response, Response, NeverThrowsException>() {
