@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.openidentityplatform.openig</groupId>
     <artifactId>openig-project</artifactId>
-    <version>5.1.1-SNAPSHOT</version>
+    <version>5.1.1</version>
   </parent>
   <artifactId>openig-saml</artifactId>
   <name>OpenIG SAML Support</name>
