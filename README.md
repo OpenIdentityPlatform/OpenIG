@@ -56,6 +56,7 @@ mvn install -f OpenIG
 ```bash
 mvn -f OpenIG/openig-war clean package cargo:run
 ```
+The next step is then to go to [http://localhost:8080](http://localhost:8080) where you'll see the OpenIG welcome page.
 
 ## How-To Guides
 
@@ -65,8 +66,6 @@ mvn -f OpenIG/openig-war clean package cargo:run
 * [How To Protect Web Services with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Protect-Web-Services-with-OpenIG)
 * [How To Run OpenIG in Kubernetes](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Run-OpenIG-in-Kubernetes)
 * [How to setup ICAP Filter for DLP and Antivirus protection with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG)
-
-The next step is then to go to [http://localhost:8080](http://localhost:8080) where you'll see the OpenIG welcome page.
 
 ## Support and Mailing List Information
 * OpenIG Community Wiki: https://github.com/OpenIdentityPlatform/OpenIG/wiki
