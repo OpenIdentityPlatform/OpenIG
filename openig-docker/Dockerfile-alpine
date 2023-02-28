@@ -4,7 +4,6 @@ MAINTAINER Open Identity Platform Community <open-identity-platform-openig@googl
 
 ARG VERSION @project_version@
 
-
 ENV CATALINA_HOME=/usr/local/tomcat
 ENV OPENIG_USER="openig"
 ENV OPENIG_BASE=/var/openig
@@ -13,15 +12,13 @@ ENV CATALINA_OPTS="-XX:+UseG1GC -Xmx2048m -server"
 
 WORKDIR $CATALINA_HOME
 
-RUN apk add --update --no-cache --virtual curl builddeps unzip bash && apk upgrade --update --no-cache 
-
-RUN rm -rf  $CATALINA_HOME/webapps/* \
+RUN apk add --update --no-cache --virtual curl builddeps unzip bash && apk upgrade --update --no-cache \
+ && rm -rf  $CATALINA_HOME/webapps/* \
  && curl -L https://github.com/OpenIdentityPlatform/OpenIG/releases/download/$VERSION/OpenIG-$VERSION.war --output $CATALINA_HOME/webapps/ROOT.war  \
  && adduser -S -u 1001 -G root $OPENIG_USER \
  && install -d -o $OPENIG_USER $OPENIG_BASE \
- && chown -R $OPENIG_USER $CATALINA_HOME/webapps
-
-RUN  apk del unzip && rm -rf /var/cache/apk/* 
+ && chown -R $OPENIG_USER $CATALINA_HOME/webapps \
+ && apk del unzip && rm -rf /var/cache/apk/*
 
 USER $OPENIG_USER
 
