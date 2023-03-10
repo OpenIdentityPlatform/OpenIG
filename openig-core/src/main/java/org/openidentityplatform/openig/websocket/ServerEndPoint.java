@@ -1,28 +1,17 @@
 package org.openidentityplatform.openig.websocket;
 
+import org.forgerock.http.protocol.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.websocket.*;
+import javax.websocket.ClientEndpointConfig.Builder;
+import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.CloseReason;
-import javax.websocket.ContainerProvider;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.MessageHandler;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.ClientEndpointConfig.Builder;
-import javax.websocket.server.ServerEndpoint;
-
-import org.forgerock.http.header.GenericHeader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @ServerEndpoint(value = "/{level1}",configurator = Configurator.class)
@@ -58,8 +47,12 @@ public class ServerEndPoint {
 				@Override
         	    public void beforeRequest(Map<String, List<String>> headers) {
 					for (Entry<String,Object> entry : principal.request.getHeaders().entrySet()) {
-						if (entry.getKey().toLowerCase().startsWith("cookie")||entry.getKey().toLowerCase().startsWith("x-")||entry.getKey().equalsIgnoreCase("origin")||entry.getKey().equalsIgnoreCase("Authorization")||entry.getKey().toLowerCase().startsWith("sec-websocket-")) {
-							headers.put(entry.getKey(), ((GenericHeader)entry.getValue()).getValues());
+						if (entry.getKey().toLowerCase().startsWith("cookie")
+								||entry.getKey().toLowerCase().startsWith("x-")
+								||entry.getKey().equalsIgnoreCase("origin")
+								||entry.getKey().equalsIgnoreCase("Authorization")
+								||entry.getKey().toLowerCase().startsWith("sec-websocket-")) {
+							headers.put(entry.getKey(), ((Header)entry.getValue()).getValues());
 						}
 					}
         	    }
