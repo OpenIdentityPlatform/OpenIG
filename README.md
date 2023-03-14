@@ -66,6 +66,7 @@ The next step is then to go to [http://localhost:8080](http://localhost:8080) wh
 * [How To Protect Web Services with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Protect-Web-Services-with-OpenIG)
 * [How To Run OpenIG in Kubernetes](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Run-OpenIG-in-Kubernetes)
 * [How to setup ICAP Filter for DLP and Antivirus protection with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG)
+* [How to Protect WebSocket Connection with OpenAM and OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-Protect-WebSocket-Connection-with-OpenAM-and-OpenIG)
 
 ## Support and Mailing List Information
 * OpenIG Community Wiki: https://github.com/OpenIdentityPlatform/OpenIG/wiki
