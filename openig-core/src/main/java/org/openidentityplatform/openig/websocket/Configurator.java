@@ -11,7 +11,7 @@ public class Configurator extends ServerEndpointConfig.Configurator {
 
 	@Override
 	public String getNegotiatedSubprotocol(List<String> supported, List<String> requested) {
-		return super.getNegotiatedSubprotocol(supported, requested);
+		return super.getNegotiatedSubprotocol(requested, requested);
 	}
 
 	@Override
