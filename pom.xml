@@ -1079,7 +1079,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>14.8.3</version>
+            <version>14.8.5-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

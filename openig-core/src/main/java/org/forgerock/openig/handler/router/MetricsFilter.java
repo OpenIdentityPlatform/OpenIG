@@ -61,7 +61,7 @@ class MetricsFilter implements Filter {
                            public void handleResult(final Response result) {
                                // Elapsed time is computed in microseconds
                                long elapsed = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - start);
-                               metrics.getAccumulatedResponseTime().inc(elapsed);
+                               metrics.getAccumulatedResponseTime().inc(elapsed==0?1:elapsed);
                                metrics.getResponseTime().update(elapsed);
 
                                metrics.getThroughput().mark();
