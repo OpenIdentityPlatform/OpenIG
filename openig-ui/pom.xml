@@ -69,7 +69,7 @@
             <phase>initialize</phase>
             <configuration>
               <nodeVersion>v20.12.2</nodeVersion>
-              <npmVersion>6.12.0</npmVersion>
+              <npmVersion>10.5.2</npmVersion>
             </configuration>
           </execution>
           <execution>
@@ -79,7 +79,7 @@
             </goals>
             <phase>initialize</phase>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>install --legacy-peer-deps</arguments>
             </configuration>
           </execution>
           <execution>
