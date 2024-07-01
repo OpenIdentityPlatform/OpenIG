@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Portions Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='gateway-servlet'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>Gateway Servlet</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>Gateway Servlet</refname>
+  <refpurpose>entry point for all incoming requests</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Required configuration</primary>
+   <secondary>Gateway servlet</secondary>
+  </indexterm>
+  <para>The gateway servlet is the entry point for all incoming requests. It
+  is responsible for initializing a <link xlink:href="reference#heap-objects"
+  xlink:role="http://docbook.org/xlink/role/olink">heap of objects</link>, and
+  dispatching all requests to a configured servlet (which is itself a heap
+  object). The configuration of the gateway servlet is loaded from a
+  JSON-encoded configuration file, typically located at
+  <filename>~/.ForgeRock/OpenIG/config.json</filename>.</para>
+ </refsect1>
+ <refsect1>
+  <title>Usage</title>
+  <programlisting language="javascript">{
+     "heap": { <replaceable>heap-configuration object</replaceable> },
+     "servletObject": string
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Properties</title>
+  <variablelist>
+   <varlistentry>
+    <term><code>"heap"</code>: <emphasis>object, required</emphasis></term>
+    <listitem>
+     <para>The <link xlink:href="reference#heap-objects"
+     xlink:role="http://docbook.org/xlink/role/olink">heap object</link>
+     configuration.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><code>"servletObject"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The name of the servlet heap object to dispatch all requests to.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>Javadoc</title>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/gateway/GatewayServlet.html"
+  >org.forgerock.openig.gateway.GatewayServlet</link></para>
+ </refsect1>
+</refentry>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! src/main/resources/legal-notices/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright 2011-2012 ForgeRock AS
+  !    
+-->
+<chapter xml:id='chap-quickstart'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <title>Getting Started</title>
+
+ <para>This chapter provides instructions to get OpenIG up and running on
+ Jetty, configured to execute the WordPress samples at our hosted WordPress
+ deployment. This allows you to quickly see how OpenIG works and provides hands
+ on experience with a few key features. If you are looking for more general
+ installation and configuration instructions for your deployment or would
+ like to use a container other than Jetty, start with the chapter on <link
+ xlink:href="gateway-guide#chap-install"
+ xlink:role="http://docbook.org/xlink/role/olink"><citetitle>Installing
+ OpenIG</citetitle></link>.</para>
+
+ <section>
+  <title>Before You Begin</title>
+
+  <para>For the remainder of this chapter, <literal>$HOME</literal> is the
+  location of the home directory of the user running the web application
+  container, where Jetty, OpenIG and the Samples are unpacked.</para>
+
+  <para>Make sure you have the correct Java environment installed. If necessary,
+  download and install <link xlink:show="new"
+  xlink:href="http://www.oracle.com/technetwork/java/javase/downloads/jdk6-jsp-136632.html"
+  >Sun Java SE JDK 6 Update 21</link> or later. At this time these are the only
+  versions of any JDK supported with OpenIG.</para>
+ </section>
+
+ <section>
+  <title>Installation Steps</title>
+
+  <procedure>
+   <step>
+    <para><link xlink:href="http://www.forgerock.org/openig.html"
+    xlink:show="new">Download</link> and if necessary unpack the gateway
+    .war file.</para>
+   </step>
+
+   <step>
+    <para>Download and unzip the <link xlink:show="new"
+    xlink:href="http://openig.forgerock.org/forgerock-sample-configs.zip">OpenIG
+    sample configuration files</link>.</para>
+   </step>
+
+   <step>
+    <para>Download and unzip <link xlink:show="new"
+    xlink:href="http://dist.codehaus.org/jetty/jetty-hightide-7.1.6/jetty-hightide-7.1.6.v20100715.zip"
+    >Jetty 7.1.6 Hightide</link>.</para>
+   </step>
+
+   <step>
+    <para>Copy the OpenIG .war file as <filename>root.war</filename> to the
+    <filename>webapps/</filename> directory in Jetty.</para>
+
+    <para>When copied to this location along with the
+    <filename>root.xml</filename> file below, Jetty automatically deploys OpenIG
+    on startup.</para>
+
+    <screen>$ cp $HOME/gateway-*.war $HOME/jetty-hightide-7.1.6/webapps/root.war</screen>
+   </step>
+
+   <step>
+    <para>Copy the <filename>WordPressLogin.json</filename> gateway
+    configuration file to
+    <filename>$HOME/.ForgeRock/OpenIG/config.json</filename>. By default,
+    OpenIG looks for <filename>config.json</filename> in the
+    <filename>$HOME/.ForgeRock/OpenIG/</filename> directory.</para>
+
+    <screen>$ cp $HOME/forgerock-sample-configs/WordPressLogin.json
+ $HOME/.ForgeRock/OpenIG/config.json</screen>
+   </step>
+
+   <step>
+    <para>Create
+    <filename>$HOME/jetty-hightide-7.1.6/contexts/root.xml</filename> with the
+    following content. This tells Jetty to deploy OpenIG in the root
+    context:</para>
+
+    <programlisting language="xml"
+    >&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;
+&lt;!DOCTYPE Configure PUBLIC &quot;-//Jetty//Configure//EN&quot;
+  &quot;http://www.eclipse.org/jetty/configure.dtd&quot;&gt;
+&lt;Configure class=&quot;org.eclipse.jetty.webapp.WebAppContext&quot;&gt;
+    &lt;Set name=&quot;contextPath&quot;&gt;/&lt;/Set&gt;
+    &lt;Set name=&quot;war&quot;&gt;&lt;SystemProperty name=&quot;jetty.home&quot;
+      default=&quot;.&quot;/&gt;/webapps/root.war&lt;/Set&gt;
+    &lt;Set name=&quot;extractWAR&quot;&gt;true&lt;/Set&gt;
+    &lt;Set name=&quot;copyWebDir&quot;&gt;false&lt;/Set&gt;
+    &lt;Set name=&quot;defaultsDescriptor&quot;&gt;&lt;SystemProperty name=&quot;jetty.home&quot;
+      default=&quot;.&quot;/&gt;/etc/webdefault.xml&lt;/Set&gt;
+&lt;/Configure&gt;</programlisting> 
+   </step>
+
+   <step>
+    <para>If you are managing multiple
+    applications in one domain you must turn on domain cookies in Jetty. This
+    can be done by adding the following property to
+    <filename>$JETTY_HOME/contexts/root.xml</filename> or to
+    <filename>$JETTY_HOME/etc/jetty.xml</filename>. Note that any changes to
+    <filename>jetty.xml</filename> impact all web applications running in the
+    container.</para>
+
+    <programlisting language="xml">&lt;Get name="sessionHandler"&gt;
+    &lt;Get name="sessionManager"&gt;
+        &lt;Set name="sessionDomain"&gt;.forgerock.com&lt;Set&gt;
+    &lt;Get&gt;
+&lt;Get&gt;</programlisting>
+   </step>
+
+   <step>
+    <para>Start Jetty in the background:</para>
+
+    <screen>$ $HOME/jetty-hightide-7.1.6/bin/jetty.sh start</screen>
+
+    <para>Or start Jetty in the foreground:</para>
+
+    <screen>$ java -jar $HOME/jetty-hightide-7.1.6/start.jar</screen>
+   </step>
+  </procedure>
+ </section>
+
+ <section>
+  <title>Configuration Steps</title>
+
+  <para>So far you have deployed the gateway web application in the root
+  context of Jetty on port 8080. Since the gateway is a reverse proxy you must
+  make sure all traffic from your browser to
+  <literal>http://demo.forgerock.com:8080/wordpress/</literal> goes through the
+  gateway. The quickest way to do this is to add an entry to your
+  <filename>/etc/hosts</filename> file on UNIX systems or
+  <filename>%SystemRoot%\system32\drivers\etc\hosts</filename> on Windows. See
+  <link xlink:show="new" xlink:href="http://en.wikipedia.org/wiki/Hosts_(file)"
+  >Wikipedia</link> for more information on host files. If you are running
+  OpenIG and the browser on the same host, add this entry to the hosts file on
+  the OpenIG host.</para>
+
+  <programlisting>127.0.0.1 demo.forgerock.com</programlisting>
+
+  <para>If you are running the browser and OpenIG on separate hosts, you must
+  add the IP address of the host running OpenIG. For example, if OpenIG is
+  running on a host with IP Address of 10.0.1.5:</para>
+
+  <programlisting>10.0.1.5 demo.forgerock.com</programlisting>
+
+  <tip>
+   <para>Some browsers cache IP address resolutions, even after clearing all
+   browsing data. It might be necessary to restart the browser if you are
+   changing IP addresses of named hosts. The simplest way to make sure you have
+   configured your DNS or host settings properly is to stop OpenIG and
+   make sure you cannot reach the target application. If you can still reach
+   it, you should double check your host settings. You should also make sure
+   your name resolution is configured to check your host files before DNS.
+   This configuration can be found in <filename>/etc/nsswitch.conf</filename>
+   for most UNIX systems. Make sure <literal>files</literal> is listed before
+   <literal>dns</literal>.</para>
+  </tip>
+ </section>
+
+ <section>
+  <title>Try It Out</title>
+  <para><link xlink:href="http://demo.forgerock.com:8080/wordpress/"
+  >http://demo.forgerock.com:8080/wordpress</link> should take you to the
+  WordPress portal hosted at ForgeRock. When you click the login link, you are
+  automatically logged in by OpenIG with the user name
+  <literal>george</literal>.</para>
+
+  <para>What's happening behind the scenes?</para>
+
+  <para>When your browser goes to
+  <literal>http://demo.forgerock.com:8080/wordpress/</literal>, it is actually
+  connecting to OpenIG deployed on Jetty. OpenIG is configured to proxy all
+  traffic it receives to the target application at
+  <literal>http://demo.forgerock.com:8080/wordpress/</literal>. For this
+  example, OpenIG is watching for the login page from WordPress. When it sees
+  the login page, it creates and POSTs the login form for WordPress on behalf
+  of the user. Since this is just a sample, the credentials for the user are
+  hard coded in the gateway configuration file. In a real deployment, the
+  credentials may come from a database, directory, flat file, HTTP headers,
+  SAML assertion,or an OpenAM policy agent.</para>
+ </section>
+</chapter>

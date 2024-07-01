@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Portions Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='ExceptionFilter'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>ExceptionFilter</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>ExceptionFilter</refname>
+  <refpurpose>catch exceptions when handling request</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Filters</primary>
+   <secondary>ExceptionFilter</secondary>
+  </indexterm>
+  <para>Catches any exceptions thrown during handling of a request. This allows
+  friendlier error pages to be displayed than would otherwise be displayed by
+  the container. Caught exceptions are logged with a log level of
+  <literal>WARNING</literal> and the exchange is diverted to the specified
+  exception handler.</para>
+ </refsect1>
+ <refsect1>
+  <title>Usage</title>
+  <programlisting language="javascript">{
+     "name": string,
+     "type": "ExceptionFilter",
+     "config": {
+         "handler": string,
+     }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Properties</title>
+  <variablelist>
+   <varlistentry>
+    <term><code>"handler"</code>: <emphasis>string, required</emphasis></term>
+    <listitem>
+     <para>The name of the handler heap object to dispatch to in the event of
+     caught exceptions.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>Javadoc</title>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/filter/ExceptionFilter.html"
+  >org.forgerock.openig.filter.ExceptionFilter</link></para>
+ </refsect1>
+</refentry>
