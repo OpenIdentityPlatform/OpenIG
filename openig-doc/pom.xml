@@ -294,5 +294,83 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>man-pages</id>
+      <activation>
+        <os><family>unix</family></os>
+        <jdk>8</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.openidentityplatform.commons</groupId>
+            <artifactId>doc-maven-plugin</artifactId>
+            <version>${commons-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>build-man-pages</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>process</goal>
+                  <goal>build</goal>
+                  <goal>release</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <projectName>OpenAM</projectName>
+              <projectVersion>${project.version}</projectVersion>
+              <releaseVersion>${project.version}</releaseVersion>
+              <buildReleaseZip>true</buildReleaseZip>
+              <googleAnalyticsId />
+              <isDraftMode>no</isDraftMode>
+              <formats combine.self="override">
+                <format>man</format>
+                <format>epub</format>
+                <format>html</format>
+                <format>pdf</format>
+                <format>webhelp</format>
+                <format>xhtml5</format>
+              </formats>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>zip-docs</id>
+                <phase>package</phase>
+                <configuration>
+                  <target>
+                    <property name="compress_formats" value="webhelp,xhtml,html"/>
+                    <ant antfile="${basedir}/src/main/ant/zip.xml">
+                      <target name="docs"/>
+                    </ant>>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>ant-contrib</groupId>
+                <artifactId>ant-contrib</artifactId>
+                <version>${ant.contrib.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                  </exclusion>
+                </exclusions>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
