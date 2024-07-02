@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Portions Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='Patterns'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>Patterns</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>Patterns</refname>
+  <refpurpose>regular expression patterns</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Expressions</primary>
+   <secondary>Patterns</secondary>
+  </indexterm>
+  <para>Patterns in configuration parameters and expressions use the standard
+  Java regular expression <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  >Pattern</link> class. For more information on regular expressions, see
+  Oracle's <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  >tutorial on Regular Expressions</link>.</para>
+ </refsect1>
+ <refsect1>
+  <title>Pattern Templates</title>
+  <para>A regular expression pattern template expresses a transformation to be
+  applied for a matching regular expression pattern. It may contain references
+  to <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg"
+  >capturing groups</link> within the match result. Each occurrence of
+  <literal>$g</literal> (where <replaceable>g</replaceable> is an integer value)
+  is substituted by the indexed capturing group in a match result. Capturing
+  group zero <literal>"$0"</literal> denotes the entire pattern match. A dollar
+  sign or numeral literal immediately following a capture group reference can
+  be included as a literal in the template by preceding it with a backslash (
+  <literal>\</literal> ). Backslash itself must be also escaped in this
+  manner.</para>
+ </refsect1>
+ <refsect1>
+  <title>See Also</title>
+  <para>Java <link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html"
+  >Pattern</link> class</para>
+  <para><link xlink:show="new"
+  xlink:href="http://download.oracle.com/javase/tutorial/essential/regex/index.html"
+  >Regular Expressions tutorial</link></para>
+ </refsect1>
+</refentry>
