@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ! CCPL HEADER START
+  !
+  ! This work is licensed under the Creative Commons
+  ! Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+  ! To view a copy of this license, visit
+  ! http://creativecommons.org/licenses/by-nc-nd/3.0/
+  ! or send a letter to Creative Commons, 444 Castro Street,
+  ! Suite 900, Mountain View, California, 94041, USA.
+  !
+  ! You can also obtain a copy of the license at
+  ! trunk/legal/CC-BY-NC-ND.txt.
+  ! See the License for the specific language governing permissions
+  ! and limitations under the License.
+  !
+  ! If applicable, add the following below this CCPL HEADER, with the fields
+  ! enclosed by brackets "[]" replaced with your own identifying information:
+  !      Portions Copyright [yyyy] [name of copyright owner]
+  !
+  ! CCPL HEADER END
+  !
+  !      Copyright © 2010–2011 ApexIdentity Inc. All rights reserved.
+  !      Portions Copyright 2012 ForgeRock AS
+  !    
+-->
+<refentry xml:id='ConsoleLogSink'
+ xmlns='http://docbook.org/ns/docbook'
+ version='5.0' xml:lang='en'
+ xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+ xsi:schemaLocation='http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd'
+ xmlns:xlink='http://www.w3.org/1999/xlink'
+ xmlns:xinclude='http://www.w3.org/2001/XInclude'>
+ <refmeta>
+  <refentrytitle>ConsoleLogSink</refentrytitle><manvolnum>5</manvolnum>
+ </refmeta>
+ <refnamediv>
+  <refname>ConsoleLogSink</refname>
+  <refpurpose>log to standard error</refpurpose>
+ </refnamediv>
+ <refsect1>
+  <title>Description</title>
+  <indexterm>
+   <primary>Miscellaneous Heap Objects</primary>
+   <secondary>ConsoleLogSink</secondary>
+  </indexterm>
+  <para>A log sink that writes log entries to the standard error stream.</para>
+ </refsect1>
+ <refsect1>
+  <title>Usage</title>
+  <programlisting language="javascript">{
+     "name": string,
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": string
+     }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Properties</title>
+  <variablelist>
+   <varlistentry>
+    <term><code>"level"</code>: <emphasis>string, optional</emphasis></term>
+    <listitem>
+     <para>The level of log entries to display in the console. Must be one of:
+     <literal>OFF</literal>, <literal>ERROR</literal>,
+     <literal>WARNING</literal>, <literal>INFO</literal>,
+     <literal>CONFIG</literal>, <literal>STAT</literal>,
+     <literal>DEBUG</literal>, <literal>TRACE</literal>, <literal>ALL</literal>.
+     Default: <literal>INFO</literal>.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+ <refsect1>
+  <title>Example</title>
+  <programlisting language="javascript">{
+     "name": "LogSink",
+     "comment": "Default sink for logging information.",
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": "DEBUG" 
+     }
+}</programlisting>
+ </refsect1>
+ <refsect1>
+  <title>Javadoc</title>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/log/ConsoleLogSink.html"
+  >org.forgerock.openig.log.ConsoleLogSink</link></para>
+  <para><link xlink:show="new"
+  xlink:href="http://openig.forgerock.org/apidocs/org/forgerock/openig/log/LogLevel.html"
+  >org.forgerock.openig.log.LogLevel</link></para>
+ </refsect1>
+</refentry>
