@@ -44,6 +44,8 @@
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
+	<commons-plugin.version>2.1.4</commons-plugin.version>
+	<ant.contrib.version>1.0b3</ant.contrib.version>
 	<java.surefire.options>-server</java.surefire.options>
   </properties>
 
