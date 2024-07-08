@@ -5,7 +5,6 @@
 [![Issues](https://img.shields.io/github/issues/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 [![Last commit](https://img.shields.io/github/last-commit/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/commits/master)
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md)
-[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/OpenIdentityPlatform/OpenIG)
 [![Top language](https://img.shields.io/github/languages/top/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG)
 [![Code size in bytes](https://img.shields.io/github/languages/code-size/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG)
 
@@ -23,13 +22,14 @@ OpenIG works together with [OpenAM](https://github.com/OpenIdentityPlatform/Open
 modify the target application or the container that it runs in.
 
 * Support for identity standards ([OAuth 2.0](https://tools.ietf.org/html/rfc6749), [OpenID Connect](http://openid.net/specs/openid-connect-core-1_0.html), [SAML 2.0](http://saml.xml.org/saml-specifications))
+* Rate Limiting and Throttling
+* ICAP Antivirus/DLP protection
 * Application and API gateway concept
 * Prepackaged SAML 2.0-based federation
 * Password capture and replay
 * Works with any identity provider, including OpenAM
 * Single Sign-On and Single Log-Out
 * 100% open source
-
 
 ## License
 This project is licensed under the [Common Development and Distribution License (CDDL)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md). 
@@ -48,7 +48,6 @@ git config --system core.longpaths true
 
 ```bash
 git clone --recursive  https://github.com/OpenIdentityPlatform/OpenIG.git
-mvn -DskipTests -Dmaven.javadoc.skip=true install -f OpenIG
 mvn install -f OpenIG
 ```
 
@@ -58,25 +57,14 @@ mvn -f OpenIG/openig-war clean package cargo:run
 ```
 The next step is then to go to [http://localhost:8080](http://localhost:8080) where you'll see the OpenIG welcome page.
 
-## How-To Guides
-
-* [Run OpenIG from Docker](https://hub.docker.com/r/openidentityplatform/openig/)
-* [How to Integrate OpenIG and Message Brokers](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-Integrate-OpenIG-and-Message-Brokers)
-* [How To Protect Kubernetes Services With OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Protect-Kubernetes-Services-With-OpenIG)
-* [How To Protect Web Services with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Protect-Web-Services-with-OpenIG)
-* [How To Run OpenIG in Kubernetes](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-To-Run-OpenIG-in-Kubernetes)
-* [How to setup ICAP Filter for DLP and Antivirus protection with OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG)
-* [How to Protect WebSocket Connection with OpenAM and OpenIG](https://github.com/OpenIdentityPlatform/OpenIG/wiki/How-to-Protect-WebSocket-Connection-with-OpenAM-and-OpenIG)
-
-## Support and Mailing List Information
-* OpenIG Community Wiki: https://github.com/OpenIdentityPlatform/OpenIG/wiki
-* OpenIG Community Mailing List: open-identity-platform-openig@googlegroups.com
-* OpenIG Community Archive: https://groups.google.com/d/forum/open-identity-platform-openig
-* OpenIG Community on Gitter: https://gitter.im/OpenIdentityPlatform/OpenIG
-* OpenIG Commercial support RFP: support@3a-systems.ru (English, Russian)
+## Support
+* OpenIG Community [documentation](https://github.com/OpenIdentityPlatform/OpenIG/wiki)
+* OpenIG Community [discussions](https://github.com/OpenIdentityPlatform/OpenIG/discussions)
+* OpenIG Community [issues](https://github.com/OpenIdentityPlatform/OpenIG/issues)
+* OpenIG [commercial support](https://github.com/OpenIdentityPlatform/.github/wiki/Approved-Vendor-List)
 
 ## Contributing
 Please, make [Pull request](https://github.com/OpenIdentityPlatform/OpenIG/pulls)
 
-## Thanks for OpenIG
+## Thanks 🥰
 * Forgerock OpenIG
