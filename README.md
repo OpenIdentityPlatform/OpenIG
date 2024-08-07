@@ -63,8 +63,12 @@ The next step is then to go to [http://localhost:8080](http://localhost:8080) wh
 * OpenIG Community [issues](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 * OpenIG [commercial support](https://github.com/OpenIdentityPlatform/.github/wiki/Approved-Vendor-List)
 
+## Thanks 🥰
+* Forgerock OpenIG
+
 ## Contributing
 Please, make [Pull request](https://github.com/OpenIdentityPlatform/OpenIG/pulls)
 
-## Thanks 🥰
-* Forgerock OpenIG
+<a href="https://github.com/OpenIdentityPlatform/OpenIG/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=OpenIdentityPlatform/OpenIG" />
+</a>
