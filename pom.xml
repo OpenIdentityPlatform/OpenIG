@@ -20,7 +20,7 @@
   <groupId>org.openidentityplatform.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>5.2.4-SNAPSHOT</version>
+  <version>5.2.4</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -139,7 +139,7 @@
     <connection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</connection>
     <developerConnection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</developerConnection>
     <url>https://github.com/OpenIdentityPlatform/OpenIG</url>
-    <tag>HEAD</tag>
+    <tag>5.2.4</tag>
   </scm>
   
   <modules>

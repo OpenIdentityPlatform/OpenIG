@@ -20,7 +20,7 @@
   <parent>
     <artifactId>openig-project</artifactId>
     <groupId>org.openidentityplatform.openig</groupId>
-    <version>5.2.4-SNAPSHOT</version>
+    <version>5.2.4</version>
   </parent>
 
   <artifactId>openig-doc</artifactId>
@@ -343,10 +343,10 @@
                 <phase>package</phase>
                 <configuration>
                   <target>
-                    <property name="compress_formats" value="webhelp,xhtml,html"/>
+                    <property name="compress_formats" value="webhelp,xhtml,html" />
                     <ant antfile="${basedir}/src/main/ant/zip.xml">
-                      <target name="docs"/>
-                    </ant>>
+                      <target name="docs" />
+                    </ant>&gt;
                   </target>
                 </configuration>
                 <goals>
