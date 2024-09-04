@@ -54,6 +54,8 @@ jobs:
           MAVEN_OPTS: -Dhttps.protocols=TLSv1.2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -Dmaven.wagon.http.retryHandler.count=10
         if: ${{ github.event.workflow_run.event=='push' && env.MAVEN_USERNAME!='' && env.MAVEN_PASSWORD!=''}}
         run: mvn --batch-mode --errors --update-snapshots -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} deploy --file pom.xml
+      - name: Build Javadoc
+        run: mvn javadoc:aggregate -pl '!openig-war' -pl '!openig-ui'
       - name: Upload artifacts OpenIG Server Only Component
         uses: actions/upload-artifact@v4
         with:
@@ -104,6 +106,7 @@ jobs:
           cd doc.openidentityplatform.org
           rm -rf ${REPO_NAME_LC}
           cp -R ../${SITE_DOC_FOLDER}/target/docbkx/bootstrap ../doc.openidentityplatform.org/${REPO_NAME_LC}
+          cp -R ../target/site/apidocs ../doc.openidentityplatform.org/${REPO_NAME_LC}
           git add -A
           git commit -a -m "upload ${{github.event.repository.name}} docs after deploy ${{ github.sha }}"
           git push --force https://github.com/OpenIdentityPlatform/doc.openidentityplatform.org.git
