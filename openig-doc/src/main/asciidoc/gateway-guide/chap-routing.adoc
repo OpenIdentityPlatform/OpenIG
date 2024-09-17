@@ -1,0 +1,132 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-routing]
+==  Configuring Routes
+
+Other tutorials in this guide demonstrate how to use routes so that you can change the configuration without restarting OpenIG. This chapter takes a closer look at `Router` and `Route` configurations, further described in xref:../reference/handlers-conf.adoc#Router[Router(5)] in the _Configuration Reference_ and xref:../reference/handlers-conf.adoc#Route[Route(5)] in the _Configuration Reference_ . In this chapter, you will learn to:
+
+* Protect multiple routes with the same OpenIG server
+
+* Lock down OpenIG configurations for deployment
+
+
+[#routing-router-setup]
+===  Configuring Routers
+
+When you set up the first tutorial, you configured a `Router` .
+The `Router` is a handler that you can configure in the top-level `config.json` file for OpenIG, and in fact wherever you can configure a `Handler` . For the first tutorial, you added a `Router` as part of the base configuration, which is shown here again in the following listing:
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "Router",
+    "audit": "global",
+    "baseURI": "http://app.example.com:8081",
+    "capture": "all"
+  },
+  "heap": [
+    {
+      "name": "LogSink",
+      "type": "ConsoleLogSink",
+      "config": {
+        "level": "DEBUG"
+      }
+    },
+    {
+      "name": "JwtSession",
+      "type": "JwtSession"
+    },
+    {
+      "name": "capture",
+      "type": "CaptureDecorator",
+      "config": {
+        "captureEntity": true,
+        "_captureContext": true
+      }
+    }
+  ]
+}
+----
+The `Router` 's job is to pass the request and context to a route that matches a condition, and to periodically reload changed route configurations. As routes define the conditions on which they accept any given request, the `Router` does not have to know about specific `Routes` in advance. In other words, you can configure the `Router` first and then add routes while OpenIG is running, as you have done in the tutorials.
+The configuration shown above passes all requests to the `Router` using the default settings, meaning that the `Router` monitors `$HOME/.openig/config/routes` for `Routes` . When OpenIG receives a request, if more time has passed than the default scan interval of 10 seconds, then OpenIG rescans the routes directory for changes and reloads any routes changes it finds.
+
+
+[#routing-route-setup]
+===  Configuring Additional Routes
+
+Routes are configurations to handle a request that meets a specified condition.
+The condition is defined using an OpenIG expression as described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the _Configuration Reference_ . It can be based on almost any characteristic of the request, context, or even of the OpenIG runtime environment. Another way to think of the `Route` is like an independent `DispatchHandler` as described in xref:../reference/handlers-conf.adoc#DispatchHandler[DispatchHandler(5)] in the _Configuration Reference_ .
+The following example shows a condition setting. With this condition on a route, the route matches all requests that have `api.example.com` as the host portion of the URI:
+
+[source, javascript]
+----
+"condition": "${request.uri.host == 'api.example.com'}"
+----
+Routes can also have their own names, used to order them lexicographically. If no name is specified, the route file name is used. Route file names have the extension `.json` . In other words, a router only scans for files with the `.json` extension, and ignores files with other extensions.
+Routes can have a base URI to change the scheme, host, and port of the request.
+Routes wrap a heap of configuration objects, and hand off any request they accept to a handler. In this way each route is much like its own server-wide configuration file.
+If no condition is specified for the route, the route accepts any request. The following is a basic default route that accepts any request and forwards it on without changes:
+
+[source, javascript]
+----
+{
+    "name": "default",
+    "handler": {
+        "type": "ClientHandler"
+    }
+}
+----
+
+
+[#routing-lockdown]
+===  Locking Down Route Configurations
+
+Having the `Route` configurations automatically reloaded is great in the lab, but is perhaps not what you want in production.
+In that case, stop the server, edit the `Router`  `scanInterval` , and restart. When `scanInterval` is set to -1, the `Router` only loads routes at startup:
+
+[source, javascript]
+----
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "scanInterval": -1
+    }
+}
+----
+You can also change the file system location to look for routes:
+
+[source, javascript]
+----
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "directory": "/path/to/safe/routes",
+        "scanInterval": -1
+    }
+}
+----
+
+

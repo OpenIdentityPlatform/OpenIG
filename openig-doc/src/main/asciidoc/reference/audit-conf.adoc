@@ -1,0 +1,1324 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#audit-conf]
+== Audit Framework
+
+OpenIG uses the ForgeRock common audit framework to log system boundary events using an implementation that is common across the ForgeRock platform.
+[#AuditService]
+=== AuditService — enable common audit service for a route
+
+[#d210e10012]
+==== Description
+This object serves to configure the audit service for a route. The audit service uses the ForgeRock common audit event framework.
+The route is decorated with an `auditService` field whose value references the configuration, either inline or from the heap.
+
+[#d210e10027]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "AuditService",
+     "config": {
+         "config": object,
+         "event-handlers": array
+     }
+}
+----
+
+[#d210e10033]
+==== Properties
+--
+
+"config": object, required::
+This object configures the audit service itself, rather than event handlers. If the configuration uses only default settings, you can omit the field instead of including an empty object as the field value.
++
+[open]
+====
+The configuration object has the following fields:
+
+"handlerForQueries": string, optional::
+This references the name of the event handler to use when querying audit event messages over REST.
+
+"availableAuditEventHandlers": array of strings, optional::
+This lists fully qualified event handler class names for event handlers available to the audit service.
+
+"filterPolicies": object, optional::
+These policies indicate what fields and values to include and to exclude from audit event messages.
++
+[open]
+======
+The filter policies object has these fields:
+
+"field": object, optional::
+Audit event fields use JSON pointer notation, and are taken from the JSON schema for the audit event content.
++
+Default: Include all fields.
++
+The field object specifies which fields to include and to exclude:
++
+[open]
+========
+
+"excludeIf": array of strings, optional::
+This holds a list of audit event fields to exclude.
+
+"includeIf": array of strings, optional::
+This holds a list of audit event fields to include.
+
+========
+
+"value": object, optional::
+Default: Include all messages.
++
+The value object specifies field values based on which messages are included and excluded:
++
+[open]
+========
+
+"excludeIf": array of strings, optional::
+This holds a list of audit event field values.
++
+When a value matches, the message is excluded.
+
+"includeIf": array of strings, optional::
+This holds a list of audit event field values.
++
+When a value matches, the message is included.
+
+========
+
+======
+
+====
+
+"event-handlers": array of configuration objects, required::
+This array of audit event handler configuration objects defines the event handlers that deal with audit events.
++
+Each event handler configuration depends on type of the event handler.
++
+OpenIG supports the following audit event handlers:
+
+*  xref:#CsvAuditEventHandler[CsvAuditEventHandler(5)] 
+
+*  xref:#JdbcAuditEventHandler[JdbcAuditEventHandler(5)] 
+
+*  xref:#SyslogAuditEventHandler[SyslogAuditEventHandler(5)] 
+
+*  xref:#ElasticsearchAuditEventHandler[ElasticsearchAuditEventHandler(5)] 
+
+
+--
+
+[#d210e10190]
+==== Example
+The following example configures an audit service to log access event messages in a comma-separated variable file, named `/path/to/audit/logs/access.csv` :
+
+[source, javascript]
+----
+{
+    "name": "AuditService",
+    "type": "AuditService",
+    "config": {
+        "config": {},
+        "event-handlers": [
+            {
+                "class": "org.forgerock.audit.handlers.csv.CsvAuditEventHandler",
+                "config": {
+                    "name": "csv",
+                    "logDirectory": "/path/to/audit/logs",
+                    "topics": [
+                        "access"
+                    ]
+                }
+            }
+        ]
+    }
+}
+----
+The following example route uses the audit service:
+
+[source, javascript]
+----
+{
+    "handler": "ClientHandler",
+    "auditService": "AuditService"
+}
+----
+
+[#d210e10206]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/audit/AuditService.html[org.forgerock.audit.AuditService, window=\_blank] 
+
+'''
+[#CsvAuditEventHandler]
+=== CsvAuditEventHandler — log audit events to CSV format files
+
+[#d210e10226]
+==== Description
+An audit event handler that responds to events by logging messages to files in comma-separated variable (CSV) format.
+The configuration is declared in an audit service configuration. For details, see xref:#AuditService[AuditService(5)] .
+
+[#d210e10240]
+==== Usage
+
+[source, javascript]
+----
+{
+    "class": "org.forgerock.audit.handlers.csv.CsvAuditEventHandler",
+    "config": {
+        "name": string,
+        "logDirectory": string,
+        "topics": array,
+        "enabled": boolean,
+        "formatting": {
+            "quoteChar": single-character string,
+            "delimiterChar": single-character string,
+            "endOfLineSymbols": string
+        },
+        "buffering": {
+            "enabled": boolean,
+            "autoFlush": boolean
+        },
+        "security": {
+            "enabled": boolean,
+            "filename": string,
+            "password": string,
+            "signatureInterval": duration
+        },
+        "fileRetention": {
+            "maxDiskSpaceToUse": number,
+            "maxNumberOfHistoryFiles": number,
+            "minFreeSpaceRequired": number
+        },
+        "fileRotation": {
+            "rotationEnabled": boolean,
+            "maxFileSize": number,
+            "rotationFilePrefix": string,
+            "rotationFileSuffix": string,
+            "rotationInterval": duration,
+            "rotationTimes": array
+        },
+        "rotationRetentionCheckInterval": duration
+    }
+}
+----
+The values in this configuration object can use expressions as long as they resolve to the correct types for each field. For details about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+[#d210e10249]
+==== Configuration
+--
+The `"config"` object has the following properties:
+
+"name": string, required::
+The name of the event handler.
+
+"logDirectory": string, required::
+The file system directory where log files are written.
+
+"topics": array of strings, required::
+The topics that this event handler intercepts.
++
+OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
++
+Set this to `"topics": [ "access" ]` .
+
+"enabled": boolean, optional::
+Whether this event handler is active.
++
+Default: true.
+
+"formatting": object, optional::
+Formatting settings for CSV log files.
++
+[open]
+====
+The formatting object has the following fields:
+
+"quoteChar": single-character string, optional::
+The character used to quote CSV entries.
++
+Default: `"` .
+
+"delimiterChar": single-character string, optional::
+The character used to delimit CSV entries.
++
+Default: `,` .
+
+"endOfLineSymbols": string, optional::
+The character or characters that separate a line.
++
+Default: system-dependent line separator defined for the JVM.
+
+====
+
+"buffering": object, optional::
+Buffering settings for writing CSV log files. The default is for messages to be written to the log file for each event.
++
+[open]
+====
+The buffering object has the following fields:
+
+"enabled": boolean, optional::
+Whether log buffering is enabled.
++
+Default: false.
+
+"autoFlush": boolean, optional::
+Whether events are automatically flushed after being written.
++
+Default: true.
+
+====
+
+"security": object, optional::
+Security settings for CSV log files. These settings govern tamper-evident logging, whereby messages are signed. By default tamper-evident logging is not enabled.
++
+[open]
+====
+The security object has the following fields:
+
+"enabled": boolean, optional::
+Whether tamper-evident logging is enabled.
++
+Default: false.
++
+Tamper-evident logging depends on a specially prepared keystore. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"] .
+
+"filename": string, required::
+File system path to the keystore containing the private key for tamper-evident logging.
++
+The keystore must be a keystore of type `JCEKS` . For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"] .
+
+"password": string, required::
+The password for the keystore for tamper-evident logging.
++
+This password is used for the keystore and for private keys. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"] .
+
+"signatureInterval": duration, required::
+The time interval after which to insert a signature in the CSV file. This duration must not be zero, and must not be unlimited.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+====
+
+"fileRetention": object, optional::
+File retention settings for CSV log files.
++
+[open]
+====
+The file retention object has the following fields:
+
+"maxDiskSpaceToUse": number, optional::
+The maximum disk space in bytes the audit logs can occupy. A setting of 0 or less indicates that the policy is disabled.
++
+Default: 0.
+
+"maxNumberOfHistoryFiles": number, optional::
+The maximum number of historical log files to retain. A setting of -1 disables pruning of old history files.
++
+Default: 0.
+
+"minFreeSpaceRequired": number, optional::
+The minimum free space in bytes that the system must contain for logs to be written. A setting of 0 or less indicates that the policy is disabled.
++
+Default: 0.
+
+====
+
+"fileRotation": object, optional::
+File rotation settings for CSV log files.
++
+[open]
+====
+The file rotation object has the following fields:
+
+"rotationEnabled": boolean, optional::
+Whether file rotation is enabled for CSV log files.
++
+Default: false.
+
+"maxFileSize": number, optional::
+The maximum file size of an audit log file in bytes. A setting of 0 or less indicates that the policy is disabled.
++
+Default: 0.
+
+"rotationFilePrefix": string, optional::
+The prefix to add to a log file on rotation.
++
+This has an effect when time-based file rotation is enabled.
+
+"rotationFileSuffix": string, optional::
+The suffix to add to a log file on rotation, possibly expressed in link:http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html[SimpleDateFormat, window=\_blank] .
++
+This has an effect when time-based file rotation is enabled.
++
+Default: `-yyyy.MM.dd-HH.mm.ss` , where _yyyy_ characters are replaced with the year, _MM_ characters are replaced with the month, _dd_ characters are replaced with the day, _HH_ characters are replaced with the hour (00-23), _mm_ characters are replaced with the minute (00-60), and _ss_ characters are replaced with the second (00-60).
+
+"rotationInterval": duration, optional::
+The time interval after which to rotate log files. This duration must not be zero.
++
+This has the effect of enabling time-based file rotation.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+"rotationTimes": array of durations, optional::
+The durations, counting from midnight, after which to rotate files.
++
+The following example schedules rotation six and twelve hours after midnight:
++
+
+[source, javascript]
+----
+"rotationTimes": [ "6 hours", "12 hours" ]
+----
++
+This has the effect of enabling time-based file rotation.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+====
+
+"rotationRetentionCheckInterval": duration, optional::
+The time interval after which to check file rotation and retention policies for updates.
++
+Default: 5 seconds
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+--
+
+[#log-common-audit-keystore]
+==== Preparing a Keystore for Tamper-Evident Logs
+Tamper-evident logging depends on a public key/private key pair and on a secret key that are stored together in a JCEKS keystore. Follow these steps to prepare the keystore:
+
+====
+
+. Generate a key pair in the keystore.
++
+The CSV event handler expects a JCEKS-type keystore with a key alias of `Signature` for the signing key, where the key is generated with the `RSA` key algorithm and the `SHA256withRSA` signature algorithm:
++
+
+[source, console]
+----
+$ keytool \
+ -genkeypair \
+ -keyalg RSA \
+ -sigalg SHA256withRSA \
+ -alias "Signature" \
+ -dname "CN=openig.example.com,O=Example Corp,C=FR" \
+ -keystore /path/to/audit-keystore \
+ -storetype JCEKS \
+ -storepass password \
+ -keypass password
+----
+
+. Generate a secret key in the keystore.
++
+The CSV event handler expects a JCEKS-type keystore with a key alias of `Password` for the symmetric key, where the key is generated with the `HmacSHA256` key algorithm and 256-bit key size:
++
+
+[source, console]
+----
+$ keytool \
+ -genseckey \
+ -keyalg HmacSHA256 \
+ -keysize 256 \
+ -alias "Password" \
+ -keystore /path/to/audit-keystore \
+ -storetype JCEKS \
+ -storepass password \
+ -keypass password
+----
+
+. Verify the content of the keystore:
++
+
+[source, console]
+----
+$ keytool \
+ -list \
+ -keystore /path/to/audit-keystore \
+ -storetype JCEKS \
+ -storepass password
+
+Keystore type: JCEKS
+Keystore provider: SunJCE
+
+Your keystore contains 2 entries
+
+signature, Nov 27, 2015, PrivateKeyEntry,
+Certificate fingerprint (SHA1): 4D:CF:CC:29:...:8B:6E:68:D1
+password, Nov 27, 2015, SecretKeyEntry,
+----
+
+====
+
+[#d210e11329]
+==== Example
+For instructions on recording audit events in a CSV file, see xref:../gateway-guide/chap-auditing.adoc#audit-csv[Procedure 15.1, " To Record Audit Events In a CSV File "] in the _Gateway Guide_ .
+The following example configures a CSV audit event handler to write a log file, `/path/to/audit/logs/access.csv` , that is signed every 10 seconds to make it tamper-evident:
+
+[source, javascript]
+----
+{
+    "name": "csv",
+    "topics": [
+        "access"
+    ],
+    "logDirectory": "/path/to/audit/logs/",
+    "security": {
+        "enabled": "true",
+        "filename": "/path/to/audit-keystore",
+        "password": "password",
+        "signatureInterval": "10 seconds"
+    }
+}
+----
+
+[#d210e11344]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[org.forgerock.audit.handlers.csv.CsvAuditEventHandler, window=\_blank] 
+
+'''
+[#JdbcAuditEventHandler]
+=== JdbcAuditEventHandler — log audit events to relational database
+
+[#d210e11364]
+==== Description
+An audit event handler that responds to events by logging messages to an appropriately configured relational database table.
+The configuration is declared in an audit service configuration. For details, see xref:#AuditService[AuditService(5)] .
+
+[#d210e11378]
+==== Usage
+
+[source, javascript]
+----
+{
+    "class": "org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler",
+    "config": {
+        "name": string,
+        "topics": array,
+        "databaseType": string,
+        "enabled": boolean,
+        "buffering": {
+            "enabled": boolean,
+            "writeInterval": duration,
+            "autoFlush": boolean,
+            "maxBatchedEvents": number,
+            "maxSize": number,
+            "writerThreads": number
+        },
+        "connectionPool": {
+            "dataSourceClassName": string,
+            "jdbcUrl": string,
+            "username": string,
+            "password": string,
+            "autoCommit": boolean,
+            "connectionTimeout": number,
+            "idleTimeout": number,
+            "maxLifetime": number,
+            "minIdle": number,
+            "maxPoolSize": number,
+            "poolName": string
+        },
+        "tableMappings": [
+            {
+                "event": string,
+                "table": string,
+                "fieldToColumn": {
+                    "event-field": "database-column"
+                }
+            }
+        ]
+    }
+}
+----
+The values in this configuration object can use expressions as long as they resolve to the correct types for each field. For details about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+[#d210e11387]
+==== Configuration
+--
+The `"config"` object has the following properties:
+
+"name": string, required::
+The name of the event handler.
+
+"topics": array of strings, required::
+The topics that this event handler intercepts.
++
+OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
++
+Set this to `"topics": [ "access" ]` .
+
+"databaseType": string, required::
+The database type name.
++
+Built-in support is provided for `oracle` , `mysql` , and `h2` . Unrecognized database types rely on a link:../apidocs/index.html?org/forgerock/audit/handlers/jdbc/providers/GenericDatabaseStatementProvider.html[GenericDatabaseStatementProvider, window=\_top] .
+
+"enabled": boolean, optional::
+Whether this event handler is active.
++
+Default: true.
+
+"buffering": object, optional::
+Buffering settings for sending messages to the database. The default is for messages to be written to the log file for each event.
++
+[open]
+====
+The buffering object has the following fields:
+
+"enabled": boolean, optional::
+Whether log buffering is enabled.
++
+Default: false.
+
+"writeInterval": duration, required::
+The interval at which to send buffered event messages to the database.
++
+This interval must be greater than 0 if buffering is enabled.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+"autoFlush": boolean, optional::
+Whether the events are automatically flushed after being written.
++
+Default: true.
+
+"maxBatchedEvents": number, optional::
+The maximum number of event messages batched into a link:http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html[PreparedStatement, window=\_blank] .
++
+Default: 100.
+
+"maxSize": number, optional::
+The maximum size of the queue of buffered event messages.
++
+Default: 5000.
+
+"writerThreads": number, optional::
+The number of threads to write buffered event messages to the database.
++
+Default: 1.
+
+====
+
+"connectionPool": object, required::
+Connection pool settings for sending messages to the database.
++
+[open]
+====
+The connection pool object has the following fields:
+
+"dataSourceClassName": string, optional::
+The class name of the data source for the database.
+
+"jdbcUrl": string, required::
+The JDBC URL to connect to the database.
+
+"username": string, required::
+The username identifier for the database user with access to write the messages.
+
+"password": number, optional::
+The password for the database user with access to write the messages.
+
+"autoCommit": boolean, optional::
+Whether to commit transactions automatically when writing messages.
++
+Default: true.
+
+"connectionTimeout": number, optional::
+The number of milliseconds to wait for a connection from the pool before timing out.
++
+Default: 30000.
+
+"idleTimeout": number, optional::
+The number of milliseconds to allow a database connection to remain idle before timing out.
++
+Default: 600000.
+
+"maxLifetime": number, optional::
+The number of milliseconds to allow a database connection to remain in the pool.
++
+Default: 1800000.
+
+"minIdle": number, optional::
+The minimum number of idle connections in the pool.
++
+Default: 10.
+
+"maxPoolSize": number, optional::
+The maximum number of connections in the pool.
++
+Default: 10.
+
+"poolName": string, optional::
+The name of the connection pool.
+
+====
+
+"tableMappings": array of objects, required::
+Table mappings for directing event content to database table columns.
++
+[open]
+====
+A table mappings object has the following fields:
+
+"event": string, required::
+The audit event that the table mapping is for.
++
+Set this to `access` .
+
+"table": string, required::
+The name of the database table that corresponds to the mapping.
+
+"fieldToColumn": object, required::
+This object maps the names of audit event fields to database columns, where the keys and values are both strings.
++
+Audit event fields use JSON pointer notation, and are taken from the JSON schema for the audit event content.
+
+====
+
+--
+
+[#d210e11889]
+==== Example
+The following example configures a JDBC audit event handler using a local MySQL database, writing to a table named `auditaccess` :
+
+[source, javascript]
+----
+{
+    "class": "org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler",
+    "config": {
+        "databaseType": "mysql",
+        "name": "jdbc",
+        "topics": [
+            "access"
+        ],
+        "connectionPool": {
+            "jdbcUrl": "jdbc:mysql://localhost:3306/audit?allowMultiQueries=true&characterEncoding=utf8",
+            "username": "audit",
+            "password": "audit"
+        },
+        "tableMappings": [
+            {
+                "event": "access",
+                "table": "auditaccess",
+                "fieldToColumn": {
+                    "_id": "id",
+                    "timestamp": "timestamp_",
+                    "eventName": "eventname",
+                    "transactionId": "transactionid",
+                    "userId": "userid",
+                    "trackingIds": "trackingids",
+                    "server/ip": "server_ip",
+                    "server/port": "server_port",
+                    "client/host": "client_host",
+                    "client/ip": "client_ip",
+                    "client/port": "client_port",
+                    "request/protocol": "request_protocol",
+                    "request/operation": "request_operation",
+                    "request/detail": "request_detail",
+                    "http/request/secure": "http_request_secure",
+                    "http/request/method": "http_request_method",
+                    "http/request/path": "http_request_path",
+                    "http/request/queryParameters": "http_request_queryparameters",
+                    "http/request/headers": "http_request_headers",
+                    "http/request/cookies": "http_request_cookies",
+                    "http/response/headers": "http_response_headers",
+                    "response/status": "response_status",
+                    "response/statusCode": "response_statuscode",
+                    "response/elapsedTime": "response_elapsedtime",
+                    "response/elapsedTimeUnits": "response_elapsedtimeunits"
+                }
+            }
+        ]
+    }
+}
+----
+Examples including statements to create tables are provided in the JDBC handler library, `forgerock-audit-handler-jdbc-version.jar` , that is built into the OpenIG .war file. Unpack the library, then find the examples under the `db/` folder.
+
+[#d210e11910]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank] 
+
+'''
+[#SyslogAuditEventHandler]
+=== SyslogAuditEventHandler — log audit events to the system log
+
+[#d210e11930]
+==== Description
+An audit event handler that responds to events by logging messages to the UNIX system log as governed by RFC 5424, link:https://tools.ietf.org/html/rfc5424[The Syslog Protocol, window=\_blank] .
+The configuration is declared in an audit service configuration. For details, see xref:#AuditService[AuditService(5)] .
+
+[#d210e11948]
+==== Usage
+
+[source, javascript]
+----
+{
+    "class": "org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler",
+    "config": {
+        "name": string,
+        "topics": array,
+        "protocol": string,
+        "host": string,
+        "port": number,
+        "connectTimeout": number,
+        "facility": "string",
+        "buffering": {
+            "enabled": boolean,
+            "maxSize": number
+        },
+        "severityFieldMappings": [
+            {
+                "topic": string,
+                "field": string,
+                "valueMappings": {
+                    "field-value": "syslog-severity"
+                }
+            }
+        ]
+    }
+}
+----
+The values in this configuration object can use expressions as long as they resolve to the correct types for each field. For details about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+[#d210e11958]
+==== Configuration
+--
+The `"config"` object has the following properties:
+
+"name": string, required::
+The name of the event handler.
+
+"topics": array of strings, required::
+The topics that this event handler intercepts.
++
+OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
++
+Set this to `"topics": [ "access" ]` .
+
+"protocol": string, required::
+The transport protocol used to send event messages to the Syslog daemon.
++
+Set this to `TCP` for Transmission Control Protocol, or to `UDP` for User Datagram Protocol.
+
+"host": string, required::
+The hostname of the Syslog daemon to which to send event messages. The hostname must resolve to an IP address.
+
+"port": number, required::
+The port of the Syslog daemon to which to send event messages.
++
+The value must be between 0 and 65535.
+
+"connectTimeout": number, required when using TCP::
+The number of milliseconds to wait for a connection before timing out.
+
+"facility": string, required::
+The Syslog facility to use for event messages.
++
+[open]
+====
+Set this to one of the following values:
+
+kern::
+Kernel messages
+
+user::
+User-level messages
+
+mail::
+Mail system
+
+daemon::
+System daemons
+
+auth::
+Security/authorization messages
+
+syslog::
+Messages generated internally by `syslogd` 
+
+lpr::
+Line printer subsystem
+
+news::
+Network news subsystem
+
+uucp::
+UUCP subsystem
+
+cron::
+Clock daemon
+
+authpriv::
+Security/authorization messages
+
+ftp::
+FTP daemon
+
+ntp::
+NTP subsystem
+
+logaudit::
+Log audit
+
+logalert::
+Log alert
+
+clockd::
+Clock daemon
+
+local0::
+Local use 0
+
+local1::
+Local use 1
+
+local2::
+Local use 2
+
+local3::
+Local use 3
+
+local4::
+Local use 4
+
+local5::
+Local use 5
+
+local6::
+Local use 6
+
+local7::
+Local use 7
+
+====
+
+"buffering": object, optional::
+Buffering settings for writing to the system log facility. The default is for messages to be written to the log for each event.
++
+[open]
+====
+The buffering object has the following fields:
+
+"enabled": boolean, optional::
+Whether log buffering is enabled.
++
+Default: false.
+
+"maxSize": number, optional::
+The maximum number of buffered event messages.
++
+Default: 5000.
+
+====
+
+"severityFieldMappings": object, optional::
+Severity field mappings set the correspondence between audit event fields and Syslog severity values.
++
+[open]
+====
+The severity field mappings object has the following fields:
+
+"topic": string, required::
+The audit event topic to which the mapping applies.
++
+Set this to `access` .
+
+"field": string, required::
+The audit event field to which the mapping applies.
++
+Audit event fields use JSON pointer notation, and are taken from the JSON schema for the audit event content.
+
+"valueMappings": object, required::
+The map of audit event values to Syslog severities, where both the keys and the values are strings.
++
+[open]
+======
+Syslog severities are one of the following values:
+
+emergency::
+System is unusable.
+
+alert::
+Action must be taken immediately.
+
+critical::
+Critical conditions.
+
+error::
+Error conditions.
+
+warning::
+Warning conditions.
+
+notice::
+Normal but significant condition.
+
+informational::
+Informational messages.
+
+debug::
+Debug-level messages.
+
+======
+
+====
+
+--
+
+[#d210e12374]
+==== Example
+The following example configures a Syslog audit event handler that writes to the system log daemon on `syslogd.example.com` , port `6514` over TCP with a timeout of 30 seconds. The facility is the first one for local use, and response status is mapped to Syslog informational messages:
+
+[source, javascript]
+----
+{
+    "class": "org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler",
+    "config": {
+        "protocol": "TCP",
+        "host": "https://syslogd.example.com",
+        "port": 6514,
+        "connectTimeout": 30000,
+        "facility": "local0",
+        "severityFieldMappings": [
+            {
+                "topic": "access",
+                "field": "response/status",
+                "valueMappings": {
+                    "FAILED": "INFORMATIONAL",
+                    "SUCCESSFUL": "INFORMATIONAL"
+                }
+            }
+        ]
+    }
+}
+----
+
+[#d210e12388]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.html[org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler, window=\_blank] 
+
+'''
+[#ElasticsearchAuditEventHandler]
+=== ElasticsearchAuditEventHandler — log audit events in the Elasticsearch search and analytics engine
+
+[#d210e12408]
+==== Description
+An audit event handler that responds to events by logging messages in the Elasticsearch search and analytics engine.
+The configuration is declared in an audit service configuration. For information, see xref:#AuditService[AuditService(5)] .
+For Elasticsearch downloads and installation instructions, see the Elasticsearch link:https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html[Getting Started, window=\_blank] document.
+A special client handler called `ElasticsearchClientHandler` can be defined to send audit events to Elasticsearch. You can use this client handler to capture the exchange between the audit service and Elasticsearch, or to wrap the search with a filter, for example, the `OAuth2ClientFilter` .
+To define an `ElasticsearchClientHandler` , create the following object in the heap for the Elasticsearch audit event handler
+
+[source, javascript]
+----
+{
+  "name": "ElasticsearchClientHandler",
+  "type": "ClientHandler",
+  "config": {},
+}
+----
+
+[#d210e12445]
+==== Usage
+
+[source, javascript]
+----
+{
+  "class": "org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandler",
+  "config": {
+    "connection" : {
+      "host" : string,
+      "port" : number,
+      "useSSL" : boolean,
+      "username" : string,
+      "password" : string
+    },
+    "indexMapping" : {
+      "indexName" : string
+    },
+    "buffering" : {
+      "enabled" : boolean,
+      "writeInterval" : duration,
+      "maxSize" : number,
+      "maxBatchedEvents" : number
+    },
+    "topics" : [ string, ... ]
+  }
+}
+----
+The values in this configuration object can use expressions if they resolve to the correct types for each field. For information about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+[#d210e12455]
+==== Properties
+--
+The `"config"` object has the following properties:
+
+"connection": object, optional::
+Connection settings for sending messages to Elasticsearch. If this object is not configured, it takes default values for its fields. This object has the following fields:
++
+[open]
+====
+
+"host": string, optional::
+Hostname or IP address of Elasticsearch. The hostname must resolve to an IP address.
++
+Default: `localhost` 
+
+"port": number, optional::
+The port used by Elasticsearch. The value must be between 0 and 65535.
++
+Default: `9200` 
+
+"useSSL": boolean, optional::
+Setting to use or not use SSL/TLS to connect to Elasticsearch.
++
+Default: `false` 
+
+"username": string, optional::
+Username when Basic Authentication is enabled through Elasticsearch Shield.
+
+"password": string, optional::
+Password when Basic Authentication is enabled through Elasticsearch Shield.
+
+====
+
+"indexMapping": object, optional::
+Defines how an audit event and its fields are stored and indexed.
++
+[open]
+====
+
+"indexName": string, optional::
+The index name. Set this parameter if the default name `audit` conflicts with an existing Elasticsearch index.
++
+Default: `audit` .
+
+====
+
+"buffering": object, optional::
+Settings for buffering events and batch writes.
++
+[open]
+====
+
+"enabled": boolean, optional::
+Setting to use or not use log buffering.
++
+Default: false.
+
+"writeInterval": duration, required if buffering is enabled::
+The interval at which to send buffered event messages to Elasticsearch. If buffering is enabled, this interval must be greater than 0.
++
+Default: 1 second
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
+
+"maxBatchedEvents": number, optional::
+The maximum number of event messages in a batch write to Elasticsearch for each `writeInterval` .
++
+Default: 500
+
+"maxSize": number, optional::
+The maximum number of event messages in the queue of buffered event messages.
++
+Default: 10000
+
+====
+
+"topics": array of strings, required::
+The topics that this event handler intercepts.
++
+OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
++
+Set this to `"topics": [ "access" ]` .
+
+--
+
+[#d210e12808]
+==== Example
+For instructions on recording audit events in Elasticsearch, see xref:../gateway-guide/chap-auditing.adoc#audit-elasticsearch[Procedure 15.2, " To Record Audit Events In Elasticsearch "] in the _Gateway Guide_ .
+The following example configures an Elasticsearch audit event handler:
+
+[source, javascript]
+----
+{
+  "class" : "org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandler",
+  "config" : {
+    "connection" : {
+      "useSSL" : false,
+      "host" : "localhost",
+      "port" : "9200"
+    },
+    "indexMapping" : {
+      "indexName" : "audit"
+    },
+    "buffering" : {
+      "enabled" : false,
+      "maxSize" : 20000,
+      "writeInterval" : "1 second",
+      "maxBatchedEvents" : "500"
+    },
+    "topics" : [
+      "access"
+    ]
+  }
+}
+----
+
+

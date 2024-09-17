@@ -1,0 +1,688 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[appendix]
+[#appendix-multiple-sps]
+== Appendix A. SAML 2.0 and Multiple Applications
+
+xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] describes how to set up OpenIG as a SAML 2.0 service provider for a single application, using OpenAM as the identity provider. This chapter describes how to set up OpenIG as a SAML 2.0 service provider for two applications, still using OpenAM as the identity provider.
+Before you try the samples described here, familiarize yourself with OpenIG SAML 2.0 support by reading and working through the examples in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] . Before you start, you should have OpenIG protecting the sample application as a SAML 2.0 service provider, with OpenAM working as identity provider configured as described in that tutorial.
+
+[#federation-installation-multi]
+=== A.1. Installation Overview
+
+In this chapter you use the Fedlet configuration from xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] to create a configuration for each new protected application. You then import the new configurations as SAML 2.0 entities in OpenAM. If you subsequently edit a configuration, import it again.
+In the following examples, the first application has entity ID `sp1` and runs on the host `sp1.example.com` , the second application has entity ID `sp2` and runs on the host `sp2.example.com` . To prevent unwanted behavior, the applications must have different values.
+[#d2528e8873]
+.Table A.1. Tasks for Configuring SAML 2.0 SSO and Federation
+[cols="50%,50%"]
+|===
+|Task |See Section(s) 
+
+a|Prepare the network.
+
+a| xref:#prepare-network-multi[Section A.2, "Preparing the Network"] 
+
+
+a|Prepare the configuration for two OpenIG service providers.
+
+a| xref:#prepare-cot-multi[Section A.3, "Configuring the Circle of Trust"] 
+xref:#prepare-saml-conf1-multi[Section A.4, "Configuring the Service Provider for Application One"] 
+xref:#prepare-saml-conf2-multi[Section A.5, "Configuring the Service Provider for Application Two"] 
+
+
+a|Import the service provider configurations into OpenAM.
+
+a| xref:#multisp-create-saml-entities[Section A.6, "Importing Service Provider Configurations Into OpenAM"] 
+
+
+a|Add OpenIG routes.
+
+a| xref:#multisp-conf[Section A.7.1, "Preparing the Base Configuration File"] 
+xref:#multisp-conf-sp1[Section A.7.2, "Preparing Routes for Application One"] 
+xref:#multisp-conf-sp2[Section A.7.3, "Preparing Routes for Application Two"] 
+
+|===
+
+
+[#prepare-network-multi]
+=== A.2. Preparing the Network
+
+Configure the network so that browser traffic to the application hosts is proxied through OpenIG.
+Add the following addresses to your hosts file: `sp1.example.com` and `sp2.example.com` .
+
+[source]
+----
+127.0.0.1    localhost openam.example.com openig.example.com app.example.com sp1.example.com sp2.example.com
+----
+
+
+[#prepare-cot-multi]
+=== A.3. Configuring the Circle of Trust
+
+Edit the `$HOME/.openig/SAML/fedlet.cot` file you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] to include the entity IDs `sp1` and `sp2` , as in the following example:
+
+[source, ini]
+----
+cot-name=Circle of Trust
+sun-fm-cot-status=Active
+sun-fm-trusted-providers=openam,sp1,sp2
+sun-fm-saml2-readerservice-url=
+sun-fm-saml2-writerservice-url=
+----
+
+
+[#prepare-saml-conf1-multi]
+=== A.4. Configuring the Service Provider for Application One
+
+To configure the service provider for application one, you can use the example files xref:#multisp-sp1[Example A.1, "Configuration File for Application One"] and xref:#multisp-sp1-extended[Example A.2, "Extended Configuration File for Application One"] , saving them as `sp1.xml` and `sp1-extended.xml` . Alternatively, follow the steps below to use the files you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] .
+
+[#d2528e8994]
+.Procedure A.1. To Configure the Service Provider for Application One By Using Files Created In Chapter 7, "OpenIG As a SAML 2.0 Service Provider"
+====
+
+. Copy the SAML configuration files `sp.xml` and `sp-extended.xml` you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] , and save them as `$HOME/.openig/SAML/sp1.xml` and `$HOME/.openig/SAML/sp1-extended.xml` .
+
+. Make the following changes in `sp1.xml` :
++
+
+* For `entityID` , change `sp` to `sp1` . The `entityID` must match the application.
+
+* On each line that starts with `Location` or `ResponseLocation` , change `sp.example.com` to `sp1.example.com` , and add `/metaAlias/sp1` at the end of the line.
+
++
+For an example of how this file should be, see xref:#multisp-sp1[Example A.1, "Configuration File for Application One"] .
+
+. Make the following changes in `sp1-extended.xml` :
++
+
+* For `entityID` , change `sp` to `sp1` .
+
+* For `SPSSOConfig metaAlias` , change `sp` to `sp1` .
+
+* For `appLogoutUrl` , change `sp` to `sp1` .
+
+* For `hosted=` , make sure that the value is `1` .
+
++
+For an example of how this file should be, see xref:#multisp-sp1-extended[Example A.2, "Extended Configuration File for Application One"] .
+
+====
+
+[#multisp-sp1]
+.Example A.1. Configuration File for Application One
+====
+
+[source, xml]
+----
+<!--
+  - sp1-xml.txt
+  - Set the entityID
+  - Set metaAlias/<sp-name> at the end of each of the following lines:
+     - Location
+     - ResponseLocation
+  - Note that AssertionConsumerService Location attributes include the metaAlias.
+-->
+<EntityDescriptor
+  entityID="sp1"
+  xmlns="urn:oasis:names:tc:SAML:2.0:metadata">
+  <SPSSODescriptor
+    AuthnRequestsSigned="false"
+    WantAssertionsSigned="false"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      Location="http://sp1.example.com:8080/saml/fedletSloRedirect/metaAlias/sp1"
+      ResponseLocation="http://sp1.example.com:8080/saml/fedletSloRedirect/metaAlias/sp1"/>
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      Location="http://sp1.example.com:8080/saml/fedletSloPOST/metaAlias/sp1"
+      ResponseLocation="http://sp1.example.com:8080/saml/fedletSloPOST/metaAlias/sp1"/>
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+      Location="http://sp1.example.com:8080/saml/fedletSloSoap/metaAlias/sp1"/>
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+    <AssertionConsumerService
+      isDefault="true"
+      index="0"
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      Location="http://sp1.example.com:8080/saml/fedletapplication/metaAlias/sp1"/>
+    <AssertionConsumerService
+      index="1"
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+      Location="http://sp1.example.com:8080/saml/fedletapplication/metaAlias/sp1"/>
+  </SPSSODescriptor>
+  <RoleDescriptor
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:query="urn:oasis:names:tc:SAML:metadata:ext:query"
+    xsi:type="query:AttributeQueryDescriptorType"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+  </RoleDescriptor>
+  <XACMLAuthzDecisionQueryDescriptor
+    WantAssertionsSigned="false"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+  </XACMLAuthzDecisionQueryDescriptor>
+</EntityDescriptor>
+----
+====
+
+[#multisp-sp1-extended]
+.Example A.2. Extended Configuration File for Application One
+====
+
+[source, xml]
+----
+<!--
+  - sp1-extended.xml
+  - Set the entityID.
+  - Set the SPSSOConfig metaAlias attribute.
+  - Set the value of appLogoutUrl.
+  - Set the value of hosted to 1.
+-->
+<EntityConfig xmlns="urn:sun:fm:SAML:2.0:entityconfig"
+    xmlns:fm="urn:sun:fm:SAML:2.0:entityconfig"
+    hosted="1"
+    entityID="sp1">
+
+    <SPSSOConfig metaAlias="/sp1">
+        <Attribute name="description">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthOn">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="basicAuthUser">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthPassword">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="autofedEnabled">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="autofedAttribute">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="transientUser">
+            <Value>anonymous</Value>
+        </Attribute>
+        <Attribute name="spAdapter">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="spAdapterEnv">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="fedletAdapter">
+            <Value>com.sun.identity.saml2.plugins.DefaultFedletAdapter</Value>
+        </Attribute>
+        <Attribute name="fedletAdapterEnv">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="spAccountMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultLibrarySPAccountMapper</Value>
+        </Attribute>
+        <Attribute name="useNameIDAsSPUserID">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="spAttributeMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultSPAttributeMapper</Value>
+        </Attribute>
+        <Attribute name="spAuthncontextMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultSPAuthnContextMapper</Value>
+        </Attribute>
+        <Attribute name="spAuthncontextClassrefMapping">
+            <Value>
+            urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport|0|default
+            </Value>
+        </Attribute>
+        <Attribute name="spAuthncontextComparisonType">
+           <Value>exact</Value>
+        </Attribute>
+        <Attribute name="attributeMap">
+           <Value>employeenumber=employeenumber</Value>
+           <Value>mail=mail</Value>
+        </Attribute>
+        <Attribute name="saml2AuthModuleName">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="localAuthURL">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="intermediateUrl">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="defaultRelayState">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="appLogoutUrl">
+           <Value>http://sp1.example.com:8080/saml/logout</Value>
+       </Attribute>
+       <Attribute name="assertionTimeSkew">
+           <Value>300</Value>
+       </Attribute>
+       <Attribute name="wantAttributeEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantAssertionEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantNameIDEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantPOSTResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantArtifactResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantLogoutRequestSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantLogoutResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantMNIRequestSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantMNIResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="responseArtifactMessageEncoding">
+           <Value>URI</Value>
+       </Attribute>
+       <Attribute name="cotlist">
+       <Value>Circle of Trust</Value></Attribute>
+       <Attribute name="saeAppSecretList">
+       </Attribute>
+       <Attribute name="saeSPUrl">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="saeSPLogoutUrl">
+       </Attribute>
+       <Attribute name="ECPRequestIDPListFinderImpl">
+           <Value>com.sun.identity.saml2.plugins.ECPIDPFinder</Value>
+       </Attribute>
+       <Attribute name="ECPRequestIDPList">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="ECPRequestIDPListGetComplete">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="enableIDPProxy">
+           <Value>false</Value>
+       </Attribute>
+       <Attribute name="idpProxyList">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="idpProxyCount">
+           <Value>0</Value>
+       </Attribute>
+       <Attribute name="useIntroductionForIDPProxy">
+           <Value>false</Value>
+       </Attribute>
+       <Attribute name="spSessionSyncEnabled">
+           <Value>false</Value>
+       </Attribute>
+        <Attribute name="relayStateUrlList">
+        </Attribute>
+    </SPSSOConfig>
+    <AttributeQueryConfig metaAlias="/attrQuery">
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="wantNameIDEncrypted">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="cotlist">
+            <Value>Circle of Trust</Value>
+        </Attribute>
+    </AttributeQueryConfig>
+    <XACMLAuthzDecisionQueryConfig metaAlias="/pep">
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthOn">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="basicAuthUser">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthPassword">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="wantXACMLAuthzDecisionResponseSigned">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="wantAssertionEncrypted">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="cotlist">
+            <Value>Circle of Trust</Value>
+        </Attribute>
+    </XACMLAuthzDecisionQueryConfig>
+</EntityConfig>
+----
+====
+
+
+[#prepare-saml-conf2-multi]
+=== A.5. Configuring the Service Provider for Application Two
+
+
+[#d2528e9132]
+.Procedure A.2. To Configure the Service Provider for Application Two
+====
+
+. Copy the SAML configuration files `sp1.xml` and `sp1-extended.xml` you created in xref:#prepare-saml-conf1-multi[Section A.4, "Configuring the Service Provider for Application One"] , and save them as `$HOME/.openig/SAML/sp2.xml` and `$HOME/.openig/SAML/sp2-extended.xml` .
+
+. In both files, replace all incidences of `sp1` with `sp2` . To prevent unwanted behavior. application two must have different values to application one.
+
+====
+
+
+[#multisp-create-saml-entities]
+=== A.6. Importing Service Provider Configurations Into OpenAM
+
+For each new protected application, import a SAML 2.0 entity into OpenAM. If you subsequently edit a service provider configuration, import it again.
+
+[#d2528e9166]
+.Procedure A.3. To Import the Service Provider Configurations Into OpenAM
+====
+
+. Log in to OpenAM console as administrator.
+
+. On the Federation tab, select the Entity Providers table and click Import Entity.
++
+The Import Entity Provider page is displayed.
+
+. For the metadata file, select File and upload `sp1.xml` . For the extended data file, select File and upload `sp1-extended.xml` .
+
+. Repeat the previous step to upload `sp2.xml` and `sp2-extended.xml` for `sp2` .
+
+. Log out of the OpenAM console.
+
+====
+
+
+[#multisp-create-gateway-conf]
+=== A.7. Preparing OpenIG Configurations
+
+For each new protected application, prepare an OpenIG configuration. The configurations in this section follow the example in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] .
+
+[#multisp-conf]
+==== A.7.1. Preparing the Base Configuration File
+
+Edit the base configuration file, `$HOME/.openig/config/routes/config.json` , so that it does not rebase incoming URLs. The following example file differs from that used in earlier tutorials:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Router"
+    },
+    "heap": [
+        {
+            "name": "LogSink",
+            "type": "ConsoleLogSink",
+            "config": {
+                "level": "DEBUG"
+            }
+        },
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureEntity": true,
+                "captureContext": true
+            }
+        }
+    ]
+}
+----
+Restart OpenIG to put the configuration changes into effect.
+
+
+[#multisp-conf-sp1]
+==== A.7.2. Preparing Routes for Application One
+
+Set up the following routes for application one:
+
+*  `$HOME/.openig/config/routes/05-federate-sp1.json` , to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
+
+*  `$HOME/.openig/config/routes/05-saml-sp1.json` , to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
+
+To prevent unspecified behavior, the keys for session-stored values in the routes for application one, for example, `session.sp1Username` , must not be the same as those for application two.
+
+[#multisp-sp1-route]
+.Example A.3. 05-federate-sp1.json
+====
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${empty session.sp1Username}",
+                    "handler": {
+                        "type": "StaticResponseHandler",
+                        "config": {
+                            "status": 302,
+                            "reason": "Found",
+                            "headers": {
+                                "Location": [
+                                    "http://sp1.example.com:8080/saml/SPInitiatedSSO?metaAlias=/sp1"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "handler": {
+                        "type": "Chain",
+                        "config": {
+                            "filters": [
+                                {
+                                    "type": "StaticRequestFilter",
+                                    "config": {
+                                        "method": "POST",
+                                        "uri": "http://app.example.com:8081",
+                                        "form": {
+                                            "username": [
+                                                "${session.sp1Username}"
+                                            ],
+                                            "password": [
+                                                "${session.sp1Password}"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "handler": "ClientHandler"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "condition": "${matches(request.uri.host, 'sp1.example.com') and not matches(request.uri.path, '^/saml')}"
+}
+----
+====
+
+[#multisp-sp1-saml-route]
+.Example A.4. 05-saml-sp1.json
+====
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "SamlFederationHandler",
+        "config": {
+            "comment": "Use unique session properties for this SP.",
+            "assertionMapping": {
+                "sp1Username": "mail",
+                "sp1Password": "employeenumber"
+            },
+            "authnContext": "sp1AuthnContext",
+            "sessionIndexMapping": "sp1SessionIndex",
+            "subjectMapping": "sp1SubjectName",
+            "redirectURI": "/sp1"
+        }
+    },
+    "condition": "${matches(request.uri.host, 'sp1.example.com') and matches(request.uri.path, '^/saml')}"
+}
+----
+====
+
+
+[#multisp-conf-sp2]
+==== A.7.3. Preparing Routes for Application Two
+
+Set up the following routes for application two:
+
+*  `$HOME/.openig/config/routes/05-federate-sp2.json` , to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
+
+*  `$HOME/.openig/config/routes/05-saml-sp2.json` , to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
+
+To prevent unspecified behavior, the keys for session-stored values in the routes for application two, for example, `session.sp2Username` , must not be the same as those for application one.
+
+[#multisp-sp2-route]
+.Example A.5. 05-federate-sp2.json
+====
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "DispatchHandler",
+        "config": {
+            "bindings": [
+                {
+                    "condition": "${empty session.sp2Username}",
+                    "handler": {
+                        "type": "StaticResponseHandler",
+                        "config": {
+                            "status": 302,
+                            "reason": "Found",
+                            "headers": {
+                                "Location": [
+                                    "http://sp2.example.com:8080/saml/SPInitiatedSSO?metaAlias=/sp2"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "handler": {
+                        "type": "Chain",
+                        "config": {
+                            "filters": [
+                                {
+                                    "type": "StaticRequestFilter",
+                                    "config": {
+                                        "method": "POST",
+                                        "uri": "http://app.example.com:8081",
+                                        "form": {
+                                            "username": [
+                                                "${session.sp2Username}"
+                                            ],
+                                            "password": [
+                                                "${session.sp2Password}"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "handler": "ClientHandler"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "condition": "${matches(request.uri.host, 'sp2.example.com') and not matches(request.uri.path, '^/saml')}"
+}
+----
+====
+
+[#multisp-sp2-saml-route]
+.Example A.6. 05-saml-sp2.json
+====
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "SamlFederationHandler",
+        "config": {
+            "comment": "Use unique session properties for this SP.",
+            "assertionMapping": {
+                "sp2Username": "mail",
+                "sp2Password": "employeenumber"
+            },
+            "authnContext": "sp2AuthnContext",
+            "sessionIndexMapping": "sp2SessionIndex",
+            "subjectMapping": "sp2SubjectName",
+            "redirectURI": "/sp2"
+        }
+    },
+    "condition": "${matches(request.uri.host, 'sp2.example.com') and matches(request.uri.path, '^/saml')}"
+}
+----
+====
+
+
+
+[#multisp-try-it-out]
+=== A.8. Test the Configuration
+
+If you use the example configurations described in this chapter, try the SAML 2.0 web single sign-on profile with application one by selecting either of the following links and logging in to OpenAM with username george and password costanza:
+
+* The link for link:http://sp1.example.com:8080/home[SP-initiated SSO, window=\_blank] .
+
+* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp1&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank] .
+
+Similarly, try the SAML 2.0 web single sign-on profile with application two by selecting either of the following links and logging in to OpenAM with username george and password costanza:
+
+* The link for link:http://sp2.example.com:8080/home[SP-initiated SSO, window=\_blank] .
+
+* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp2&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank] .
+
+If you have not configured the examples exactly as shown in this guide, then adapt the SSO links accordingly.
+
+

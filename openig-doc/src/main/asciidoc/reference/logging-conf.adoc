@@ -1,0 +1,282 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#logging-conf]
+== Logging Framework
+
+OpenIG uses the objects in this section to log events to the console or to files.
+[#ConsoleLogSink]
+=== ConsoleLogSink — log to standard error
+
+[#d210e9593]
+==== Description
+A log sink that writes log entries to the standard error stream.
+
+[#d210e9603]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": string,
+         "stream": string
+    }
+}
+----
+
+[#d210e9609]
+==== Properties
+--
+
+"level": string, optional::
+The level of log entries.
++
+Must be one of the following settings. These are ordered from most verbose to least verbose:
+
+*  `ALL` (log all messages)
+
+*  `TRACE` (log low-level tracing information)
+
+*  `DEBUG` (log debugging information)
+
+*  `STAT` (log performance measurement statistics)
+
+*  `CONFIG` (log configuration information)
+
+*  `INFO` (log general information)
+
+*  `WARNING` (log potential problems)
+
+*  `ERROR` (log serious failures)
+
+*  `OFF` (log no messages)
+
++
+Default: `INFO` .
+
+"stream": string, optional::
+The standard output to use to display logs in the console.
++
+Must be one of the following settings:
+
+*  `ERR` (use standard error: System.err)
+
+*  `OUT` (use standard output: System.out)
+
+*  `AUTO` (select standard error or output depending on the message log level: TRACE, DEBUG, STAT, CONFIG, INFO print to `System.out` ; WARNING and ERROR print to `System.err` )
+
++
+Default: `ERR` .
+
+--
+
+[#d210e9719]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "LogSink",
+     "comment": "Default sink for logging information.",
+     "type": "ConsoleLogSink",
+     "config": {
+         "level": "DEBUG",
+         "stream": "AUTO"
+     }
+}
+----
+
+[#d210e9725]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/log/ConsoleLogSink.html[org.forgerock.openig.log.ConsoleLogSink, window=\_blank] 
+
+'''
+[#FileLogSink]
+=== FileLogSink — log to a file
+
+[#d210e9745]
+==== Description
+A log sink that writes log entries to a file using the UTF-8 character set.
+
+[#d210e9755]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "FileLogSink",
+     "config": {
+         "file": configuration expression,
+         "level": string
+     }
+}
+----
+
+[#d210e9761]
+==== Properties
+--
+
+"file": configuration expression, required::
+The path to the log file.
++
+A configuration expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] is independent of the request, response, and contexts, so do not use expressions that reference their properties. You can, however, use `${env['variable']}` , `${system['property']}` , and all the built-in functions listed in xref:expressions-conf.adoc#Functions[Functions(5)] .
+
+"level": string, optional::
+The level of log entries.
++
+Must be one of the following settings. These are ordered from most verbose to least verbose:
+
+*  `ALL` (log all messages)
+
+*  `TRACE` (log low-level tracing information)
+
+*  `DEBUG` (log debugging information)
+
+*  `STAT` (log performance measurement statistics)
+
+*  `CONFIG` (log configuration information)
+
+*  `INFO` (log general information)
+
+*  `WARNING` (log potential problems)
+
+*  `ERROR` (log serious failures)
+
+*  `OFF` (log no messages)
+
++
+Default: `INFO` .
+
+--
+
+[#d210e9858]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "LogSink",
+     "type": "FileLogSink",
+     "config": {
+         "file": "${system['log'] ? system['log'] : '/tmp/proxy.log'}",
+         "level": "DEBUG"
+     }
+}
+----
+
+[#d210e9864]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/log/FileLogSink.html[org.forgerock.openig.log.FileLogSink, window=\_blank] 
+
+'''
+[#Slf4jLogSink]
+=== Slf4jLogSink — delegate log writing to SLF4J
+
+[#d210e9884]
+==== Description
+A log sink that delegates the writing of logs to SLF4J. OpenIG uses the Logback implementation of the SLF4J API. Use this log sink to define different logging behavior for routes and third-party dependencies.
+A default configuration for logging is defined in OpenIG. To change the configuration, create a file `$HOME/.openig/config/logback.xml` . For a description of the available parameters, see link:http://logback.qos.ch/index.html[the Logback website, window=\_blank] .
+
+[#d210e9902]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "Slf4jLogSink",
+    "config": {
+        "base": string
+    }
+}
+----
+
+[#d210e9908]
+==== Properties
+--
+
+"base": string, optional::
+The name for a logger that can be defined in `logback.xml` . The logger identifies a route or third-party dependency for which to define different logging behavior.
++
+Logger names follow a hierarchical naming rule. When an object logs a message to `Slf4jLogSink` , a descendant logger is created the whose name is a concatenation of the base and the object name, separated with a `.` . For example, when an object `MyObject` logs a message to to an `Slf4jLogSink` with base `com.example.app` , a logger named `com.example.app.myobject` is created.
++
+The hierarchical naming allows you to configure `logback.xml` with different logging characteristics for different components in a route.
++
+Default: Empty string.
+
+--
+
+[#d210e9952]
+==== Example
+In the following example, requests from the client filter, `MyObject` , create a logger called `com.example.app.myobject` .
+
+[source, javascript]
+----
+{
+   "name": "MyLogSink",
+       "type": "Slf4jLogSink",
+       "config": {
+           "base": "com.example.app"
+       }
+},
+{
+   "name": "MyObject",
+       "type": "OAuth2ClientFilter",
+       "config": {
+           "logSink": "MyLogSink"
+  }
+}
+----
+The following `logback.xml` sets the logging level to `DEBUG` for requests from the client filter, and to `INFO` for other requests with the base `com.example.app` .
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?><configuration>
+
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+ <encoder>
+  <pattern>
+   %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+  </pattern>
+ </encoder>
+</appender>
+
+<logger name="com.example.app" level="INFO"/>
+<logger name="com.example.app.myobject" level="DEBUG"/>
+
+<root level="DEBUG">
+ <appender-ref ref="STDOUT"/>
+</root>
+
+</configuration>
+----
+For an example configuration, see xref:../gateway-guide/chap-logging.adoc#chap-logging-example[Section 17.3, " Separating Logs for Different Routes "] in the _Gateway Guide_ .
+
+[#d210e9986]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/log/Slf4jLogSink.html[org.forgerock.openig.log.Slf4jLogSink, window=\_blank] 
+
+

@@ -1,0 +1,75 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+[appendix]
+[#appendix-interface-stability]
+== Release Levels and Interface Stability
+
+This appendix includes ForgeRock definitions for product release levels and interface stability.
+
+[#release-levels]
+=== ForgeRock Product Release Levels
+
+ForgeRock defines Major, Minor, and Maintenance product release levels. The release level is reflected in the version number. The release level tells you what sort of compatibility changes to expect.
+
+[#table-release-levels]
+.Table A.1. Release Level Definitions
+[cols="20%,20%,60%"]
+|===
+|Release Label |Version Numbers |Characteristics
+
+a|Major
+
+a|Version: x[.0.0] (trailing 0s are optional)
+
+a|
+* Bring major new features, minor features, and bug fixes
+
+* Can include changes even to Stable interfaces
+
+* Can remove previously Deprecated functionality, and in rare cases remove Evolving functionality that has not been explicitly Deprecated
+
+* Include changes present in previous Minor and Maintenance releases
+
+a|Minor
+
+a|Version: x.y[.0] (trailing 0s are optional)
+
+a|
+* Bring minor features, and bug fixes
+
+* Can include backwards-compatible changes to Stable interfaces in the same Major release, and incompatible changes to Evolving interfaces
+
+* Can remove previously Deprecated functionality
+
+* Include changes present in previous Minor and Maintenance releases
+
+a|Maintenance
+
+a|Version: x.y.z
+
+a|
+* Bring bug fixes
+
+* Are intended to be fully compatible with previous versions from the same Minor release
+
+
+|===
+
+
+
+

@@ -1,0 +1,2320 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#filters-conf]
+== Filters
+
+Filter objects intercept requests and responses during processing.
+[#AssignmentFilter]
+=== AssignmentFilter — conditionally assign values to expressions
+
+[#d210e4606]
+==== Description
+Conditionally assigns values to expressions before the request and after the response is handled.
+
+[#d210e4616]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "AssignmentFilter",
+    "config": {
+        "onRequest": [
+            {
+                "condition": expression,
+                "target": lvalue-expression,
+                "value": expression
+            }, ...
+        ],
+        "onResponse": [
+            {
+                "condition": expression,
+                "target": lvalue-expression,
+                "value": expression
+            }, ...
+        ]
+    }
+}
+----
+
+[#d210e4622]
+==== Properties
+--
+
+"onRequest": array of objects, optional::
+Defines a list of assignment bindings to evaluate before the request is handled.
+
+"onResponse": array of objects, optional::
+Defines a list of assignment bindings to evaluate after the response is handled.
+
+"condition": expression, optional::
+Expression to evaluate to determine if an assignment should occur. Omitting the condition makes the assignment unconditional.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"target": lvalue-expression, required::
+Expression that yields the target object whose value is to be set.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"value": expression, optional::
+Expression that yields the value to be set in the target.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+--
+
+[#d210e4688]
+==== Example
+This is an example of how you would capture credentials and store them in the OpenIG session during a login request. Notice the credentials are captured on the request, but not marked as valid until the response returns a positive 302. The credentials would then be used to login a user to a different application:
+
+[source, javascript]
+----
+{
+    "name": "PortalLoginCaptureFilter",
+    "type": "AssignmentFilter",
+    "config": {
+        "onRequest": [
+            {
+                "target": "${session.authUsername}",
+                "value": "${request.form['username'][0]}",
+            },
+            {
+                "target": "${session.authPassword}",
+                "value": "${request.form['password'][0]}",
+            },
+            {
+                "comment": "Authentication has not yet been confirmed.",
+                "target": "${session.authConfirmed}",
+                "value": "${false}",
+            }
+        ],
+        "onResponse": [
+            {
+                "condition": "${response.status.code == 302}",
+                "target": "${session.authConfirmed}",
+                "value": "${true}",
+            }
+        ]
+    }
+}
+----
+
+[#d210e4696]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/AssignmentFilter.html[org.forgerock.openig.filter.AssignmentFilter, window=\_blank] 
+
+'''
+[#ConditionEnforcementFilter]
+=== ConditionEnforcementFilter — verify a condition to continue the chain of execution
+
+[#d210e4716]
+==== Description
+Verifies that a specified condition is met. If the condition is met, the request continues to be executed. Otherwise, the request is referred to a failure handler, or OpenIG returns 403 Forbidden and the request is stopped.
+
+[#d210e4726]
+==== Usage
+
+[source, javascript]
+----
+{
+    "type": "ConditionEnforcementFilter",
+    "config": {
+        "condition": boolean expression,
+        "failureHandler": handler reference
+    }
+}
+----
+
+[#d210e4732]
+==== Properties
+--
+
+"condition": boolean expression, required::
+Expression that evaluates to `true` or `false` , to determine whether a request should continue to be executed.
++
+See also xref:expressions-conf.adoc#expressions-conf[Expressions] .
+
+"failureHandler": handler reference, optional::
+Handler to treat the request if the condition expression evaluates as `false` .
++
+Provide an inline handler configuration object, or the name of a handler object that is defined in the heap.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
++
+Default: HTTP 403 Forbidden, the request stops being executed.
+
+--
+
+[#d210e4777]
+==== Example
+The following example tests whether a request contains a session username. If it does, the request continues to be executed. Otherwise, the request is dispatched to the `ConditionFailedHandler` failure handler.
+
+[source, javascript]
+----
+{
+    "name": "UsernameEnforcementFilter",
+    "type": "ConditionEnforcementFilter",
+    "config": {
+        "condition": "${not empty (session.username)}",
+        "failureHandler": "ConditionFailedHandler"
+    }
+}
+----
+
+[#d210e4788]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/ConditionEnforcementFilter.html[org.forgerock.openig.filter.ConditionEnforcementFilter, window=\_blank] 
+
+'''
+[#CookieFilter]
+=== CookieFilter — manage, suppress, relay cookies
+
+[#d210e4808]
+==== Description
+Manages, suppresses and relays cookies. Managed cookies are intercepted by the cookie filter itself and stored in the gateway session; managed cookies are not transmitted to the user agent. Suppressed cookies are removed from both request and response. Relayed cookies are transmitted freely between user agent and remote server and vice-versa.
+If a cookie does not appear in one of the three action parameters, then the default action is performed, controlled by setting the `defaultAction` parameter. If unspecified, the default action is to manage all cookies. In the event a cookie appears in more than one configuration parameter, then it will be selected in the order of precedence: managed, suppressed, relayed.
+
+[#d210e4823]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "CookieFilter",
+     "config": {
+         "managed": [ string, ... ],
+         "suppressed": [ string, ... ],
+         "relayed": [ string, ... ],
+         "defaultAction": string
+     }
+}
+----
+
+[#d210e4829]
+==== Properties
+--
+
+"managed": array of strings, optional::
+A list of the names of cookies to be managed.
+
+"suppressed": array of strings, optional::
+A list of the names of cookies to be suppressed.
+
+"relayed": array of strings, optional::
+A list of the names of cookies to be relayed.
+
+"defaultAction": string, optional::
+Action to perform for cookies that do not match an action set. Must be one of: `"MANAGE"` , `"RELAY"` , `"SUPPRESS"` . Default: `"MANAGE"` .
+
+--
+
+[#d210e4885]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/CookieFilter.html[org.forgerock.openig.filter.CookieFilter, window=\_blank] 
+
+'''
+[#CryptoHeaderFilter]
+=== CryptoHeaderFilter — encrypt, decrypt headers
+
+[#d210e4903]
+==== Description
+Encrypts or decrypts headers in a request or response.
+
+[#d210e4913]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "CryptoHeaderFilter",
+    "config": {
+        "messageType": string,
+        "operation": string,
+        "key": expression,
+        "algorithm": string,
+        "keyType": string,
+        "headers": [ string, ... ]
+    }
+}
+----
+
+[#d210e4919]
+==== Properties
+--
+
+"messageType": string, required::
+Indicates the type of message whose headers to encrypt or decrypt.
++
+Must be one of: `"REQUEST"` , `"RESPONSE"` .
+
+"operation": string, required::
+Indicates whether to encrypt or decrypt.
++
+Must be one of: `"ENCRYPT"` , `"DECRYPT"` .
+
+"key": expression, required::
+Base64 encoded key value.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"algorithm": string, optional::
+Algorithm used for encryption and decryption.
++
+Default: `AES/ECB/PKCS5Padding` 
+
+"keyType": string, optional::
+Algorithm name for the secret key.
++
+Default: `AES` 
+
+"headers": array of strings, optional::
+The names of header fields to encrypt or decrypt.
++
+Default: Do not encrypt or decrypt any headers
+
+--
+
+[#d210e5015]
+==== Example
+
+[source, javascript]
+----
+{
+    "name": "DecryptReplayPasswordFilter",
+    "type": "CryptoHeaderFilter",
+    "config": {
+        "messageType": "REQUEST",
+        "operation": "DECRYPT",
+        "algorithm": "DES/ECB/NoPadding",
+        "keyType": "DES",
+        "key": "oqdP3DJdE1Q=",
+        "headers": [
+            "replaypassword"
+        ]
+    }
+}
+----
+
+[#d210e5021]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/CryptoHeaderFilter.html[org.forgerock.openig.filter.CryptoHeaderFilter, window=\_blank] 
+
+'''
+[#EntityExtractFilter]
+=== EntityExtractFilter — extract pattern from message entity
+
+[#d210e5041]
+==== Description
+Extracts regular expression patterns from a message entity. The extraction results are stored in a "target" object. For a given matched pattern, as described in xref:expressions-conf.adoc#Patterns[Patterns(5)] , the value stored in the object is either the result of applying its associated pattern template (if specified) or the match result itself otherwise.
+
+[#d210e5053]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": string,
+        "charset": string,
+        "target": lvalue-expression,
+        "bindings": [
+            {
+                "key": string,
+                "pattern": pattern,
+                "template": pattern-template
+            }, ...
+        ]
+    }
+}
+----
+
+[#d210e5059]
+==== Properties
+--
+
+"messageType": string, required::
+The message type to extract patterns from.
++
+Must be one of: `REQUEST` , `RESPONSE` .
+
+"charset": string, optional::
+Overrides the character set encoding specified in message.
++
+Default: the message encoding is used.
+
+"target": lvalue-expression, required::
+Expression that yields the target object that contains the extraction results.
++
+The bindings determine what type of object is stored in the target location.
++
+The object stored in the target location is a Map<String, String>. You can then access its content with `${target.key}` or `${target['key']}` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"key": string, required::
+Name of element in target object to contain an extraction result.
+
+"pattern": pattern, required::
+The regular expression pattern to find in the entity.
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
+
+"template": pattern-template, optional::
+The template to apply to the pattern and store in the named target element.
++
+Default: store the match result itself.
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
+
+--
+
+[#d210e5163]
+==== Examples
+Extracts a nonce from the response, which is typically a login page, and sets its value in the attributes context to be used by the downstream filter posting the login form. The nonce value would be accessed using the following expression: `${attributes.extract.wpLoginToken}` .
+The pattern finds all matches in the HTTP body of the form `wpLogintoken value="abc"` . Setting the template to `$1` assigns the value `abc` to `attributes.extract.wpLoginToken` :
+
+[source, javascript]
+----
+{
+    "name": "WikiNoncePageExtract",
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": "response",
+        "target": "${attributes.extract}",
+        "bindings": [
+            {
+                "key": "wpLoginToken",
+                "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
+                "template": "$1"
+            }
+        ]
+    }
+}
+----
+The following example reads the response looking for the OpenAM login page. When found, it sets `isLoginPage = true` to be used in a SwitchFilter to post the login credentials:
+
+[source, javascript]
+----
+{
+    "name": "FindLoginPage",
+    "type": "EntityExtractFilter",
+    "config": {
+        "messageType": "response",
+        "target": "${attributes.extract}",
+        "bindings": [
+            {
+                "key": "isLoginPage",
+                "pattern": "OpenAM\s\(Login\)",
+                "template": "true"
+            }
+        ]
+    }
+}
+----
+
+[#d210e5196]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/EntityExtractFilter.html[org.forgerock.openig.filter.EntityExtractFilter, window=\_blank] 
+
+'''
+[#FileAttributesFilter]
+=== FileAttributesFilter — retrieve record from a file
+
+[#d210e5216]
+==== Description
+Retrieves and exposes a record from a delimiter-separated file. Lookup of the record is performed using a specified `key` , whose `value` is derived from an expression. The resulting record is exposed in an object whose location is specified by the `target` expression. If a matching record cannot be found, then the resulting object is empty.
+The retrieval of the record is performed lazily; it does not occur until the first attempt to access a value in the `target` . This defers the overhead of file operations and text processing until a value is first required. This also means that the value expression is not evaluated until the object is first accessed.
+
+[#d210e5240]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "FileAttributesFilter",
+     "config": {
+         "file": expression,
+         "charset": string,
+         "separator": string,
+         "header": boolean,
+         "fields": [ string, ... ],
+         "target": lvalue-expression,
+         "key": string,
+         "value": expression
+     }
+}
+----
+For an example see xref:../gateway-guide/chap-credentials-tutorial.adoc#tutorial-credentials-from-file[Section 4.2, "Log in With Credentials From a File"] in the _Gateway Guide_ .
+
+[#d210e5250]
+==== Properties
+--
+
+"file": expression, required::
+The file containing the record to be read.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"charset": string, optional::
+The character set in which the file is encoded.
++
+Default: `"UTF-8"` .
+
+"separator": separator identifier string, optional::
+[open]
+====
+The separator character, which is one of the following:
+
+COLON::
+Unix-style colon-separated values, with backslash as the escape character.
+
+COMMA::
+Comma-separated values, with support for quoted literal strings.
+
+TAB::
+Tab separated values, with support for quoted literal strings.
+
+====
++
+Default: `COMMA` 
+
+"header": boolean, optional::
+The setting to treat or not treat the first row of the file as a header row.
++
+When the first row of the file is treated as a header row, the data in that row is disregarded and cannot be returned by a lookup operation.
++
+Default: `true` .
+
+"fields": array of strings, optional::
+A list of keys in the order they appear in a record.
++
+If `fields` is not set, the keys are assigned automatically by the column numbers of the file.
+
+"target": lvalue-expression, required::
+Expression that yields the target object to contain the record.
++
+The target object is a `Map<String, String>` , where the fields are the keys. For example, if the target is `${attributes.file}` and the record has a `username` field and a `password` field mentioned in the fields list, Then you can access the user name as `${attributes.file.username}` and the password as `${attributes.file.password}` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"key": string, required::
+The key used for the lookup operation.
+
+"value": expression, required::
+Expression that yields the value to be looked-up within the file.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+--
+
+[#d210e5410]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/FileAttributesFilter.html[org.forgerock.openig.filter.FileAttributesFilter, window=\_blank] 
+
+'''
+[#HeaderFilter]
+=== HeaderFilter — remove and add headers
+
+[#d210e5428]
+==== Description
+Removes headers from and adds headers to a message. Headers are added to any existing headers in the message. To replace, remove the header and add it.
+
+[#d210e5438]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": string,
+         "remove": [ string, ... ],
+         "add": {
+            name: [ string, ... ], ...
+         }
+     }
+}
+----
+
+[#d210e5444]
+==== Properties
+--
+
+"messageType": string, required::
+Indicates the type of message to filter headers for. Must be one of: `"REQUEST"` , `"RESPONSE"` .
+
+"remove": array of strings, optional::
+The names of header fields to remove from the message.
+
+"add": object, optional::
+Header fields to add to the message. The `name` specifies the header name, with an associated array of string values.
+
+--
+
+[#d210e5487]
+==== Examples
+Replace the host header on the incoming request with `myhost.com` :
+
+[source, javascript]
+----
+{
+     "name": "ReplaceHostFilter",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "REQUEST",
+         "remove": [ "host" ],
+         "add": {
+             "host": [ "myhost.com" ]
+         }
+     }
+}
+----
+Add a Set-Cookie header in the response:
+
+[source, javascript]
+----
+{
+     "name": "SetCookieFilter",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "RESPONSE",
+         "add": {
+             "Set-Cookie": [ "mysession=12345" ]
+         }
+     }
+}
+----
+Add headers `custom1` and `custom2` to the request:
+
+[source, javascript]
+----
+{
+     "name": "SetCustomHeaders",
+     "type": "HeaderFilter",
+     "config": {
+         "messageType": "REQUEST",
+         "add": {
+             "custom1": [ "12345", "6789" ],
+             "custom2": [ "abcd" ]
+         }
+     }
+}
+----
+
+[#d210e5514]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/HeaderFilter.html[org.forgerock.openig.filter.HeaderFilter, window=\_blank] 
+
+'''
+[#HttpBasicAuthFilter]
+=== HttpBasicAuthFilter — perform HTTP Basic authentication
+
+[#d210e5532]
+==== Description
+Performs authentication through the HTTP Basic authentication scheme. For more information, see link:http://www.ietf.org/rfc/rfc2617.txt[RFC 2617, window=\_blank] .
+If challenged for authentication via a `401 Unauthorized` status code by the server, this filter retries the request with credentials attached. Once an HTTP authentication challenge is issued from the remote server, all subsequent requests to that remote server that pass through the filter include the user credentials.
+If authentication fails (including the case of no credentials yielded from expressions), then processing is diverted to the specified authentication failure handler.
+
+[#d210e5552]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "HttpBasicAuthFilter",
+    "config": {
+        "username": expression,
+        "password": expression,
+        "failureHandler": Handler reference,
+        "cacheHeader": boolean
+    }
+}
+----
+
+[#d210e5558]
+==== Properties
+--
+
+"username": expression, required::
+Expression that yields the username to supply during authentication.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"password": expression, required::
+Expression that yields the password to supply during authentication.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"failureHandler": Handler reference, required::
+Dispatch to this Handler if authentication fails.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"cacheHeader": boolean, optional::
+Whether to cache credentials in the session after the first successful authentication, and then replay those credentials for subsequent authentications in the same session.
++
+With `"cacheHeader": false` , the filter generates the header for each request. This is useful, for example, when users change their passwords during a browser session.
++
+Default: `true` 
+
+--
+
+[#d210e5626]
+==== Example
+
+[source, javascript]
+----
+{
+    "name": "TomcatAuthenticator",
+    "type": "HttpBasicAuthFilter",
+    "config": {
+        "username": "tomcat",
+        "password": "tomcat",
+        "failureHandler": "TomcatAuthFailureHandler",
+        "cacheHeader": false
+    }
+}
+----
+
+[#d210e5632]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forgerock.openig.filter.HttpBasicAuthFilter, window=\_blank] 
+
+'''
+[#LocationHeaderFilter]
+=== LocationHeaderFilter — rewrites Location headers
+
+[#d210e5652]
+==== Description
+Rewrites Location headers on responses that generate a redirect that would take the user directly to the application being proxied rather than taking the user through OpenIG.
+For example, if OpenIG listens on `\https://proxy.example.com:443/` and the application it protects listens on `\http://www.example.com:8080/` , then you can configure this filter to rewrite redirects that would take the user to locations under `\http://www.example.com:8080/` to go instead to locations under `\https://proxy.example.com:443/` .
+
+[#d210e5676]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "LocationHeaderFilter",
+    "config": {
+        "baseURI": expression
+    }
+}
+----
+An alternative value for type is RedirectFilter.
+
+[#d210e5684]
+==== Properties
+--
+
+"baseURI": expression, optional::
+The base URI of the OpenIG instance. This is used to rewrite the Location header on the response.
++
+Default: Redirect to the original URI specified in the request.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+--
+
+[#d210e5704]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "LocationRewriter",
+     "type": "LocationHeaderFilter",
+     "config": {
+         "baseURI": "https://proxy.example.com:443/"
+      }
+}
+----
+
+[#d210e5710]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/LocationHeaderFilter.html[org.forgerock.openig.filter.LocationHeaderFilter, window=\_blank] 
+
+'''
+[#OAuth2ClientFilter]
+=== OAuth2ClientFilter — Authenticate an end user with OAuth 2.0 delegated authorization
+
+[#OAuth2ClientFilter-description]
+==== Description
+An OAuth2ClientFilter is a filter that authenticates an end user using OAuth 2.0 delegated authorization. The filter can act as an OpenID Connect relying party as well as an OAuth 2.0 client.
+The client filter does not include information about identity providers, or information about static registration with identity providers. For information about an identity provider, see xref:misc-conf.adoc#Issuer[Issuer(5)] . For information about registration with an identity provider, see xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)] .
+In the case where all users share the same identity provider, you can configure the filter as a client of a single provider by referencing a single client registration name for the filter. You can also configure the filter to work with multiple providers, taking the user to a login handler page—often full of provider logos, and known as a _Nascar page_ . The name comes from Nascar race cars, some of which are covered with sponsors' logos—to choose a provider.
+--
+What an OAuth2ClientFilter does depends on the incoming request URI. In the following list _clientEndpoint_ represents the value of the clientEndpoint in the filter configuration:
+
+clientEndpoint/login/?discovery=user-input&goto=url::
+Using the _user-input_ value, discover and register dynamically with the end user's OpenID Provider or with the client registration endpoint as described in RFC 7591.
++
+Upon successful registration, redirect the end user to the provider for authentication and authorization consent before redirecting the user-agent back to the callback client endpoint.
+
+clientEndpoint/login?registration=registrationName&goto=url::
+Redirect the end user for authorization with the specified _registration_ , which is the name of a ClientRegistration configuration as described in xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)] .
++
+The provider corresponding to the registration then authenticates the end user and obtains authorization consent before redirecting the user-agent back to the callback client endpoint.
++
+Ultimately if the entire process is successful, the filter saves the authorization state in the context and redirects the user-agent to the specified URL.
+
+clientEndpoint/logout?goto=url::
+Remove the authorization state for the end user and redirect to the specified URL.
+
+clientEndpoint/callback::
+Handle the callback from the OAuth 2.0 authorization server that occurs as part of the authorization process.
++
+If the callback is handled successfully, the filter saves the authorization state in the context at the specified target location and redirects to the URL during login.
+
+Other request URIs::
+Restore authorization state in the specified target location and call the next filter or handler in the chain.
+
+--
+
+[#d210e5825]
+==== Usage
+
+[source, javascript]
+----
+{
+  "name": string,
+  "type": "OAuth2ClientFilter",
+  "config": {
+    "clientEndpoint": expression,
+    "failureHandler": Handler reference,
+    "discoveryHandler": Handler reference,
+    "loginHandler": Handler reference,
+    "registrations": [ ClientRegistration reference(s) ],
+    "metadata": dynamic registration client metadata object,
+    "cacheExpiration": duration string,
+    "executor": executor,
+    "target": expression,
+    "defaultLoginGoto": expression,
+    "defaultLogoutGoto": expression,
+    "requireHttps": boolean,
+    "requireLogin": boolean
+  }
+}
+----
+
+[#d210e5831]
+==== Properties
+--
+
+"clientEndpoint": expression, required::
+Base URI for the filter.
++
+For example, if you set `"clientEndpoint": "/openid"` , then the service URIs for this filter on your OpenIG server are `/openid/login` , `/openid/logout` , and `/openid/callback` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"failureHandler": Handler reference, required::
+Provide an inline handler configuration object, or the name of a handler object that is defined in the heap.
++
+If this handler is invoked, then the target in the context can be populated with information such as the exception, client registration, and error.
++
+The failure object in the target is a simple map, similar to the following example:
++
+
+[source, javascript]
+----
+{
+    "client_registration": "ClientRegistration name string",
+    "error": {
+        "realm": "optional string",
+        "scope": [ "optional required scope string", ... ],
+        "error": "optional string",
+        "error_description": "optional string",
+        "error_uri": "optional string"
+    },
+    "access_token": "string",
+    "id_token": "string",
+    "token_type": "Bearer",
+    "expires_in": "number",
+    "scope": [ "optional scope string", ... ],
+    "client_endpoint": "URL string",
+    "exception": exception
+}
+----
++
+In the failure object, the following fields are not always present. Their presence depends on when the failure occurs:
+
+* "access_token"
+
+* "id_token"
+
+* "token_type"
+
+* "expires_in"
+
+* "scope"
+
+* "client_endpoint"
+
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"discoveryHandler": Handler reference, optional::
+Invoke this HTTP client handler to communicate with the OpenID Provider for OpenID Connect Discovery.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
++
+Usually set this to the name of a ClientHandler configured in the heap, or a chain that ends in a ClientHandler.
++
+Default: OpenIG uses the default ClientHandler.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] , xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)] .
+
+"loginHandler": Handler reference, required if there are zero or multiple client registrations, optional if there is one client registration::
+Use this Handler when the user must choose an identity provider. When `registrations` contains only one client registration, this Handler is optional but is displayed if specified.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
++
+For an example of a login handler where no client registrations are defined, see xref:../gateway-guide/chap-oauth2-client.adoc#oidc-discovery-setup-gateway[Procedure 9.2, "Preparing OpenIG for Discovery and Dynamic Registration"] in the _Gateway Guide_ . The following example shows a login handler that allows the user to choose from two client registrations: `openam` and `google` :
++
+
+[source, javascript]
+----
+{
+    "name": "NascarPage",
+    "type": "StaticResponseHandler",
+    "config": {
+        "status": 200,
+        "entity": "<html><p><a
+                   href='/openid/login?registration=openam&goto=${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}'
+                   >OpenAM Login</a></p>
+                   <p><a
+                   href='/openid/login?registration=google&goto=${contexts.router.originalUri}'
+                   >Google Login</a></p>
+                   </html>"
+    }
+}
+----
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"registrations": Array of ClientRegistration references or inline ClientRegistration declarations, optional::
+List of client registrations that authenticate OpenIG to the identity providers. The list must contain all client registrations that are to be used by the client filter.
++
+The value represents a static client registration with an identity provider as described in xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)] .
+
+"metadata": client metadata object, required for dynamic client registration and ignored otherwise::
+This object holds client metadata as described in link:https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata[OpenID Connect Dynamic Client Registration 1.0, window=\_blank] , and optionally a list of scopes. See that document for additional details and a full list of fields.
++
+This object can also hold client metadata as described in RFC 7591, link:https://tools.ietf.org/html/rfc7591[OAuth 2.0 Dynamic Client Registration Protocol, window=\_blank] . See that RFC for additional details.
++
+[open]
+====
+The following partial list of metadata fields is not exhaustive, but includes metadata that is useful with OpenAM as OpenID Provider:
+
+"redirect_uris": array of URI strings, required::
+The array of redirection URIs to use when dynamically registering this client.
+
+"client_name": string, optional::
+Name of the client to present to the end user.
+
+"scopes": array of strings, optional::
+Array of scope strings to request of the OpenID Provider.
+
+====
+
+"cacheExpiration": duration string, optional::
+Duration for which to cache user-info resources.
++
+OpenIG lazily fetches user info from the OpenID provider. In other words, OpenIG only fetches the information when a downstream Filter or Handler uses the user info. Caching allows OpenIG to avoid repeated calls to OpenID providers when reusing the information over a short period.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
++
+Default: 20 seconds
++
+Set this to disabled or zero to disable caching. When caching is disabled, user info is still lazily fetched.
+
+"executor": executor, optional::
+An executor service to schedule the execution of tasks, such as the eviction of entries in the OpenID Connect user information cache.
++
+Default: `ScheduledExecutorService` 
++
+See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)] .
+
+"target": expression, optional::
+Expression that yields the target object whose value is to be set, such as `${attributes.openid}` .
++
+Default: `${attributes.openid}` 
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"defaultLoginGoto": expression, optional::
+The URI to redirect to after successful authentication and authorization.
++
+Default: return an empty page.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"defaultLogoutGoto": expression, optional::
+The URI to redirect to after successful logout.
++
+Default: return an empty page.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"requireHttps": boolean, optional::
+Whether to require that requests use the HTTPS scheme.
++
+Default: true.
+
+"requireLogin": boolean, optional::
+Whether to require authentication for all incoming requests.
++
+Default: true.
+
+--
+
+[#d210e6296]
+==== Example
+The following example configures an OAuth 2.0 client filter. The base client endpoint is `/openid` . The filter uses well-known configuration endpoints to obtain configuration information for OpenAM and for Google as providers. The client credentials are not shown.
+When a incoming request is made to `/openid/login` , this filter takes the user to a NascarPage to choose an identity provider. It then handles negotiation for authorization with the provider.
+If the authorization process completes successfully, then the filter injects the authorization state data into `attributes.openid` .
+At the end of the interaction, the aim of this configuration is simply to dump the data obtained back in the response:
+
+[source, javascript]
+----
+{
+    "name": "OpenIDConnectClient",
+    "type": "OAuth2ClientFilter",
+    "config": {
+        "target"                : "${attributes.openid}",
+        "clientEndpoint"        : "/openid",
+        "loginHandler"          : "NascarPage",
+        "registrations"         : [ "openam", "google" ],
+        "failureHandler"        : "Dump",
+        "defaultLoginGoto"      : "/dump",
+        "defaultLogoutGoto"     : "/unprotected",
+        "requireHttps"          : false,
+        "requireLogin"          : true
+    }
+}
+----
+For details regarding configuration of providers, see xref:misc-conf.adoc#Issuer[Issuer(5)] and xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)] .
+Notice that this configuration is for development and testing purposes only, and is not secure ("requireHttps": false). Make sure you do require HTTPS in production environments.
+
+[#d210e6327]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/OAuth2ClientFilter.html[org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter, window=\_blank] 
+
+[#d210e6334]
+==== See Also
+xref:misc-conf.adoc#Issuer[Issuer(5)] , xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)] 
+link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, window=\_blank] 
+link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank] 
+link:http://openid.net/connect/[OpenID Connect, window=\_blank] site, in particular the list of standard OpenID Connect 1.0 link:http://openid.net/specs/openid-connect-basic-1_0.html#Scopes[scope values, window=\_blank] 
+
+'''
+[#OAuth2ResourceServerFilter]
+=== OAuth2ResourceServerFilter — validate a request containing an OAuth 2.0 access token
+
+[#OAuth2ResourceServerFilter-description]
+==== Description
+An OAuth2ResourceServerFilter is a filter that validates a request containing an OAuth 2.0 access token. The filter expects an OAuth 2.0 token from the HTTP Authorization header of the request, such as the following example header, where the OAuth 2.0 access token is `1fc0e143-f248-4e50-9c13-1d710360cec9` :
+
+[source, httprequest]
+----
+Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9
+----
+The filter extracts the access token, and then validates it against the configured tokenInfoEndpoint URL.
+On successful validation, the filter creates a new context for the authorization server response, at `${contexts.oauth2}` .
+The context is named `oauth2` and can be reached at `contexts.oauth2` or `contexts['oauth2']` .
+The context contains data such as the access token, which can be reached at `contexts.oauth2.accessToken` or `contexts['oauth2'].accessToken` .
+Regarding errors, if the filter configuration and access token together result in an invalid request to the authorization server, the filter returns an HTTP 400 Bad Request response to the user-agent.
+If the access token is missing from the request, the filter returns an HTTP 401 Unauthorized response to the user-agent:
+
+[source, httprequest]
+----
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer realm="OpenIG"
+----
+If the access token is not valid, for example, because it has expired, the filter also returns an HTTP 401 Unauthorized response to the user-agent.
+If the scopes for the access token do not match the specified required scopes, the filter returns an HTTP 403 Forbidden response to the user-agent.
+
+[#d210e6426]
+==== Usage
+
+[source, javascript]
+----
+{
+  "name": string,
+  "type": "OAuth2ResourceServerFilter",
+  "config": {
+    "providerHandler": Handler reference,
+    "scopes": [ expression, ... ],
+    "tokenInfoEndpoint": URL string,
+    "cacheExpiration": duration string,
+    "executor": executor,
+    "requireHttps": boolean,
+    "realm": string
+  }
+}
+----
+An alternative value for type is OAuth2RSFilter.
+
+[#d210e6434]
+==== Properties
+--
+
+"providerHandler": Handler reference, optional::
+Invoke this HTTP client handler to send token info requests.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
++
+Default: OpenIG uses the default ClientHandler.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] , xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)] .
+
+"scopes": array of expressions, required::
+The list of required OAuth 2.0 scopes for this protected resource.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"tokenInfoEndpoint": URL string, required::
+The URL to the token info endpoint of the OAuth 2.0 authorization server.
+
+"cacheExpiration": duration string, optional::
+Duration for which to cache OAuth 2.0 access tokens.
++
+Caching allows OpenIG to avoid repeated requests for token info when reusing the information over a short period.
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
++
+Default: 1 minute
++
+Set this to disabled or zero to disable caching. When caching is disabled, each request triggers a new request to the authorization server to verify the access token.
+
+"executor": executor, optional::
+An executor service to schedule the execution of tasks, such as the eviction of entries in the access token cache.
++
+Default: `ScheduledExecutorService` 
++
+See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)] .
+
+"requireHttps": boolean, optional::
+Whether to require that requests use the HTTPS scheme.
++
+Default: true
+
+"realm": string, optional::
+HTTP authentication realm to include in the WWW-Authenticate response header field when returning an HTTP 401 Unauthorized status to a user-agent that need to authenticate.
++
+Default: OpenIG
+
+--
+
+[#d210e6698]
+==== Example
+The following example configures an OAuth 2.0 protected resource filter that expects scopes email and profile (and returns an HTTP 403 Forbidden status if the scopes are not present), and validates access tokens against the OpenAM token info endpoint. It caches access tokens for up to 2 minutes:
+
+[source, javascript]
+----
+{
+    "name": "ProtectedResourceFilter",
+    "type": "OAuth2ResourceServerFilter",
+    "config": {
+        "providerHandler": "ClientHandler",
+        "scopes": [
+            "email",
+            "profile"
+        ],
+        "tokenInfoEndpoint": "https://openam.example.com:8443/openam/oauth2/tokeninfo",
+        "cacheExpiration": "2 minutes"
+    }
+}
+----
+
+[#d210e6706]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/OAuth2ResourceServerFilterHeaplet.html[org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilterHeaplet, window=\_blank] 
+
+[#d210e6713]
+==== See Also
+link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, window=\_blank] 
+link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank] 
+
+'''
+[#PasswordReplayFilter]
+=== PasswordReplayFilter — replay credentials with a single filter
+
+[#d210e6738]
+==== Description
+Replays credentials in a single composite filter for the following cases:
+
+* When the request is for a login page
+
+* When the response contains a login page
+
+When the response contains a login page, a PasswordReplayFilter can extract values from the response entity and reuse the values when replaying credentials.
+A PasswordReplayFilter does not retry failed authentication attempts.
+
+[#d210e6759]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "PasswordReplayFilter",
+    "config": {
+        "request": request configuration object,
+        "loginPage": expression,
+        "loginPageContentMarker": pattern,
+        "credentials": Filter reference,
+        "headerDecryption": crypto configuration object,
+        "loginPageExtractions": [ extract configuration object, ... ]
+    }
+}
+----
+
+[#d210e6765]
+==== Properties
+--
+
+"request": request configuration object, required::
+The request that replays the credentials.
++
+[open]
+====
+The request configuration object has the following fields:
+
+"method": string, required::
+The HTTP method to be performed on the resource such as `GET` or `POST` .
+
+"uri": string, required::
+The fully qualified URI of the resource to access such as `\http://www.example.com/login` .
+
+"entity": expression, optional::
+The entity body to include in the request.
++
+This setting is mutually exclusive with the `form` setting when the `method` is set to `POST` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"form": object, optional::
+A form to include in the request.
++
+The `param` specifies the form parameter name. Its value is an array of expressions to evaluate as form field values.
++
+This setting is mutually exclusive with the `entity` setting when the `method` is set to `POST` .
+
+"headers": object, optional::
+Header fields to set in the request.
++
+The `name` specifies the header name. Its value is an array of expressions to evaluate as header values.
+
+"version": string, optional::
+The HTTP protocol version.
++
+Default: `"HTTP/1.1"` .
+
+====
++
+The implementation uses a StaticRequestFilter. The fields are the same as those described in xref:#StaticRequestFilter[StaticRequestFilter(5)] .
+
+"loginPage": expression, required unless loginPageContentMarker is defined::
+An expression that is true when a login page is requested, false otherwise.
++
+For example, the following expression specifies that an HTTP GET to the path `/login` is a request for a login page:
++
+
+[source]
+----
+${matches(request.uri.path, '/login') and (request.method == 'GET')}
+----
++
+OpenIG only evaluates the expression for the request, not for the response.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"loginPageContentMarker": pattern, required unless loginPage is defined::
+A pattern that matches when a response entity is that of a login page.
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
+
+"credentials": Filter reference, optional::
+Filter that injects credentials, making them available for replay. Consider using a `FileAttributesFilter` or a `SqlAttributesFilter` .
++
+When this is not specified, credentials must be made available to the request by other means.
++
+See also xref:#filters-conf[Filters] .
+
+"headerDecryption": crypto configuration object, optional::
+Object to decrypt request headers that contain credentials to replay.
++
+[open]
+====
+The crypto configuration object has the following fields:
+
+"key": expression, required::
+Base64 encoded key value.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"algorithm": string, optional::
+Algorithm used for decryption.
++
+Default: `AES/ECB/PKCS5Padding` 
+
+"keyType": string, optional::
+Algorithm name for the secret key.
++
+Default: `AES` 
+
+"headers": array of strings, optional::
+The names of header fields to decrypt.
++
+Default: Do not decrypt any headers.
+
+====
+
+"loginPageExtractions": extract configuration array, optional::
+Object to extract values from the login page entity.
++
+[open]
+====
+The extract configuration array is a series of configuration objects. To extract multiple values, use multiple extract configuration objects. Each object has the following fields:
+
+"name": string, required::
+Name of the field where the extracted value is put.
++
+The names are mapped into `attributes.extracted` .
++
+For example, if the name is `nonce` , the value can be obtained with the expression `${attributes.extracted.nonce}` .
++
+The name `isLoginPage` is reserved to hold a boolean that indicates whether the response entity is a login page.
+
+"pattern": pattern, required::
+The regular expression pattern to find in the entity.
++
+The pattern must contain one capturing group. (If it contains more than one, only the value matching the first group is placed into `attributes.extracted` .)
++
+For example, suppose the login page entity contains a nonce required to authenticate, and the nonce in the page looks like `nonce='n-0S6_WzA2Mj'` . To extract `n-0S6_WzA2Mj` , set `"pattern": " nonce='(.*)'"` .
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
+
+====
+
+--
+
+[#d210e7095]
+==== Examples
+The following example route authenticates requests using static credentials whenever the request is for `/login` . This PasswordReplayFilter example does not include any mechanism for remembering when authentication has already been successful. It simply replays the authentication every time that the request is for `/login` :
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "PasswordReplayFilter",
+                    "config": {
+                        "loginPage": "${request.uri.path == '/login'}",
+                        "request": {
+                            "method": "POST",
+                            "uri": "https://www.example.com:8444/login",
+                            "form": {
+                                "username": [
+                                    "MY_USERNAME"
+                                ],
+                                "password": [
+                                    "MY_PASSWORD"
+                                ]
+                            }
+                        }
+                    }
+                }
+            ],
+            "handler": "ClientHandler"
+        }
+    }
+}
+----
+For additional examples, see xref:../gateway-guide/chap-gateway-templates.adoc#chap-gateway-templates[Chapter 13, "Configuration Templates"] in the _Gateway Guide_ , and the Javadoc for the PasswordReplayFilter class.
+
+[#d210e7113]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/PasswordReplayFilterHeaplet.html[org.forgerock.openig.filter.PasswordReplayFilterHeaplet, window=\_blank] 
+
+'''
+[#PolicyEnforcementFilter]
+=== PolicyEnforcementFilter — enforce policy decisions from OpenAM
+
+[#d210e7133]
+==== Description
+This filter requests policy decisions from OpenAM, which allows or denies the request based on the request context, the request URI, and the OpenAM policies.
+
+* If the request is allowed, processing continues.
+
+* If the request is denied, OpenIG returns 403 Forbidden.
+
+* If an error occurs during the process, OpenIG returns 500 Internal Server Error.
+
+This filter allows you to specify the subject by SSO token, JWT, or JWT claims.
+This filter can add contextual attributes (accessible through `${attributes}` ), and some elements returned by the policy decision, such as attributes and advices.
+
+[NOTE]
+====
+In the OpenAM policy, remember to configure the `Resources` parameter with the URI of the protected application.
+The request URI from OpenIG must match the `Resources` parameter defined in the OpenAM policy. If the URI of the incoming request is changed before it enters the policy filter (for example, by rebasing or scripting), remember to change the `Resources` parameter in OpenAM policy accordingly.
+====
+
+[#d210e7174]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "PolicyEnforcementFilter",
+    "config": {
+        "openamUrl": URI expression,
+        "pepUsername": expression,
+        "pepPassword": expression,
+        "pepRealm": string,
+        "ssoTokenSubject": expression,
+        "jwtSubject": expression,
+        "claimsSubject": map or expression,
+        "amHandler": Handler reference,
+        "realm": string,
+        "ssoTokenHeader": string,
+        "application": string,
+        "cacheMaxExpiration": duration string,
+        "target": lvalue-expression,
+        "environment": map or expression,
+        "executor": executor
+    }
+}
+----
+
+[#d210e7180]
+==== Properties
+--
+
+"openamUrl": URI expression, required::
+The URL to an OpenAM service, such as `\https://openam.example.com:8443/openam/` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"pepUsername": expression, required::
+The OpenAM username of the user with permission to request policy decisions.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"pepPassword": expression, required::
+The OpenAM password of the user with permission to request policy decisions.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"pepRealm": string, optional::
+The realm of the user with permission to request policy decisions.
++
+Default: The value used by `realm` .
+
+"ssoTokenSubject": expression, required if neither of the following properties are present: "jwtSubject", "claimsSubject"::
+An expression evaluating to the OpenAM SSO token ID string for the subject making the request to the protected resource.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"jwtSubject": expression, required if neither of the following properties are present: "ssoTokenSubject", "claimsSubject"::
+An expression evaluating to the JWT string for the subject making the request to the protected resource.
++
+To use the raw id_token (base64, not decoded) returned by the OpenID Connect Provider during authentication, place an `OAuth2ClientFilter` filter before the PEP filter, and then use `${attributes.openid.id_token}` as the expression value.
++
+See also xref:#OAuth2ClientFilter[OAuth2ClientFilter(5)] and xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"claimsSubject": map or expression, required if neither of the following properties are present: "jwtSubject", "ssoTokenSubject"::
+A representation of JWT claims for the subject. The subject must be specified, but the JWT claims can contain other information such as the token issuer, expiration, and so on.
++
+If this property is a map, the structure must have the format `Map<String, Object>` . The value is evaluated as an expression.
++
+
+[source, javascript]
+----
+"claimsSubject": {
+          "sub": "${attributes.subject_identifier}",
+          "iss": "openam.example.com"
+      }
+----
++
+If this property is an expression, its evaluation must give an object of type `Map<String, Object>` .
++
+
+[source, javascript]
+----
+"claimsSubject": "${attributes.openid.id_token_claims}"
+----
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"amHandler": Handler reference, optional::
+The handler to use when requesting policy decisions from OpenAM.
++
+In production, use a ClientHandler that is capable of making an HTTPS connection to OpenAM.
++
+Default: OpenIG uses the `ForgeRockClientHandler` .
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"realm": string, optional::
+The OpenAM realm to use when requesting policy decisions.
++
+Default: `/` (Top Level Realm)
+
+"ssoTokenHeader": string, optional::
+The name of the HTTP header to use when supplying the SSO token ID for the user making a policy decision request.
++
+Default: `iPlanetDirectoryPro` 
+
+"application": string, optional::
+The OpenAM application to use when requesting policy decisions.
++
+Default: OpenIG does not specify an application when making a policy decision request. As a result, the application is `iPlanetAMWebAgentService` , which is the default for OpenAM.
+
+"cacheMaxExpiration": duration string, optional::
+Maximum duration for which to cache policy decision responses. If the time-to-live value in the policy decision response is shorter, then OpenIG expires the decision according to the shorter lifetime.
++
+This setting prevents OpenIG from having to issue a new request for every policy decision, including even repeated requests by the same subject for the same resource.
++
+
+[NOTE]
+======
+Cached policy decisions remain in the OpenIG cache even after a user logs out of OpenAM and the OpenAM session becomes invalid.
+======
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+Durations are not case sensitive.
+Negative durations are not supported.
+The following units can be used in durations:
+
+*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+
+*  `zero` , `disabled` : zero-length duration
+
+*  `days` , `day` , `d` : days
+
+*  `hours` , `hour` , `h` : hours
+
+*  `minutes` , `minute` , `min` , `m` : minutes
+
+*  `seconds` , `second` , `sec` , `s` : seconds
+
+*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+
+*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+
+*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+
++
+Default: 1 minute
+
+"target": lvalue-expression, optional::
+A map in the attributes context where the "attributes" and "advices" map fields from the policy decision are saved.
++
+Example: `${attributes.policy.attributes}` and `${attributes.policy.advices}` 
++
+Default: `${attributes.policy}` 
+
+"environment": map or expression, optional::
+Environment conditions can be defined in an OpenAM policy to set the circumstances under which the policy applies. For example, environment conditions can specify that the policy applies only during working hours or only when accessing from a specific IP address.
++
+If this property is a map, the structure must have the format `Map<String, List<Object>>` .
++
+
+[source, javascript]
+----
+"environment": {
+          "IP": [ "${contexts.client.remoteAddress}" ]
+      }
+----
++
+If this property is an expression, its evaluation must give an object of type `Map<String, List<Object>>` .
++
+
+[source, javascript]
+----
+"environment": "${attributes.my_environment}"
+----
+
+"executor": executor, optional::
+An executor service to schedule the execution of tasks, such as the eviction of entries in the policy decision cache.
++
+Default: `ScheduledExecutorService` 
++
+See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)] .
+
+--
+
+[#d210e7635]
+==== Example
+The following example requests a policy decision from OpenAM before allowing a request to continue. The `policyAdmin` user is an OpenAM subject with permission to request policy decisions. The user making the request to the protected resource is identified by an SSO token ID string. The realm defaults to OpenAM's top-level realm:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "PolicyEnforcementFilter",
+                    "config": {
+                        "openamUrl": "https://openam.example.com:8443/openam/",
+                        "pepUsername": "policyAdmin",
+                        "pepPassword": "${env['POLICY_ADMIN_PWD']}",
+                        "ssoTokenSubject": "${attributes.SSOCurrentUser}",
+                        "claimsSubject": "${attributes.openid.id_token_claims}",
+                        "target": "${attributes.currentPolicy}",
+                        "environment": {
+                            "IP": [ "${contexts.client.remoteAddress}" ]
+                         }
+                    }
+                }
+            ],
+            "handler": "ClientHandler"
+        }
+    }
+}
+----
+
+[#d210e7646]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/openam/PolicyEnforcementFilter.html[org.forgerock.openig.openam.PolicyEnforcementFilter, window=\_blank] 
+
+[#d210e7654]
+==== See Also
+link:https://backstage.forgerock.com/docs/openam/13.5/dev-guide/#rest-api-authz-policy-decisions[Requesting Policy Decisions in OpenAM, window=\_blank] 
+
+'''
+[#ScriptableFilter]
+=== ScriptableFilter — process requests and responses by using a script
+
+[#d210e7674]
+==== Description
+Processes requests and responses by using a script.
+The script must return either a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] .
+
+[IMPORTANT]
+====
+When you are writing scripts or Java extensions, never use a `Promise` blocking method, such as `get()` , `getOrThrow()` , or `getOrThrowUninterruptibly()` , to obtain the response.
+A promise represents the result of an asynchronous operation. Therefore, using a blocking method to wait for the result can cause deadlocks and/or race issues.
+====
+[#d210e7710]
+===== Classes
+The following classes are imported automatically for Groovy scripts:
+
+*  `org.forgerock.http.Client` 
+
+*  `org.forgerock.http.Filter` 
+
+*  `org.forgerock.http.Handler` 
+
+*  `org.forgerock.http.filter.throttling.ThrottlingRate` 
+
+*  `org.forgerock.http.util.Uris` 
+
+*  `org.forgerock.util.AsyncFunction` 
+
+*  `org.forgerock.util.Function` 
+
+*  `org.forgerock.util.promise.NeverThrowsException` 
+
+*  `org.forgerock.util.promise.Promise` 
+
+*  `org.forgerock.services.context.Context` 
+
+*  `org.forgerock.http.protocol.*` 
+
+
+[#d210e7783]
+===== Objects
+--
+The script has access to the following global objects:
+
+Any parameters passed as args::
+You can use the configuration to pass parameters to the script by specifying an args object.
++
+Take care when naming keys in the args object. If you reuse the name of another global object, cause the script to fail and OpenIG to return a response with HTTP status code 500 Internal Server Error.
+
+attributes::
+The link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
++
+Use `session` for maintaining state between successive requests from the same logical client.
+
+context::
+The processing link:../apidocs/index.html?org/forgerock/services/context/Context.html[context, window=\_blank] .
++
+This context is the leaf of a chain of contexts. It provides access to other Context types, such as SessionContext, AttributesContext, and ClientContext, through the `context.asContext(ContextClass.class)` method.
+
+request::
+The HTTP link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank] .
+
+globals::
+This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
+
+http::
+An embedded client for making outbound HTTP requests, which is an link:../apidocs/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank] .
++
+If a `"clientHandler"` is set in the configuration, then that Handler is used. Otherwise, the default ClientHandler configuration is used.
++
+For details, see xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+ldap::
+The link:../apidocs/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
++
+Use this client to perform outbound LDAP requests, such as LDAP authentication.
+
+logger::
+The link:../apidocs/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
+
+next::
+The link:../apidocs/index.html?org/forgerock/http/Handler.html[next, window=\_blank] object refers to the next handler in the filter chain.
+
+session::
+The link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
++
+Use `attributes` for transferring transient state between components when processing a single request.
+
+--
+When you have finished processing the request, execute `return next.handle(context, request)` to call the next filter or handler in the current chain and return the value from the call. Actions on the response must be performed in the Promise's callback methods.
+
+
+[#d210e7921]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "ScriptableFilter",
+    "config": {
+        "type": string,
+        "file": expression, // Use either "file"
+        "source": string,   // or "source", but not both.
+        "args": object,
+        "clientHandler": Handler reference
+    }
+}
+----
+
+[#d210e7927]
+==== Properties
+--
+
+"type": string, required::
+The Internet media type (formerly MIME type) of the script, `"application/x-groovy"` for Groovy
+
+"file": expression::
+Path to the file containing the script; mutually exclusive with `"source"` 
++
+Relative paths in the file field are relative to the base location for scripts. The base location depends on the configuration. For details, see xref:../gateway-guide/chap-install.adoc#install[Section 3.3, "Installing OpenIG"] in the _Gateway Guide_ .
++
+The base location for Groovy scripts is on the classpath when the scripts are executed. If therefore some Groovy scripts are not in the default package, but instead have their own package names, they belong in the directory corresponding to their package name. For example, a script in package `com.example.groovy` belongs under `openig-base/scripts/groovy/com/example/groovy/` .
+
+"source": string::
+The script as a string; mutually exclusive with `"file"` 
+
+"args": object, optional::
+Parameters passed from the configuration to the script.
++
+The configuration object is a map whose values can be scalars, arrays, objects and so forth, as in the following example:
++
+
+[source, javascript]
+----
+{
+    "args": {
+        "title": "Coffee time",
+        "status": 418,
+        "reason": [
+            "Not Acceptable",
+            "I'm a teapot",
+            "Acceptable"
+        ],
+        "names": {
+            "1": "koffie",
+            "2": "kafe",
+            "3": "cafe",
+            "4": "kafo"
+        }
+    }
+}
+----
++
+The script can then access the args parameters in the same way as other global objects. The following example sets the response status to `I'm a teapot` :
++
+
+[source, java]
+----
+response.status = Status.valueOf(418, reason[1])
+----
++
+For details regarding this status code see RFC 7168, Section 2.3.3 link:https://tools.ietf.org/html/rfc7168#section-2.3.3[418 I'm a Teapot, window=\_blank] .
++
+Args parameters can reference objects defined in the heap using expressions. For example, the following excerpt shows the heap that defines `SampleFilter` :
++
+
+[source, javascript]
+----
+{
+    "heap": [
+        {
+            "name": "SampleFilter",
+            "type": "SampleFilter",
+            "config": {
+                "name": "X-Greeting",
+                "value": "Hello world"
+            }
+        }
+    ]
+}
+----
++
+
+[NOTE]
+======
+ `SampleFilter` is a customized filter implemented as an extension of OpenIG. For information about sample filter, see xref:../gateway-guide/chap-extending.adoc#custom-sample-filter[Section 14.6.2, "Implementing a Customized Sample Filter"] in the _Gateway Guide_ .
+======
++
+To pass `SampleFilter` to the script, the following example uses an expression in the args parameters:
++
+
+[source, javascript]
+----
+{
+    "args": {
+        "filter": "${heap['SampleFilter']}"
+    }
+}
+----
++
+The script can then reference `SampleFilter` as `filter` .
++
+For details about the heap, see xref:required-conf.adoc#heap-objects[Heap Objects(5)] .
+
+"clientHandler", ClientHandler reference, optional::
+A Handler for making outbound HTTP requests.
++
+Default: Use the default ClientHandler.
++
+For details, see xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+--
+
+[#d210e8065]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/ScriptableFilter.html[org.forgerock.openig.filter.ScriptableFilter, window=\_blank] 
+
+'''
+[#SqlAttributesFilter]
+=== SqlAttributesFilter — execute SQL query
+
+[#d210e8085]
+==== Description
+Executes a SQL query through a prepared statement and exposes its first result. Parameters in the prepared statement are derived from expressions. The query result is exposed in an object whose location is specified by the `target` expression. If the query yields no result, then the resulting object is empty.
+The execution of the query is performed lazily; it does not occur until the first attempt to access a value in the target. This defers the overhead of connection pool, network and database query processing until a value is first required. This also means that the parameters expressions is not evaluated until the object is first accessed.
+
+[#d210e8100]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "SqlAttributesFilter",
+     "config": {
+         "dataSource": string,
+         "preparedStatement": string,
+         "parameters": [ expression, ... ],
+         "target": lvalue-expression
+     }
+}
+----
+
+[#d210e8106]
+==== Properties
+--
+
+"dataSource": string, required::
+The JNDI name of the factory for connections to the physical data source.
+
+"preparedStatement": string, required::
+The parameterized SQL query to execute, with `?` parameter placeholders.
+
+"parameters": array of expressions, optional::
+The parameters to evaluate and include in the execution of the prepared statement.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"target": lvalue-expression, required::
+Expression that yields the target object that will contain the query results.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+--
+
+[#d210e8161]
+==== Example
+Using the user's session ID from a cookie, query the database to find the user logged in and set the profile attributes in the attributes context:
+
+[source, javascript]
+----
+{
+        "name": "SqlAttributesFilter",
+        "type": "SqlAttributesFilter",
+        "config": {
+              "target": "${attributes.sql}",
+              "dataSource": "java:comp/env/jdbc/mysql",
+              "preparedStatement": "SELECT f.value AS 'first', l.value AS
+                'last', u.mail AS 'email', GROUP_CONCAT(CAST(r.rid AS CHAR)) AS
+                'roles'
+                FROM sessions s
+                INNER JOIN users u
+                ON ( u.uid = s.uid AND u.status = 1 )
+                LEFT OUTER JOIN profile_values f
+                ON ( f.uid = u.uid AND f.fid = 1 )
+                LEFT OUTER JOIN profile_values l
+                ON ( l.uid = u.uid AND l.fid = 2 )
+                LEFT OUTER JOIN users_roles r
+                ON ( r.uid = u.uid )
+                WHERE (s.sid = ? AND s.uid <> 0) GROUP BY s.sid;",
+              "parameters": [ "${request.cookies
+                [keyMatch(request.cookies,'JSESSION1234')]
+                [0].value}" ]
+         }
+ }
+----
+Lines are folded for readability in this example. In your JSON, keep the values for `"preparedStatement"` and `"parameters"` on one line.
+
+[#d210e8177]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/SqlAttributesFilter.html[org.forgerock.openig.filter.SqlAttributesFilter, window=\_blank] 
+
+'''
+[#StaticRequestFilter]
+=== StaticRequestFilter — create new request
+
+[#d210e8195]
+==== Description
+Creates a new request, replacing any existing request. The request can include an entity specified in the `entity` parameter. Alternatively, the request can include a form, specified in the `form` parameter, which is included in an entity encoded in `application/x-www-form-urlencoded` format if request method is `POST` , or otherwise as (additional) query parameters in the URI. The `form` and `entity` parameters cannot be used together when the `method` is set to `POST` .
+
+[#d210e8229]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "StaticRequestFilter",
+     "config": {
+         "method": string,
+         "uri": string,
+         "version": string,
+         "headers": {
+             name: [ expression, ... ], ...
+         },
+         "form": {
+             param: [ expression, ... ], ...
+         },
+         "entity": expression
+     }
+}
+----
+
+[#d210e8235]
+==== Properties
+--
+
+"method": string, required::
+The HTTP method to be performed on the resource (for example, `"GET"` ).
+
+"uri": string, required::
+The fully-qualified URI of the resource to access (for example, `"http://www.example.com/resource.txt"` ).
+
+"version": string, optional::
+Protocol version. Default: `"HTTP/1.1"` .
+
+"headers": object, optional::
+Header fields to set in the request.
++
+The `name` specifies the header name. Its value is an array of expressions to evaluate as header values.
+
+"form": object, optional::
+A form to include in the request.
++
+The `param` specifies the form parameter name. Its value is an array of expressions to evaluate as form field values.
++
+This setting is mutually exclusive with the `entity` setting when the `method` is set to `POST` .
+
+"entity": expression, optional::
+The entity body to include in the request.
++
+This setting is mutually exclusive with the `form` setting when the `method` is set to `POST` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+--
+
+[#d210e8344]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "LoginRequestFilter",
+     "type": "StaticRequestFilter",
+     "config": {
+         "method": "POST",
+         "uri": "http://10.10.0.2:8080/wp-login.php",
+         "form": {
+             "log": [ "george" ],
+             "pwd": [ "bosco" ],
+             "rememberme": [ "forever" ],
+             "redirect_to": [ "http://portal.example.com:8080/wp-admin/" ],
+             "testcookie": [ "1" ]
+         }
+     }
+}
+----
+
+[#d210e8350]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/StaticRequestFilter.html[org.forgerock.openig.filter.StaticRequestFilter, window=\_blank] 
+
+'''
+[#SwitchFilter]
+=== SwitchFilter — divert requests to another handler
+
+[#d210e8368]
+==== Description
+Conditionally diverts requests to another handler. If a `condition` evaluates to `true` , then the request is dispatched to the associated `handler` with no further processing by the switch filter.
+
+[#d210e8387]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "SwitchFilter",
+    "config": {
+        "onRequest": [
+            {
+                "condition": expression,
+                "handler": Handler reference,
+            },
+            ...
+        ],
+        "onResponse": [
+            {
+                "condition": expression,
+                "handler": Handler reference,
+            },
+            ...
+        ]
+    }
+}
+----
+
+[#d210e8393]
+==== Properties
+--
+
+"onRequest": array of objects, optional::
+Conditions to test (and handler to dispatch to, if `true` ) before the request is handled.
+
+"onResponse": array of objects, optional::
+Conditions to test (and handler to dispatch to, if `true` ) after the response is handled.
+
+"condition": expression, optional::
+Condition to evaluate to determine if the request or response should be dispatched to the handler.
++
+Default: unconditional dispatch to the handler.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"handler": Handler reference, required::
+Dispatch to this handler if the condition yields `true` .
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+--
+
+[#d210e8458]
+==== Example
+This example intercepts the response if it is equal to 200 and executes the LoginRequestHandler. This filter might be used in a login flow where the request for the login page must go through to the target, but the response should be intercepted in order to send the login form to the application. This is typical for scenarios where there is a hidden value or cookie returned in the login page, which must be sent in the login form:
+
+[source, javascript]
+----
+{
+    "name": "SwitchFilter",
+    "type": "SwitchFilter",
+    "config": {
+        "onResponse": [
+            {
+                "condition": "${response.status.code == 200}",
+                "handler": "LoginRequestHandler"
+            }
+        ]
+    }
+}
+----
+
+[#d210e8466]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/SwitchFilter.html[org.forgerock.openig.filter.SwitchFilter, window=\_blank] 
+
+'''
+[#TokenTransformationFilter]
+=== TokenTransformationFilter — transform a token issued by OpenAM to another type
+
+[#d210e8486]
+==== Description
+This filter transforms a token issued by OpenAM to another token type.
+The current implementation uses the REST Security Token Service (STS) APIs. It supports transforming an OpenID Connect ID Token ( `id_token` ) into a SAML 2.0 assertion where the subject confirmation method is Bearer, as described in link:http://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf[Profiles for the OASIS Security Assertion Markup Language (SAML) V2.0, window=\_blank] .
+The configuration for this filter references a REST STS instance that must be set up in OpenAM before this filter can be used. The REST STS instance exposes a pre-configured transformation under a specific REST endpoint. See the OpenAM documentation for details about setting up a REST STS instance.
+Any errors that occur during the token transformation cause a error response to be returned to the client and an error message to be logged for the OpenIG administrator.
+
+[#d210e8509]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": "string",
+    "type": "TokenTransformationFilter",
+    "config": {
+        "openamUri": URL string,
+        "realm": OpenAM realm name string,
+        "username": "${attributes.username}",
+        "password": "${attributes.password}",
+        "idToken": "${attributes.id_token}",
+        "target": "${attributes.saml_assertions}",
+        "instance": "oidc-to-saml",
+        "amHandler": Handler reference,
+        "ssoTokenHeader": string
+    }
+}
+----
+
+[#d210e8515]
+==== Properties
+--
+
+"openamUri": URL string, required::
+The base URL to an OpenAM service, such as `\https://openam.example.com:8443/openam/` .
++
+Authentication and REST STS requests are made to this service.
+
+"realm": string, optional::
+The OpenAM realm containing both the OpenAM user who can make the REST STS request and whose credentials are the username and password, and the STS instance described by the instance field.
++
+Default: `/` (Top Level Realm)
+
+"username": expression, required::
+The username for authenticating OpenIG as an OpenAM REST STS client.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"password": expression, required::
+The password for authenticating OpenIG as an OpenAM REST STS client.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"idToken": expression, required::
+An expression evaluating to OpenID Connect ID token.
++
+The expected value is a string that is the JWT encoded `id_token` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"target": expression, required::
+An expression evaluating to the location where the SAML 2.0 assertion is injected following successful transformation.
++
+The value of the SAML 2.0 assertion is a string.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"instance": expression, required::
+An expression evaluating to name of the REST STS instance.
++
+This expression is evaluated when the route is initialized, so the expression cannot refer to `request` or `contexts` .
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+"amHandler": Handler reference, optional::
+The handler to use for authentication and STS requests to OpenAM.
++
+In production, use a ClientHandler that is capable of making an HTTPS connection to OpenAM.
++
+Default: OpenIG uses the `ForgeRockClientHandler` .
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"ssoTokenHeader": string, optional::
+The name of the HTTP header to use when supplying the SSO token ID for the REST STS client subject.
++
+Default: `iPlanetDirectoryPro` 
+
+--
+
+[#d210e8670]
+==== Example
+For an example of how to set up and test the token transformation filter, see xref:../gateway-guide/chap-ttf.adoc#chap-ttf[Chapter 10, "Transforming OpenID Connect ID Tokens Into SAML Assertions"] in the _Gateway Guide_ .
+The following example uses the REST STS instance `oidc-to-saml` to request transformation of an OpenID Connect ID token into a SAML 2.0 assertion. Both the subject authenticating to access the REST endpoint, and the REST STS instance are in the realm `/sts` . The subject credentials for authentication to OpenAM are provided in the attributes context at `sts.username` and `sts.password` . The ID token to transform is provided in the attributes context at `sts.id_token` . The resulting SAML 2.0 assertion is injected as a string in the attribute context at `sts.saml_assertions` :
+
+[source, javascript]
+----
+{
+    "type": "TokenTransformationFilter",
+    "config": {
+        "openamUri": "https://openam.example.com/openam/",
+        "realm": "/sts",
+        "username": "${attributes.sts.username}",
+        "password": "${attributes.sts.password}",
+        "idToken": "${attributes.sts.id_token}",
+        "target": "${attributes.sts.saml_assertions}",
+        "instance": "oidc-to-saml",
+        "amHandler": "ClientHandler"
+    }
+}
+----
+
+[#d210e8700]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/openam/TokenTransformationFilter.html[org.forgerock.openig.openam.TokenTransformationFilter, window=\_blank] 
+
+'''
+[#UmaFilter]
+=== UmaFilter — protect access as an UMA resource server
+
+[#d210e8720]
+==== Description
+This filter acts as a policy enforcement point, protecting access as a User-Managed Access (UMA) resource server. Specifically, this filter ensures that a request for protected resources includes a valid requesting party token with appropriate scopes before allowing the response to flow back to the requesting party.
+
+[#d210e8730]
+==== Usage
+
+[source, javascript]
+----
+{
+    "type": "UmaFilter",
+    "config": {
+        "protectionApiHandler": Handler reference,
+        "umaService": UmaService reference,
+        "realm": string
+    }
+}
+----
+
+[#d210e8736]
+==== Properties
+--
+
+"protectionApiHandler": Handler reference, required::
+The handler to use when interacting with the UMA authorization server for token introspection and permission requests, such as a ClientHandler capable of making an HTTPS connection to the server.
++
+For details, see xref:handlers-conf.adoc#handlers-conf[Handlers] .
+
+"umaService": UmaService reference, required::
+The UmaService to use when protecting resources.
++
+For details, see xref:misc-conf.adoc#UmaService[UmaService(5)] .
+
+"realm": string, optional::
+The UMA realm set in the response to a request for a protected resource that does not include a requesting party token enabling access to the resource.
++
+Default: `uma` 
+
+--
+
+[#d210e8783]
+==== See Also
+link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/uma/UmaResourceServerFilter.html[org.forgerock.openig.uma.UmaResourceServerFilter, window=\_blank] 
+
+

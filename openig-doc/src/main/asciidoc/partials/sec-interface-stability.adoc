@@ -1,0 +1,54 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+[#interface-stability]
+=== Open Identity Platform Product Interface Stability
+
+Open Identity Platform products support many protocols, APIs, GUIs, and command-line interfaces. Some of these interfaces are standard and very stable. Others offer new functionality that is continuing to evolve.
+
+Open Identity Platform Community acknowledges that you invest in these interfaces, and therefore must know when and how Open Identity Platform Community expects them to change. For that reason, Open Identity Platform Community defines interface stability labels and uses these definitions in Open Identity Platform products.
+
+[#table-interface-stability]
+.Interface Stability Definitions
+[cols="25%,75%"]
+|===
+|Stability Label |Definition
+
+a|Stable
+
+a|This documented interface is expected to undergo backwards-compatible changes only for major releases. Changes may be announced at least one minor release before they take effect.
+
+a|Evolving
+
+a|This documented interface is continuing to evolve and so is expected to change, potentially in backwards-incompatible ways even in a minor release. Changes are documented at the time of product release.
+
+While new protocols and APIs are still in the process of standardization, they are Evolving. This applies for example to recent Internet-Draft implementations, and also to newly developed functionality.
+
+a|Deprecated
+
+a|This interface is deprecated and likely to be removed in a future release. For previously stable interfaces, the change was likely announced in a previous release. Deprecated interfaces will be removed from Open Identity Platform products.
+
+a|Removed
+
+a|This interface was deprecated in a previous release and has now been removed from the product.
+
+a|Internal/Undocumented
+
+a|Internal and undocumented interfaces can change without notice. If you depend on one of these interfaces,
+contact Open Identity Platform link:https://github.com/OpenIdentityPlatform/.github/wiki/Approved-Vendor-List[Approved Vendors, window=\_blank] to discuss your needs.
+
+|===

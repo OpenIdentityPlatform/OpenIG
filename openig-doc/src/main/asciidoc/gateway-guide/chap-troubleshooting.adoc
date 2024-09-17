@@ -1,0 +1,188 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-troubleshooting]
+==  Troubleshooting
+
+This chapter covers common problems and their solutions.
+
+[#troubleshooting-object-not-found-in-heap]
+===  Object not found in heap
+
+
+[source]
+----
+org.forgerock.json.fluent.JsonValueException: /handler:
+   object Router2 not found in heap
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:351)
+    at org.forgerock.openig.heap.HeapImpl.resolve(HeapImpl.java:334)
+    at org.forgerock.openig.heap.HeapImpl.getHandler(HeapImpl.java:538)
+----
+You have specified `"handler": "Router2"` in `config.json` , but no handler configuration object named Router2 exists. Make sure you have added an entry for the handler and that you have correctly spelled its name.
+
+
+[#troubleshooting-invalid-json]
+===  Extra or missing character / invalid JSON
+
+When the JSON for a route is not valid, OpenIG does not load the route. Instead, a description of the error appears in the log:
+
+[source]
+----
+MON NOV 30 16:12:56 CET 2015 (ERROR) {Router}/handler
+The route defined in file '/Users/me/.openig/config/routes/99-default.json'
+ cannot be modified
+------------------------------
+MON NOV 30 16:12:56 CET 2015 (ERROR) {Router}/handler
+Cannot read/parse content of /Users/me/.openig/config/routes/99-default.json
+[            HeapException] > Cannot read/parse content of
+                              /Users/me/.openig/config/routes/99-default.json
+[       JsonParseException] > Unexpected character (',' (code 44)):
+                              was expecting double-quote to start field name
+ at [Source: java.io.InputStreamReader@195ed7f6; line: 8, column: 33]
+----
+In this case, extra comma is spotted at line 8, column 33.
+Use a JSON editor or JSON validation tool such as link:http://jsonlint.com/[JSONLint, window=\_blank] to make sure your JSON is valid.
+
+
+[#troubleshooting-flat-file-values-not-correct]
+===  The values in the flat file are incorrect
+
+Ensure the flat file is readable by the user running the container for OpenIG. Values are all characters including space and tabs between the separator, so make sure the values are not padded with spaces.
+
+
+[#troubleshooting-problem-accessing-url]
+===  Problem accessing URL
+
+
+[source]
+----
+HTTP ERROR 500
+
+Problem accessing /myURL . Reason:
+
+java.lang.String cannot be cast to java.util.List
+Caused by:
+java.lang.ClassCastException: java.lang.String cannot be cast to java.util.List
+----
+This error is typically encountered when using an `AssignmentFilter` as described in xref:../reference/filters-conf.adoc#AssignmentFilter[AssignmentFilter(5)] in the _Configuration Reference_ and setting a string value for one of the headers. All headers are stored in lists so the header must be addressed with a subscript.
+For example, rather than trying to set `request.headers['Location']` for a redirect in the response object, you should instead set `request.headers['Location'][0]` . A header without a subscript leads to the error above.
+
+
+[#troubleshooting-static-response-handler-blank-page]
+===  StaticResponseHandler results in a blank page
+
+You must define an entity for the response as in the following example:
+
+[source, javascript]
+----
+{
+    "name": "AccessDeniedHandler",
+    "type": "StaticResponseHandler",
+    "config": {
+        "status": 403,
+        "reason": "Forbidden",
+        "entity": "<html><p>User does not have permission</p></html>"
+    }
+}
+----
+
+
+[#troubleshooting-not-logging-users-in]
+===  OpenIG is not logging users in
+
+If you are proxying to more than one application in multiple DNS domains, you must make sure your container is enabled for domain cookies. For details on your specific container, see xref:chap-install.adoc#configure-container[Section 3.1, "Configuring Deployment Containers"] .
+
+
+[#troubleshooting-read-timeout-sending-request]
+===  Read timed out error when sending a request
+
+If a baseURI configuration setting causes a request to come back to OpenIG, OpenIG never produces a response to the request. You then observe the following behavior.
+You send a request and OpenIG seems to hang. Then you see a failure message, `HTTP Status 500 - Read timed out` , accompanied by OpenIG throwing an exception, `java.net.SocketTimeoutException: Read timed out` .
+To fix this issue, make sure that `baseURI` configuration settings use a different host and port than the host and port for OpenIG.
+
+
+[#troubleshooting-new-route-not-used]
+===  OpenIG does not use new route configuration
+
+OpenIG loads all configuration at startup. By default, it then periodically reloads changed route configurations.
+If you make changes to a route that result in an invalid configuration, OpenIG logs errors, but it keeps the previous, correct configuration, and continues to use the old route.
+OpenIG only uses the new configuration after you save a valid version or when you restart OpenIG.
+Of course, if you restart OpenIG with an invalid route configuration, then OpenIG tries to load the invalid route at startup and logs an error. In that case, if there is no default handler to accept any incoming request for the invalid route, then you see an error, `No handler to dispatch to` .
+
+
+[#troubleshooting-skip-a-route]
+===  Make OpenIG skip a route
+
+If you have copied routes from another OpenIG server, those routes might depend on environment or container configuration that you have not yet configured locally.
+You can work around this problem by changing the route file extension. A router ignores route files that do not have the `.json` extension.
+For example, suppose you copy route all sample route configurations from the documentation, and then start OpenIG without first configuring your container. This can result in an error such as the following:
+
+[source]
+----
+/handler/config/filters/0/config/dataSource: javax.naming.NameNotFoundException;
+    remaining name 'jdbc/forgerock'
+[       JsonValueException] > /handler/config/filters/0/config/dataSource:
+    javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
+[    NameNotFoundException] > null
+
+org.forgerock.json.fluent.JsonValueException:
+    /handler/config/filters/0/config/dataSource:
+    javax.naming.NameNotFoundException; remaining name 'jdbc/forgerock'
+ at org.forgerock.openig.filter.SqlAttributesFilter$Heaplet.create(
+    SqlAttributesFilter.java:211)
+ at org.forgerock.openig.heap.GenericHeaplet.create(GenericHeaplet.java:81)
+ at org.forgerock.openig.heap.HeapImpl.extract(HeapImpl.java:316)
+ at org.forgerock.openig.heap.HeapImpl.get(HeapImpl.java:281)
+...
+----
+This arises from the route in `03-sql.json` , which defines an SqlAttributesFilter that depends on a JNDI data source configured in the container:
+
+[source, javascript]
+----
+{
+    "type": "SqlAttributesFilter",
+    "config": {
+        "dataSource": "java:comp/env/jdbc/forgerock",
+        "preparedStatement":
+          "SELECT username, password FROM users WHERE email = ?;",
+        "parameters": [
+            "george@example.com"
+        ],
+        "target": "${attributes.sql}"
+    }
+}
+----
+To prevent OpenIG from loading the route configuration until you have had time to configure the container, change the file extension to render the route inactive:
+
+[source, console]
+----
+$ mv ~/.openig/config/routes/03-sql.json ~/.openig/config/routes/03-sql.inactive
+----
+If necessary, restart the container to force OpenIG to reload the configuration.
+When you have configured the data source in the container, change the file extension back to `.json` to render the route active again:
+
+[source, console]
+----
+$ mv ~/.openig/config/routes/03-sql.inactive ~/.openig/config/routes/03-sql.json
+----
+
+

@@ -1,0 +1,40 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+[#formatting-conventions]
+=== Formatting Conventions
+
+Most examples in the documentation are created in GNU/Linux or Mac OS X operating environments. If distinctions are necessary between operating environments, examples are labeled with the operating environment name in parentheses. To avoid repetition file system directory names are often given only in UNIX format as in `/path/to/server` , even if the text applies to `C:\path\to\server` as well.
+Absolute path names usually begin with the placeholder `/path/to/` . This path might translate to `/opt/` , `C:\Program Files\` , or somewhere else on your system.
+Command-line, terminal sessions are formatted as follows:
+
+[source, console]
+----
+$ echo $JAVA_HOME
+/path/to/jdk
+----
+Command output is sometimes formatted for narrower, more readable output even though formatting parameters are not shown in the command.
+Program listings are formatted as follows:
+
+[source, java]
+----
+class Test {
+    public static void main(String [] args)  {
+        System.out.println("This is a program listing.");
+    }
+}
+----

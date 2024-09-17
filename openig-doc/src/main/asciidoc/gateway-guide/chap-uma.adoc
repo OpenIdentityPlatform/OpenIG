@@ -1,0 +1,613 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-uma]
+==  OpenIG As an UMA Resource Server
+
+OpenIG provides experimental support for building a User-Managed Access (UMA) resource server. In this chapter, you will learn:
+
+* Where OpenIG fits in the UMA picture
+
+* How to configure OpenIG to allow a resource owner to register UMA resource sets
+
+* How to configure OpenIG to protect access to resources using UMA
+
+
+[#about-uma]
+===  About OpenIG in the UMA Resource Server Role
+
+This section covers the role OpenIG plays as UMA resource server.
+
+[#uma-overview]
+====  About UMA
+
+link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_top] defines a workflow that allows resource owners to share their protected resources with requesting parties. xref:#figure-uma-workflow-overview[Figure 11.1, "UMA Workflow"] illustrates the relationships where OpenIG protects the resource server.
+[#figure-uma-workflow-overview]
+
+[#figure-uma-workflow-overview]
+image::images/uma-workflow-overview.png[]
+--
+The actions that form the UMA workflow are as follows:
+
+1. Manage::
+The resource owner manages their resources on the resource server.
++
+When using OpenIG to protect the resources, OpenIG creates the _resource sets_ that describe what the resource owner shares. Resource set registration is covered in link:https://docs.kantarainitiative.org/uma/rec-oauth-resource-reg.html[OAuth 2.0 Resource Set Registration, window=\_blank] .
+
+2. Protect::
+The resource owner links their resource server and chosen authorization server, such as OpenAM.
++
+The authorization server provides a protection API so that the resource server can register sets of resources. Use of the protection API requires a _protection API token_ (PAT), an OAuth 2.0 token with scope `uma_protection` .
+
+3. Control::
+The resource owner controls who has access to their registered resources by creating policies on the authorization server.
++
+Only a resource owner can create policies for their registered resources.
+
+4. Authorize::
+The client, acting on behalf of the requesting party, uses the authorization server's authorization API to acquire a _requesting party token_ (RPT). The requesting party or client may need further interaction with the authorization server at this point, for example, to supply identity claims. Use of the authorization API requires an _authorization API token_ (AAT), an OAuth 2.0 token with scope `uma_authorization` .
+
+5. Access::
+The client presents the RPT to the resource server, which verifies its validity with the authorization server and, if both valid and containing sufficient permissions, returns the protected resource to the requesting party.
+
+--
+
+
+[#uma-sharing]
+====  Sharing Protected Resources
+
+When acting as an UMA resource server, OpenIG helps the resource owner register resource sets with the authorization server. The resource owner then interacts with the authorization server to authorize access to registered resources.
+This process of sharing protected resources includes the following steps:
+
+. The OpenIG administrator configures a route with the following:
+
+* An `UmaService` that describes OpenIG registration as an OAuth 2.0 client of the authorization server and the resource sets to share, including resource path patterns and scopes.
++
+The `UmaService` exposes a REST API to use when managing resource sets.
++
+For details, see xref:../reference/misc-conf.adoc#UmaService[UmaService(5)] in the _Configuration Reference_ .
+
+* An `UmaFilter` that acts as a policy enforcement point, protecting access to resources on the route.
++
+For details, see xref:../reference/filters-conf.adoc#UmaFilter[UmaFilter(5)] in the _Configuration Reference_ .
+
+
+. The resource owner obtains a PAT from the authorization server.
+
+. The resource owner provides the PAT and a resource path to OpenIG, which registers a corresponding resource set with the authorization server.
++
+OpenIG responds with the resource set identifier and a link where the resource owner can set up access permissions.
+
+. The resource owner creates policies on the authorization server to authorize requesting parties to access protected resources.
+
+
+
+[#uma-accessing]
+====  Accessing Protected Resources
+
+When acting as an UMA resource server, OpenIG interacts with the UMA client and the authorization server. OpenIG challenges the UMA client to gain authorization with the authorization server, and enforces policy for protected resources according to policy decisions by the authorization server.
+The process of accessing protected resources can start after the process of sharing resources is successfully completed. The process of accessing a protected resource includes the following steps:
+
+. The requesting party attempts to access the resource without an RPT.
++
+OpenIG responds with an UMA `WWW-Authenticate` header, and a ticket that the requesting party can use to get an RPT.
+
+. The requesting party gets an AAT from the authorization server.
++
+This step lets the authorization server authenticate the requesting party.
+
+. The requesting party uses AAT from the authorization server, and the ticket from OpenIG to obtain an RPT from the authorization server.
+
+. The requesting party uses the RPT to access the resource as originally intended.
+
+
+
+[#uma-limitations]
+====  Limitations of This Implementation
+
+Keep the following points in mind when using OpenIG as an UMA resource server:
+
+* OpenIG depends on the resource owner for the PAT.
++
+When a PAT expires, no refresh token is available to OpenIG. The resource owner must perform the entire share process again with a new PAT in order to authorize access to protected resources. The resource owner should delete the old resource and create a new one.
+
+* Data about PATs and shared resources is held in memory.
++
+OpenIG has no mechanism for persisting the data across restarts. When OpenIG stops and starts again, the resource owner must perform the entire share process again.
+
+* UMA client applications for sharing and accessing protected resources must deal with UMA error conditions and OpenIG error conditions.
+
+* OpenIG exposes a REST API to manage share objects that is not protected by default.
+
+* When matching protected resource paths with share patterns, OpenIG takes the longest match.
++
+For example, if resource owner Alice shares `/photos/.*` with Bob, and `/photos/vacation.png` with Charlie, and then Bob attempts to access `/photos/vacation.png` , OpenIG applies the sharing permissions for Charlie, not Bob. As a result, Bob can be denied access.
+
+
+
+
+[#uma-before-you-start]
+===  Preparing the Tutorial
+
+This section covers preparation to complete before configuring OpenIG as an UMA resource server.
+This tutorial relies on OpenAM as an authorization server for OAuth 2.0 and for UMA, and the minimal HTTP server for resources to protect, and for files that serve as a basic UMA client. OpenAM 13 and later can function as an UMA authorization server.
+Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
+OpenIG should be running in Jetty, configured to access the minimal HTTP server as described in that chapter.
+This tutorial uses `api.example.com` as the domain. Add `api.example.com` as an alias for the OpenIG network address. For example, if traffic to OpenIG goes through the loopback address, edit the line in your hosts file to add the additional domain:
+
+[source]
+----
+127.0.0.1    openig.example.com api.example.com
+----
+Edit `config.json` to comment the baseURI decoration in the top-level handler for OpenIG configuration. After you make the changes, the handler declaration appears as follows:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Router",
+        "audit": "global",
+        "_baseURI": "http://app.example.com:8081",
+        "capture": "all"
+    }
+}
+----
+Restart Jetty for the changes to take effect. This allows you to view the token information that OpenAM returns.
+Now proceed to xref:#uma-openam-configuration[Section 11.3, "Setting Up OpenAM As an Authorization Server"] .
+
+
+[#uma-openam-configuration]
+===  Setting Up OpenAM As an Authorization Server
+
+This section covers the following:
+
+* Enabling cross-origin resource sharing (CORS) support in OpenAM
+
+* Configuring OpenAM as an authorization server
+
+* Registering UMA client profiles with OpenAM
+
+* Setting up a resource owner (Alice) and requesting party (Bob)
+
+
+====
+Follow these steps to configure OpenAM as an authorization server:
+
+. Enable CORS support for OpenAM.
++
+See the OpenAM product documentation for details. The following settings are suggestions for this tutorial. This is not intended as documentation for setting up OpenAM CORS support on a server in production.
++
+Make sure that the filter mapping for the `CORSFilter` in the `WEB-INF/web.xml` file applies to all the endpoints you use a URL pattern that matches all endpoints:
++
+
+[source, xml]
+----
+<filter-mapping>
+    <filter-name>CORSFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+----
++
+Make sure the filter configuration in the `WEB-INF/web.xml` file authorizes cross-site access for origins, hosts, and headers that are shown in the following excerpt:
++
+
+[source, xml]
+----
+<filter>
+    <filter-name>CORSFilter</filter-name>
+    <filter-class>org.forgerock.openam.cors.CORSFilter</filter-class>
+    <init-param>
+        <description>
+            Accepted Methods (Required):
+            A comma separated list of HTTP methods for which to accept CORS requests.
+        </description>
+        <param-name>methods</param-name>
+        <param-value>POST,GET,PUT,DELETE,PATCH,OPTIONS</param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Accepted Origins (Required):
+            A comma separated list of origins from which to accept CORS requests.
+        </description>
+        <param-name>origins</param-name>
+        <param-value>http://api.example.com:8081,http://api.example.com:8080</param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Allow Credentials (Optional):
+            Whether to include the Vary (Origin)
+            and Access-Control-Allow-Credentials headers in the response.
+            Default: false
+        </description>
+        <param-name>allowCredentials</param-name>
+        <param-value>true</param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Allowed Headers (Optional):
+            A comma separated list of HTTP headers
+            which can be included in the requests.
+        </description>
+        <param-name>headers</param-name>
+        <param-value>
+          Authorization,Content-Type,iPlanetDirectoryPro,X-OpenAM-Username,X-OpenAM-Password
+        </param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Expected Hostname (Optional):
+            The name of the host expected in the request Host header.
+        </description>
+        <param-name>expectedHostname</param-name>
+        <param-value>openam.example.com:8088</param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Exposed Headers (Optional):
+            The comma separated list of headers
+            which the user-agent can expose to its CORS client.
+        </description>
+        <param-name>exposeHeaders</param-name>
+        <param-value>WWW-Authenticate</param-value>
+    </init-param>
+    <init-param>
+        <description>
+            Maximum Cache Age (Optional):
+            The maximum time that the CORS client can cache
+            the pre-flight response, in seconds.
+            Default: 600
+        </description>
+        <param-name>maxAge</param-name>
+        <param-value>600</param-value>
+    </init-param>
+</filter>
+----
+
+. Install and configure OpenAM on `\http://openam.example.com:8088/openam` with the default configuration.
++
+If you use a different configuration, make sure you substitute in the tutorial accordingly.
++
+Although this tutorial does not use HTTPS, you must use HTTPS to protect credentials and access tokens in production environments.
+
+. Log in to the OpenAM console as administrator and access the configuration for the top-level realm.
+
+. Configure OpenAM as an OAuth 2.0 authorization server, and as an UMA authorization server.
++
+The PAT and AAT are obtained through the OAuth 2.0 access token endpoint, whereas the RPT is obtained through the UMA endpoint.
++
+Consider extending the default token lifetimes to 3600 seconds. Longer token lifetimes are particularly helpful if you plan to build your own examples or modify the sample clients.
+
+. For the purposes of this tutorial, disable Require Trust Elevation for the UMA Provider.
++
+Browse to Services > UMA Provider for the top-level realm to edit the UMA Provider configuration through OpenAM console.
+
+====
+
+====
+Follow these steps to register client profiles with OpenAM in the top-level realm:
+
+. Create an OAuth 2.0/UMA client profile for use when sharing resources that has the following properties:
++
+--
+
+Name (client_id)::
+ `OpenIG` 
+
+Password (client_secret)::
+ `password` 
+
+Scope::
+ `uma_protection` 
+
+--
+
+. Create an OAuth 2.0/UMA client profile for use when accessing resources that has the following properties:
++
+--
+
+Name (client_id)::
+ `UmaClient` 
+
+Password (client_secret)::
+ `password` 
+
+Scope::
+ `uma_authorization` 
+
+--
+
+====
+
+====
+Follow these steps to create subjects in the top-level realm:
+
+. Create a resource owner subject named Alice with the following properties:
++
+--
+
+ID::
+ `alice` 
+
+First Name::
+ `Alice` 
+
+Last Name::
+ `User` 
+
+Full Name::
+ `Alice User` 
+
+Password::
+ `password` 
+
+User Status::
+Active
+
+--
+
+. Create a requesting party subject named Bob with the following properties:
++
+--
+
+ID::
+ `bob` 
+
+First Name::
+ `Bob` 
+
+Last Name::
+ `User` 
+
+Full Name::
+ `Bob User` 
+
+Password::
+ `password` 
+
+User Status::
+Active
+
+--
+
+====
+When finished, log out of OpenAM and proceed to xref:#uma-openig-configuration[Section 11.4, "Setting Up OpenIG As an UMA Resource Server"] .
+
+
+[#uma-openig-configuration]
+===  Setting Up OpenIG As an UMA Resource Server
+
+This section covers configuring OpenIG as an UMA resource server.
+
+====
+
+. Add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/00-uma.json` :
++
+
+[source, javascript]
+----
+{
+  "heap": [
+    {
+      "name": "UmaService",
+      "type": "UmaService",
+      "config": {
+        "protectionApiHandler": "ClientHandler",
+        "authorizationServerUri": "http://openam.example.com:8088/openam/",
+        "clientId": "OpenIG",
+        "clientSecret": "password",
+        "resources": [
+          {
+            "comment": "Protects all resources matching the following pattern.",
+            "pattern": ".*",
+            "actions": [
+              {
+                "scopes": [
+                  "#read"
+                ],
+                "condition": "${request.method == 'GET'}"
+              },
+              {
+                "scopes": [
+                  "#create"
+                ],
+                "condition": "${request.method == 'POST'}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "ScriptableFilter",
+          "config": {
+            "type": "application/x-groovy",
+            "file": "CorsFilter.groovy"
+          }
+        },
+        {
+          "type": "UmaFilter",
+          "config": {
+            "protectionApiHandler": "ClientHandler",
+            "umaService": "UmaService"
+          }
+        }
+      ],
+      "handler": "ClientHandler"
+    }
+  },
+  "baseURI": "http://api.example.com:8081",
+  "condition": "${request.uri.host == 'api.example.com'}"
+}
+----
++
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\00-uma.json` .
++
+Notice the following features of the new route:
+
+* The `UmaService` is coupled with OpenAM as authorization server, relying on one of the client profiles you created ( `client_id` : OpenIG). This service describes the resources that a resource owner can share.
++
+The `UmaService` also provides a REST API to manage sharing of resource sets.
+
+* The tutorial involves JavaScript clients that are served by the minimal HTTP server, and so not from the same origin as OpenAM or OpenIG. The route uses a CORS filter to include appropriate response headers for cross-origin requests.
++
+The CORS filter handles pre-flight (HTTP OPTIONS) requests, and responses for all HTTP operations. The logic for the filter is provided through a script. Add the script to your configuration by including the following Groovy script file as `$HOME/.openig/scripts/groovy/CorsFilter.groovy` :
++
+
+[source, java]
+----
+import org.forgerock.http.protocol.Response
+import org.forgerock.http.protocol.Status
+
+if (request.method == 'OPTIONS') {
+    /**
+     * Supplies a response to a CORS preflight request.
+     *
+     * Example response:
+     *
+     * HTTP/1.1 200 OK
+     * Access-Control-Allow-Origin: http://api.example.com:8081
+     * Access-Control-Allow-Methods: POST
+     * Access-Control-Allow-Headers: Authorization
+     * Access-Control-Allow-Credentials: true
+     * Access-Control-Max-Age: 3600
+     */
+
+    def origin = request.headers['Origin']?.firstValue
+    def response = new Response(Status.OK)
+
+    // Browsers sending a cross-origin request from a file might have Origin: null.
+    response.headers.put("Access-Control-Allow-Origin", origin)
+    request.headers['Access-Control-Request-Method']?.values.each() {
+        response.headers.add("Access-Control-Allow-Methods", it)
+    }
+    request.headers['Access-Control-Request-Headers']?.values.each() {
+        response.headers.add("Access-Control-Allow-Headers", it)
+    }
+    response.headers.put("Access-Control-Allow-Credentials", "true")
+    response.headers.put("Access-Control-Max-Age", "3600")
+
+    return response
+}
+
+return next.handle(context, request)
+/**
+ * Adds headers to a CORS response.
+ */
+        .thenOnResult({ response ->
+    if (response.status.isServerError()) {
+        // Skip headers if the response is a server error.
+    } else {
+        def headers = [
+                "Access-Control-Allow-Origin": request.headers['Origin']?.firstValue,
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Expose-Headers": "WWW-Authenticate"
+        ]
+        response.headers.addAll(headers)
+    }
+})
+----
++
+On Windows, the file name should be `%appdata%\OpenIG\scripts\groovy\CorsFilter.groovy` .
++
+The filter adds the appropriate headers to CORS requests. Pre-flight requests are diverted to a dedicated handler, which returns the response directly to the user agent. For all other requests, the headers are added to the response.
++
+For details on scripting filters and handlers, see xref:chap-extending.adoc#chap-extending[Chapter 14, "Extending OpenIG's Functionality"] .
+
+* The handler for the route chains together the CORS filter, the `UmaFilter` , and the default handler.
++
+The `UmaFilter` manages requesting party access to protected resources, using the `UmaService` . Protected resources are on the minimal HTTP server, which responds to requests on port 8081.
+
+* The route matches requests to `api.example.com` .
+
+
+. Overload the default `ApiProtectionFilter` that protects the reserved routes for paths under `/openig` so that the UMA share API has CORS support.
++
+You can reuse the CORS filter for this purpose.
++
+Add the following declaration to the heap array in `config.json` :
++
+
+[source, javascript]
+----
+{
+    "name": "ApiProtectionFilter",
+    "type": "ScriptableFilter",
+    "config": {
+        "type": "application/x-groovy",
+        "file": "CorsFilter.groovy"
+    }
+}
+----
+
+. After editing `config.json` , restart Jetty to reload the configuration.
+
+====
+
+
+[#uma-trying-it-out]
+===  Test the Configuration
+
+This section demonstrates OpenIG acting as an UMA resource server.
+
+====
+Follow these steps to run the demonstration:
+
+. Browse to link:http://api.example.com:8081/uma/[http://api.example.com:8081/uma/, window=\_blank] , and check that the configuration displayed in the page matches your settings.
++
+The settings match if you are using the defaults described in this chapter. If not, unpack UMA sample client files from the minimal HTTP server described in xref:chap-quickstart.adoc#quickstart-sample-app[Section 2.3, "Install an Application to Protect"] to a web server document location for your web server:
++
+
+[source, console]
+----
+$ cd /path/to/web/server/files/
+$ jar -xvf /path/to/openig-doc-4.5.0-jar-with-dependencies.jar uma
+  created: uma/
+ inflated: uma/alice.html
+ inflated: uma/bob.html
+ inflated: uma/common.js
+ inflated: uma/index.html
+ inflated: uma/style.css
+----
+
+. (Optional) If you had to unpack the files to your own web server, edit the configuration in `common.js` , `alice.html` , and `bob.html` to match your settings.
++
+Also adjust CORS settings for OpenAM as necessary.
+
+. Click the first link to demonstrate Alice sharing resources.
++
+When you click theShare with Bobbutton, you simulate Alice sharing resources as described in xref:#uma-sharing[Section 11.1.2, "Sharing Protected Resources"] .
+
+. In the initial page, click the second link to demonstrate Bob accessing resources.
++
+When you click theGet Alice's resourcesbutton, you simulate Bob accessing one of Alice's resources as described in xref:#uma-accessing[Section 11.1.3, "Accessing Protected Resources"] .
+
+====
+What is happening behind the scenes?
+The first page is the client that simulates Alice sharing resources. The output shown in the page lets you see the PAT Alice gets, the metadata for the resource set Alice registers through OpenIG, the result of Alice authenticating with OpenAM in order to create a policy, and the successful result `{}` when Alice creates the policy.
+The second page is the client that simulates Bob accessing a resource. The output shown on the page lets you see the ticket returned initially, the AAT that Bob gets to obtain the RPT, the RPT Bob gets in order to request the resource again, and the final response containing the body of the resource.
+
+
