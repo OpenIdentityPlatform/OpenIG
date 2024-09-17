@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,7 +21,7 @@
 
 
 [#chap-extending]
-==  Extending OpenIG's Functionality
+== Extending OpenIG's Functionality
 
 This chapter covers extending what OpenIG can do. In this chapter, you will learn to:
 
@@ -30,19 +30,22 @@ This chapter covers extending what OpenIG can do. In this chapter, you will lear
 * Plug additional Java libraries into OpenIG for further customization
 
 To extend filter and handler functionality, OpenIG supports the Groovy dynamic scripting language through the use of `ScriptableFilter` and `ScriptableHandler` objects.
+
 For when you can't achieve complex server interactions or intensive data transformations with scripts or existing handlers, filters, or expressions, OpenIG allows you to develop custom extensions in Java and provide them in additional libraries that you build into OpenIG. The libraries allow you to develop custom extensions to OpenIG.
 
 [IMPORTANT]
 ====
-When you are writing scripts or Java extensions, never use a `Promise` blocking method, such as `get()` , `getOrThrow()` , or `getOrThrowUninterruptibly()` , to obtain the response.
+When you are writing scripts or Java extensions, never use a `Promise` blocking method, such as `get()`, `getOrThrow()`, or `getOrThrowUninterruptibly()`, to obtain the response.
+
 A promise represents the result of an asynchronous operation. Therefore, using a blocking method to wait for the result can cause deadlocks and/or race issues.
 ====
 
 [#about-scripting]
-===  About Scripting
+=== About Scripting
 
 Scriptable filters and handlers are added to the configuration in the same way as standard filters and handlers. Each takes as its configuration the script's Internet media type and either a source script included in the JSON configuration, or a file script that OpenIG reads from a file. The configuration can optionally supply arguments to the script.
-The following example defines a `ScriptableFilter` , written in the Groovy language, and stored in a file named `$HOME/.openig/scripts/groovy/SimpleFormLogin.groovy` ( `%appdata%\OpenIG\scripts\groovy\SimpleFormLogin.groovy` on Windows):
+
+The following example defines a `ScriptableFilter`, written in the Groovy language, and stored in a file named `$HOME/.openig/scripts/groovy/SimpleFormLogin.groovy` (`%appdata%\OpenIG\scripts\groovy\SimpleFormLogin.groovy` on Windows):
 
 [source, java]
 ----
@@ -55,17 +58,22 @@ The following example defines a `ScriptableFilter` , written in the Groovy langu
      }
  }
 ----
-Relative paths in the file field depend on how OpenIG is installed. If OpenIG is installed in an application server, then paths for Groovy scripts are relative to `$HOME/.openig/scripts/groovy` .
-This base location `$HOME/.openig/scripts/groovy` is on the classpath when the scripts are executed. If therefore some Groovy scripts are not in the default package, but instead have their own package names, they belong in the directory corresponding to their package name. For example, a script in package `com.example.groovy` belongs under `$HOME/.openig/scripts/groovy/com/example/groovy/` .
-OpenIG provides several global variables to scripts at runtime. As well as having access to Groovy's built-in functionality, scripts can access the request and the context, store variables across executions, write messages to logs, make requests to a web service or to an LDAP directory service, and access responses returned in promise callback methods. For information about scripting in OpenIG, see xref:../reference/filters-conf.adoc#ScriptableFilter[ScriptableFilter(5)] in the _Configuration Reference_ and xref:../reference/handlers-conf.adoc#ScriptableHandler[ScriptableHandler(5)] in the _Configuration Reference_ .
-Before trying the scripts shown in this chapter, first install and configure OpenIG as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
-When developing and debugging your scripts, consider configuring a capture decorator to log requests, responses, and context data in JSON form. You can then turn off capturing when you move to production. For details, see xref:../reference/decorators-conf.adoc#CaptureDecorator[CaptureDecorator(5)] in the _Configuration Reference_ .
+Relative paths in the file field depend on how OpenIG is installed. If OpenIG is installed in an application server, then paths for Groovy scripts are relative to `$HOME/.openig/scripts/groovy`.
+
+This base location `$HOME/.openig/scripts/groovy` is on the classpath when the scripts are executed. If therefore some Groovy scripts are not in the default package, but instead have their own package names, they belong in the directory corresponding to their package name. For example, a script in package `com.example.groovy` belongs under `$HOME/.openig/scripts/groovy/com/example/groovy/`.
+
+OpenIG provides several global variables to scripts at runtime. As well as having access to Groovy's built-in functionality, scripts can access the request and the context, store variables across executions, write messages to logs, make requests to a web service or to an LDAP directory service, and access responses returned in promise callback methods. For information about scripting in OpenIG, see xref:../reference/filters-conf.adoc#ScriptableFilter[ScriptableFilter(5)] in the __Configuration Reference__ and xref:../reference/handlers-conf.adoc#ScriptableHandler[ScriptableHandler(5)] in the __Configuration Reference__.
+
+Before trying the scripts shown in this chapter, first install and configure OpenIG as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+When developing and debugging your scripts, consider configuring a capture decorator to log requests, responses, and context data in JSON form. You can then turn off capturing when you move to production. For details, see xref:../reference/decorators-conf.adoc#CaptureDecorator[CaptureDecorator(5)] in the __Configuration Reference__.
 
 
 [#scripting-dispatch]
-===  Scripting Dispatch
+=== Scripting Dispatch
 
-In order to route requests, especially when the conditions are complicated, you can use a `ScriptableHandler` instead of a `DispatchHandler` as described in xref:../reference/handlers-conf.adoc#DispatchHandler[DispatchHandler(5)] in the _Configuration Reference_ .
+In order to route requests, especially when the conditions are complicated, you can use a `ScriptableHandler` instead of a `DispatchHandler` as described in xref:../reference/handlers-conf.adoc#DispatchHandler[DispatchHandler(5)] in the __Configuration Reference__.
+
 The following script demonstrates a simple dispatch handler:
 
 [source, java]
@@ -112,8 +120,9 @@ switch (request.uri.path) {
 // Return the locally created response, no need to wrap it into a Promise
 return response
 ----
-To try this handler, save the script as `$HOME/.openig/scripts/groovy/DispatchHandler.groovy` ( `%appdata%\OpenIG\scripts\groovy\DispatchHandler.groovy` on Windows).
-Next, add the following route to your configuration as `$HOME/.openig/config/routes/98-dispatch.json` ( `%appdata%\OpenIG\config\routes\98-dispatch.json` on Windows):
+To try this handler, save the script as `$HOME/.openig/scripts/groovy/DispatchHandler.groovy` (`%appdata%\OpenIG\scripts\groovy\DispatchHandler.groovy` on Windows).
+
+Next, add the following route to your configuration as `$HOME/.openig/config/routes/98-dispatch.json` (`%appdata%\OpenIG\config\routes\98-dispatch.json` on Windows):
 
 [source, javascript]
 ----
@@ -167,16 +176,20 @@ Next, add the following route to your configuration as `$HOME/.openig/config/rou
 }
 ----
 The route sets up the headers required by the script when the user logs in.
-To try it out, browse to link:http://openig.example.com:8080[http://openig.example.com:8080, window=\_blank] .
+
+To try it out, browse to link:http://openig.example.com:8080[http://openig.example.com:8080, window=\_blank].
+
 The response from the script says, "Please log in." When you click the log in link, the `HeaderFilter` sets `Username` and `Password` headers in the request, and passes the request to the script.
-The script then responds, `Welcome back, Babs!` 
+
+The script then responds, `Welcome back, Babs!`
 
 
 [#scripting-http-basic]
-===  Scripting HTTP Basic Authentication
+=== Scripting HTTP Basic Authentication
 
 HTTP Basic authentication calls for the user agent such as a browser to send a user name and password to the server in an `Authorization` header. HTTP Basic authentication relies on an encrypted connection to protect the user name and password credentials, which are base64-encoded in the `Authorization` header, not encrypted.
-The following script, for use in a `ScriptableFilter` , adds an `Authorization` header based on a username and password combination:
+
+The following script, for use in a `ScriptableFilter`, adds an `Authorization` header based on a username and password combination:
 
 [source, java]
 ----
@@ -221,8 +234,9 @@ request.uri.scheme = "https"
 // The Response can be handled with asynchronous Promise callbacks.
 next.handle(context, request)
 ----
-To try this filter, save the script as `$HOME/.openig/scripts/groovy/BasicAuthFilter.groovy` ( `%appdata%\OpenIG\scripts\groovy\BasicAuthFilter.groovy` on Windows).
-Next, add the following route to your configuration as `$HOME/.openig/config/routes/09-basic.json` ( `%appdata%\OpenIG\config\routes\09-basic.json` on Windows):
+To try this filter, save the script as `$HOME/.openig/scripts/groovy/BasicAuthFilter.groovy` (`%appdata%\OpenIG\scripts\groovy\BasicAuthFilter.groovy` on Windows).
+
+Next, add the following route to your configuration as `$HOME/.openig/config/routes/09-basic.json` (`%appdata%\OpenIG\config\routes\09-basic.json` on Windows):
 
 [source, javascript]
 ----
@@ -257,8 +271,10 @@ Next, add the following route to your configuration as `$HOME/.openig/config/rou
   "condition": "${matches(request.uri.path, '^/basic')}"
 }
 ----
-When the request path matches `/basic` the route calls the `Chain` , which runs the `ScriptableFilter` . The capture setting captures the request as updated by the `ScriptableFilter` . Finally, OpenIG returns a static page.
-To try it out, browse to link:http://openig.example.com:8080/basic[http://openig.example.com:8080/basic, window=\_blank] .
+When the request path matches `/basic` the route calls the `Chain`, which runs the `ScriptableFilter`. The capture setting captures the request as updated by the `ScriptableFilter`. Finally, OpenIG returns a static page.
+
+To try it out, browse to link:http://openig.example.com:8080/basic[http://openig.example.com:8080/basic, window=\_blank].
+
 The captured request in the console log shows that the scheme is now HTTPS, and that the `Authorization` header is set for HTTP Basic:
 
 [source, httprequest]
@@ -269,10 +285,11 @@ Authorization: Basic YmplbnNlbjpoaWZhbHV0aW4=
 
 
 [#scripting-ldap-auth]
-===  Scripting LDAP Authentication
+=== Scripting LDAP Authentication
 
 Many organizations use an LDAP directory service to store user profiles including authentication credentials. The LDAP directory service securely stores user passwords in a highly-available, central service capable of handling thousands of authentications per second.
-The following script, for use in a `ScriptableFilter` , performs simple authentication against an LDAP server based on request form fields `username` and `password` :
+
+The following script, for use in a `ScriptableFilter`, performs simple authentication against an LDAP server based on request form fields `username` and `password`:
 
 [source, java]
 ----
@@ -352,7 +369,7 @@ try {
 // Return the locally created response, no need to wrap it into a Promise
 return response
 ----
-For the list of methods to specify which type of objects to return, see the OpenDJ LDAP SDK Javadoc for `AttributeParser` .
+For the list of methods to specify which type of objects to return, see the OpenDJ LDAP SDK Javadoc for `AttributeParser`.
 
 ====
 To try the LDAP authentication script, follow these steps:
@@ -361,11 +378,11 @@ To try the LDAP authentication script, follow these steps:
 +
 Either import some sample users who can authenticate over LDAP, or generate sample users at installation time.
 
-. Save the script as `$HOME/.openig/scripts/groovy/LdapAuthFilter.groovy` ( `%appdata%\OpenIG\scripts\groovy\LdapAuthFilter.groovy` on Windows).
+. Save the script as `$HOME/.openig/scripts/groovy/LdapAuthFilter.groovy` (`%appdata%\OpenIG\scripts\groovy\LdapAuthFilter.groovy` on Windows).
 +
 If the directory server installation does not match the assumptions made in the script, adjust the script to use the correct settings for your installation.
 
-. Add the following route to your configuration as `$HOME/.openig/config/routes/10-ldap.json` ( `%appdata%\OpenIG\config\routes\10-ldap.json` on Windows):
+. Add the following route to your configuration as `$HOME/.openig/config/routes/10-ldap.json` (`%appdata%\OpenIG\config\routes\10-ldap.json` on Windows):
 +
 
 [source, javascript]
@@ -406,14 +423,17 @@ If the directory server installation does not match the assumptions made in the 
 
 ====
 The route calls the `LdapAuthFilter.groovy` script to authenticate the user over LDAP. On successful authentication, it responds with the the bind DN.
-To test the configuration, browse to a URL where query string parameters specify a valid username and password, such as link:http://openig.example.com:8080/ldap?username=user.0&password=password[http://openig.example.com:8080/ldap?username=user.0&password=password, window=\_blank] .
-The response from the script shows the DN: `Ldap-User-Dn: uid=user.0,ou=People,dc=example,dc=com` .
+
+To test the configuration, browse to a URL where query string parameters specify a valid username and password, such as link:http://openig.example.com:8080/ldap?username=user.0&password=password[http://openig.example.com:8080/ldap?username=user.0&password=password, window=\_blank].
+
+The response from the script shows the DN: `Ldap-User-Dn: uid=user.0,ou=People,dc=example,dc=com`.
 
 
 [#scripting-sql]
-===  Scripting SQL Queries
+=== Scripting SQL Queries
 
 You can use a `ScriptableFilter` to look up information in a relational database and include the results in the request context.
+
 The following filter looks up user credentials in a database given the user's email address, which is found in the form data of the request. The script then sets the credentials in headers, making sure the scheme is HTTPS to protect the request when it leaves OpenIG:
 
 [source, java]
@@ -493,13 +513,13 @@ class SqlClient {
 ====
 To try the script, follow these steps:
 
-. Follow the tutorial in xref:chap-credentials-tutorial.adoc#tutorial-credentials-from-sql[Section 4.3, "Log in With Credentials From a Database"] .
+. Follow the tutorial in xref:chap-credentials-tutorial.adoc#tutorial-credentials-from-sql[Log in With Credentials From a Database].
 +
 When everything in that tutorial works, you know that OpenIG can connect to the database, look up users by email address, and successfully authenticate to the sample application.
 
-. Save the scripts as `$HOME/.openig/scripts/groovy/SqlAccessFilter.groovy` ( `%appdata%\OpenIG\scripts\groovy\SqlAccessFilter.groovy` on Windows), and as `$HOME/.openig/scripts/groovy/SqlClient.groovy` ( `%appdata%\OpenIG\scripts\groovy\SqlClient.groovy` on Windows).
+. Save the scripts as `$HOME/.openig/scripts/groovy/SqlAccessFilter.groovy` (`%appdata%\OpenIG\scripts\groovy\SqlAccessFilter.groovy` on Windows), and as `$HOME/.openig/scripts/groovy/SqlClient.groovy` (`%appdata%\OpenIG\scripts\groovy\SqlClient.groovy` on Windows).
 
-. Add the following route to your configuration as `$HOME/.openig/config/routes/11-db.json` ( `%appdata%\OpenIG\config\routes\11-db.json` on Windows):
+. Add the following route to your configuration as `$HOME/.openig/config/routes/11-db.json` (`%appdata%\OpenIG\config\routes\11-db.json` on Windows):
 +
 
 [source, javascript]
@@ -541,59 +561,70 @@ When everything in that tutorial works, you know that OpenIG can connect to the 
 
 ====
 The route calls the `ScriptableFilter` to look up credentials over SQL. It then uses calls a `StaticRequestFilter` to build a login request. Although the script sets the scheme to HTTPS, the `StaticRequestFilter` ignores that and resets the URI. This makes it easier to try the script without additional steps to set up HTTPS.
-To try the configuration, browse to a URL where a query string parameter specifies a valid email address, such as link:http://openig.example.com:8080/db?mail=george\@example.com[http://openig.example.com:8080/db?mail=george@example.com, window=\_blank] .
+
+To try the configuration, browse to a URL where a query string parameter specifies a valid email address, such as link:http://openig.example.com:8080/db?mail=george\@example.com[http://openig.example.com:8080/db?mail=george@example.com, window=\_blank].
+
 If the lookup and authentication are successful, you see the profile page of the sample application.
 
 
 [#about-custom-extensions]
-===  Developing Custom Extensions
+=== Developing Custom Extensions
 
-OpenIG includes a complete Java link:../apidocs/index.html[application programming interface, window=\_blank] to allow you to customize OpenIG to perform complex server interactions or intensive data transformations that you cannot achieve with scripts or the existing handlers, filters, and expressions described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the _Configuration Reference_ .
+OpenIG includes a complete Java link:../apidocs/index.html[application programming interface, window=\_blank] to allow you to customize OpenIG to perform complex server interactions or intensive data transformations that you cannot achieve with scripts or the existing handlers, filters, and expressions described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the __Configuration Reference__.
 
 [#extension-points]
-====  Key Extension Points
+==== Key Extension Points
 
-Interface Stability: Evolving (For information, see xref:../reference/appendix-interface-stability.adoc#interface-stability[Section A.2, "ForgeRock Product Interface Stability"] in the _Configuration Reference_ .)
+Interface Stability: Evolving (For information, see xref:../reference/appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability] in the __Configuration Reference__.)
 --
 The following interfaces are available:
 
-Decorator::
+link:../apidocs/index.html?org/forgerock/openig/decoration/Decorator.html[Decorator, window=\_blank]::
 A `Decorator` adds new behavior to another object without changing the base type of the object.
-+
-When suggesting custom `Decorator` names, know that OpenIG reserves all field names that use only alphanumeric characters. To avoid clashes, use dots or dashes in your field names, such as `my-decorator` .
 
-ExpressionPlugin::
++
+When suggesting custom `Decorator` names, know that OpenIG reserves all field names that use only alphanumeric characters. To avoid clashes, use dots or dashes in your field names, such as `my-decorator`.
+
+link:../apidocs/index.html?org/forgerock/openig/el/ExpressionPlugin.html[ExpressionPlugin, window=\_blank]::
 An `ExpressionPlugin` adds a node to the `Expression` context tree, alongside `env` (for environment variables), and `system` (for system properties). For example, the expression `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
+
 +
-In your `ExpressionPlugin` , the `getKey()` method returns the name of the node, and the `getObject()` method returns the unified expression language context object that contains the values needed to resolve the expression. The plugins for `env` and `system` return Map objects, for example.
+In your `ExpressionPlugin`, the `getKey()` method returns the name of the node, and the `getObject()` method returns the unified expression language context object that contains the values needed to resolve the expression. The plugins for `env` and `system` return Map objects, for example.
+
 +
-When you add your own `ExpressionPlugin` , you must make it discoverable within your custom library. You do this by adding a services file named after the plugin interface, where the file contains the fully qualified class name of your plugin, under `META-INF/services/org.forgerock.openig.el.ExpressionPlugin` in the .jar file for your customizations. When you have more than one plugin, add one fully qualified class name per line. For details, see the reference documentation for the Java class link:https://docs.oracle.com/javase/7/docs/api/index.html?java/util/ServiceLoader.html[ServiceLoader, window=\_blank] . If you build your project using Maven, then you can add this under the `src/main/resources` directory. As described in xref:#custom-embed[Section 14.6.5, "Embedding the Customization in OpenIG"] , you must add your custom libraries to the `WEB-INF/lib/` directory of the OpenIG .war file that you deploy.
+When you add your own `ExpressionPlugin`, you must make it discoverable within your custom library. You do this by adding a services file named after the plugin interface, where the file contains the fully qualified class name of your plugin, under `META-INF/services/org.forgerock.openig.el.ExpressionPlugin` in the .jar file for your customizations. When you have more than one plugin, add one fully qualified class name per line. For details, see the reference documentation for the Java class link:https://docs.oracle.com/javase/7/docs/api/index.html?java/util/ServiceLoader.html[ServiceLoader, window=\_blank]. If you build your project using Maven, then you can add this under the `src/main/resources` directory. As described in xref:#custom-embed[Embedding the Customization in OpenIG], you must add your custom libraries to the `WEB-INF/lib/` directory of the OpenIG .war file that you deploy.
+
 +
 Be sure to provide some documentation for OpenIG administrators on how your plugin extends expressions.
 
-Filter::
+link:../apidocs/index.html?org/forgerock/http/Filter.html[Filter, window=\_blank]::
 +
 A `Filter` serves to process a request before handing it off to the next element in the chain, in a similar way to an interceptor programming model.
-+
-The `Filter` interface exposes a `filter()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank] , a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank] , and the link:../apidocs/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank] , which is the next filter or handler to dispatch to. The `filter()` method returns a link:../apidocs/index.html?org/forgerock/util/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions.
-+
-A filter can elect not to pass the request to the next filter or handler, and instead handle the request itself. It can achieve this by merely avoiding a call to `next.handle(context, request)` , creating its own response object and returning that in the promise. The filter is also at liberty to replace a response with another of its own. A filter can exist in more than one chain, therefore should make no assumptions or correlations using the chain it is supplied. The only valid use of a chain by a filter is to call its `handle()` method to dispatch the request to the rest of the chain.
-+
-OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank] , to help with configuration.
 
-Handler::
++
+The `Filter` interface exposes a `filter()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank], a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank], and the link:../apidocs/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank], which is the next filter or handler to dispatch to. The `filter()` method returns a link:../apidocs/index.html?org/forgerock/util/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions.
+
++
+A filter can elect not to pass the request to the next filter or handler, and instead handle the request itself. It can achieve this by merely avoiding a call to `next.handle(context, request)`, creating its own response object and returning that in the promise. The filter is also at liberty to replace a response with another of its own. A filter can exist in more than one chain, therefore should make no assumptions or correlations using the chain it is supplied. The only valid use of a chain by a filter is to call its `handle()` method to dispatch the request to the rest of the chain.
+
++
+OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
+
+link:../apidocs/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank]::
 +
 A `Handler` generates a response for a request.
+
 +
-The `Handler` interface exposes a `handle()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank] , and a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank] . It processes the request and returns a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions. A handler can elect to dispatch the request to another handler or chain.
+The `Handler` interface exposes a `handle()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank], and a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank]. It processes the request and returns a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions. A handler can elect to dispatch the request to another handler or chain.
+
 +
-OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank] , to help with configuration.
+OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
 
 --
 
 
 [#custom-sample-filter]
-====  Implementing a Customized Sample Filter
+==== Implementing a Customized Sample Filter
 
 The `SampleFilter` class implements the `Filter` interface to set a header in the incoming request and in the outgoing response. The following sample filter adds an arbitrary header:
 
@@ -692,7 +723,7 @@ public class SampleFilter extends GenericHeapObject implements Filter {
     }
 }
 ----
-When you set the sample filter type in the configuration, you need to provide the fully qualified class name, as in `"type": "org.forgerock.openig.doc.SampleFilter"` . You can however implement a class alias resolver to make it possible to use a short name instead, as in `"type": "SampleFilter"` :
+When you set the sample filter type in the configuration, you need to provide the fully qualified class name, as in `"type": "org.forgerock.openig.doc.SampleFilter"`. You can however implement a class alias resolver to make it possible to use a short name instead, as in `"type": "SampleFilter"`:
 
 [source, java]
 ----
@@ -752,16 +783,18 @@ The corresponding heap object configuration then looks as follows:
 
 
 [#custom-heap-config]
-====  Configuring the Heap Object for the Customization
+==== Configuring the Heap Object for the Customization
 
 Objects are added to the heap and supplied with configuration artifacts at initialization time. To be integrated with the configuration, a class must have an accompanying implementation of the link:../apidocs/index.html/org/forgerock/openig/heap/Heaplet.html[Heaplet, window=\_blank] interface. The easiest and most common way of exposing the heaplet is to extend the link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html[GenericHeaplet, window=\_blank] class in a nested class of the class you want to create and initialize, overriding the heaplet's link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html#create()[create(), window=\_blank] method.
+
 Within the `create()` method, you can access the object's configuration through the link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html#config[config, window=\_blank] field.
 
 
 [#custom-build]
-====  Building the Customization
+==== Building the Customization
 
 You can use Apache Maven to manage dependencies on OpenIG. The dependencies are found in the ForgeRock Maven repository.
+
 The following listing shows the Maven POM configuration for the ForgeRock Maven repository and the dependency to build the sample filter:
 
 [source, xml]
@@ -812,10 +845,11 @@ $ mvn install
 
 
 [#custom-embed]
-====  Embedding the Customization in OpenIG
+==== Embedding the Customization in OpenIG
 
-After building your customizations into a .jar file, you can include them in the OpenIG .war file for deployment. You do this by unpacking `OpenIG-4.5.0.war` , including your .jar library in `WEB-INF/lib` , and then creating a new .war file.
-For example, if your .jar file is in a project named `sample-filter` , and the development version is `1.0.0-SNAPSHOT` , you might include the file as in the following example:
+After building your customizations into a .jar file, you can include them in the OpenIG .war file for deployment. You do this by unpacking `OpenIG-4.5.0.war`, including your .jar library in `WEB-INF/lib`, and then creating a new .war file.
+
+For example, if your .jar file is in a project named `sample-filter`, and the development version is `1.0.0-SNAPSHOT`, you might include the file as in the following example:
 
 [source, console]
 ----
@@ -824,7 +858,7 @@ $ mkdir root && cd root
     $ cp ~/Documents/sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar WEB-INF/lib
     $ jar -cf ../custom.war *
 ----
-In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-4.5.0.war` .
+In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-4.5.0.war`.
 
 
 

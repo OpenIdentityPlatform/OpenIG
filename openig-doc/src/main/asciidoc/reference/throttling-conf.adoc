@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -29,8 +29,10 @@ To protect applications from being overused by clients, use a throttling filter 
 
 [#d210e12838]
 ==== Description
-Limits the rate that requests pass through a filter. The maximum number of requests that a client is allowed to make in a defined time is called the _throttling rate_ .
+Limits the rate that requests pass through a filter. The maximum number of requests that a client is allowed to make in a defined time is called the __throttling rate__.
+
 The throttling filter uses a strategy based on the token bucket algorithm, which allows some bursts. Because of traffic bursts, the throttling rate can occasionally be higher than the defined limit - for example, with a throttling rate of 10 requests/10 seconds there can be more than 10 requests in the 10 second duration. However, the number of concurrent requests cannot exceed that defined for the throttling rate - for example, with a throttling rate of 10 requests/10 seconds there cannot be more than 10 concurrent requests.
+
 When the throttling rate is reached, OpenIG issues an HTTP status code 429 `Too Many Requests` and a `Retry-After` header, whose value is rounded up to the number of seconds to wait before trying the request again.
 
 [source, console]
@@ -68,67 +70,74 @@ GET http://openig.example.com:8080/throttle-scriptable HTTP/1.1
 ==== Properties
 --
 
-"requestGroupingPolicy": expression, required::
+`"requestGroupingPolicy"`: __expression, required__::
 An expression to identify the partition to use for the request. In many cases the partition identifies an individual client that sends requests, but it can also identify a group that sends requests. The expression can evaluate to the client IP address or user ID, or an OpenID Connect subject/issuer.
+
 +
 Default: Empty string. The value for this expression must not be null.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"throttlingRatePolicy": reference or inline declaration, required if "rate" is not used::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"throttlingRatePolicy"`: __reference or inline declaration, required if "rate" is not used__::
 A reference to or inline declaration of a policy to apply for throttling rate. The following policies can be used:
 
-*  xref:#MappedThrottlingPolicy[MappedThrottlingPolicy(5)] 
+* xref:#MappedThrottlingPolicy[MappedThrottlingPolicy(5)]
 
-*  xref:#ScriptableThrottlingPolicy[ScriptableThrottlingPolicy(5)] 
+* xref:#ScriptableThrottlingPolicy[ScriptableThrottlingPolicy(5)]
 
-*  xref:#DefaultRateThrottlingPolicy[DefaultRateThrottlingPolicy(5)] 
+* xref:#DefaultRateThrottlingPolicy[DefaultRateThrottlingPolicy(5)]
 
 +
 This value for this parameter must not be null.
 
-"rate": rate object, required if "throttlingRatePolicy" is not used::
+`"rate"`: __rate object, required if "throttlingRatePolicy" is not used__::
 The throttling rate to apply to requests. The rate is calculated as the number of requests divided by the duration.
 
-"numberOfRequests": integer, required::
-The number of requests allowed through the filter in the time specified by `"duration"` .
+`"numberOfRequests"`: __integer, required__::
+The number of requests allowed through the filter in the time specified by `"duration"`.
 
-"duration": duration string, required::
+`"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 
-"cleaningInterval": duration, optional::
+`"cleaningInterval"`: __duration, optional__::
 The time to wait before cleaning outdated partitions. The value must be more than zero but not more than one day.
 
-"executor": executor, optional::
+`"executor"`: __executor, optional__::
 An executor service to schedule the execution of tasks, such as the clean up of partitions that are no longer used.
+
 +
-Default: `ScheduledExecutorService` 
+Default: `ScheduledExecutorService`
+
 +
-See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)] .
+See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)].
 
 --
 
@@ -136,11 +145,11 @@ See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5
 ==== Examples
 The following links provide examples of how the throttling policies are implemented:
 
-*  xref:#example-throttling-mapped["Example of a Mapped Throttling Policy"] 
+* xref:#example-throttling-mapped["Example of a Mapped Throttling Policy"]
 
-*  xref:#example-throttling-scriptable["Example of a Scriptable Throttling Policy"] 
+* xref:#example-throttling-scriptable["Example of a Scriptable Throttling Policy"]
 
-The following route defines a throttling rate of 6 requests/10 seconds to requests. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-simple[Section 16.1, " Configuring a Simple Throttling Filter "] in the _Gateway Guide_ .
+The following route defines a throttling rate of 6 requests/10 seconds to requests. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-simple[ Configuring a Simple Throttling Filter ] in the __Gateway Guide__.
 
 [source, javascript]
 ----
@@ -169,7 +178,7 @@ The following route defines a throttling rate of 6 requests/10 seconds to reques
 
 [#d210e13170]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank]
 
 '''
 [#MappedThrottlingPolicy]
@@ -177,7 +186,7 @@ link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilt
 
 [#d210e13190]
 ==== Description
-Maps different throttling rates to different groups of requests, according to the evaluation of `throttlingRateMapper` .
+Maps different throttling rates to different groups of requests, according to the evaluation of `throttlingRateMapper`.
 
 [#d210e13203]
 ==== Usage
@@ -216,60 +225,66 @@ Maps different throttling rates to different groups of requests, according to th
 ==== Properties
 --
 
-"throttlingRateMapper": expression, required::
-An expression to categorize requests for mapping to a throttling rate in the `throttlingRatesMapping` .
+`"throttlingRateMapper"`: __expression, required__::
+An expression to categorize requests for mapping to a throttling rate in the `throttlingRatesMapping`.
+
 +
 If this parameter is null or does not match any specified mappings, the default throttling rate is applied.
 
-"throttlingRatesMapping": object, required::
-A map of throttling rate by request group. Requests are categorized into groups by the evaluation of the expression `"throttlingRateMapper"` .
+`"throttlingRatesMapping"`: __object, required__::
+A map of throttling rate by request group. Requests are categorized into groups by the evaluation of the expression `"throttlingRateMapper"`.
 
-"mapping1" and "mapping2": string, required::
-The evaluation of the expression `"throttlingRateMapper"` .
+`"mapping1"` and `"mapping2"`: __string, required__::
+The evaluation of the expression `"throttlingRateMapper"`.
 
-"defaultRate": object, required::
+`"defaultRate"`: __object, required__::
 The default throttling rate to apply if the evaluation of the expression `"throttlingRateMapper"` is null or is not mapped to a throttling rate.
+
 +
 The number of mappings is not limited to two.
 
-"numberOfRequests": integer, required::
-The number of requests allowed through the filter in the time specified by `"duration"` .
+`"numberOfRequests"`: __integer, required__::
+The number of requests allowed through the filter in the time specified by `"duration"`.
 
-"duration": duration string, required::
+`"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 
 --
 
 [#example-throttling-mapped]
 ==== Example of a Mapped Throttling Policy
-In the following example, requests from users in the accounts and sales departments of `example.com` are mapped to different throttling rates. Requests from other departments use the default throttling rate. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-mapped[Section 16.2, " Configuring a Mapped Throttling Filter "] in the _Gateway Guide_ .
+In the following example, requests from users in the accounts and sales departments of `example.com` are mapped to different throttling rates. Requests from other departments use the default throttling rate. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-mapped[ Configuring a Mapped Throttling Filter ] in the __Gateway Guide__.
+
 Alice and Bob both send requests from accounts, and so they each have a throttling rate of 6 requests/10 seconds. The throttling rate is applied independently to Alice and Bob, so no matter how many requests Alice sends in 10 seconds, Bob can still send up to 6 requests in the same 10 seconds. Carol sends requests from sales, with a throttling rate of 3 requests/10 seconds. Dave sends requests from finance, with the default rate of 1 request/10 seconds.
-The throttling rate is assigned according to the evaluation of `throttlingRateMapper` . In the example, this parameter evaluates to the value of the request header `X-Forwarded-For` , representing the hostname of the department.
-[#figure-throttling-mapped]
+
+The throttling rate is assigned according to the evaluation of `throttlingRateMapper`. In the example, this parameter evaluates to the value of the request header `X-Forwarded-For`, representing the hostname of the department.
 
 [#figure-throttling-mapped]
 image::images/throttling-mapped.png[]
@@ -317,7 +332,7 @@ image::images/throttling-mapped.png[]
 
 [#d210e13495]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank]
 
 '''
 [#ScriptableThrottlingPolicy]
@@ -352,27 +367,30 @@ Uses a script to look up throttling rates to apply to groups of requests.
 ==== Properties
 --
 
-"type": string, required::
-The Internet media type (formerly MIME type) of the script. For Groovy, the value is `"application/x-groovy"` .
+`"type"`: __string, required__::
+The Internet media type (formerly MIME type) of the script. For Groovy, the value is `"application/x-groovy"`.
 
-"file": string, required if "source" is not used::
+`"file"`: __string, required if "source" is not used__::
 The path to the file containing the script.
-+
-Relative paths in this field are relative to the base location for scripts, which depends on the configuration. For information, see xref:../gateway-guide/chap-install.adoc#install[Section 3.3, "Installing OpenIG"] in the _Gateway Guide_ .
-+
-The base location for Groovy scripts is on the classpath when the scripts are executed. If a Groovy script is not in the default package, but instead has its own package name, it belongs in the directory corresponding to the package name. For example, a script in package `com.example.groovy` belongs under `openig-base/scripts/groovy/com/example/groovy/` .
 
-"source": string, required if "file" is not used::
++
+Relative paths in this field are relative to the base location for scripts, which depends on the configuration. For information, see xref:../gateway-guide/chap-install.adoc#install[Installing OpenIG] in the __Gateway Guide__.
+
++
+The base location for Groovy scripts is on the classpath when the scripts are executed. If a Groovy script is not in the default package, but instead has its own package name, it belongs in the directory corresponding to the package name. For example, a script in package `com.example.groovy` belongs under `openig-base/scripts/groovy/com/example/groovy/`.
+
+`"source"`: __string, required if "file" is not used__::
 The script as a string.
 
 --
 
 [#example-throttling-scriptable]
 ==== Example of a Scriptable Throttling Policy
-In the following example, the `DefaultRateThrottlingPolicy` delegates the management of throttling to the scriptable throttling policy. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-scriptable[Section 16.3, " Configuring a Scriptable Throttling Filter "] in the _Gateway Guide_ .
-The script applies a throttling rate of 6 requests/10 seconds to requests from the accounts department of `example.com` . For all other requests, the script returns `null` . When the script returns `null` , the default rate of 1 request/10 seconds is applied.
-The script can store the mapping for the throttling rate in memory, and can use a more complex mapping mechanism than that used in the `MappedThrottlingPolicy` . For example, the script can map the throttling rate for a range of IP addresses. The script can also query an LDAP directory, query an external database, or read the mapping from a file.
-[#figure-throttling-scriptable]
+In the following example, the `DefaultRateThrottlingPolicy` delegates the management of throttling to the scriptable throttling policy. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-scriptable[ Configuring a Scriptable Throttling Filter ] in the __Gateway Guide__.
+
+The script applies a throttling rate of 6 requests/10 seconds to requests from the accounts department of `example.com`. For all other requests, the script returns `null`. When the script returns `null`, the default rate of 1 request/10 seconds is applied.
+
+The script can store the mapping for the throttling rate in memory, and can use a more complex mapping mechanism than that used in the `MappedThrottlingPolicy`. For example, the script can map the throttling rate for a range of IP addresses. The script can also query an LDAP directory, query an external database, or read the mapping from a file.
 
 [#figure-throttling-scriptable]
 image::images/throttling-scriptable.png[]
@@ -413,7 +431,7 @@ image::images/throttling-scriptable.png[]
   "condition": "${matches(request.uri.path, '^/throttle-scriptable')}"
 }
 ----
-The groovy script maps a throttling rate for the accounts department of `example.com` . Other requests receive the default throttling rate.
+The groovy script maps a throttling rate for the accounts department of `example.com`. Other requests receive the default throttling rate.
 
 [source, javascript]
 ----
@@ -433,7 +451,7 @@ if (request.headers['X-Forwarded-For'].values[0]  == 'accounts.example.com') {
 
 [#d210e13638]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank]
 
 '''
 [#DefaultRateThrottlingPolicy]
@@ -441,7 +459,7 @@ link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ScriptableThro
 
 [#d210e13658]
 ==== Description
-Provides a default throttling rate if the delegating throttling policy returns `null` .
+Provides a default throttling rate if the delegating throttling policy returns `null`.
 
 [#d210e13671]
 ==== Usage
@@ -470,44 +488,49 @@ Provides a default throttling rate if the delegating throttling policy returns `
 ==== Properties
 --
 
-"delegateThrottlingRatePolicy": reference, required::
-The policy to which the default policy delegates the throttling rate. The `DefaultRateThrottlingPolicy` delegates management of throttling to the policy specified by `delegateThrottlingRatePolicy` .
+`"delegateThrottlingRatePolicy"`: __reference, required__::
+The policy to which the default policy delegates the throttling rate. The `DefaultRateThrottlingPolicy` delegates management of throttling to the policy specified by `delegateThrottlingRatePolicy`.
+
 +
-If `delegateThrottlingRatePolicy` returns `null` , the `defaultRate` is used.
+If `delegateThrottlingRatePolicy` returns `null`, the `defaultRate` is used.
+
 +
-For information about policies to use, see xref:#MappedThrottlingPolicy[MappedThrottlingPolicy(5)] and xref:#ScriptableThrottlingPolicy[ScriptableThrottlingPolicy(5)] .
+For information about policies to use, see xref:#MappedThrottlingPolicy[MappedThrottlingPolicy(5)] and xref:#ScriptableThrottlingPolicy[ScriptableThrottlingPolicy(5)].
 
-"defaultRate": object, required::
-The default throttling rate to apply if the delegating policy returns `null` .
+`"defaultRate"`: __object, required__::
+The default throttling rate to apply if the delegating policy returns `null`.
 
-"numberOfRequests": integer, required::
-The number of requests allowed through the filter in the time specified by `"duration"` .
+`"numberOfRequests"`: __integer, required__::
+The number of requests allowed through the filter in the time specified by `"duration"`.
 
-"duration": duration string, required::
+`"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 
 --
@@ -518,6 +541,6 @@ For an example of how this policy is used, see xref:#example-throttling-scriptab
 
 [#d210e13916]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank]
 
 

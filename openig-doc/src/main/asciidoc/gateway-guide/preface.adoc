@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -47,9 +47,10 @@ In reading and following the instructions in this guide, you will learn how to:
 
 
 [#d2528e221]
-===  Using This Guide
+=== Using This Guide
 
 This guide is intended for access management designers and administrators who develop, build, deploy, and maintain OpenIG for their organizations.
+
 This guide is written so you can get started with OpenIG quickly, and learn more as you progress through the guide.
 This guide is also written with the assumption that you already have basic familiarity with the following topics:
 
@@ -77,6 +78,7 @@ Depending on the features you use, you should also have basic familiarity with t
 
 * The Java programming language if you plan to extend OpenIG with plugins, and Apache Maven for building plugins
 
+
 include::../partials/sec-formatting-conventions.adoc[]
 
 include::../partials/sec-accessing-doc-online.adoc[]
@@ -84,6 +86,4 @@ include::../partials/sec-accessing-doc-online.adoc[]
 include::../partials/sec-joining-the-community.adoc[]
 
 include::../partials/sec-support-contact.adoc[]
-
-
 

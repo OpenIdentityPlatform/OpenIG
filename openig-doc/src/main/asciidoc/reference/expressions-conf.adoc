@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -29,76 +29,85 @@ Many configuration parameters support dynamic expressions.
 
 [#expressions-description]
 ==== Description
-Expressions are specified as configuration parameter values for a number of built-in objects. Such expressions conform to the Universal Expression Language as specified in link:http://www.jcp.org/en/jsr/detail?id=245[JSR-245, window=\_blank] .
+Expressions are specified as configuration parameter values for a number of built-in objects. Such expressions conform to the Universal Expression Language as specified in link:http://www.jcp.org/en/jsr/detail?id=245[JSR-245, window=\_blank].
 
 [#d210e15763]
 ==== General Syntax
-All expressions follow standard Universal Expression Language syntax: `${expression}` . The expression can be a simple reference to a value, a function call, or arbitrarily complex arithmetic, logical, relational and conditional operations. When supplied within a configuration parameter, an expression is always a string enclosed in quotation marks, for example: `"${request.method}"` .
+All expressions follow standard Universal Expression Language syntax: `${expression}`. The expression can be a simple reference to a value, a function call, or arbitrarily complex arithmetic, logical, relational and conditional operations. When supplied within a configuration parameter, an expression is always a string enclosed in quotation marks, for example: `"${request.method}"`.
 
 [#d210e15774]
 ==== Value Expressions
 A value expression references a value relative to the scope supplied to the expression. For example, `"${request.method}"` references the method of an incoming HTTP request.
-An _lvalue-expression_ is a specific type of value expression that references a value to be written. For example, `"${session.gotoURL}"` specifies a session attribute named `gotoURL` to write a value to. Attempts to write values to read-only values are ignored.
+
+An __lvalue-expression__ is a specific type of value expression that references a value to be written. For example, `"${session.gotoURL}"` specifies a session attribute named `gotoURL` to write a value to. Attempts to write values to read-only values are ignored.
 
 [#d210e15793]
 ==== Indexed Properties
 Properties of values are accessed using the `.` and `[]` operators, and can be nested arbitrarily.
+
 The value expressions `"${request.method}"` and `"${request['method']}"` are equivalent.
+
 In the case of arrays, the index of an element in the array is expressed as a number in brackets. For example, `"${request.headers['Content-Type'][0]}"` references the first `Content-Type` header value in a request. If a property does not exist, then the index reference yields a `null` (empty) value.
 
 [#d210e15823]
 ==== Operations
 Universal Expression Language supports arbitrarily complex arithmetic, logical, relational and conditional operations. They are, in order of precedence:
 
-* Index property value: `[]` , `.` 
+* Index property value: `[]`, `.`
 
-* Change precedence of operation: `()` 
+* Change precedence of operation: `()`
 
-* Unary negative: `-` 
+* Unary negative: `-`
 
-* Logical operations: `not` , `!` , `empty` 
+* Logical operations: `not`, `!`, `empty`
 
-* Arithmetic operations: `*` , `/` , `div` , `%` , `mod` 
+* Arithmetic operations: `*`, `/`, `div`, `%`, `mod`
 
-* Binary arithmetic operations: `+` , `-` 
+* Binary arithmetic operations: `+`, `-`
 
-* Relational operations: `<` , `>` , `<=` , `>=` , `lt` , `gt` , `le` , `ge` , `==` , `!=` , `eq` , `ne` 
+* Relational operations: `<`, `>`, `<=`, `>=`, `lt`, `gt`, `le`, `ge`, `==`, `!=`, `eq`, `ne`
 
-* Logical operations: `&&` , `and` , `||` , `or` 
+* Logical operations: `&&`, `and`, `||`, `or`
 
-* Conditional operations: `?` , `:` 
+* Conditional operations: `?`, `:`
 
 
 [#d210e15952]
 ==== System Properties and Environment Variables
 You can use expressions to retrieve Java system properties, and to retrieve environment variables.
-For system properties, `${system['property']}` yields the value of _property_ , or `null` if there is no value for _property_ . For example, `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
-For environment variables, `${env['variable']}` yields the value of _variable_ , or `null` if there is no value for _variable_ . For example, `${env['HOME']}` yields the home directory of the user running the application server for OpenIG.
+
+For system properties, `${system['property']}` yields the value of __property__, or `null` if there is no value for __property__. For example, `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
+
+For environment variables, `${env['variable']}` yields the value of __variable__, or `null` if there is no value for __variable__. For example, `${env['HOME']}` yields the home directory of the user running the application server for OpenIG.
 
 [#d210e15997]
 ==== Functions
 A number of built-in functions described in xref:#Functions[Functions(5)] can be called within an expression.
-Syntax is `${function(parameter, ...)}` , where zero or more parameters are supplied to the function. For example, `"${toLowerCase(request.method)}"` yields the method of the request, converted to lower case. Functions can be operands for operations, and can yield parameters for other function calls.
+
+Syntax is `${function(parameter, ...)}`, where zero or more parameters are supplied to the function. For example, `"${toLowerCase(request.method)}"` yields the method of the request, converted to lower case. Functions can be operands for operations, and can yield parameters for other function calls.
 
 [#d210e16012]
 ==== Escaping Literal Expressions
-Use the backslash `\` character as the escape character. For example, `${true}` as an expression normally evaluates to `true` . To include the string `${true}` in an expression, write `${true}` .
-You can also escape literal expressions by single-quoting the initial characters. For example, `${'${'}true}` evaluates to `${true}` . To include a single backslash `\` character, write `${'\\'}` . To include a double backslash, write `${'\\\\'}` .
+Use the backslash `\` character as the escape character. For example, `${true}` as an expression normally evaluates to `true`. To include the string `${true}` in an expression, write `${true}`.
+
+You can also escape literal expressions by single-quoting the initial characters. For example, `${'${'}true}` evaluates to `${true}`. To include a single backslash `\` character, write `${'\\'}`. To include a double backslash, write `${'\\\\'}`.
 
 [#d210e16049]
 ==== Embedding Expressions
-Although an expression cannot be embedded as `${expression}` inside another expression, embedding system property, environment variable, and function expressions within each other is fine. Do not enclose the embedded elements in `${}` .
+Although an expression cannot be embedded as `${expression}` inside another expression, embedding system property, environment variable, and function expressions within each other is fine. Do not enclose the embedded elements in `${}`.
+
 The following single line example embeds an `env` environment variable expression and the Java `String.concat()` method in the argument to a `read()` function:
 
 [source, javascript]
 ----
 "entity" : "${read(env['OPENIG_BASE'].concat('/html/defaultResponse.html'))}"
 ----
-In the example the entity property value is set to the contents of the file `$OPENIG_BASE/html/defaultResponse.html` .
+In the example the entity property value is set to the contents of the file `$OPENIG_BASE/html/defaultResponse.html`.
 
 [#d210e16082]
 ==== Extensions
-OpenIG offers a plugin interface for extending expressions. See xref:../gateway-guide/chap-extending.adoc#extension-points[Section 14.6.1, "Key Extension Points"] in the _Gateway Guide_ .
+OpenIG offers a plugin interface for extending expressions. See xref:../gateway-guide/chap-extending.adoc#extension-points[Key Extension Points] in the __Gateway Guide__.
+
 If your deployment uses expression plugins, read the plugin documentation about the additional expressions you can use.
 
 [#d210e16091]
@@ -134,7 +143,7 @@ If your deployment uses expression plugins, read the plugin documentation about 
 
 [#d210e16099]
 ==== See Also
-xref:object-model-conf.adoc#Contexts[Contexts(5)] , xref:#Functions[Functions(5)] , xref:object-model-conf.adoc#Request[Request(5)] , xref:object-model-conf.adoc#Response[Response(5)] 
+xref:object-model-conf.adoc#Contexts[Contexts(5)], xref:#Functions[Functions(5)], xref:object-model-conf.adoc#Request[Request(5)], xref:object-model-conf.adoc#Response[Response(5)]
 
 '''
 [#Functions]
@@ -142,7 +151,7 @@ xref:object-model-conf.adoc#Contexts[Contexts(5)] , xref:#Functions[Functions(5)
 
 [#functions-description]
 ==== Description
-A set of built-in functions that can be called from within expressions, which are described in xref:#Expressions[Expressions(5)] .
+A set of built-in functions that can be called from within expressions, which are described in xref:#Expressions[Expressions(5)].
 
 [#functions-array]
 ==== array
@@ -223,7 +232,7 @@ The base64-decoded string.
 ----
 encodeBase64(string)
 ----
-Returns the base64-encoded string, or `null` if the string is `null` .
+Returns the base64-encoded string, or `null` if the string is `null`.
 .Parameters
 --
 
@@ -246,7 +255,7 @@ The base64-encoded string.
 ----
 formDecodeParameterNameOrValue(string)
 ----
-Returns the string that results from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded` , which can be `null` if the input is `null` .
+Returns the string that results from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded`, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -258,7 +267,7 @@ the parameter name or value
 --
 
 string::
-The string resulting from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded` .
+The string resulting from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded`.
 
 --
 
@@ -269,7 +278,7 @@ The string resulting from decoding the provided form encoded parameter name or v
 ----
 formEncodeParameterNameOrValue(string)
 ----
-Returns the string that results from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded` , which can be `null` if the input is `null` .
+Returns the string that results from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded`, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -281,7 +290,7 @@ the parameter name or value
 --
 
 string::
-The string resulting from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded` .
+The string resulting from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded`.
 
 --
 
@@ -308,6 +317,7 @@ the value to search for within the string.
 
 number::
 the index of the first instance of substring, or -1 if not found.
+
 +
 The index count starts from 1, not 0.
 
@@ -346,7 +356,7 @@ the string containing the joined strings.
 ----
 keyMatch(map, pattern)
 ----
-Returns the first key found in a map that matches the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] , or `null` if no such match is found.
+Returns the first key found in a map that matches the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank], or `null` if no such match is found.
 .Parameters
 --
 
@@ -421,7 +431,7 @@ an array of matching groups, or `null` if no such match is found.
 ----
 matches(string, pattern)
 ----
-Returns `true` if the string contains a match for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] .
+Returns `true` if the string contains a match for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
 .Parameters
 --
 
@@ -447,8 +457,9 @@ if the string contains the specified regular expression pattern.
 ----
 read(string)
 ----
-Takes a file name as a `string` , and returns the content of the file as a plain string, or `null` on error (due to the file not being found, for example).
-Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir` .
+Takes a file name as a `string`, and returns the content of the file as a plain string, or `null` on error (due to the file not being found, for example).
+
+Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir`.
 .Parameters
 --
 
@@ -471,9 +482,11 @@ The content of the file or `null` on error.
 ----
 readProperties(string)
 ----
-Takes a Java Properties file name as a `string` , and returns the content of the file as a key/value map of properties, or `null` on error (due to the file not being found, for example).
-Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir` .
-For example, to get the value of the `key` property in the properties file `/path/to/my.properties` , use `${readProperties('/path/to/my.properties')['key']}` .
+Takes a Java Properties file name as a `string`, and returns the content of the file as a key/value map of properties, or `null` on error (due to the file not being found, for example).
+
+Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir`.
+
+For example, to get the value of the `key` property in the properties file `/path/to/my.properties`, use `${readProperties('/path/to/my.properties')['key']}`.
 .Parameters
 --
 
@@ -496,7 +509,7 @@ The key/value map of properties or `null` on error.
 ----
 split(string, pattern)
 ----
-Splits the specified string into an array of substrings around matches for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] .
+Splits the specified string into an array of substrings around matches for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
 .Parameters
 --
 
@@ -615,19 +628,20 @@ the string with leading and trailing white space omitted.
 urlDecode(string)
 ----
 Returns the URL decoding of the provided string.
-This is equivalent to xref:#functions-formDecodeParameterNameOrValue["formDecodeParameterNameOrValue"] .
+
+This is equivalent to xref:#functions-formDecodeParameterNameOrValue["formDecodeParameterNameOrValue"].
 .Parameters
 --
 
 string::
-The string to be URL decoded, which may be `null` .
+The string to be URL decoded, which may be `null`.
 
 --
 .Returns
 --
 
 string::
-The URL decoding of the provided string, or `null` if string was `null` .
+The URL decoding of the provided string, or `null` if string was `null`.
 
 --
 
@@ -639,19 +653,20 @@ The URL decoding of the provided string, or `null` if string was `null` .
 urlEncode(string)
 ----
 Returns the URL encoding of the provided string.
-This is equivalent to xref:#functions-formEncodeParameterNameOrValue["formEncodeParameterNameOrValue"] .
+
+This is equivalent to xref:#functions-formEncodeParameterNameOrValue["formEncodeParameterNameOrValue"].
 .Parameters
 --
 
 string::
-The string to be URL encoded, which may be `null` .
+The string to be URL encoded, which may be `null`.
 
 --
 .Returns
 --
 
 string::
-The URL encoding of the provided string, or `null` if string was `null` .
+The URL encoding of the provided string, or `null` if string was `null`.
 
 --
 
@@ -662,7 +677,7 @@ The URL encoding of the provided string, or `null` if string was `null` .
 ----
 urlDecodeFragment(string)
 ----
-Returns the string that results from decoding the provided URL encoded fragment as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from decoding the provided URL encoded fragment as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -685,7 +700,7 @@ The string resulting from decoding the provided URL encoded fragment as per RFC 
 ----
 urlDecodePathElement(string)
 ----
-Returns the string that results from decoding the provided URL encoded path element as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from decoding the provided URL encoded path element as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -708,7 +723,7 @@ The string resulting from decoding the provided URL encoded path element as per 
 ----
 urlDecodeQueryParameterNameOrValue(string)
 ----
-Returns the string that results from decoding the provided URL encoded query parameter name or value as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from decoding the provided URL encoded query parameter name or value as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -731,7 +746,7 @@ The string resulting from decoding the provided URL encoded query parameter name
 ----
 urlDecodeUserInfo(string)
 ----
-Returns the string that results from decoding the provided URL encoded userInfo as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from decoding the provided URL encoded userInfo as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -754,7 +769,7 @@ The string resulting from decoding the provided URL encoded userInfo as per RFC 
 ----
 urlEncodeFragment(string)
 ----
-Returns the string that results from URL encoding the provided fragment as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from URL encoding the provided fragment as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -777,7 +792,7 @@ The string resulting from URL encoding the provided fragment as per RFC 3986.
 ----
 urlEncodePathElement(string)
 ----
-Returns the string that results from URL encoding the provided path element as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from URL encoding the provided path element as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -800,7 +815,7 @@ The string resulting from URL encoding the provided path element as per RFC 3986
 ----
 urlEncodeQueryParameterNameOrValue(string)
 ----
-Returns the string that results from URL encoding the provided query parameter name or value as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from URL encoding the provided query parameter name or value as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -823,7 +838,7 @@ The string resulting from URL encoding the provided query parameter name or valu
 ----
 urlEncodeUserInfo(string)
 ----
-Returns the string that results from URL encoding the provided userInfo as per RFC 3986, which can be `null` if the input is `null` .
+Returns the string that results from URL encoding the provided userInfo as per RFC 3986, which can be `null` if the input is `null`.
 .Parameters
 --
 
@@ -841,8 +856,9 @@ The string resulting from URL encoding the provided userInfo as per RFC 3986.
 
 [#functions-javadoc]
 ==== Javadoc
-Some functions are provided by link:../apidocs/index.html?org/forgerock/openig/el/Functions.html[org.forgerock.openig.el.Functions, window=\_blank] .
-Other functions are provided by link:../apidocs/index.html?org/forgerock/http/util/Uris.html[org.forgerock.http.util.Uris, window=\_blank] .
+Some functions are provided by link:../apidocs/index.html?org/forgerock/openig/el/Functions.html[org.forgerock.openig.el.Functions, window=\_blank].
+
+Other functions are provided by link:../apidocs/index.html?org/forgerock/http/util/Uris.html[org.forgerock.http.util.Uris, window=\_blank].
 
 '''
 [#Patterns]
@@ -850,15 +866,16 @@ Other functions are provided by link:../apidocs/index.html?org/forgerock/http/ut
 
 [#d210e17106]
 ==== Description
-Patterns in configuration parameters and expressions use the standard Java regular expression link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class. For more information on regular expressions, see Oracle's link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[tutorial on Regular Expressions, window=\_blank] .
+Patterns in configuration parameters and expressions use the standard Java regular expression link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class. For more information on regular expressions, see Oracle's link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[tutorial on Regular Expressions, window=\_blank].
 
 [#d210e17122]
 ==== Pattern Templates
-A regular expression pattern template expresses a transformation to be applied for a matching regular expression pattern. It may contain references to link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#cg[capturing groups, window=\_blank] within the match result. Each occurrence of `$g` (where _g_ is an integer value) is substituted by the indexed capturing group in a match result. Capturing group zero `"$0"` denotes the entire pattern match. A dollar sign or numeral literal immediately following a capture group reference can be included as a literal in the template by preceding it with a backslash ( `\` ). Backslash itself must be also escaped in this manner.
+A regular expression pattern template expresses a transformation to be applied for a matching regular expression pattern. It may contain references to link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#cg[capturing groups, window=\_blank] within the match result. Each occurrence of `$g` (where __g__ is an integer value) is substituted by the indexed capturing group in a match result. Capturing group zero `"$0"` denotes the entire pattern match. A dollar sign or numeral literal immediately following a capture group reference can be included as a literal in the template by preceding it with a backslash ( `\` ). Backslash itself must be also escaped in this manner.
 
 [#d210e17142]
 ==== See Also
 Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class
-link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[Regular Expressions tutorial, window=\_blank] 
+
+link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[Regular Expressions tutorial, window=\_blank]
 
 

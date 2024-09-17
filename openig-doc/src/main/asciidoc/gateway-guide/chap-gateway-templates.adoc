@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,22 +21,27 @@
 
 
 [#chap-gateway-templates]
-==  Configuration Templates
+== Configuration Templates
 
 This chapter contains template routes for common configurations.
-Before you use one of the templates here, install and configure OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
+
+Before you use one of the templates here, install and configure OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
 Next, take one of the templates and then modify it to suit your deployment. Read the summary of each template to find the right match for your application.
+
 When you move to use OpenIG in production, be sure to turn off DEBUG level logging, and to deactivate `CaptureDecorator` use to avoid filling up disk space. Also consider locking down the `Router` configuration.
 
 [#template-proxy-capture]
-===  Proxy and Capture
+=== Proxy and Capture
 
-If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] , then you already proxy and capture both the application requests coming in and the server responses going out.
-The route shown in xref:#example-proxy-capture[Example 13.1, "Proxy and Capture"] uses a `DispatchHandler` to change the scheme to HTTPS on login. To use this template change the baseURI settings to match those of the target application.
+If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started], then you already proxy and capture both the application requests coming in and the server responses going out.
+
+The route shown in xref:#example-proxy-capture[Proxy and Capture] uses a `DispatchHandler` to change the scheme to HTTPS on login. To use this template change the baseURI settings to match those of the target application.
+
 When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate. If the certificate was signed by a well-known Certificate Authority, then there should be no further configuration to do. Otherwise, use a `ClientHandler` that references a truststore holding the certificate.
 
 [#example-proxy-capture]
-.Example 13.1. Proxy and Capture
+.Proxy and Capture
 ====
 
 [source, javascript]
@@ -69,17 +74,18 @@ When connecting to the protected application over HTTPS, the `ClientHandler` mus
 }
 ----
 ====
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/20-capture.json` , and browse to link:http://openig.example.com:8080/login?demo=capture[http://openig.example.com:8080/login?demo=capture, window=\_blank] .
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/20-capture.json`, and browse to link:http://openig.example.com:8080/login?demo=capture[http://openig.example.com:8080/login?demo=capture, window=\_blank].
+
 To use this as a default route with a real application, remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 
 [#template-simple-login]
-===  Simple Login Form
+=== Simple Login Form
 
-The route in xref:#example-simple-login[Example 13.2, "Simple Login Form"] logs the user into the target application with hard-coded user name and password. The route intercepts the login page request and replaces it with the login form. Adapt the `uri` , `form` , and `baseURI` settings as necessary.
+The route in xref:#example-simple-login[Simple Login Form] logs the user into the target application with hard-coded user name and password. The route intercepts the login page request and replaces it with the login form. Adapt the `uri`, `form`, and `baseURI` settings as necessary.
 
 [#example-simple-login]
-.Example 13.2. Simple Login Form
+.Simple Login Form
 ====
 
 [source, javascript]
@@ -127,18 +133,20 @@ The route in xref:#example-simple-login[Example 13.2, "Simple Login Form"] logs 
 }
 ----
 ====
-The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD` , can use strings or expressions. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/21-simple.json` , replace `MY_USERNAME` with `demo` and `MY_PASSWORD` with `changeit` , and browse to link:http://openig.example.com:8080/login?demo=simple[http://openig.example.com:8080/login?demo=simple, window=\_blank] .
+The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD`, can use strings or expressions. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/21-simple.json`, replace `MY_USERNAME` with `demo` and `MY_PASSWORD` with `changeit`, and browse to link:http://openig.example.com:8080/login?demo=simple[http://openig.example.com:8080/login?demo=simple, window=\_blank].
+
 To use this as a default route with a real application, use a `ClientHandler` that does not blindly trust the server certificate, and remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 
 [#template-login-cookie]
-===  Login Form With Cookie From Login Page
+=== Login Form With Cookie From Login Page
 
-Some applications expect a cookie from the login page to be sent in the login request form. OpenIG can manage the cookies. The route in xref:#example-login-cookie[Example 13.3, "Login Form With Cookie From Login Page"] allows the login page request to go through to the target, and manages the cookies set in the response rather than passing the cookie through to the browser.
+Some applications expect a cookie from the login page to be sent in the login request form. OpenIG can manage the cookies. The route in xref:#example-login-cookie[Login Form With Cookie From Login Page] allows the login page request to go through to the target, and manages the cookies set in the response rather than passing the cookie through to the browser.
 
 [#example-login-cookie]
-.Example 13.3. Login Form With Cookie From Login Page
+.Login Form With Cookie From Login Page
 ====
 
 [source, javascript]
@@ -177,15 +185,17 @@ Some applications expect a cookie from the login page to be sent in the login re
 }
 ----
 ====
-The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD` , can use strings or expressions. A `CookieFilter` with no specified configuration manages all cookies that are set by the protected application. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/22-cookie.json` , replace `MY_USERNAME` with `kramer` and `MY_PASSWORD` with `newman` , and browse to link:http://openig.example.com:8080/login?demo=cookie[http://openig.example.com:8080/login?demo=cookie, window=\_blank] .
+The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD`, can use strings or expressions. A `CookieFilter` with no specified configuration manages all cookies that are set by the protected application. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/22-cookie.json`, replace `MY_USERNAME` with `kramer` and `MY_PASSWORD` with `newman`, and browse to link:http://openig.example.com:8080/login?demo=cookie[http://openig.example.com:8080/login?demo=cookie, window=\_blank].
+
 To use this as a default route with a real application, remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 
 [#template-login-replay-cookie-filters]
-===  Login Form With Password Replay and Cookie Filters
+=== Login Form With Password Replay and Cookie Filters
 
-The route in xref:#example-login-replay-cookie-filters[Example 13.4, "Login Form With Password Replay and Cookie Filters"] works with an application that returns the login page when the user tries to access a page without a valid session. This route shows how to use a `PasswordReplayFilter` to find the login page with a pattern that matches a mock OpenAM Classic UI page.
+The route in xref:#example-login-replay-cookie-filters[Login Form With Password Replay and Cookie Filters] works with an application that returns the login page when the user tries to access a page without a valid session. This route shows how to use a `PasswordReplayFilter` to find the login page with a pattern that matches a mock OpenAM Classic UI page.
 
 [NOTE]
 ====
@@ -193,7 +203,7 @@ The route uses a `CookieFilter` to manage cookies, ensuring that cookies from th
 ====
 
 [#example-login-replay-cookie-filters]
-.Example 13.4. Login Form With Password Replay and Cookie Filters
+.Login Form With Password Replay and Cookie Filters
 ====
 
 [source, javascript]
@@ -255,7 +265,8 @@ The route uses a `CookieFilter` to manage cookies, ensuring that cookies from th
 ----
 ====
 The parameters in the `PasswordReplayFilter` form can use strings or expressions.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/23-classic.json` , and use the `curl` command to check that it works as in the following example, which shows that the `CookieFilter` has removed cookies from the response except for the session cookie added by the container:
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/23-classic.json`, and use the `curl` command to check that it works as in the following example, which shows that the `CookieFilter` has removed cookies from the response except for the session cookie added by the container:
 
 [source, console]
 ----
@@ -273,12 +284,12 @@ To use this as a default route with a real application, remove the route-level c
 
 
 [#template-login-hidden-value]
-===  Login Which Requires a Hidden Value From the Login Page
+=== Login Which Requires a Hidden Value From the Login Page
 
-Some applications call for extracting a hidden value from the login page and including the value in the login form POSTed to the target application. The route in xref:#example-login-hidden-value[Example 13.5, "Login Which Requires a Hidden Value From the Login Page"] extracts a hidden value from the login page, and posts a static form including the hidden value.
+Some applications call for extracting a hidden value from the login page and including the value in the login form POSTed to the target application. The route in xref:#example-login-hidden-value[Login Which Requires a Hidden Value From the Login Page] extracts a hidden value from the login page, and posts a static form including the hidden value.
 
 [#example-login-hidden-value]
-.Example 13.5. Login Which Requires a Hidden Value From the Login Page
+.Login Which Requires a Hidden Value From the Login Page
 ====
 
 [source, javascript]
@@ -335,18 +346,20 @@ Some applications call for extracting a hidden value from the login page and inc
 }
 ----
 ====
-The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD` , can have string values, and they can also use expressions. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/24-hidden.json` , replace `MY_USERNAME` with `scarter` and `MY_PASSWORD` with `sprain` , and browse to link:http://openig.example.com:8080/login?demo=hidden[http://openig.example.com:8080/login?demo=hidden, window=\_blank] .
+The parameters in the `PasswordReplayFilter` form, `MY_USERNAME` and `MY_PASSWORD`, can have string values, and they can also use expressions. When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/24-hidden.json`, replace `MY_USERNAME` with `scarter` and `MY_PASSWORD` with `sprain`, and browse to link:http://openig.example.com:8080/login?demo=hidden[http://openig.example.com:8080/login?demo=hidden, window=\_blank].
+
 To use this as a default route with a real application, use a `ClientHandler` that does not blindly trust the server certificate, and remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 
 [#template-http-and-https]
-===  HTTP and HTTPS Application
+=== HTTP and HTTPS Application
 
-The route in xref:#example-http-and-https[Example 13.6, "HTTP and HTTPS Application"] proxies traffic to an application with both HTTP and HTTPS ports. The application uses HTTPS for authentication and HTTP for the general application features. Assuming all login requests are made over HTTPS, you must add the login filters and handlers to the chain.
+The route in xref:#example-http-and-https[HTTP and HTTPS Application] proxies traffic to an application with both HTTP and HTTPS ports. The application uses HTTPS for authentication and HTTP for the general application features. Assuming all login requests are made over HTTPS, you must add the login filters and handlers to the chain.
 
 [#example-http-and-https]
-.Example 13.6. HTTP and HTTPS Application
+.HTTP and HTTPS Application
 ====
 
 [source, javascript]
@@ -385,17 +398,19 @@ The route in xref:#example-http-and-https[Example 13.6, "HTTP and HTTPS Applicat
 ----
 ====
 When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/25-https.json` , and browse to link:http://openig.example.com:8080/login?demo=https[http://openig.example.com:8080/login?demo=https, window=\_blank] .
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/25-https.json`, and browse to link:http://openig.example.com:8080/login?demo=https[http://openig.example.com:8080/login?demo=https, window=\_blank].
+
 To use this as a default route with a real application, remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 
 [#template-am-integration-headers]
-===  OpenAM Integration With Headers
+=== OpenAM Integration With Headers
 
-The route in xref:#example-am-integration-headers[Example 13.7, "OpenAM Integration With Headers"] logs the user into the target application using the headers such as those passed in from an OpenAM policy agent. If the header passed in contains only a user name or subject and requires a lookup to an external data source, you must add an attribute filter to the chain to retrieve the credentials.
+The route in xref:#example-am-integration-headers[OpenAM Integration With Headers] logs the user into the target application using the headers such as those passed in from an OpenAM policy agent. If the header passed in contains only a user name or subject and requires a lookup to an external data source, you must add an attribute filter to the chain to retrieve the credentials.
 
 [#example-am-integration-headers]
-.Example 13.7. OpenAM Integration With Headers
+.OpenAM Integration With Headers
 ====
 
 [source, javascript]
@@ -444,7 +459,8 @@ The route in xref:#example-am-integration-headers[Example 13.7, "OpenAM Integrat
 ----
 ====
 When connecting to the protected application over HTTPS, the `ClientHandler` must be configured to trust the application's public key server certificate.
-To try this example with the sample application, save the file as `$HOME/.openig/config/routes/26-headers.json` , and use the `curl` command to simulate the headers being passed in from an OpenAM policy agent as in the following example:
+
+To try this example with the sample application, save the file as `$HOME/.openig/config/routes/26-headers.json`, and use the `curl` command to simulate the headers being passed in from an OpenAM policy agent as in the following example:
 
 [source, console]
 ----
@@ -460,12 +476,12 @@ To use this as a default route with a real application, use a `ClientHandler` th
 
 
 [#template-owa-online]
-===  Microsoft Online Outlook Web Access
+=== Microsoft Online Outlook Web Access
 
-The route in xref:#example-owa-online[Example 13.8, "Microsoft Online Outlook Web Access"] logs the user into Microsoft Online Outlook Web Access (OWA). The example shows how you would use OpenIG and the OpenAM password capture feature to integrate with OWA. Follow the example in xref:chap-password-capture-replay-tutorial.adoc#chap-password-capture-replay-tutorial[Chapter 5, "Getting Login Credentials From OpenAM"] , and substitute this template as a replacement for the default route.
+The route in xref:#example-owa-online[Microsoft Online Outlook Web Access] logs the user into Microsoft Online Outlook Web Access (OWA). The example shows how you would use OpenIG and the OpenAM password capture feature to integrate with OWA. Follow the example in xref:chap-password-capture-replay-tutorial.adoc#chap-password-capture-replay-tutorial[Getting Login Credentials From OpenAM], and substitute this template as a replacement for the default route.
 
 [#example-owa-online]
-.Example 13.8. Microsoft Online Outlook Web Access
+.Microsoft Online Outlook Web Access
 ====
 
 [source, javascript]
@@ -550,7 +566,8 @@ The route in xref:#example-owa-online[Example 13.8, "Microsoft Online Outlook We
 }
 ----
 ====
-To try this example, save the file as `$HOME/.openig/config/routes/27-owa.json` . Change `DESKEY` to the actual key value that you generated when following the instructions in xref:chap-password-capture-replay-tutorial.adoc#password-capture-configuration[Section 5.3.3, "Configuring Password Capture"] .
+To try this example, save the file as `$HOME/.openig/config/routes/27-owa.json`. Change `DESKEY` to the actual key value that you generated when following the instructions in xref:chap-password-capture-replay-tutorial.adoc#password-capture-configuration[Configuring Password Capture].
+
 To use this as a default route with a real application, remove the route-level condition on the handler that specifies a `demo` query string parameter.
 
 

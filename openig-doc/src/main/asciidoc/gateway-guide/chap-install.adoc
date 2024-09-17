@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,7 +21,7 @@
 
 
 [#chap-install]
-==  Installation in Detail
+== Installation in Detail
 
 In this chapter, you will learn to:
 
@@ -46,15 +46,15 @@ This release of OpenIG requires Java Development Kit 8, 11, 17 or 21 LTS version
 
 * Prepare a deployment container.
 +
-For details, see xref:#configure-container[Configuring Deployment Containers] .
+For details, see xref:#configure-container[Configuring Deployment Containers].
 
 * Prepare the network to use OpenIG as a reverse proxy.
 +
-For details, see xref:#configure-network[Preparing the Network] .
+For details, see xref:#configure-network[Preparing the Network].
 
 * Download, deploy, and configure OpenIG.
 +
-For details, see xref:#install[Installing OpenIG] .
+For details, see xref:#install[Installing OpenIG].
 
 
 [#configure-container]
@@ -74,9 +74,9 @@ For further information on advanced configuration for a particular container, se
 
 OpenIG is often deployed to replay credentials or other security information. In a real world deployment, that information must be communicated over a secure connection using HTTPS, meaning in effect HTTP over encrypted Transport Layer Security (TLS). Never send real credentials, bearer tokens, or other security information unprotected over HTTP.
 
-When OpenIG is acting as a server, the web application container where OpenIG runs is responsible for setting up TLS connections with client applications that connect to OpenIG. For details, see xref:#jetty-https[Configuring Jetty For HTTPS (Server-Side)] or xref:#tomcat-https[Configuring Tomcat For HTTPS (Server-Side)] .
+When OpenIG is acting as a server, the web application container where OpenIG runs is responsible for setting up TLS connections with client applications that connect to OpenIG. For details, see xref:#jetty-https[Configuring Jetty For HTTPS (Server-Side)] or xref:#tomcat-https[Configuring Tomcat For HTTPS (Server-Side)].
 
-When OpenIG is acting as a client, the ClientHandler configuration governs TLS connections from OpenIG to other servers. For details, see xref:#client-side-security[Configuring OpenIG For HTTPS (Client-Side)] and xref:../reference/handlers-conf.adoc#ClientHandler[ClientHandler(5)] in the _Configuration Reference_ .
+When OpenIG is acting as a client, the ClientHandler configuration governs TLS connections from OpenIG to other servers. For details, see xref:#client-side-security[Configuring OpenIG For HTTPS (Client-Side)] and xref:../reference/handlers-conf.adoc#ClientHandler[ClientHandler(5)] in the __Configuration Reference__.
 
 TLS depends on the use of digital certificates (public keys). In typical use of TLS, the client authenticates the server by its X.509 digital certificate as the first step to establishing communication. Once trust is established, then the client and server can set up a symmetric key to encrypt communications.
 
@@ -92,23 +92,23 @@ This guide describes how to install self-signed certificates, which are certainl
 
 Once certificates are properly installed to allow client-server trust, also consider the cipher suites configured for use. The cipher suite used determines the security settings for the communication. Initial TLS negotiations bring the client and server to agreement on which cipher suite to use. Basically the client and server share their preferred cipher suites to compare and to choose. If you therefore have a preference concerning the cipher suites to use, you must set up your container to use only your preferred cipher suites. Otherwise the container is likely to inherit the list of cipher suites from the underlying Java environment.
 
-The Java Secure Socket Extension (JSSE), part of the Java environment, provides security services that OpenIG uses to secure connections. You can set security and system properties to configure the JSSE. For a list of properties you can use to customize the JSSE in Oracle Java, see the _Customization_ section of the link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html#Customization[JSSE Reference Guide, window=\_blank] .
+The Java Secure Socket Extension (JSSE), part of the Java environment, provides security services that OpenIG uses to secure connections. You can set security and system properties to configure the JSSE. For a list of properties you can use to customize the JSSE in Oracle Java, see the __Customization__ section of the link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html#Customization[JSSE Reference Guide, window=\_blank].
 
 
 [#tomcat]
 ==== Configuring Apache Tomcat For OpenIG
 
 This section describes essential Tomcat configuration that you need in order to run OpenIG.
-Download and install a supported version of Tomcat from link:http://tomcat.apache.org/[http://tomcat.apache.org/, window=\_blank] .
+Download and install a supported version of Tomcat from link:http://tomcat.apache.org/[http://tomcat.apache.org/, window=\_blank].
 
 Configure Tomcat to use the same protocol as the application you are protecting with OpenIG. If the protected application is on a remote system, configure Tomcat to use the same port as well. If your application listens on both an HTTP and an HTTPS port, then you must configure Tomcat to do so, too.
 
-To configure Tomcat to use an HTTP port other than 8080, modify the defaults in `/path/to/tomcat/conf/server.xml` . Search for the default value of 8080 and replace it with the new port number.
+To configure Tomcat to use an HTTP port other than 8080, modify the defaults in `/path/to/tomcat/conf/server.xml`. Search for the default value of 8080 and replace it with the new port number.
 
 [#tomcat-cookie-domains]
 ===== Configuring Tomcat Cookie Domains
 
-If you use OpenIG for more than a single protected application and the protected applications are on different hosts, then you must configure Tomcat to set domain cookies. To do this, add a session cookie domain context element that specifies the domain to `/path/to/conf/Catalina/server/root.xml` , as in the following example:
+If you use OpenIG for more than a single protected application and the protected applications are on different hosts, then you must configure Tomcat to set domain cookies. To do this, add a session cookie domain context element that specifies the domain to `/path/to/conf/Catalina/server/root.xml`, as in the following example:
 
 [source, xml]
 ----
@@ -118,9 +118,9 @@ Restart Tomcat to read the configuration changes.
 
 
 [#tomcat-https]
-=====  Configuring Tomcat For HTTPS (Server-Side)
+===== Configuring Tomcat For HTTPS (Server-Side)
 
-To get Tomcat up quickly on an SSL port, add an entry similar to the following in `/path/to/tomcat/conf/server.xml` :
+To get Tomcat up quickly on an SSL port, add an entry similar to the following in `/path/to/tomcat/conf/server.xml`:
 
 [source, xml]
 ----
@@ -151,7 +151,7 @@ $ keytool \
  -keypass password \
  -dname "CN=openig.example.com,O=Example Corp,C=FR"
 ----
-Notice the keystore file location and the keystore password both match the configuration. By default, Tomcat looks for a certificate with alias `tomcat` .
+Notice the keystore file location and the keystore password both match the configuration. By default, Tomcat looks for a certificate with alias `tomcat`.
 
 Restart Tomcat to read the configuration changes.
 
@@ -159,17 +159,16 @@ Browsers generally do not trust self-signed certificates. To work with a certifi
 
 
 [#tomcat-mysql]
-=====  Configuring Tomcat to Access MySQL Over JNDI
+===== Configuring Tomcat to Access MySQL Over JNDI
 
 If OpenIG accesses an SQL database, then you must configure Tomcat to access the database using Java Naming and Directory Interface (JNDI). To do so, you must add the driver .jar for the database, set up a JNDI data source, and set up a reference to that data source.
-
 The following steps are for MySQL Connector/J:
 
-. Download the MySQL JDBC Driver Connector/J from link:http://dev.mysql.com/downloads/connector/j[http://dev.mysql.com/downloads/connector/j, window=\_blank] .
+. Download the MySQL JDBC Driver Connector/J from link:http://dev.mysql.com/downloads/connector/j[http://dev.mysql.com/downloads/connector/j, window=\_blank].
 
 . Copy the driver .jar to `/path/to/tomcat/lib/` so that it is on Tomcat's class path.
 
-. Add a JNDI data source for your MySQL server and database in `/path/to/tomcat/conf/context.xml` :
+. Add a JNDI data source for your MySQL server and database in `/path/to/tomcat/conf/context.xml`:
 +
 
 [source, xml]
@@ -188,7 +187,7 @@ The following steps are for MySQL Connector/J:
 />
 ----
 
-. Add a resource reference to the data source in `/path/to/tomcat/conf/web.xml` :
+. Add a resource reference to the data source in `/path/to/tomcat/conf/web.xml`:
 +
 
 [source, xml]
@@ -210,17 +209,16 @@ The following steps are for MySQL Connector/J:
 ==== Configuring Jetty For OpenIG
 
 This section describes essential Jetty configuration that you need in order to run OpenIG.
-
-Download and install a supported version of Jetty from link:http://download.eclipse.org/jetty/[http://download.eclipse.org/jetty/, window=\_blank] .
+Download and install a supported version of Jetty from link:http://download.eclipse.org/jetty/[http://download.eclipse.org/jetty/, window=\_blank].
 
 Configure Jetty to use the same protocol as the application you are protecting with OpenIG. If the protected application is on a remote system, configure Jetty to use the same port as well. If your application listens on both an HTTP and an HTTPS port, then you must configure Jetty to do so as well.
 
-To configure Jetty to use an HTTP port other than 8080, modify the defaults in `/path/to/jetty/etc/jetty.xml` . Search for the default value of 8080 and replace it with the new port number.
+To configure Jetty to use an HTTP port other than 8080, modify the defaults in `/path/to/jetty/etc/jetty.xml`. Search for the default value of 8080 and replace it with the new port number.
 
 [#jetty-cookie-domains]
 ===== Configuring Jetty Cookie Domains
 
-If you use OpenIG for more than a single protected application and the protected applications are on different hosts, then you must configure Jetty to set domain cookies. To do this, add a session domain handler element that specifies the domain to `/path/to/jetty/etc/webdefault.xml` , as in the following example:
+If you use OpenIG for more than a single protected application and the protected applications are on different hosts, then you must configure Jetty to set domain cookies. To do this, add a session domain handler element that specifies the domain to `/path/to/jetty/etc/webdefault.xml`, as in the following example:
 
 [source, xml]
 ----
@@ -230,6 +228,7 @@ If you use OpenIG for more than a single protected application and the protected
 </context-param>
 ----
 Restart Jetty to read the configuration changes.
+
 
 [#jetty-https]
 ===== Configuring Jetty For HTTPS (Server-Side)
@@ -301,7 +300,7 @@ etc/jetty-ssl.xml
 
 . Restart Jetty.
 
-. Browse link:https://openig.example.com:8443[https://openig.example.com:8443, window=\_blank] .
+. Browse link:https://openig.example.com:8443[https://openig.example.com:8443, window=\_blank].
 +
 You should see a warning in the browser that the (self-signed) certificate is not recognized.
 
@@ -312,10 +311,9 @@ You should see a warning in the browser that the (self-signed) certificate is no
 ===== Configuring Jetty to Access MySQL Over JNDI
 
 If OpenIG accesses an SQL database, then you must configure Jetty to access the database over JNDI. To do so, you must add the driver .jar for the database, set up a JNDI data source, and set up a reference to that data source.
-
 The following steps are for MySQL Connector/J:
 
-. Download the MySQL JDBC Driver Connector/J from link:http://dev.mysql.com/downloads/connector/j[http://dev.mysql.com/downloads/connector/j, window=\_blank] .
+. Download the MySQL JDBC Driver Connector/J from link:http://dev.mysql.com/downloads/connector/j[http://dev.mysql.com/downloads/connector/j, window=\_blank].
 
 . Copy the driver .jar to `/path/to/jetty/lib/jndi/` so that it is on Jetty's class path.
 
@@ -337,7 +335,7 @@ The following steps are for MySQL Connector/J:
 </New>
 ----
 
-. Add a resource reference to the data source in `/path/to/jetty/etc/webdefault.xml` :
+. Add a resource reference to the data source in `/path/to/jetty/etc/webdefault.xml`:
 +
 
 [source, xml]
@@ -353,8 +351,11 @@ The following steps are for MySQL Connector/J:
 . Restart Jetty to read the configuration changes.
 
 
+
+
+
 [#configure-network]
-===  Preparing the Network
+=== Preparing the Network
 
 In order for OpenIG to function as a reverse proxy, browsers attempting to access the protected application must go through OpenIG instead.
 
@@ -362,25 +363,27 @@ Modify DNS or host file settings so that the host name of the protected applicat
 
 Restart the browser after making this change.
 
+
 [#install]
 === Installing OpenIG
+
 
 ====
 Follow these steps to install OpenIG:
 
-. Get OpenIG software from the GitHub https://github.com/OpenIdentityPlatform/OpenIG/releases/[releases,window=_blank] page.
+. Get OpenIG software.
 +
 Enterprise software releases are available through the ForgeRock link:https://backstage.forgerock.com/[BackStage, window=\_blank] site. Enterprise releases are thoroughly validated builds for ForgeRock customers who run OpenIG in production deployments, and for those who want to try or test with release builds. Make sure you review and agree with the Software License and Subscription Agreement in order to use the software.
 
-. Deploy the OpenIG .war file _to the root context_ of the web application container.
+. Deploy the OpenIG .war file __to the root context__ of the web application container.
 +
 OpenIG must be deployed to the root context, not below.
 +
 The name of the root context .war file depends on the container:
 
-* Jetty expects a root context .war file named `root.war` .
+* Jetty expects a root context .war file named `root.war`.
 
-* Tomcat expects a root context .war file named `ROOT.war` .
+* Tomcat expects a root context .war file named `ROOT.war`.
 
 
 . Prepare your OpenIG configuration files.
@@ -388,33 +391,32 @@ The name of the root context .war file depends on the container:
 --
 By default, OpenIG files are located under `$HOME/.openig` on Linux, Mac OS X, and UNIX systems, and `%appdata%\OpenIG` on Windows systems. OpenIG uses the following file system directories:
 
-$HOME/.openig/config,%appdata%\OpenIG\config::
-OpenIG configuration files, where the main configuration file is `config.json` .
+`$HOME/.openig/config`,`%appdata%\OpenIG\config`::
+OpenIG configuration files, where the main configuration file is `config.json`.
 
-$HOME/.openig/config/routes,%appdata%\OpenIG\config\routes::
+`$HOME/.openig/config/routes`,`%appdata%\OpenIG\config\routes`::
 OpenIG route configuration files.
 +
-For more information see xref:chap-routing.adoc#chap-routing[Configuring Routes] .
+For more information see xref:chap-routing.adoc#chap-routing[Configuring Routes].
 
-$HOME/.openig/SAML,%appdata%\OpenIG\SAML::
+`$HOME/.openig/SAML`,`%appdata%\OpenIG\SAML`::
 OpenIG SAML 2.0 configuration files.
 +
-For more information see xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider] .
+For more information see xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider].
 
-$HOME/.openig/scripts/groovy,%appdata%\OpenIG\scripts\groovy::
+`$HOME/.openig/scripts/groovy`,`%appdata%\OpenIG\scripts\groovy`::
 OpenIG script files, for Groovy scripted filters and handlers.
 +
-For more information see xref:chap-extending.adoc#chap-extending[Extending OpenIG's Functionality] .
+For more information see xref:chap-extending.adoc#chap-extending[Extending OpenIG's Functionality].
 
-$HOME/.openig/tmp,%appdata%\OpenIG\tmp::
+`$HOME/.openig/tmp`,`%appdata%\OpenIG\tmp`::
 OpenIG temporary files.
 +
 This location can be used for temporary storage.
 
 --
 +
---
-You can change `$HOME/.openig` (or `%appdata%\OpenIG` ) from the default location in the following ways:
+You can change `$HOME/.openig` (or `%appdata%\OpenIG`) from the default location in the following ways:
 
 * Set the `OPENIG_BASE` environment variable to the full path to the base location for OpenIG files:
 +
@@ -429,20 +431,19 @@ C:>set OPENIG_BASE=c:\path\to\openig
 ----
 
 * Set the `openig.base` Java system property to the full path to the base location for OpenIG files when starting the web application container where OpenIG runs, as in the following example that starts Jetty server in the foreground:
-
++
 
 [source, console]
 ----
 $ java -Dopenig.base=/path/to/openig -jar start.jar
 ----
 
-
-If you have not yet prepared configuration files, then start with the configuration described in xref:chap-quickstart.adoc#quickstart-config[Configure OpenIG] section.
-
-Copy the template to `$HOME/.openig/config/config.json` . Replace the baseURI of the DispatchHandler with that of the protected application.
-
-On Windows, copy the template to `%appdata%\OpenIG\config\config.json` . To locate the `%appdata%` folder for your version of Windows, open Windows Explorer, type `%appdata%` as the file path, and press Enter. You must create the `%appdata%\OpenIG\config` folder, and then add the configuration file.
---
++
+If you have not yet prepared configuration files, then start with the configuration described in xref:chap-quickstart.adoc#quickstart-config[Configure OpenIG].
++
+Copy the template to `$HOME/.openig/config/config.json`. Replace the baseURI of the DispatchHandler with that of the protected application.
++
+On Windows, copy the template to `%appdata%\OpenIG\config\config.json`. To locate the `%appdata%` folder for your version of Windows, open Windows Explorer, type `%appdata%` as the file path, and press Enter. You must create the `%appdata%\OpenIG\config` folder, and then add the configuration file.
 
 . Start the web container where OpenIG is deployed.
 
@@ -471,7 +472,9 @@ Verify this in one of the following ways:
 +
 The default ConsoleLogSink is the deployment container log.
 
+
 ====
+
 
 [#load-balancing]
 === Preparing For Load Balancing and Failover
@@ -479,30 +482,28 @@ The default ConsoleLogSink is the deployment container log.
 For a high scale or highly available deployment, you can prepare a pool of OpenIG servers with nearly identical configurations, and then load balance requests across the pool, routing around any servers that become unavailable. Load balancing allows the service to handle more load.
 
 Before you spread requests across multiple servers, however, you must determine what to do with state information that OpenIG saves in the context, or retrieves locally from the OpenIG server system. If information is retrieved locally, then consider setting up failover. If one server becomes unavailable, another server in the pool can take its place. The benefit of failover is that a server failure can be invisible to client applications.
-
 OpenIG can save state information in several ways:
 
 * Handlers including a `SamlFederationHandler` or a custom `ScriptableHandler` can store information in the context. Most handlers depend on information in the context, some of which is first stored by OpenIG.
 
-* Some filters, such as `AssignmentFilters` , `HeaderFilters` , `OAuth2ClientFilters` , `OAuth2ResourceServerFilters` , `ScriptableFilters` , `SqlAttributesFilters` , and `StaticRequestFilters` , can store information in the context. Most filters depend on information in the request, response, or context, some of which is first stored by OpenIG.
+* Some filters, such as `AssignmentFilters`, `HeaderFilters`, `OAuth2ClientFilters`, `OAuth2ResourceServerFilters`, `ScriptableFilters`, `SqlAttributesFilters`, and `StaticRequestFilters`, can store information in the context. Most filters depend on information in the request, response, or context, some of which is first stored by OpenIG.
 
 OpenIG can also retrieve information locally in several ways:
 
-* Some filters and handlers, such as `FileAttributesFilters` , `ScriptableFilters` , `ScriptableHandlers` , and `SqlAttributesFilters` , can depend on local system files or container configuration.
+* Some filters and handlers, such as `FileAttributesFilters`, `ScriptableFilters`, `ScriptableHandlers`, and `SqlAttributesFilters`, can depend on local system files or container configuration.
 
-By default the context data resides in memory in the container where OpenIG runs. This includes the default session implementation, which is backed by the HttpSession that the container handles. You can opt to store session data on the user-agent instead, however. For details and to consider whether your data fits, see xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the _Configuration Reference_. When you use the `JwtSession` implementation, be sure to share the encryption keys across all servers, so that any server can read session cookies from any other.
+By default the context data resides in memory in the container where OpenIG runs. This includes the default session implementation, which is backed by the HttpSession that the container handles. You can opt to store session data on the user-agent instead, however. For details and to consider whether your data fits, see xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the __Configuration Reference__. When you use the `JwtSession` implementation, be sure to share the encryption keys across all servers, so that any server can read session cookies from any other.
 
 If your data does not fit in an HTTP cookie, for example, because when encrypted it is larger than 4 KB, consider storing a reference in the cookie, and then retrieve the data by using another filter. OpenIG logs warning messages if the `JwtSession` cookie is too large. Using a reference can also work when a server becomes unavailable, and the load balancer must fail requests over to another server in the pool.
 
 If some data attached to a context must be stored on the server side, then you have additional configuration steps to perform for session stickiness and for session replication. Session stickiness means that the load balancer sends all requests from the same client session to the same server. Session stickiness helps to ensure that a client request goes to the server holding the original session data. Session replication involves writing session data either to other servers or to a data store, so that if one server goes down, other servers can read the session data and continue processing. Session replication helps when one server fails, allowing another server to take its place without having to start the session over again. If you set up session stickiness but not session replication, when a server crashes, the client session information for that server is lost, and the client must start again with a new session.
 
 How you configure session stickiness and session replication depends on your load balancer and on your container.
-
 Tomcat can help with session stickiness, and a Tomcat cluster can handle session replication:
 
 * If you choose to use the link:http://tomcat.apache.org/connectors-doc/[Tomcat connector, window=\_blank] (mod_jk) on your web server to perform load balancing, then see the link:http://tomcat.apache.org/connectors-doc/common_howto/loadbalancers.html[LoadBalancer HowTo, window=\_blank] for details.
 +
-In the HowTo, you configure the `jvmRoute` attribute in the Tomcat server configuration, `/path/to/tomcat/conf/server.xml` , to identify the server. The connector can use this identifier to achieve session stickiness.
+In the HowTo, you configure the `jvmRoute` attribute in the Tomcat server configuration, `/path/to/tomcat/conf/server.xml`, to identify the server. The connector can use this identifier to achieve session stickiness.
 
 * A Tomcat link:http://tomcat.apache.org/tomcat-7.0-doc/config/cluster.html[cluster, window=\_blank] configuration can handle session replication. When setting up a cluster configuration, the link:http://tomcat.apache.org/tomcat-7.0-doc/config/cluster-manager.html[ClusterManager, window=\_blank] defines the session replication implementation.
 
@@ -510,38 +511,37 @@ Jetty has provisions for session stickiness, and also for session replication th
 
 * Jetty's persistent session mechanism appends a node ID to the session ID in the same way Tomcat appends the `jvmRoute` value to the session cookie. This can be useful for session stickiness if your load balancer examines the session ID.
 
-*  link:http://www.eclipse.org/jetty/documentation/current/session-clustering-jdbc.html[Session Clustering with a Database, window=\_blank] describes how to configure Jetty to persist sessions over JDBC, allowing session replication.
+* link:http://www.eclipse.org/jetty/documentation/current/session-clustering-jdbc.html[Session Clustering with a Database, window=\_blank] describes how to configure Jetty to persist sessions over JDBC, allowing session replication.
 +
 Unless it is set up to be highly available, the database can be a single point of failure in this case.
 
-*  link:http://www.eclipse.org/jetty/documentation/current/session-clustering-mongodb.html[Session Clustering with MongoDB, window=\_blank] describes how to configure Jetty to persist sessions in MongoDB, allowing session replication.
+* link:http://www.eclipse.org/jetty/documentation/current/session-clustering-mongodb.html[Session Clustering with MongoDB, window=\_blank] describes how to configure Jetty to persist sessions in MongoDB, allowing session replication.
 +
 The Jetty documentation recommends this implementation when session data is seldom written but often read.
 
 
 
 [#client-side-security]
-===  Configuring OpenIG For HTTPS (Client-Side)
+=== Configuring OpenIG For HTTPS (Client-Side)
 
 For OpenIG to connect to a server securely over HTTPS, OpenIG must be able to trust the server. The default settings rely on the Java environment truststore to trust server certificates. The Java environment default truststore includes public key signing certificates from many well-known Certificate Authorities (CAs). If all servers present certificates signed by these CAs, then you have nothing to configure.
 
 If, however, the server certificates are self-signed or signed by a CA whose certificate is not trusted out of the box, then you can configure a KeyStore and a TrustManager, and optionally, a KeyManager to reference when configuring an ClientHandler to enable OpenIG to trust servers when acting as a client.
-
 For details, see:
 
-*  xref:../reference/handlers-conf.adoc#ClientHandler[ClientHandler(5)] in the _Configuration Reference_ 
+* xref:../reference/handlers-conf.adoc#ClientHandler[ClientHandler(5)] in the __Configuration Reference__
 
-*  xref:../reference/misc-conf.adoc#KeyManager[KeyManager(5)] in the _Configuration Reference_ 
+* xref:../reference/misc-conf.adoc#KeyManager[KeyManager(5)] in the __Configuration Reference__
 
-*  xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the _Configuration Reference_ 
+* xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the __Configuration Reference__
 
-*  xref:../reference/misc-conf.adoc#TrustManager[TrustManager(5)] in the _Configuration Reference_ 
+* xref:../reference/misc-conf.adoc#TrustManager[TrustManager(5)] in the __Configuration Reference__
 
 The KeyStore holds the servers' certificates or the CA's signing certificate. The TrustManager allows OpenIG to handle the certificates in the KeyStore when deciding whether to trust a server certificate. The optional KeyManager allows OpenIG to present its certificate from the keystore when the server must authenticate OpenIG as client. The ClientHandler references whatever TrustManager and KeyManager you configure.
 
 You can configure each of these either globally, for the OpenIG server, or locally, for a particular ClientHandler configuration.
 
-The Java KeyStore holds the peer servers' public key certificates (and optionally, the OpenIG certificate and private key). For example, suppose you have a certificate file, `ca.crt` , that holds the trusted signer's certificate of the CA who signed the server certificates of the servers in your deployment. In that case, you could import the certificate into a Java Keystore file, `/path/to/keystore.jks` :
+The Java KeyStore holds the peer servers' public key certificates (and optionally, the OpenIG certificate and private key). For example, suppose you have a certificate file, `ca.crt`, that holds the trusted signer's certificate of the CA who signed the server certificates of the servers in your deployment. In that case, you could import the certificate into a Java Keystore file, `/path/to/keystore.jks`:
 
 [source, console]
 ----
@@ -553,7 +553,7 @@ $ keytool \
  -alias ca-cert \
  -storepass changeit
 ----
-You could then configure the following KeyStore for OpenIG that holds the trusted certificate. Notice that the url field takes an expression that evaluates to a URL, starting with a scheme such as `file://` :
+You could then configure the following KeyStore for OpenIG that holds the trusted certificate. Notice that the url field takes an expression that evaluates to a URL, starting with a scheme such as `\file://`:
 
 [source, javascript]
 ----
@@ -582,21 +582,25 @@ The TrustManager handles the certificates in the KeyStore when deciding whether 
 The `ClientHandler` configuration has the following security settings:
 
 "trustManager"::
-This references the `TrustManager` .
+This references the `TrustManager`.
+
 +
 Recall that you must configure this when your server certificates are not trusted out of the box.
 
 "hostnameVerifier"::
 This defines how the `ClientHandler` verifies host names in server certificates.
+
 +
 By default, host name verification is turned off.
 
 "keyManager"::
-This references the optional `KeyManager` .
+This references the optional `KeyManager`.
+
 +
 Configure this if servers request that OpenIG present its certificate as part of mutual authentication.
+
 +
-In that case, generate a key pair for OpenIG, and have the certificate signed by a well-known CA. For instructions, see the documentation for the Java `keytool` command. You can use a different keystore for the `KeyManager` than you use for the `TrustManager` .
+In that case, generate a key pair for OpenIG, and have the certificate signed by a well-known CA. For instructions, see the documentation for the Java `keytool` command. You can use a different keystore for the `KeyManager` than you use for the `TrustManager`.
 
 --
 The following `ClientHandler` configuration references `MyTrustManager` and sets strict host name verification:
@@ -615,9 +619,9 @@ The following `ClientHandler` configuration references `MyTrustManager` and sets
 
 
 [#keystore-for-jwt-encryption]
-===  Setting Up Keys For JWT Encryption
+=== Setting Up Keys For JWT Encryption
 
-You can use a JSON Web Token (JWT) session, `JwtSession` , to configure OpenIG as described in xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the _Configuration Reference_. A `JwtSession` stores session information in JWT cookies on the user-agent, rather than storing the information in the container where OpenIG runs.
+You can use a JSON Web Token (JWT) session, `JwtSession`, to configure OpenIG as described in xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the __Configuration Reference__. A `JwtSession` stores session information in JWT cookies on the user-agent, rather than storing the information in the container where OpenIG runs.
 
 In order to encrypt the JWTs, OpenIG needs cryptographic keys. OpenIG can generate its own key pair in memory, but that key pair disappears on restart and cannot be shared across OpenIG servers.
 
@@ -627,7 +631,7 @@ Alternatively, OpenIG can use keys from a keystore. The following steps describe
 
 . Generate the key pair in a new keystore file by using the Java `keytool` command.
 +
-The following command generates a Java Keystore format file, `/path/to/keystore.jks` , holding a key pair with alias `jwe-key` . Notice that both the keystore and the private key have the same password:
+The following command generates a Java Keystore format file, `/path/to/keystore.jks`, holding a key pair with alias `jwe-key`. Notice that both the keystore and the private key have the same password:
 +
 
 [source, console]
@@ -657,7 +661,7 @@ $ keytool \
 }
 ----
 +
-For details, see xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the _Configuration Reference_ .
+For details, see xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the __Configuration Reference__.
 
 . Add a JwtSession to your configuration that references your KeyStore:
 +

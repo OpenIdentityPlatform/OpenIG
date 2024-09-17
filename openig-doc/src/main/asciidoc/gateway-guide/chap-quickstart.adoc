@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,7 +21,7 @@
 
 
 [#chap-quickstart]
-==  Getting Started
+== Getting Started
 
 In this chapter, you will learn to:
 
@@ -31,17 +31,18 @@ In this chapter, you will learn to:
 
 * Prepare OpenIG so that you can follow all subsequent tutorials in the documentation
 
-This chapter allows you to quickly see how OpenIG works, and provides hands-on experience with a few key features. For more general installation and configuration instructions, start with xref:chap-install.adoc#chap-install[Installation in Detail] .
+This chapter allows you to quickly see how OpenIG works, and provides hands-on experience with a few key features. For more general installation and configuration instructions, start with xref:chap-install.adoc#chap-install[Installation in Detail].
 
 [#before-you-quickstart]
 === Before You Begin
 
 Make sure you have a supported Java Development Kit installed.
+
 This release of OpenIG requires Java Development Kit 8, 11, 17 or 21 LTS version. Open Identity Platform Community recommends the most recent update to ensure you have the latest security fixes.
 
 
 [#quickstart-install]
-===  Install OpenIG
+=== Install OpenIG
 
 You install OpenIG in the root context of a web application container. In this chapter, you use Jetty server as the web application container.
 
@@ -57,11 +58,11 @@ OpenIG runs in the following web application containers:
 * Jetty 8, 9 or 10
 
 
-.  link:https://backstage.forgerock.com/downloads[Download, window=\_blank] the OpenIG .war file.
+. link:https://backstage.forgerock.com/downloads[Download, window=\_blank] the OpenIG .war file.
 
 . Deploy OpenIG in the root context.
 +
-Copy the OpenIG .war file as `root.war` to the `/path/to/jetty/webapps/` :
+Copy the OpenIG .war file as `root.war` to the `/path/to/jetty/webapps/`:
 +
 
 [source, console]
@@ -88,7 +89,7 @@ $ cd /path/to/jetty/
 $ java -jar start.jar
 ----
 
-. Verify that you can see the OpenIG welcome page at link:http://localhost:8080[http://localhost:8080, window=\_blank] .
+. Verify that you can see the OpenIG welcome page at link:http://localhost:8080[http://localhost:8080, window=\_blank].
 +
 When you start OpenIG without a configuration, requests to OpenIG default to a welcome page with a link to the documentation.
 
@@ -157,9 +158,9 @@ Press Ctrl+C to stop the server.
 +
 If you change the port numbers when starting the server, also account for the differences when using the examples.
 
-. Now access the minimal HTTP server through a browser on the appropriate port, such as link:http://localhost:8081[http://localhost:8081, window=\_blank] .
+. Now access the minimal HTTP server through a browser on the appropriate port, such as link:http://localhost:8081[http://localhost:8081, window=\_blank].
 +
-Log in with username `demo` , password `changeit` . You should see a page that includes the username, `demo` , and some information about your browser request.
+Log in with username `demo`, password `changeit`. You should see a page that includes the username, `demo`, and some information about your browser request.
 
 ====
 
@@ -174,7 +175,7 @@ Follow these steps to configure OpenIG to proxy traffic to the sample applicatio
 
 . Prepare the OpenIG configuration.
 +
-Add the following base configuration file as `$HOME/.openig/config/config.json` . By default, OpenIG looks for `config.json` in the `$HOME/.openig/config` directory:
+Add the following base configuration file as `$HOME/.openig/config/config.json`. By default, OpenIG looks for `config.json` in the `$HOME/.openig/config` directory:
 +
 
 [source, javascript]
@@ -217,11 +218,11 @@ $ mkdir -p $HOME/.openig/config
 $ vi $HOME/.openig/config/config.json
 ----
 +
-On Windows, the configuration files belong in `%appdata%\OpenIG\config` . To locate the `%appdata%` folder for your version of Windows, open Windows Explorer, type `%appdata%` as the file path, and press Enter. You must create the `%appdata%\OpenIG\config` folder, and then copy the configuration files.
+On Windows, the configuration files belong in `%appdata%\OpenIG\config`. To locate the `%appdata%` folder for your version of Windows, open Windows Explorer, type `%appdata%` as the file path, and press Enter. You must create the `%appdata%\OpenIG\config` folder, and then copy the configuration files.
 +
-If you adapt this base configuration for production use, make sure to adjust the log level, and to deactivate the CaptureDecorator that generates several log message lines for each request and response. Also consider editing the router based on recommendations described in xref:chap-routing.adoc#routing-lockdown[Locking Down Route Configurations] .
+If you adapt this base configuration for production use, make sure to adjust the log level, and to deactivate the CaptureDecorator that generates several log message lines for each request and response. Also consider editing the router based on recommendations described in xref:chap-routing.adoc#routing-lockdown[Locking Down Route Configurations].
 
-. Add the following default route configuration file as `$HOME/.openig/config/routes/99-default.json` . By default, the Router defined in the base configuration file looks for routes in the `$HOME/.openig/config/routes` directory:
+. Add the following default route configuration file as `$HOME/.openig/config/routes/99-default.json`. By default, the Router defined in the base configuration file looks for routes in the `$HOME/.openig/config/routes` directory:
 +
 
 [source, javascript]
@@ -238,7 +239,7 @@ $ mkdir $HOME/.openig/config/routes
 $ vi $HOME/.openig/config/routes/99-default.json
 ----
 +
-On Windows, the file name should be `%appdata%\OpenIG\config\routes\99-default.json` .
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\99-default.json`.
 
 . Start Jetty in the background:
 +
@@ -261,13 +262,13 @@ $ java -jar start.jar
 
 
 [#quickstart-network-config]
-===  Configure the Network
+=== Configure the Network
 
 So far you have deployed OpenIG in the root context of Jetty on port 8080. Since OpenIG is a reverse proxy you must make sure that all traffic from your browser to the protected application goes through OpenIG. In other words, the network must be configured so that the browser goes to OpenIG instead of going directly to the protected application.
 
-If you followed the installation steps, you are running both OpenIG and the minimal HTTP server on the same host as your browser (probably your laptop or desktop). Keep in mind that network configuration is an important deployment step. To encourage you to keep this in mind, the sample configuration for this chapter expects the minimal HTTP server to be running on `app.example.com` , rather than `localhost` .
+If you followed the installation steps, you are running both OpenIG and the minimal HTTP server on the same host as your browser (probably your laptop or desktop). Keep in mind that network configuration is an important deployment step. To encourage you to keep this in mind, the sample configuration for this chapter expects the minimal HTTP server to be running on `app.example.com`, rather than `localhost`.
 
-The quickest way to configure the network locally is to add an entry to your `/etc/hosts` file on UNIX systems or `%SystemRoot%\system32\drivers\etc\hosts` on Windows. See the Wikipedia entry, link:http://en.wikipedia.org/wiki/Hosts_(file)[Hosts (file), window=\_blank] , for more information on host files. If you are indeed running all servers in this chapter on the same host, add the following entry to the hosts file:
+The quickest way to configure the network locally is to add an entry to your `/etc/hosts` file on UNIX systems or `%SystemRoot%\system32\drivers\etc\hosts` on Windows. See the Wikipedia entry, link:http://en.wikipedia.org/wiki/Hosts_(file)[Hosts (file), window=\_blank], for more information on host files. If you are indeed running all servers in this chapter on the same host, add the following entry to the hosts file:
 
 [source]
 ----
@@ -280,38 +281,40 @@ If you are running the browser and OpenIG on separate hosts, add the IP address 
 192.168.0.15    openig.example.com app.example.com
 ----
 If OpenIG is on a different host from the protected application, also make sure that the host name of the protected application resolves correctly for requests from OpenIG to the application.
+
 Restart Jetty to take the configuration changes into account.
 
 [TIP]
 ====
 Some browsers cache IP address resolutions, even after clearing all browsing data. Restart the browser after changing the IP addresses of named hosts.
+
 The simplest way to make sure you have configured your DNS or host settings properly for remote systems is to stop OpenIG and then to make sure you cannot reach the target application with the host name and port number of OpenIG. If you can still reach it, double check your host settings.
-Also make sure name resolution is configured to check host files before DNS. This configuration can be found in `/etc/nsswitch.conf` for most UNIX systems. Make sure `files` is listed before `dns` .
+
+Also make sure name resolution is configured to check host files before DNS. This configuration can be found in `/etc/nsswitch.conf` for most UNIX systems. Make sure `files` is listed before `dns`.
 ====
 
 
 [#quickstart-try-it-out]
-===  Try the Installation
+=== Try the Installation
 
 link:http://openig.example.com:8080/[http://openig.example.com:8080/, window=\_blank] should take you to the home page of the minimal HTTP server.
 
 What just happened?
 
-When your browser goes to `\http://openig.example.com:8080/` , it is actually connecting to OpenIG deployed in Jetty. OpenIG proxies all traffic it receives to the protected application at `\http://app.example.com:8081/` , and returns responses from the application to your browser. It does this based on the configuration that you set up.
+When your browser goes to `\http://openig.example.com:8080/`, it is actually connecting to OpenIG deployed in Jetty. OpenIG proxies all traffic it receives to the protected application at `\http://app.example.com:8081/`, and returns responses from the application to your browser. It does this based on the configuration that you set up.
 
-Consider the base configuration file first, `config.json` . The base configuration file specifies a router handler named Router. OpenIG calls this handler when it receives an incoming request. In addition, it uses the ConsoleLogSink to log debug messages to the console. Alternatively, you can use a FileLogSink or Slf4jLogSink as described in xref:../reference/logging-conf.adoc#logging-conf[Logging Framework] in the _Configuration Reference_ .
+Consider the base configuration file first, `config.json`. The base configuration file specifies a router handler named Router. OpenIG calls this handler when it receives an incoming request. In addition, it uses the ConsoleLogSink to log debug messages to the console. Alternatively, you can use a FileLogSink or Slf4jLogSink as described in xref:../reference/logging-conf.adoc#logging-conf[Logging Framework] in the __Configuration Reference__.
 
 The baseURI decoration in turn changes the request URI to point the request to the sample application to protect. The Router captures the request on the way in, and captures the response on the way out.
 
 The Router routes processing to separate route configurations.
 
-For now the only route available is the the default route you added, `99-default.json` . The default route calls a ClientHandler with the default configuration. This ClientHandler simply proxies the request to and the response from the sample application to protect without changing either the request or the response. Therefore, the browser request is sent unchanged to the sample application and the response from the sample application is returned unchanged to your browser.
-
+For now the only route available is the the default route you added, `99-default.json`. The default route calls a ClientHandler with the default configuration. This ClientHandler simply proxies the request to and the response from the sample application to protect without changing either the request or the response. Therefore, the browser request is sent unchanged to the sample application and the response from the sample application is returned unchanged to your browser.
 Now change the OpenIG configuration to log you in automatically with hard-coded credentials:
 
-. Add a route to automatically log you in as username `demo` , password `changeit` .
+. Add a route to automatically log you in as username `demo`, password `changeit`.
 +
-Add the following route configuration file as `$HOME/.openig/config/routes/01-static.json` :
+Add the following route configuration file as `$HOME/.openig/config/routes/01-static.json`:
 +
 
 [source, javascript]
@@ -344,9 +347,9 @@ Add the following route configuration file as `$HOME/.openig/config/routes/01-st
 }
 ----
 +
-On Windows, the file name should be `%appdata%\OpenIG\config\routes\01-static.json` .
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\01-static.json`.
 
-. Access the new route, link:http://openig.example.com:8080/static[http://openig.example.com:8080/static, window=\_blank] .
+. Access the new route, link:http://openig.example.com:8080/static[http://openig.example.com:8080/static, window=\_blank].
 +
 This time, OpenIG logs you in automatically.
 
@@ -356,16 +359,16 @@ What's happening behind the scenes?
 
 With the original configuration, OpenIG does not change requests or responses, but only proxies requests and responses, and captures request and response information.
 
-After you change the configuration, OpenIG continues to capture request and response data. When your request does not go to the default route, but instead goes to `/static` , then the condition on the new route you added matches the request. OpenIG therefore uses the new route you added.
+After you change the configuration, OpenIG continues to capture request and response data. When your request does not go to the default route, but instead goes to `/static`, then the condition on the new route you added matches the request. OpenIG therefore uses the new route you added.
 
-Using the route configuration in `01-static.json` , OpenIG replaces your browser's original HTTP GET request with an HTTP POST login request containing credentials to authenticate. As a result, instead of the home page with a login form, OpenIG logs you in directly, and the application responds with the page you see after logging in. OpenIG then returns this response to your browser.
+Using the route configuration in `01-static.json`, OpenIG replaces your browser's original HTTP GET request with an HTTP POST login request containing credentials to authenticate. As a result, instead of the home page with a login form, OpenIG logs you in directly, and the application responds with the page you see after logging in. OpenIG then returns this response to your browser.
 
 xref:#figure-hard-coded-login[Log in With Hard-Coded Credentials] shows the steps.
 
 [#figure-hard-coded-login]
 image::images/hard-coded-login.png[]
 
-. The browser host makes a DNS request for the IP address of the HTTP server host, `app.example.com` .
+. The browser host makes a DNS request for the IP address of the HTTP server host, `app.example.com`.
 
 . DNS responds with the address for OpenIG.
 

@@ -315,6 +315,21 @@
                   <goal>release</goal>
                 </goals>
               </execution>
+              <execution>
+                <id>build-man-pages-asciidoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>asciidoc-pre-process</goal>
+                  <goal>antora</goal>
+                  <goal>asciidoc-to-pdf</goal>
+                </goals>
+                <configuration>
+                  <documents>
+                    <document>gateway-guide</document>
+                     <document>reference</document>
+                  </documents>
+                </configuration>
+              </execution>
             </executions>
             <configuration>
               <projectName>OpenIG</projectName>

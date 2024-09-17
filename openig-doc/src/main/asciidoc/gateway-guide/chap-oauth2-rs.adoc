@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,50 +21,60 @@
 
 
 [#chap-oauth2-rs]
-==  OpenIG As an OAuth 2.0 Resource Server
+== OpenIG As an OAuth 2.0 Resource Server
 
 OpenIG helps integrate applications into OAuth 2.0 deployments. In this chapter, you will learn to use OpenIG as an OAuth 2.0 Resource Server.
+
 This chapter explains how OpenIG acts as an OAuth 2.0 Resource Server, and follows with a tutorial that shows you how to use OpenIG as a resource server.
 
 [#about-oauth2-rs]
-===  About OpenIG As an OAuth 2.0 Resource Server
+=== About OpenIG As an OAuth 2.0 Resource Server
 
 link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, window=\_blank] describes a way of allowing a third-party application to access a user's resources without having the user's credentials. When resources are protected with OAuth 2.0, users can use their credentials with an OAuth 2.0-compliant identity provider, such as OpenAM, Facebook, Google and others to access the resources, rather than setting up an account with yet another third-party application.
 In OAuth 2.0, there are four entities involved:
 
-*  _Resource owner_ : The user who owns protected resources on a resource server.
+* __Resource owner__: The user who owns protected resources on a resource server.
 +
 For example, a resource owner has photos stored in a web service.
 
-*  _Resource server_ : Provides the user's protected resources to authorized client applications.
+* __Resource server__: Provides the user's protected resources to authorized client applications.
 +
 In OAuth 2.0, an authorization server grants the client application authorization based on the resource owner's consent.
 +
 For example, a web service holds user's photos.
 
-*  _Client_ : The application that needs access to the protected resources.
+* __Client__: The application that needs access to the protected resources.
 +
 For example, a photo printing service needs access to the user's photos.
 
-*  _Authorization server_ : The service responsible for authenticating resource owners and obtaining their consent to allow client applications to access their resources.
+* __Authorization server__: The service responsible for authenticating resource owners and obtaining their consent to allow client applications to access their resources.
 +
 For example, OpenAM can act as the OAuth 2.0 authorization server to authenticate resource owners and obtain their consent. Other services can play this role as well. Google and Facebook, for example, provide OAuth 2.0 authorization services.
 
-In OAuth 2.0, there are different grant mechanisms whereby the client can obtain authorization. One grant mechanism involves the client redirecting the resource owner's browser to the authorization server to complete authentication and authorization. You might have experienced this grant mechanism yourself when logging in with your identity provider account to access a web service, rather than creating a new account directly with the web service. Whatever the grant mechanism, the client's aim is to get an OAuth 2.0 _access token_ from the authorization server.
+In OAuth 2.0, there are different grant mechanisms whereby the client can obtain authorization. One grant mechanism involves the client redirecting the resource owner's browser to the authorization server to complete authentication and authorization. You might have experienced this grant mechanism yourself when logging in with your identity provider account to access a web service, rather than creating a new account directly with the web service. Whatever the grant mechanism, the client's aim is to get an OAuth 2.0 __access token__ from the authorization server.
+
 Access tokens are the credentials used to access protected resources. An access token is a string given by the authorization server that represents the authorization to access protected resources. An access token, like cash, is a bearer token. This means that anyone who has the access token can use it to get the resources. Access tokens therefore must be protected, so requests involving them must go over HTTPS. The advantage of access tokens over passwords or other credentials is that access tokens can be granted and revoked without exposing the user's credentials.
+
 When the client requests access to protected resources, it supplies the access token to the resource server housing the resources. The resource server must then validate the access token. If the access token is found to be valid, then the resource server can let the client have access to the resources.
-When OpenIG acts as an OAuth 2.0 resource server, its role is to validate access tokens. How an access token is validated is technically not covered in the specifications for OAuth 2.0. Typically the resource server validates an access token by submitting the token to a token information endpoint. The token information endpoint typically returns the time until the token expires, the OAuth 2.0 _scopes_ associated with the token, and potentially other information. In OAuth 2.0, the token scopes are strings that can identify the scope of access authorized to the client, but can also be used for other purposes. For example, OpenAM maps them to user profile attribute values by default, and also allows custom scope handling plugins.
+
+When OpenIG acts as an OAuth 2.0 resource server, its role is to validate access tokens. How an access token is validated is technically not covered in the specifications for OAuth 2.0. Typically the resource server validates an access token by submitting the token to a token information endpoint. The token information endpoint typically returns the time until the token expires, the OAuth 2.0 __scopes__ associated with the token, and potentially other information. In OAuth 2.0, the token scopes are strings that can identify the scope of access authorized to the client, but can also be used for other purposes. For example, OpenAM maps them to user profile attribute values by default, and also allows custom scope handling plugins.
+
 In the tutorial that follows, you configure OpenIG as a resource server, and use OpenAM as the OAuth 2.0 authorization server.
 
 
 [#oauth2-rs-tutorial-before-you-start]
-===  Preparing the Tutorial
+=== Preparing the Tutorial
 
-xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+
 You will learn how OpenIG can act as an OAuth 2.0 resource server, validating OAuth 2.0 access tokens and including token info in the context.
+
 This tutorial relies on OpenAM as an OAuth 2.0 authorization server. As an OAuth 2.0 client of OpenAM, you get an access token. You then submit the access token to OpenIG, and OpenIG acts as the resource server.
-Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
+
+Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
 OpenIG should be running in Jetty, configured to access the minimal HTTP server as described in that chapter.
+
 Edit `config.json` to make sure that the `CaptureDecorator` also captures the context. After you make the changes, the object declaration appears as follows:
 
 [source, javascript]
@@ -82,7 +92,7 @@ Restart Jetty for the changes to take effect. This allows you to view the token 
 
 
 [#oauth2-rs-tutorial-openam-config]
-===  Setting Up OpenAM As an Authorization Server
+=== Setting Up OpenAM As an Authorization Server
 
 
 ====
@@ -101,9 +111,9 @@ This allows you to request an OAuth 2.0 access token on behalf of the client.
 +
 In the console for OpenAM 12 and earlier, browse to Access Control > / (Top Level Realm) > Agents > OAuth 2.0 Client. In the console for OpenAM 13 and later, select the top-level realm and browse to Agents > OAuth 2.0/OpenID Connect Client Then click New in the Agent table.
 +
-Give the new OAuth 2.0 client profile the name `OpenIG` and password `password` .
+Give the new OAuth 2.0 client profile the name `OpenIG` and password `password`.
 +
-The name is the OAuth 2.0 `client_id` , and the password is the `client_secret` .
+The name is the OAuth 2.0 `client_id`, and the password is the `client_secret`.
 
 . Edit the `OpenIG` client profile to add `mail` and `employeenumber` scopes to the Scope(s) list, and then save your work.
 +
@@ -115,7 +125,7 @@ So, this tutorial uses `mail` to hold the username, and `employeenumber` to hold
 
 .. In the console for OpenAM 12 and earlier, under Access Control > / (Top Level Realm) > Subjects > User, click New to create the user profile. In the console for OpenAM 13 and later, select Subjects in for the top level realm and create a new subject.
 
-.. Set the ID to `george` , the password to `costanza` , and fill the other required fields as you like before clicking OK.
+.. Set the ID to `george`, the password to `costanza`, and fill the other required fields as you like before clicking OK.
 
 .. Click the user name to edit the profile again, setting Email Address to `george` and Employee Number to `costanza` before clicking Save.
 
@@ -126,9 +136,10 @@ So, this tutorial uses `mail` to hold the username, and `employeenumber` to hold
 
 
 [#oauth2-rs-tutorial-gateway-config]
-===  Configuring OpenIG As a Resource Server
+=== Configuring OpenIG As a Resource Server
 
-To configure OpenIG as an OAuth 2.0 resource server, you use an `OAuth2ResourceServerFilter` as described in xref:../reference/filters-conf.adoc#OAuth2ResourceServerFilter[OAuth2ResourceServerFilter(5)] in the _Configuration Reference_ .
+To configure OpenIG as an OAuth 2.0 resource server, you use an `OAuth2ResourceServerFilter` as described in xref:../reference/filters-conf.adoc#OAuth2ResourceServerFilter[OAuth2ResourceServerFilter(5)] in the __Configuration Reference__.
+
 The filter expects an OAuth 2.0 access token in an incoming `Authorization` request header, such as the following:
 
 [source, httprequest]
@@ -136,12 +147,18 @@ The filter expects an OAuth 2.0 access token in an incoming `Authorization` requ
 Authorization: Bearer 7af41ddd-47a4-40dc-b530-a9aa9f7ceda9
 ----
 The filter then uses the access token to validate the token and to retrieve token information from the authorization server.
-On successful validation, the filter creates a new context for the authorization server response, at `${contexts.oauth2}` .
-The context is named `oauth2` and can be reached at `contexts.oauth2` or `contexts['oauth2']` .
-The context contains data such as the access token, which can be reached at `contexts.oauth2.accessToken` or `contexts['oauth2'].accessToken` .
+
+On successful validation, the filter creates a new context for the authorization server response, at `${contexts.oauth2}`.
+
+The context is named `oauth2` and can be reached at `contexts.oauth2` or `contexts['oauth2']`.
+
+The context contains data such as the access token, which can be reached at `contexts.oauth2.accessToken` or `contexts['oauth2'].accessToken`.
+
 Filters and handlers placed after the `OAuth2ResourceServerFilter` in the chain, can access the token info through the context.
-If no access token is present in the request, or token validation does not complete successfully, the filter returns an HTTP error status to the user-agent, and OpenIG does not continue processing the request. This is done as specified in the RFC, link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank] .
-To configure OpenIG as an OAuth 2.0 resource server, add a new route to the OpenIG configuration by including the following route configuration file as `$HOME/.openig/config/routes/06-rs.json` :
+
+If no access token is present in the request, or token validation does not complete successfully, the filter returns an HTTP error status to the user-agent, and OpenIG does not continue processing the request. This is done as specified in the RFC, link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank].
+
+To configure OpenIG as an OAuth 2.0 resource server, add a new route to the OpenIG configuration by including the following route configuration file as `$HOME/.openig/config/routes/06-rs.json`:
 
 [source, javascript]
 ----
@@ -204,7 +221,7 @@ To configure OpenIG as an OAuth 2.0 resource server, add a new route to the Open
   "timer": true
 }
 ----
-On Windows, the file name should be `%appdata%\OpenIG\config\routes\06-rs.json` .
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\06-rs.json`.
 Notice the following features of the new route:
 
 * The `OAuth2ResourceServerFilter` includes a client handler to perform the following tasks:
@@ -219,23 +236,23 @@ Notice the following features of the new route:
 ** Set `"requireHttps": false` to allow testing without having to set up keys and certificates. (In production environments, do use HTTPS to protect access tokens.)
 
 +
-After successfully using the token info endpoint to validate an access token, the `OAuth2ResourceServerFilter` creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}` . The context contains the access token and the other info returned by the token info endpoint.
+After successfully using the token info endpoint to validate an access token, the `OAuth2ResourceServerFilter` creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}`. The context contains the access token and the other info returned by the token info endpoint.
 
-* The `AssignmentFilter` accesses the token info through the context, and injects the credentials from the user profile in OpenAM into `session` .
+* The `AssignmentFilter` accesses the token info through the context, and injects the credentials from the user profile in OpenAM into `session`.
 
-* The `StaticRequestFilter` retrieves the username and password from `session` , and replaces the original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
+* The `StaticRequestFilter` retrieves the username and password from `session`, and replaces the original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
 
-* The route matches requests to `/rs` .
+* The route matches requests to `/rs`.
 
 
 
 [#oauth2-rs-tutorial-test]
-===  Testing the Configuration
+=== Testing the Configuration
 
 To try your configuration you get an access token from OpenAM and use it to access OpenIG, which uses the OAuth 2.0 resource owner password credentials authorization grant.
 
 [#d2528e4315]
-.Procedure 8.1. To Test the Configuration
+.To Test the Configuration
 ====
 
 . In a terminal window, use a `curl` command similar to the following to retrieve the access token:
@@ -256,7 +273,7 @@ http://openam.example.com:8088/openam/oauth2/access_token
 }
 ----
 
-. In the following command, replace _<access_token>_ with the access token returned by the previous step, and then run the command:
+. In the following command, replace __<access_token>__ with the access token returned by the previous step, and then run the command:
 +
 
 [source, console]
@@ -289,8 +306,11 @@ http://openig.example.com:8080/rs
 
 ====
 What is happening behind the scenes?
-After OpenIG gets the `curl` request, the resource server filter validates the access token with OpenAM, and creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}` . If the access token had been missing or invalid, then the resource server filter would have returned an error status to the user-agent, and the OAuth 2.0 client would then have had to deal with the error.
+
+After OpenIG gets the `curl` request, the resource server filter validates the access token with OpenAM, and creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}`. If the access token had been missing or invalid, then the resource server filter would have returned an error status to the user-agent, and the OAuth 2.0 client would then have had to deal with the error.
+
 OpenIG captures the token information into the log, and the `AssignmentFilter` injects the credentials into the session context.
+
 Finally, the `StaticRequestFilter` uses the credentials to log the user in to the minimal HTTP server, which responds with the user information page.
 
 

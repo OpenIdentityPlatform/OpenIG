@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -29,7 +29,8 @@
 [#d210e13939]
 ==== Description
 A ClientRegistration holds information about registration with an OAuth 2.0 authorization server or OpenID Provider.
-The configuration includes the client credentials that are used to authenticate to the identity provider. The client credentials can be included directly in the configuration, or retrieved in some other way using an expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+
+The configuration includes the client credentials that are used to authenticate to the identity provider. The client credentials can be included directly in the configuration, or retrieved in some other way using an expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e13953]
 ==== Usage
@@ -55,46 +56,56 @@ The configuration includes the client credentials that are used to authenticate 
 --
 The client registration configuration object properties are as follows:
 
-"name": string, required::
+`"name"`: __string, required__::
 A name for the client registration.
 
-"clientId": expression, required::
+`"clientId"`: __expression, required__::
 The `client_id` obtained when registering with the authorization server.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"clientSecret": expression, required::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"clientSecret"`: __expression, required__::
 The `client_secret` obtained when registering with the authorization server.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"issuer": Issuer reference, required::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"issuer"`: __Issuer reference, required__::
 The provider configuration to use for this client registration.
+
 +
 Provide either the name of a Issuer object defined in the heap, or an inline Issuer configuration object.
-+
-See also xref:#Issuer[Issuer(5)] .
 
-"registrationHandler": Handler reference, optional::
++
+See also xref:#Issuer[Issuer(5)].
+
+`"registrationHandler"`: __Handler reference, optional__::
 Invoke this HTTP client handler to communicate with the authorization server.
+
 +
 Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
 +
 Usually set this to the name of a ClientHandler configured in the heap, or a chain that ends in a ClientHandler.
+
 +
 Default: OpenIG uses the default ClientHandler.
-+
-See also xref:handlers-conf.adoc#handlers-conf[Handlers] , xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)] .
 
-"scopes": array of expressions, optional::
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers], xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)].
+
+`"scopes"`: __array of expressions, optional__::
 OAuth 2.0 scopes to use with this client registration.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"tokenEndpointUseBasicAuth": boolean, optional::
-Whether to perform client authentication to the provider using HTTP Basic authentication when sending a request to the provider's OAuth 2.0 token endpoint.
 +
-When set to `true` , the client credentials are sent using HTTP Basic authentication as in the following example request:
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"tokenEndpointUseBasicAuth"`: __boolean, optional__::
+Whether to perform client authentication to the provider using HTTP Basic authentication when sending a request to the provider's OAuth 2.0 token endpoint.
+
++
+When set to `true`, the client credentials are sent using HTTP Basic authentication as in the following example request:
 +
 
 [source, httprequest]
@@ -107,7 +118,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=authorization_code&code=...
 ----
 +
-When set to `false` , the client credentials are sent in HTTP POST form data as in the following example request:
+When set to `false`, the client credentials are sent in HTTP POST form data as in the following example request:
 +
 
 [source, httprequest]
@@ -120,6 +131,7 @@ grant_type=authorization_code&client_id=.....&client_secret=.....&code=...
 ----
 +
 Some providers accept both authentication methods. For providers that strictly enforce how the client must authenticate, such as recent versions of OpenAM, you must align the configuration with that of the provider.
+
 +
 If the provider does not support the configured authentication method, then according to RFC 6749 link:https://tools.ietf.org/html/rfc6749#section-5.2[The OAuth 2.0 Authorization Framework, section 5.2, window=\_blank] the provider sends an HTTP 400 Bad Request response with an `invalid_client` error message as in the following example response:
 +
@@ -136,13 +148,13 @@ Pragma: no-cache
 }
 ----
 +
-Default: `true` 
+Default: `true`
 
 --
 
 [#d210e14107]
 ==== Example
-The following example shows a client registration for OpenAM. In this example client credentials are replaced with `**********` . In the actual configuration either include the credentials and protect the configuration file or obtain the credentials from the environment in a safe manner:
+The following example shows a client registration for OpenAM. In this example client credentials are replaced with `**********`. In the actual configuration either include the credentials and protect the configuration file or obtain the credentials from the environment in a safe manner:
 
 [source, javascript]
 ----
@@ -166,14 +178,17 @@ The following example shows a client registration for OpenAM. In this example cl
 
 [#d210e14118]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/ClientRegistration.html[org.forgerock.openig.filter.oauth2.client.ClientRegistration, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/ClientRegistration.html[org.forgerock.openig.filter.oauth2.client.ClientRegistration, window=\_blank]
 
 [#d210e14125]
 ==== See Also
-xref:#Issuer[Issuer(5)] , xref:filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)] 
-link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, window=\_blank] 
-link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank] 
-link:http://openid.net/connect/[OpenID Connect, window=\_blank] 
+xref:#Issuer[Issuer(5)], xref:filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)]
+
+link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, window=\_blank]
+
+link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank]
+
+link:http://openid.net/connect/[OpenID Connect, window=\_blank]
 
 '''
 [#JwtSession]
@@ -182,11 +197,17 @@ link:http://openid.net/connect/[OpenID Connect, window=\_blank]
 [#d210e14161]
 ==== Description
 A JwtSession object holds settings for storing session information in encrypted JSON Web Token (JWT) cookies.
-In this context, _encrypted JWT cookie_ means an HTTP cookie whose value is an encrypted JWT. The payload of the encrypted JWT is a JSON representation of the session information.
+
+In this context, __encrypted JWT cookie__ means an HTTP cookie whose value is an encrypted JWT. The payload of the encrypted JWT is a JSON representation of the session information.
+
 The JWT cookie lifetime is Session (not persistent), meaning the user-agent deletes the JWT cookie when it shuts down.
-When using this storage implementation, you must use data types for session information that can be mapped to link:http://json.org[JavaScript Object Notation, window=\_blank] (JSON). JSON allows strings, numbers, `true` , `false` , `null` , as well as arrays and JSON objects composed of the same primitives. Java and Groovy types that can be mapped include Java primitive types and `null` , String and CharSequence objects, as well as List and Map objects.
+
+When using this storage implementation, you must use data types for session information that can be mapped to link:http://json.org[JavaScript Object Notation, window=\_blank] (JSON). JSON allows strings, numbers, `true`, `false`, `null`, as well as arrays and JSON objects composed of the same primitives. Java and Groovy types that can be mapped include Java primitive types and `null`, String and CharSequence objects, as well as List and Map objects.
+
 As browser cookie storage capacity is limited to 4 KB, and encryption adds overhead, take care to limit the size of any JSON that you store. Rather than store larger data in the session information, consider storing a reference instead.
+
 When a request enters a route that uses a new session type, the scope of the session information becomes limited to the route. OpenIG builds a new session object and does not propagate any existing session information to the new object. `session` references the new session object. When the response then exits the route, the session object is closed, and serialized to a JWT cookie in this case, and `session` references the previous session object. Session information set inside the route is no longer available.
+
 An HTTP client that performs multiple requests in a session that modify the content of its session can encounter inconsistencies in the session information. This is because OpenIG does not share JwtSessions across threads. Instead, each thread has its own JwtSession objects that it modifies as necessary, writing its own session to the JWT cookie regardless of what other threads do.
 
 [#d210e14207]
@@ -213,63 +234,74 @@ An alternative value for type is JwtSessionFactory.
 ==== Properties
 --
 
-"keystore": KeyStore reference, optional::
+`"keystore"`: __KeyStore reference, optional__::
 The keystore holding the key pair with the private key used to decrypt the JWT.
+
 +
 Provide either the name of the KeyStore object defined in the heap, or the inline KeyStore configuration object inline.
+
 +
 Default: When no keystore is specified, OpenIG generates a unique key pair, and stores the key pair in memory. With JWTs encrypted using a unique key pair generated at runtime, OpenIG cannot decrypt the JWTs after a restart, nor can it decrypt such JWTs encrypted by another OpenIG server.
-+
-See also xref:#KeyStore[KeyStore(5)] .
 
-"alias": string, required when keystore is used::
++
+See also xref:#KeyStore[KeyStore(5)].
+
+`"alias"`: __string, required when keystore is used__::
 Alias for the private key.
 
-"password": configuration expression, required when keystore is used::
+`"password"`: __configuration expression, required when keystore is used__::
 The password to read the private key from the keystore.
-+
-A configuration expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] is independent of the request, response, and contexts, so do not use expressions that reference their properties. You can, however, use `${env['variable']}` , `${system['property']}` , and all the built-in functions listed in xref:expressions-conf.adoc#Functions[Functions(5)] .
 
-"cookieName" string, optional::
++
+A configuration expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] is independent of the request, response, and contexts, so do not use expressions that reference their properties. You can, however, use `${env['variable']}`, `${system['property']}`, and all the built-in functions listed in xref:expressions-conf.adoc#Functions[Functions(5)].
+
+`"cookieName"` __string, optional__::
 The name of the JWT cookie stored on the user-agent.
-+
-Default: `openig-jwt-session` 
 
-"sessionTimeout" duration, optional::
++
+Default: `openig-jwt-session`
+
+`"sessionTimeout"` __duration, optional__::
 The amount of time before the cookie session expires.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 +
 Default: 30 minutes
+
 +
 A zero duration for session timeout is not a valid setting. The maximum session timeout duration is 3650 days (approximately 10 years). If you set a longer duration, OpenIG truncates the duration to the maximum value.
 
-"sharedSecret" string, optional::
+`"sharedSecret"` __string, optional__::
 Specifies the key used to sign and verify the JWTs.
+
 +
 This attribute is expected to be base-64 encoded. The minimum key size after base-64 decoding is 32 bytes/256 bits (HMAC-SHA-256 is used to sign JWTs). If the provided key is too short, an error message is created.
+
 +
 If this attribute is not specified, random data is generated as the key, and the OpenIG instance can verify only the sessions it has created.
 
@@ -277,7 +309,7 @@ If this attribute is not specified, random data is generated as the key, and the
 
 [#d210e14476]
 ==== Example
-The following example defines a JwtSession for storing session information in a JWT token cookie named `OpenIG` . The JWT is encrypted with a private key that is recovered using the alias `private-key` , and stored in the keystore. The password is both the password for the keystore and also the private key:
+The following example defines a JwtSession for storing session information in a JWT token cookie named `OpenIG`. The JWT is encrypted with a private key that is recovered using the alias `private-key`, and stored in the keystore. The password is both the password for the keystore and also the private key:
 
 [source, javascript]
 ----
@@ -301,7 +333,7 @@ The following example defines a JwtSession for storing session information in a 
 
 [#d210e14490]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[org.forgerock.openig.jwt.JwtSessionManager, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[org.forgerock.openig.jwt.JwtSessionManager, window=\_blank]
 
 '''
 [#KeyManager]
@@ -309,7 +341,7 @@ link:../apidocs/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[org.f
 
 [#d210e14510]
 ==== Description
-This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/KeyManager.html[KeyManager, window=\_blank] , which manages the keys used to authenticate an SSLSocket to a peer. The configuration references the keystore that actually holds the keys.
+This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/KeyManager.html[KeyManager, window=\_blank], which manages the keys used to authenticate an SSLSocket to a peer. The configuration references the keystore that actually holds the keys.
 
 [#d210e14523]
 ==== Usage
@@ -331,28 +363,32 @@ This represents the configuration for a Java Secure Socket Extension link:http:/
 ==== Properties
 --
 
-"keystore": KeyStore reference, optional::
+`"keystore"`: __KeyStore reference, optional__::
 The keystore that references the store for the actual keys.
+
 +
 Provide either the name of the KeyStore object defined in the heap, or the inline KeyStore configuration object inline.
-+
-See also xref:#KeyStore[KeyStore(5)] .
 
-"password": expression, required::
++
+See also xref:#KeyStore[KeyStore(5)].
+
+`"password"`: __expression, required__::
 The password to read private keys from the keystore.
 
-"alg" string, optional::
+`"alg"` __string, optional__::
 The certificate algorithm to use.
+
 +
-Default: the default for the platform, such as `SunX509` .
+Default: the default for the platform, such as `SunX509`.
+
 +
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 --
 
 [#d210e14578]
 ==== Example
-The following example configures a key manager that depends on a KeyStore configuration. The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password` . This configuration uses the default certificate algorithm:
+The following example configures a key manager that depends on a KeyStore configuration. The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password`. This configuration uses the default certificate algorithm:
 
 [source, javascript]
 ----
@@ -374,11 +410,11 @@ The following example configures a key manager that depends on a KeyStore config
 
 [#d210e14591]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/KeyManagerHeaplet.html[org.forgerock.openig.security.KeyManagerHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/security/KeyManagerHeaplet.html[org.forgerock.openig.security.KeyManagerHeaplet, window=\_blank]
 
 [#d210e14599]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank] , xref:#KeyStore[KeyStore(5)] , xref:#TrustManager[TrustManager(5)] 
+link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyStore[KeyStore(5)], xref:#TrustManager[TrustManager(5)]
 
 '''
 [#KeyStore]
@@ -386,7 +422,7 @@ link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERef
 
 [#d210e14624]
 ==== Description
-This represents the configuration for a Java link:http://docs.oracle.com/javase/7/docs/api/index.html?java/security/KeyStore.html[KeyStore, window=\_blank] , which stores cryptographic private keys and public key certificates.
+This represents the configuration for a Java link:http://docs.oracle.com/javase/7/docs/api/index.html?java/security/KeyStore.html[KeyStore, window=\_blank], which stores cryptographic private keys and public key certificates.
 
 [#d210e14637]
 ==== Usage
@@ -408,30 +444,35 @@ This represents the configuration for a Java link:http://docs.oracle.com/javase/
 ==== Properties
 --
 
-"url": expression, required::
+`"url"`: __expression, required__::
 URL to the keystore file.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"password": expression, optional::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"password"`: __expression, optional__::
 The password to read private keys from the keystore.
+
 +
 If the keystore is used as a truststore to store only public key certificates of peers and no password is required to do so, then you do not have to specify this field.
+
 +
 Default: No password is set.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"type": string, optional::
-The keystore format.
 +
-Default: the default for the platform, such as `JKS` .
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"type"`: __string, optional__::
+The keystore format.
+
++
+Default: the default for the platform, such as `JKS`.
 
 --
 
 [#d210e14694]
 ==== Example
-The following example configures a keystore that references a Java Keystore file, `$HOME/keystore.jks` . The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password` . As the keystore file uses the default format, no type is specified:
+The following example configures a keystore that references a Java Keystore file, `$HOME/keystore.jks`. The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password`. As the keystore file uses the default format, no type is specified:
 
 [source, javascript]
 ----
@@ -447,11 +488,11 @@ The following example configures a keystore that references a Java Keystore file
 
 [#d210e14710]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/KeyStoreHeaplet.html[org.forgerock.openig.security.KeyStoreHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/security/KeyStoreHeaplet.html[org.forgerock.openig.security.KeyStoreHeaplet, window=\_blank]
 
 [#d210e14718]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank] , xref:#KeyManager[KeyManager(5)] , xref:#TrustManager[TrustManager(5)] 
+link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#TrustManager[TrustManager(5)]
 
 '''
 [#Issuer]
@@ -460,7 +501,8 @@ link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERef
 [#d210e14743]
 ==== Description
 An Issuer describes an OAuth 2.0 Authorization Server or an OpenID Provider that OpenIG can use as a OAuth 2.0 client or OpenID Connect relying party.
-An Issuer is generally referenced from a ClientRegistration, described in xref:#ClientRegistration[ClientRegistration(5)] .
+
+An Issuer is generally referenced from a ClientRegistration, described in xref:#ClientRegistration[ClientRegistration(5)].
 
 [#d210e14757]
 ==== Usage
@@ -488,53 +530,65 @@ If the provider has a well-known configuration URL as defined for OpenID Connect
 --
 The provider configuration object properties are as follows:
 
-"name": string, required::
+`"name"`: __string, required__::
 A name for the provider configuration.
 
-"wellKnownEndpoint": URL string, required unless authorizeEndpoint and tokenEndpoint are specified::
+`"wellKnownEndpoint"`: __URL string, required unless authorizeEndpoint and tokenEndpoint are specified__::
 The URL to the well-known configuration resource as described in OpenID Connect 1.0 Discovery.
 
-"authorizeEndpoint": expression, required unless obtained through wellKnownEndpoint::
+`"authorizeEndpoint"`: __expression, required unless obtained through wellKnownEndpoint__::
 The URL to the provider's OAuth 2.0 authorization endpoint.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"registrationEndpoint": expression, optional::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"registrationEndpoint"`: __expression, optional__::
 The URL to the provider's OpenID Connect dynamic registration endpoint.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"tokenEndpoint": expression, required unless obtained through wellKnownEndpoint::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"tokenEndpoint"`: __expression, required unless obtained through wellKnownEndpoint__::
 The URL to the provider's OAuth 2.0 token endpoint.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"userInfoEndpoint": expression, optional::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"userInfoEndpoint"`: __expression, optional__::
 The URL to the provider's OpenID Connect UserInfo endpoint.
+
 +
 Default: no UserInfo is obtained from the provider.
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
 
-"issuerHandler": Handler reference, optional::
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"issuerHandler"`: __Handler reference, optional__::
 Invoke this HTTP client handler to communicate with the authorization server.
+
 +
 Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
 +
 Usually set this to the name of a ClientHandler configured in the heap, or a chain that ends in a ClientHandler.
+
 +
 Default: OpenIG uses the default ClientHandler.
-+
-See also xref:handlers-conf.adoc#handlers-conf[Handlers] , xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)] .
 
-"supportedDomains": array of patterns, optional::
-List of patterns matching domain names handled by this issuer, used as a shortcut for link:http://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect discovery, window=\_blank] before performing link:http://openid.net/specs/openid-connect-registration-1_0.html[OpenID Connect dynamic registration, window=\_blank] .
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers], xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)].
+
+`"supportedDomains"`: __array of patterns, optional__::
+List of patterns matching domain names handled by this issuer, used as a shortcut for link:http://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect discovery, window=\_blank] before performing link:http://openid.net/specs/openid-connect-registration-1_0.html[OpenID Connect dynamic registration, window=\_blank].
+
 +
 In summary when the OpenID Provider is not known in advance, it might be possible to discover the OpenID Provider Issuer based on information provided by the user, such as an email address. The OpenID Connect discovery specification explains how to use link:https://tools.ietf.org/html/rfc7033[WebFinger, window=\_blank] to discover the issuer. OpenIG can discover the issuer in this way. As a shortcut OpenIG can also use supported domains lists to find issuers already described in the OpenIG configuration.
+
 +
 To use this shortcut, OpenIG extracts the domain from the user input, and looks for an issuer whose supported domains list contains a match.
+
 +
-Supported domains patterns match host names with optional port numbers. Do not specify a URI scheme such as HTTP. OpenIG adds the scheme. For instance, `*.example.com` matches any host in the `example.com` domain. You can specify the port number as well as in `host.example.com:8443` . Patterns must be valid regular expression patterns according to the rules for the Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class.
+Supported domains patterns match host names with optional port numbers. Do not specify a URI scheme such as HTTP. OpenIG adds the scheme. For instance, `*.example.com` matches any host in the `example.com` domain. You can specify the port number as well as in `host.example.com:8443`. Patterns must be valid regular expression patterns according to the rules for the Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class.
 
 --
 
@@ -577,7 +631,7 @@ The following example shows an issuer configuration for Google:
 
 [#d210e14921]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/Issuer.html[org.forgerock.openig.filter.oauth2.client.Issuer, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/Issuer.html[org.forgerock.openig.filter.oauth2.client.Issuer, window=\_blank]
 
 '''
 [#ScheduledExecutorService]
@@ -586,6 +640,7 @@ link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/Issuer.html
 [#d210e14940]
 ==== Description
 An executor service to schedule tasks for execution after a delay or for repeated execution with a fixed interval of time in between each execution. You can configure the number of threads in the executor service and how the executor service is stopped.
+
 The `ScheduledExecutorService` is shared by all downstream components that use an executor service.
 
 [#d210e14955]
@@ -608,14 +663,16 @@ The `ScheduledExecutorService` is shared by all downstream components that use a
 ==== Properties
 --
 
-"corePoolSize": integer or expression<integer>, optional::
+`"corePoolSize"`: __integer or expression<integer>, optional__::
 The minimum number of threads to keep in the pool. If this property is an expression, the expression is evaluated as soon as the configuration is read.
+
 +
 The value must be an integer greater than zero.
+
 +
 Default: 1
 
-"gracefulStop": boolean or expression<boolean> , optional::
+`"gracefulStop"`: __boolean or expression<boolean> , optional__::
 Defines how the executor service stops. If this property is an expression, the expression is evaluated as soon as the configuration is read.
 +
 If true, the executor service does the following:
@@ -640,35 +697,40 @@ If false, the executor service does the following:
 +
 Default: true
 
-"gracePeriod": duration string or expression<duration string>, optional::
+`"gracePeriod"`: __duration string or expression<duration string>, optional__::
 The maximum time that the executor service waits for running jobs to finish before it stops. If this property is an expression, the expression is evaluated as soon as the configuration is read.
+
 +
 If all jobs finish before the grace period, the executor service stops without waiting any longer. If jobs are still running after the grace period, the executor service stops anyway and prints a message.
+
 +
-When `gracefulStop` is `false` , the grace period is ignored.
+When `gracefulStop` is `false`, the grace period is ignored.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 +
 Default: 10 seconds
@@ -695,7 +757,7 @@ The following example creates a thread pool to execute tasks. When the executor 
 
 [#d210e15205]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/thread/ScheduledExecutorServiceHeaplet.html[org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/thread/ScheduledExecutorServiceHeaplet.html[org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet, window=\_blank]
 
 '''
 [#TemporaryStorage]
@@ -726,23 +788,23 @@ Allocates temporary buffers for caching streamed content during request processi
 ==== Properties
 --
 
-"initialLength": number, optional::
+`"initialLength"`: __number, optional__::
 The initial length of memory buffer byte array. Default: 8192 (8 KiB).
 
-"memoryLimit": number, optional::
+`"memoryLimit"`: __number, optional__::
 The length limit of the memory buffer. Exceeding this limit results in promotion from memory to file. Default: 65536 (64 KiB).
 
-"fileLimit": number, optional::
+`"fileLimit"`: __number, optional__::
 The length limit of the file buffer. Exceeding this limit results in a thrown exception. Default: 1048576 (1 MiB).
 
-"directory": string, optional::
+`"directory"`: __string, optional__::
 The directory where temporary files are created. If omitted, then the system-dependent default temporary directory is used (typically `"/tmp"` on Unix systems). Default: use system-dependent default.
 
 --
 
 [#d210e15288]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.forgerock.openig.io.TemporaryStorage, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.forgerock.openig.io.TemporaryStorage, window=\_blank]
 
 '''
 [#TrustManager]
@@ -750,7 +812,7 @@ link:../apidocs/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.for
 
 [#d210e15306]
 ==== Description
-This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/TrustManager.html[TrustManager, window=\_blank] , which manages the trust material (typically X.509 public key certificates) used to decide whether to accept the credentials presented by a peer. The configuration references the keystore that actually holds the trust material.
+This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/TrustManager.html[TrustManager, window=\_blank], which manages the trust material (typically X.509 public key certificates) used to decide whether to accept the credentials presented by a peer. The configuration references the keystore that actually holds the trust material.
 
 [#d210e15319]
 ==== Usage
@@ -771,17 +833,20 @@ This represents the configuration for a Java Secure Socket Extension link:http:/
 ==== Properties
 --
 
-"keystore": KeyStore reference, optional::
+`"keystore"`: __KeyStore reference, optional__::
 The KeyStore that references the store for public key certificates.
+
 +
 Provide either the name of the KeyStore object defined in the heap, or the inline KeyStore configuration object inline.
-+
-See also xref:#KeyStore[KeyStore(5)] .
 
-"alg" string, optional::
-The certificate algorithm to use.
 +
-Default: the default for the platform, such as `SunX509` .
+See also xref:#KeyStore[KeyStore(5)].
+
+`"alg"` __string, optional__::
+The certificate algorithm to use.
+
++
+Default: the default for the platform, such as `SunX509`.
 
 --
 
@@ -808,11 +873,11 @@ The following example configures a trust manager that depends on a KeyStore conf
 
 [#d210e15368]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/TrustManagerHeaplet.html[org.forgerock.openig.security.TrustManagerHeaplet, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/security/TrustManagerHeaplet.html[org.forgerock.openig.security.TrustManagerHeaplet, window=\_blank]
 
 [#d210e15376]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank] , xref:#KeyManager[KeyManager(5)] , xref:#KeyStore[KeyStore(5)] 
+link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#KeyStore[KeyStore(5)]
 
 '''
 [#TrustAllManager]
@@ -821,6 +886,7 @@ link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERef
 [#d210e15401]
 ==== Description
 The TrustAllManager blindly trusts all server certificates presented the servers for protected applications. It can be used instead of a xref:#TrustManager[TrustManager(5)] in test environments to trust server certificates that were not signed by a well-known CA, such as self-signed certificates.
+
 The TrustAllManager is not safe for production use. Use a properly configured xref:#TrustManager[TrustManager(5)] instead.
 
 [#d210e15417]
@@ -853,7 +919,7 @@ The following example configures a client handler that blindly trusts server cer
 
 [#d210e15431]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/TrustAllManager.html[org.forgerock.openig.security.TrustAllManager, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/security/TrustAllManager.html[org.forgerock.openig.security.TrustAllManager, window=\_blank]
 
 '''
 [#UmaService]
@@ -862,6 +928,7 @@ link:../apidocs/index.html?org/forgerock/openig/security/TrustAllManager.html[or
 [#d210e15451]
 ==== Description
 An UmaService represents a User-Managed Access (UMA) resource server. Each service is statically registered as an OAuth 2.0 client of a single UMA authorization server.
+
 The UmaService includes a list of resource patterns and associated actions that define the scopes for permissions to matching resources. When creating a share using the REST API described below, you specify a path matching a pattern in a resource of the UmaService.
 
 [#d210e15463]
@@ -885,21 +952,22 @@ The UmaService includes a list of resource patterns and associated actions that 
 ==== Properties
 --
 
-"protectionApiHandler": Handler reference, required::
+`"protectionApiHandler"`: __Handler reference, required__::
 The handler to use when interacting with the UMA authorization server to manage resource sets, such as a ClientHandler capable of making an HTTPS connection to the server.
-+
-For details, see xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"authorizationServerUri": URI string, required::
++
+For details, see xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"authorizationServerUri"`: __URI string, required__::
 The URI to the UMA authorization server.
 
-"clientId": expression, required::
+`"clientId"`: __expression, required__::
 An expression that evaluates to the OAuth 2.0 `client_id` registered with the UMA authorization server.
 
-"clientSecret": expression, required::
+`"clientSecret"`: __expression, required__::
 An expression that evaluates to the OAuth 2.0 `client_secret` registered with the UMA authorization server.
 
-"resources": array of resources, required::
+`"resources"`: __array of resources, required__::
 Resource objects matching the resources the resource owner wants to share.
 +
 [open]
@@ -931,27 +999,32 @@ Each resource pattern can be seen to represent an application, or a consistent s
 
 A description of each field follows:
 
-"pattern": resource pattern, required::
-A pattern matching resources to be shared by the resource owner, such as `.*` to match any resource path, and `/photos/.*` to match paths starting with `/photos/` .
-+
-See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
+`"pattern"`: __resource pattern, required__::
+A pattern matching resources to be shared by the resource owner, such as `.*` to match any resource path, and `/photos/.*` to match paths starting with `/photos/`.
 
-"actions": array of action objects, optional::
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)].
+
+`"actions"`: __array of action objects, optional__::
 A set of actions on matching resources that the resource owner can authorize.
-+
-When granting permission, the resource owner specifies the action scope. Conditions specify what the scopes mean in concrete terms. A given scope matches a requesting party operation when the corresponding condition evaluates to `true` .
 
-"scopes": array of scope strings, optional::
++
+When granting permission, the resource owner specifies the action scope. Conditions specify what the scopes mean in concrete terms. A given scope matches a requesting party operation when the corresponding condition evaluates to `true`.
+
+`"scopes"`: __array of scope strings, optional__::
 Scope strings to identify permissions.
+
 +
 For example, `#read` (read access on a resource).
 
-"condition": boolean expression, required::
+`"condition"`: __boolean expression, required__::
 A boolean expression representing the meaning of a scope.
+
 +
 For example, `${request.method == 'GET'}` (true when reading a resource).
+
 +
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 ====
 
@@ -966,8 +1039,10 @@ The REST API for UMA shares is exposed at a registered endpoint. OpenIG logs the
 UMA Share endpoint available at
  '/openig/api/system/objects/router-handler/routes/00-uma/objects/umaservice/share'
 ----
-To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-uma/objects/umaservice/share` .
-The UMA REST API supports create (POST only), read, delete, and query ( `_queryFilter=true` only). For an introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[Section 5, "About ForgeRock Common REST"] .
+To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-uma/objects/umaservice/share`.
+
+The UMA REST API supports create (POST only), read, delete, and query (`_queryFilter=true` only). For an introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About ForgeRock Common REST].
+
 In the present implementation, OpenIG does not have a mechanism for persisting shares. When the OpenIG container stops, the shares are discarded.
 --
 A share object has the following form:
@@ -984,32 +1059,36 @@ A share object has the following form:
 ----
 The fields are as follows:
 
-"path": pattern, required::
-A pattern matching the path to protected resources, such as `/photos/.*` .
+`"path"`: __pattern, required__::
+A pattern matching the path to protected resources, such as `/photos/.*`.
+
 +
 This pattern must match a pattern defined in the UmaService for this API.
-+
-See also xref:expressions-conf.adoc#Patterns[Patterns(5)] .
 
-"pat": PAT string, required::
++
+See also xref:expressions-conf.adoc#Patterns[Patterns(5)].
+
+`"pat"`: __PAT string, required__::
 A PAT granted by the UMA authorization server given consent by the resource owner.
+
 +
 In the present implementation, OpenIG has access only to the PAT, not to any refresh tokens.
 
-"id": unique identifier string, read-only::
+`"id"`: __unique identifier string, read-only__::
 This uniquely identifies the share. This value is set by the service when the share is created, and can be used when reading or deleting a share.
 
-"resource_set_id": unique identifier string, read-only::
+`"resource_set_id"`: __unique identifier string, read-only__::
 This uniquely identifies the UMA resource set registered with the authorization server. This value is obtained by the service when the resource set is registered, and can be used when setting access policy permissions.
 
-"user_access_policy_uri": URI string, read-only::
+`"user_access_policy_uri"`: __URI string, read-only__::
 This URI indicates the location on the UMA authorization server where the resource owner can set or modify access policies. This value is obtained by the service when the resource set is registered.
 
 --
 
 [#d210e15718]
 ==== See Also
-link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_blank] 
-link:../apidocs/index.html?org/forgerock/openig/uma/UmaSharingService.html[org.forgerock.openig.uma.UmaSharingService, window=\_blank] 
+link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_blank]
+
+link:../apidocs/index.html?org/forgerock/openig/uma/UmaSharingService.html[org.forgerock.openig.uma.UmaSharingService, window=\_blank]
 
 

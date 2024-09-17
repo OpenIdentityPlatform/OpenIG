@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,7 +21,7 @@
 
 
 [#chap-oauth2-client]
-==  OpenIG As an OAuth 2.0 Client or OpenID Connect Relying Party
+== OpenIG As an OAuth 2.0 Client or OpenID Connect Relying Party
 
 OpenIG helps integrate applications into OAuth 2.0 and OpenID Connect deployments. In this chapter, you will learn to:
 
@@ -33,53 +33,62 @@ OpenIG helps integrate applications into OAuth 2.0 and OpenID Connect deployment
 
 
 [#about-oauth2-client]
-===  About OpenIG As an OAuth 2.0 Client
+=== About OpenIG As an OAuth 2.0 Client
 
-As described in xref:chap-oauth2-rs.adoc#chap-oauth2-rs[Chapter 8, "OpenIG As an OAuth 2.0 Resource Server"] , an OAuth 2.0 client is the third-party application that needs access to a user's protected resources. The client application therefore has the user (the OAuth 2.0 resource owner) delegate authorization by authenticating with an identity provider (the OAuth 2.0 authorization server) using an existing account, and then consenting to authorize access to protected resources (on an OAuth 2.0 resource server).
-OpenIG can act as an OAuth 2.0 client when you configure an OAuth2ClientFilter as described in xref:../reference/filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)] in the _Configuration Reference_ . The OAuth2ClientFilter handles the process of allowing the user to select a provider, and redirecting the user through the authentication and authorization steps of an OAuth 2.0 authorization code grant, which results in the authorization server returning an access token to the filter.
+As described in xref:chap-oauth2-rs.adoc#chap-oauth2-rs[OpenIG As an OAuth 2.0 Resource Server], an OAuth 2.0 client is the third-party application that needs access to a user's protected resources. The client application therefore has the user (the OAuth 2.0 resource owner) delegate authorization by authenticating with an identity provider (the OAuth 2.0 authorization server) using an existing account, and then consenting to authorize access to protected resources (on an OAuth 2.0 resource server).
+
+OpenIG can act as an OAuth 2.0 client when you configure an OAuth2ClientFilter as described in xref:../reference/filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)] in the __Configuration Reference__. The OAuth2ClientFilter handles the process of allowing the user to select a provider, and redirecting the user through the authentication and authorization steps of an OAuth 2.0 authorization code grant, which results in the authorization server returning an access token to the filter.
+
 When an authorization grant succeeds, the OAuth2ClientFilter injects the access token data into a configurable target in the context so that subsequent filters and handlers have access to the access token. Subsequent requests can use the access token without reauthentication. If an authorization grant fails, the `failureHandler` is invoked.
+
 If the protected application is an OAuth 2.0 resource server, then OpenIG can send the access token with the resource request.
 
 
 [#about-oidc-rp]
-===  About OpenIG As an OpenID Connect 1.0 Relying Party
+=== About OpenIG As an OpenID Connect 1.0 Relying Party
 
 The specifications available through the link:http://openid.net/developers/specs/[OpenID Connect, window=\_blank] site describe an authentication layer built on OAuth 2.0, which is OpenID Connect 1.0.
-OpenID Connect 1.0 is a specific implementation of OAuth 2.0 where the identity provider holds the protected resource that the third-party application aims to access. This resource is the _UserInfo_ , information about the authenticated end-user expressed in a standard format.
+
+OpenID Connect 1.0 is a specific implementation of OAuth 2.0 where the identity provider holds the protected resource that the third-party application aims to access. This resource is the __UserInfo__, information about the authenticated end-user expressed in a standard format.
 In OpenID Connect 1.0, the key entities are the following:
 
-* The _end user_ (OAuth 2.0 resource owner) whose user information the application needs to access.
+* The __end user__ (OAuth 2.0 resource owner) whose user information the application needs to access.
 +
 The end user wants to use an application through existing identity provider account without signing up and creating credentials for yet another web service.
 
-* The _Relying Party_ (RP) (OAuth 2.0 client) needs access to the end user's protected user information.
+* The __Relying Party__ (RP) (OAuth 2.0 client) needs access to the end user's protected user information.
 +
 For example, an online mail application needs to know which end user is accessing the application in order to present the correct inbox.
 +
 As another example, an online shopping site needs to know which end user is accessing the site in order to present the right offerings, account, and shopping cart.
 
-* The _OpenID Provider_ (OP) (OAuth 2.0 authorization server and also resource server) that holds the user information and grants access.
+* The __OpenID Provider__ (OP) (OAuth 2.0 authorization server and also resource server) that holds the user information and grants access.
 +
 The OP effectively has the end user consent to providing the RP with access to some of its user information. As OpenID Connect 1.0 defines unique identification for an account (subject identifier + issuer identifier), the RP can use this as a key to its own user profile.
 +
 In the case of the online mail application, this key could be used to access the mailboxes and related account information. In the case of the online shopping site, this key could be used to access the offerings, account, shopping cart and others. The key makes it possible to serve users as if they had local accounts.
 
 When OpenIG acts therefore as an OpenID Connect 1.0 relying party, its ultimate role is to retrieve user information from the OpenID provider, and then to inject that information into the context for use by subsequent filters and handlers.
+
 In the tutorial that follows, you configure OpenIG as a relying party, and use OpenAM as the OpenID Provider.
 
 
 [#oidc-rp-tutorial-before-you-start]
-===  Preparing the Tutorial
+=== Preparing the Tutorial
 
-xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+
 This tutorial shows you how OpenIG can act as an OpenID Connect 1.0 relying party.
+
 This tutorial relies on OpenAM as an OpenID Provider. As a relying party, OpenIG takes the end user to OpenAM for authorization and an access token. It then uses the access token to get end user information from OpenAM.
-Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
+
+Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
 OpenIG should be running in Jetty, configured to access the minimal HTTP server as described in that chapter.
 
 
 [#oidc-rp-tutorial-openam-config]
-===  Setting Up OpenAM As an OpenID Provider
+=== Setting Up OpenAM As an OpenID Provider
 
 
 ====
@@ -98,11 +107,11 @@ This allows OpenIG to communicate with OpenAM as an OAuth 2.0 client.
 +
 In the console for OpenAM 12 and earlier, browse to Access Control > / (Top Level Realm) > Agents > OAuth 2.0 Client. In the console for OpenAM 13 and later, select the top-level realm and browse to Agents > OAuth 2.0/OpenID Connect Client Then click New in the Agent table.
 +
-Give the OAuth 2.0 client profile the name `OpenIG` and password `password` .
+Give the OAuth 2.0 client profile the name `OpenIG` and password `password`.
 +
 The name is the `clientId` value, and the password is the `clientSecret` value that you use in the provider configuration in OpenIG.
 
-. Edit the `OpenIG` client profile to add the Redirection URI `\http://openig.example.com:8080/openid/callback` .
+. Edit the `OpenIG` client profile to add the Redirection URI `\http://openig.example.com:8080/openid/callback`.
 +
 Add `openid` and `profile` scopes to the Scope(s) list, and then save your work.
 
@@ -118,7 +127,7 @@ To overload the profile, create a user whose additional credentials you set in t
 +
 If the profile already exists in the table, then click the link to open the profile for editing.
 
-.. Set the ID to `george` , the password to `costanza` , the Last Name to `george` , and the Full Name to `costanza` before saving your work.
+.. Set the ID to `george`, the password to `costanza`, the Last Name to `george`, and the Full Name to `costanza` before saving your work.
 
 .. When finished, log out of OpenAM console by clicking the log out button. It is not enough simply to close the browser tab, as the OpenAM session remains active until you log out or quit the browser.
 
@@ -127,9 +136,9 @@ If the profile already exists in the table, then click the link to open the prof
 
 
 [#oidc-rp-tutorial-gateway-config]
-===  Configuring OpenIG As a Relying Party
+=== Configuring OpenIG As a Relying Party
 
-To configure OpenIG as an OpenID Connect 1.0 relying party, add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-openid.json` :
+To configure OpenIG as an OpenID Connect 1.0 relying party, add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-openid.json`:
 
 [source, javascript]
 ----
@@ -212,75 +221,83 @@ To configure OpenIG as an OpenID Connect 1.0 relying party, add a new route to t
   "baseURI": "http://openig.example.com:8080"
 }
 ----
-On Windows, the file name should be `%appdata%\OpenIG\config\routes\07-openid.json` .
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\07-openid.json`.
 Notice the following features of the new route:
 
 * The heap defines an issuer, in this case, an OpenID Provider, and a client registration with the issuer. To reuse the definitions in multiple routes, define them in the heap of the parent route.
 +
-An issuer describes an OAuth 2.0 authorization server or OpenID Provider. A client registration holds the information provided when the OAuth 2.0 client was manually registered with the issuer. Multiple client registrations can exist with the same issuer. As an OAuth 2.0 client or OpenID Connect relying party, OpenIG uses these configurations to connect with the OAuth 2.0 authorization server or OpenID Provider. For details, see xref:../reference/misc-conf.adoc#Issuer[Issuer(5)] in the _Configuration Reference_ and xref:../reference/misc-conf.adoc#ClientRegistration[ClientRegistration(5)] in the _Configuration Reference_ .
+An issuer describes an OAuth 2.0 authorization server or OpenID Provider. A client registration holds the information provided when the OAuth 2.0 client was manually registered with the issuer. Multiple client registrations can exist with the same issuer. As an OAuth 2.0 client or OpenID Connect relying party, OpenIG uses these configurations to connect with the OAuth 2.0 authorization server or OpenID Provider. For details, see xref:../reference/misc-conf.adoc#Issuer[Issuer(5)] in the __Configuration Reference__ and xref:../reference/misc-conf.adoc#ClientRegistration[ClientRegistration(5)] in the __Configuration Reference__.
 +
-If the issuer is an OpenID Provider that supports dynamic registration, it is possible to avoid explicitly configuring the client registration. For details, see the example in xref:#oidc-discovery[Section 9.7, "Using OpenID Connect Discovery and Dynamic Client Registration"] .
+If the issuer is an OpenID Provider that supports dynamic registration, it is possible to avoid explicitly configuring the client registration. For details, see the example in xref:#oidc-discovery[Using OpenID Connect Discovery and Dynamic Client Registration].
 
 * At the global level the route changes the base URI for requests to ensure that the initial interaction happens between OpenIG and OpenAM, which is the OpenID Provider. This route sends only the final request to the protected application.
 
-* The first filter in the outermost chain has the `OAuth2ClientFilter` type, which is described in xref:../reference/filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)] in the _Configuration Reference_ . This is the filter that enables OpenIG to act as a relying party.
+* The first filter in the outermost chain has the `OAuth2ClientFilter` type, which is described in xref:../reference/filters-conf.adoc#OAuth2ClientFilter[OAuth2ClientFilter(5)] in the __Configuration Reference__. This is the filter that enables OpenIG to act as a relying party.
 +
-The filter is configured to work only with a single client registration, the OpenAM server you configured in xref:#oidc-rp-tutorial-openam-config[Section 9.4, "Setting Up OpenAM As an OpenID Provider"] . If you have zero or multiple client registrations, you must use a `loginHandler` to manage the selection of an identity provider.
+The filter is configured to work only with a single client registration, the OpenAM server you configured in xref:#oidc-rp-tutorial-openam-config[Setting Up OpenAM As an OpenID Provider]. If you have zero or multiple client registrations, you must use a `loginHandler` to manage the selection of an identity provider.
 +
-The `OAuth2ClientFilter` has a base client endpoint of `/openid` . Incoming requests to `/openid/login` start the delegated authorization process. Incoming requests to `/openid/callback` are expected as redirects from the OP (as authorization server), so this is why you set the redirect URI in the client profile in OpenAM to `\http://openig.example.com:8080/openid/callback` .
+The `OAuth2ClientFilter` has a base client endpoint of `/openid`. Incoming requests to `/openid/login` start the delegated authorization process. Incoming requests to `/openid/callback` are expected as redirects from the OP (as authorization server), so this is why you set the redirect URI in the client profile in OpenAM to `\http://openig.example.com:8080/openid/callback`.
 +
 The `OAuth2ClientFilter` has `"requireHttps": false` as a convenience for testing. In production environments, require HTTPS.
 +
 The filter has `"requireLogin": true` to ensure you see the delegated authorization process when you make your request.
 +
-In the `OAuth2ClientFilter` , the target for storing authorization state information is `${attributes.openid}` , so this is where subsequent filters and handlers can find access token and user information.
+In the `OAuth2ClientFilter`, the target for storing authorization state information is `${attributes.openid}`, so this is where subsequent filters and handlers can find access token and user information.
 +
-If the request fails, the errors are managed by the `failureHandler` , which is in this case a `StaticResponseHandler` . The current information in the context is dumped into a web page response to the end user. While this is helpful to you for debugging purposes, it is not helpful to an end user. In production environments, return a more user-friendly failure page.
+If the request fails, the errors are managed by the `failureHandler`, which is in this case a `StaticResponseHandler`. The current information in the context is dumped into a web page response to the end user. While this is helpful to you for debugging purposes, it is not helpful to an end user. In production environments, return a more user-friendly failure page.
 
-* After the filter injects the access token and user information into `attributes.openid` , OpenIG invokes a chain. The chain uses the credentials to log the user in to the minimal HTTP server.
+* After the filter injects the access token and user information into `attributes.openid`, OpenIG invokes a chain. The chain uses the credentials to log the user in to the minimal HTTP server.
 +
 With this configuration, all successful requests result in login attempts against the minimal HTTP server.
 
 * The `StaticRequestFilter` retrieves the username and password from the context and replaces the original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
 
-* The route matches requests to `/openid` .
+* The route matches requests to `/openid`.
 
 
 
 [#oidc-rp-tutorial-test]
-===  Test the Configuration
+=== Test the Configuration
 
-To try your configuration, browse to OpenIG at link:http://openig.example.com:8080/openid[http://openig.example.com:8080/openid, window=\_blank] .
-When redirected to the OpenAM login page, login as user `george` , password `costanza` , and then allow the application access to user information.
+To try your configuration, browse to OpenIG at link:http://openig.example.com:8080/openid[http://openig.example.com:8080/openid, window=\_blank].
+
+When redirected to the OpenAM login page, login as user `george`, password `costanza`, and then allow the application access to user information.
+
 If successful, OpenIG logs you into the minimal HTTP server as George Costanza, and the minimal HTTP server returns George's page.
+
 What is happening behind the scenes?
+
 After OpenIG gets the browser request, the `OAuth2ClientFilter` redirects you to authenticate with OpenAM and consent to authorize access to user information. After you authorize access, OpenAM returns an access token to the filter.
-The filter then uses that access token to get the user information. The filter injects the authorization state information into `attributes.openid` . The outermost chain then calls its handler, which as another Chain.
+
+The filter then uses that access token to get the user information. The filter injects the authorization state information into `attributes.openid`. The outermost chain then calls its handler, which as another Chain.
+
 This inner chain uses the credentials to log the user in to the minimal HTTP server, which responds with its user information page.
 
 
 [#oidc-discovery]
-===  Using OpenID Connect Discovery and Dynamic Client Registration
+=== Using OpenID Connect Discovery and Dynamic Client Registration
 
-OpenID Connect defines mechanisms for discovering and dynamically registering with an identity provider that is not known in advance. These mechanisms are specified in link:http://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect Discovery, window=\_blank] and link:http://openid.net/specs/openid-connect-registration-1_0.html[OpenID Connect Dynamic Client Registration, window=\_blank] . OpenIG supports discovery and dynamic registration. In this section you will learn how to configure OpenIG to try these features with OpenAM.
-Although this tutorial focuses on OpenID Connect dynamic registration, OpenIG also supports dynamic registration as described in RFC 7591, link:https://tools.ietf.org/html/rfc7591[OAuth 2.0 Dynamic Client Registration Protocol, window=\_blank] .
+OpenID Connect defines mechanisms for discovering and dynamically registering with an identity provider that is not known in advance. These mechanisms are specified in link:http://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect Discovery, window=\_blank] and link:http://openid.net/specs/openid-connect-registration-1_0.html[OpenID Connect Dynamic Client Registration, window=\_blank]. OpenIG supports discovery and dynamic registration. In this section you will learn how to configure OpenIG to try these features with OpenAM.
+
+Although this tutorial focuses on OpenID Connect dynamic registration, OpenIG also supports dynamic registration as described in RFC 7591, link:https://tools.ietf.org/html/rfc7591[OAuth 2.0 Dynamic Client Registration Protocol, window=\_blank].
 
 [#oidc-discovery-setup]
-====  Preparing to Try Discovery and Dynamic Client Registration
+==== Preparing to Try Discovery and Dynamic Client Registration
 
-This short tutorial builds on the previous tutorial in this chapter. If you have not already done so, start by performing the steps described in xref:#oidc-rp-tutorial-before-you-start[Section 9.3, "Preparing the Tutorial"] . This tutorial requires a recent minimal HTTP server, as the newer versions include a small WebFinger service that is used here.
+This short tutorial builds on the previous tutorial in this chapter. If you have not already done so, start by performing the steps described in xref:#oidc-rp-tutorial-before-you-start[Preparing the Tutorial]. This tutorial requires a recent minimal HTTP server, as the newer versions include a small WebFinger service that is used here.
 When ready, complete preparations for OpenID Connect discovery and dynamic client registration:
 
-*  xref:#oidc-discovery-setup-openam[Procedure 9.1, "Preparing OpenAM for OpenID Connect Dynamic Registration"] 
+* xref:#oidc-discovery-setup-openam[Preparing OpenAM for OpenID Connect Dynamic Registration]
 
-*  xref:#oidc-discovery-setup-gateway[Procedure 9.2, "Preparing OpenIG for Discovery and Dynamic Registration"] 
+* xref:#oidc-discovery-setup-gateway[Preparing OpenIG for Discovery and Dynamic Registration]
 
 
 [#oidc-discovery-setup-openam]
-.Procedure 9.1. Preparing OpenAM for OpenID Connect Dynamic Registration
+.Preparing OpenAM for OpenID Connect Dynamic Registration
 ====
 By default, OpenAM does not allow dynamic registration without an access token.
-After carrying out the steps described in xref:#oidc-rp-tutorial-openam-config[Section 9.4, "Setting Up OpenAM As an OpenID Provider"] , also perform these steps:
+
+After carrying out the steps described in xref:#oidc-rp-tutorial-openam-config[Setting Up OpenAM As an OpenID Provider], also perform these steps:
 
 . Log in to OpenAM console as administrator.
 
@@ -293,11 +310,11 @@ After carrying out the steps described in xref:#oidc-rp-tutorial-openam-config[S
 ====
 
 [#oidc-discovery-setup-gateway]
-.Procedure 9.2. Preparing OpenIG for Discovery and Dynamic Registration
+.Preparing OpenIG for Discovery and Dynamic Registration
 ====
 Follow these steps to add a route demonstrating OpenID Connect discovery and dynamic client registration:
 
-. Add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-discovery.json` :
+. Add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-discovery.json`:
 +
 
 [source, javascript]
@@ -407,9 +424,9 @@ Follow these steps to add a route demonstrating OpenID Connect discovery and dyn
 }
 ----
 +
-On Windows, the file name should be `%appdata%\OpenIG\config\routes\07-discovery.json` .
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\07-discovery.json`.
 
-. Consider the differences with `07-openid.json` :
+. Consider the differences with `07-openid.json`:
 
 * For discovery and dynamic client registration, no issuer or client registration is defined. Instead a `StaticResponseHandler` is used as a login handler for the client filter.
 +
@@ -417,7 +434,7 @@ The static response handler serves an HTML page that provides important pieces o
 
 ** The value of a `discovery` parameter.
 +
-OpenIG uses the value to perform OpenID Connect discovery. Examples from the specification include `acct:joe@example.com` , `\https://example.com:8080/` , and `\https://example.com/joe` . First, OpenIG extracts the domain host and port from the value, and attempts to find a match in the `supportedDomains` lists for any issuers that are already configured for the route. If it finds a match, then it can potentially use the issuer's registration end point and avoid an additional request to look up the user's issuer using the link:http://tools.ietf.org/html/rfc7033[WebFinger, window=\_blank] protocol. If there is no match in the supported domains lists, OpenIG uses the `discovery` value as the `resource` for a WebFinger request according to the OpenID Connect Discovery protocol.
+OpenIG uses the value to perform OpenID Connect discovery. Examples from the specification include `acct:joe@example.com`, `\https://example.com:8080/`, and `\https://example.com/joe`. First, OpenIG extracts the domain host and port from the value, and attempts to find a match in the `supportedDomains` lists for any issuers that are already configured for the route. If it finds a match, then it can potentially use the issuer's registration end point and avoid an additional request to look up the user's issuer using the link:http://tools.ietf.org/html/rfc7033[WebFinger, window=\_blank] protocol. If there is no match in the supported domains lists, OpenIG uses the `discovery` value as the `resource` for a WebFinger request according to the OpenID Connect Discovery protocol.
 +
 On success, OpenIG has either found an appropriate issuer in the configuration, or found the issuer using the WebFinger protocol. OpenIG can thus proceed to dynamic client registration.
 +
@@ -434,12 +451,12 @@ The login handler points to the login page described above.
 +
 OpenIG uses the metadata to prepare the dynamic registration request.
 +
-As set out in OAuth2 and OpenID RFCs, the redirection URIs are mandatory for dynamic client registration, to represent an array of redirection URIs used by the client. One of the registered redirection URI values*must
-*exactly match the clientEndpoint/callback URI.
+As set out in OAuth2 and OpenID RFCs, the redirection URIs are mandatory for dynamic client registration, to represent an array of redirection URIs used by the client. One of the registered redirection URI values *must
+* exactly match the clientEndpoint/callback URI.
 +
 OpenIG also needs the scopes that are required for your application.
 
-*  `07-discovery.json` uses the path `/discovery` , whereas `07-openid.json` uses `/openid` .
+* `07-discovery.json` uses the path `/discovery`, whereas `07-openid.json` uses `/openid`.
 +
 This distinction makes it easy to keep traffic separate on the two routes with a simple condition as in the following:
 +
@@ -454,15 +471,22 @@ This distinction makes it easy to keep traffic separate on the two routes with a
 
 
 [#oidc-discovery-test]
-====  Trying OpenID Connect Discovery and Dynamic Client Registration
+==== Trying OpenID Connect Discovery and Dynamic Client Registration
 
-After following the steps described in xref:#oidc-discovery-setup[Section 9.7.1, "Preparing to Try Discovery and Dynamic Client Registration"] , test your configuration by browsing to OpenIG at link:http://openig.example.com:8080/discovery[http://openig.example.com:8080/discovery, window=\_blank] .
-When redirected to the OpenAM login page, log in as user `george` , password `costanza` , and then allow the application access to user information.
+After following the steps described in xref:#oidc-discovery-setup[Preparing to Try Discovery and Dynamic Client Registration], test your configuration by browsing to OpenIG at link:http://openig.example.com:8080/discovery[http://openig.example.com:8080/discovery, window=\_blank].
+
+When redirected to the OpenAM login page, log in as user `george`, password `costanza`, and then allow the application access to user information.
+
 If successful, OpenIG logs you in to the minimal HTTP server as George Costanza, and the minimal HTTP server returns George's page.
+
 What is happening behind the scenes?
+
 After OpenIG gets the browser request, it returns the example page for discovery. You provide a user ID or email address, and the page transforms that into a `discovery` value. The value is tailored to let OpenIG use the minimal HTTP server as a WebFinger server. (In the real world the WebFinger server is more likely a service on the issuer's domain, not part of the protected application. For the purposes of this tutorial the WebFinger service has been embedded in the minimal HTTP server to avoid leaving you with another server to manage during the tutorial.)
+
 OpenIG learns from the WebFinger service that OpenAM is the issuer for the user. OpenIG retrieves the OpenID Provider configuration from OpenAM, and registers itself dynamically with OpenAM, using the redirection URIs and scopes specified in the OAuth 2.0 client filter configuration.
-Once the issuer and client registration are properly configured, the OAuth 2.0 client filter redirects the browser to OpenAM for authentication and authorization to access to the user information. The rest is the same as the previous tutorial in this chapter. For details, see xref:#oidc-rp-tutorial-test[Section 9.6, "Test the Configuration"] .
+
+Once the issuer and client registration are properly configured, the OAuth 2.0 client filter redirects the browser to OpenAM for authentication and authorization to access to the user information. The rest is the same as the previous tutorial in this chapter. For details, see xref:#oidc-rp-tutorial-test[Test the Configuration].
+
 OpenIG reuses issuer and client registration configurations that it builds after discovery and dynamic registration. These dynamically generated configuration objects are held in memory, and do not persist when OpenIG is restarted.
 
 

@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -21,7 +21,7 @@
 
 
 [#chap-auditing]
-==  Auditing and Monitoring OpenIG
+== Auditing and Monitoring OpenIG
 
 Routes have a `monitor` boolean attribute that you can use to have OpenIG collect statistics for the route. The statistics are then exposed as a JSON resource that you can access over HTTP. In addition, OpenIG supports the ForgeRock common audit framework. You can add an audit service to a route, and the service can then publish messages to a consumer such as a CSV file, a relational database, or the Syslog facility. In this chapter, you will learn to:
 
@@ -33,9 +33,10 @@ Routes have a `monitor` boolean attribute that you can use to have OpenIG collec
 
 
 [#monitoring]
-===  Monitoring a Route
+=== Monitoring a Route
 
-To monitor a route, you set `"monitor": true` in the top-level attributes on the route. The value of the attribute can be an expression that evaluates to a boolean, such as `"monitor": "${true}"` , or an object that indicates the percentile thresholds. By using an appropriate boolean expression, for example, you can enable or disable monitoring with an environment variable or system property. For details, see xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the _Configuration Reference_ and xref:../reference/handlers-conf.adoc#Route[Route(5)] in the _Configuration Reference_ .
+To monitor a route, you set `"monitor": true` in the top-level attributes on the route. The value of the attribute can be an expression that evaluates to a boolean, such as `"monitor": "${true}"`, or an object that indicates the percentile thresholds. By using an appropriate boolean expression, for example, you can enable or disable monitoring with an environment variable or system property. For details, see xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the __Configuration Reference__ and xref:../reference/handlers-conf.adoc#Route[Route(5)] in the __Configuration Reference__.
+
 The following example route has monitoring enabled:
 
 [source, javascript]
@@ -53,10 +54,13 @@ The following example route has monitoring enabled:
   "condition": "${matches(request.uri.path, '^/monitor')}"
 }
 ----
-Before you try this route, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
-Add the route file to the OpenIG configuration as `$HOME/.openig/config/routes/00-monitor.json` (on Windows, `%appdata%\OpenIG\config\routes\00-monitor.json` ).
-With the route in place and OpenIG running, access the route a few times at link:http://openig.example.com:8080/monitor[http://openig.example.com:8080/monitor, window=\_blank] .
-Your access causes OpenIG to collect monitoring statistics for the route. After generating statistics by accessing the route a few times, read the JSON monitoring resource for the route at link:http://openig.example.com:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring[http://openig.example.com:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring, window=\_blank] . The monitoring resource provides statistics on requests and responses as in the following example:
+Before you try this route, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+Add the route file to the OpenIG configuration as `$HOME/.openig/config/routes/00-monitor.json` (on Windows, `%appdata%\OpenIG\config\routes\00-monitor.json`).
+
+With the route in place and OpenIG running, access the route a few times at link:http://openig.example.com:8080/monitor[http://openig.example.com:8080/monitor, window=\_blank].
+
+Your access causes OpenIG to collect monitoring statistics for the route. After generating statistics by accessing the route a few times, read the JSON monitoring resource for the route at link:http://openig.example.com:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring[http://openig.example.com:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring, window=\_blank]. The monitoring resource provides statistics on requests and responses as in the following example:
 
 [source, javascript]
 ----
@@ -95,12 +99,13 @@ Your access causes OpenIG to collect monitoring statistics for the route. After 
     }
 }
 ----
-For details about the content of the monitoring resource, see xref:../reference/handlers-conf.adoc#crest-monitoring["The REST API for Monitoring"] in the _Configuration Reference_ .
-By default, monitoring statistics are accessible from the local host. OpenIG uses an `ApiProtectionFilter` that protects the reserved routes for paths under `/openig` . By default, the filter allows access to reserved routes only from the local host. You can override this behavior by declaring a custom `ApiProtectionFilter` in the top-level heap. For an example, see the CORS filter described in xref:chap-uma.adoc#uma-openig-configuration[Section 11.4, "Setting Up OpenIG As an UMA Resource Server"] .
+For details about the content of the monitoring resource, see xref:../reference/handlers-conf.adoc#crest-monitoring["The REST API for Monitoring"] in the __Configuration Reference__.
+
+By default, monitoring statistics are accessible from the local host. OpenIG uses an `ApiProtectionFilter` that protects the reserved routes for paths under `/openig`. By default, the filter allows access to reserved routes only from the local host. You can override this behavior by declaring a custom `ApiProtectionFilter` in the top-level heap. For an example, see the CORS filter described in xref:chap-uma.adoc#uma-openig-configuration[Setting Up OpenIG As an UMA Resource Server].
 
 
 [#audit-event-handlers]
-===  Recording Audit Event Messages
+=== Recording Audit Event Messages
 
 The ForgeRock common audit framework is a platform-wide infrastructure to handle audit events by using common audit event handlers. The handlers record events by logging them into files, relational databases, or syslog.
 OpenIG provides audit event handlers to write messages to the following formats:
@@ -116,23 +121,25 @@ OpenIG provides audit event handlers to write messages to the following formats:
 For Elasticsearch downloads and installation instructions, see the Elasticsearch link:https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html[Getting Started, window=\_blank] document.
 
 Each audit event is identified by a unique transaction ID that can be communicated across products and recorded for each local event. By using the transaction ID, requests can be tracked as they traverse the platform, making it easier to monitor activity and to enrich reports.
+
 Transaction IDs from other services in the ForgeRock platform are sent as `X-ForgeRock-TransactionId` header values.
+
 By default, OpenIG does not trust transaction ID headers from client applications.
 
 [NOTE]
 ====
 If you trust transaction IDs sent by client applications, and want monitoring and reporting systems consuming the logs to allow correlation of requests as they traverse multiple servers, then set the boolean system property `org.forgerock.http.TrustTransactionHeader` to `true` in the Java command to start the container where OpenIG runs.
 ====
-To enable the audit framework for a route, you specify an audit service and configure an audit event handler. The following procedures describe how to record audit events in a CSV file and to the Elasticsearch search and analytics engine. For more information about recording audit events, see xref:../reference/audit-conf.adoc#audit-conf[Audit Framework] in the _Configuration Reference_ .
+To enable the audit framework for a route, you specify an audit service and configure an audit event handler. The following procedures describe how to record audit events in a CSV file and to the Elasticsearch search and analytics engine. For more information about recording audit events, see xref:../reference/audit-conf.adoc#audit-conf[Audit Framework] in the __Configuration Reference__.
 
 [#audit-csv]
-.Procedure 15.1. To Record Audit Events In a CSV File
+.To Record Audit Events In a CSV File
 ====
-Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Chapter 2, "Getting Started"] .
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
 
-. Add the following route to the OpenIG as `$HOME/.openig/config/routes/30-audit.json` .
+. Add the following route to the OpenIG as `$HOME/.openig/config/routes/30-audit.json`.
 +
-On Windows, add the route as `%appdata%\OpenIG\config\routes\30-audit.json` .
+On Windows, add the route as `%appdata%\OpenIG\config\routes\30-audit.json`.
 +
 
 [source, javascript]
@@ -166,24 +173,24 @@ On Windows, add the route as `%appdata%\OpenIG\config\routes\30-audit.json` .
 }
 ----
 +
-The route calls an audit service configuration for publishing log messages to the CSV file, `/tmp/logs/access.csv` . When a request matches `audit` , audit events are logged to the CSV file.
+The route calls an audit service configuration for publishing log messages to the CSV file, `/tmp/logs/access.csv`. When a request matches `audit`, audit events are logged to the CSV file.
 +
 The route uses the `ForgeRockClientHandler` as its handler, to send the `X-ForgeRock-TransactionId` header with its requests to external services.
 
-. Access the route on `\http://openig.example.com:8080/audit` .
+. Access the route on `\http://openig.example.com:8080/audit`.
 +
 The home page of the minimal HTTP server should be displayed and the file `/tmp/logs/access.csv` should be created.
 
 ====
 
 [#audit-elasticsearch]
-.Procedure 15.2. To Record Audit Events In Elasticsearch
+.To Record Audit Events In Elasticsearch
 ====
-Before you start, make sure that Elasticsearch is installed and running. For Elasticsearch downloads and installation instructions, see the Elasticsearch link:https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html[Getting Started, window=\_blank] document. For information about configuring the Elasticsearch event handler, see xref:../reference/audit-conf.adoc#ElasticsearchAuditEventHandler[ElasticsearchAuditEventHandler(5)] in the _Configuration Reference_ .
+Before you start, make sure that Elasticsearch is installed and running. For Elasticsearch downloads and installation instructions, see the Elasticsearch link:https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html[Getting Started, window=\_blank] document. For information about configuring the Elasticsearch event handler, see xref:../reference/audit-conf.adoc#ElasticsearchAuditEventHandler[ElasticsearchAuditEventHandler(5)] in the __Configuration Reference__.
 
-. Add the following route to the OpenIG as `$HOME/.openig/config/routes/30-elasticsearch.json` .
+. Add the following route to the OpenIG as `$HOME/.openig/config/routes/30-elasticsearch.json`.
 +
-On Windows, add the route as `%appdata%\OpenIG\config\routes\30-elasticsearch.json` .
+On Windows, add the route as `%appdata%\OpenIG\config\routes\30-elasticsearch.json`.
 +
 
 [source, javascript]
@@ -240,15 +247,15 @@ On Windows, add the route as `%appdata%\OpenIG\config\routes\30-elasticsearch.js
 }
 ----
 +
-The route calls an audit service configuration for publishing log messages in Elasticsearch. When a request matches the `/elasticsearch` route, audit events are logged to the `ElasticsearchAuditEventHandler` .
+The route calls an audit service configuration for publishing log messages in Elasticsearch. When a request matches the `/elasticsearch` route, audit events are logged to the `ElasticsearchAuditEventHandler`.
 +
 The URL where you can view the messages logged by Elasticsearch is displayed. The URL is constructed from the host, port, index name, and topics defined in the event handler.
 
-. Access the route on `\http://openig.example.com:8080/elasticsearch` .
+. Access the route on `\http://openig.example.com:8080/elasticsearch`.
 +
 The audit events are logged in Elasticsearch and the URL where you can view the messages is displayed.
 
-. Access the URL `\http://localhost:9200/audit/access/_search?q='"OPENIG-HTTP-ACCESS"` .
+. Access the URL `\http://localhost:9200/audit/access/_search?q='"OPENIG-HTTP-ACCESS"`.
 +
 The audit events logged in Elasticsearch are displayed.
 

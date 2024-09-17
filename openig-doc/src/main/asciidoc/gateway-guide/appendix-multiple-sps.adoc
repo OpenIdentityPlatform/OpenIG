@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -22,53 +22,53 @@
 
 [appendix]
 [#appendix-multiple-sps]
-== Appendix A. SAML 2.0 and Multiple Applications
+== SAML 2.0 and Multiple Applications
 
-xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] describes how to set up OpenIG as a SAML 2.0 service provider for a single application, using OpenAM as the identity provider. This chapter describes how to set up OpenIG as a SAML 2.0 service provider for two applications, still using OpenAM as the identity provider.
-Before you try the samples described here, familiarize yourself with OpenIG SAML 2.0 support by reading and working through the examples in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] . Before you start, you should have OpenIG protecting the sample application as a SAML 2.0 service provider, with OpenAM working as identity provider configured as described in that tutorial.
+xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider] describes how to set up OpenIG as a SAML 2.0 service provider for a single application, using OpenAM as the identity provider. This chapter describes how to set up OpenIG as a SAML 2.0 service provider for two applications, still using OpenAM as the identity provider.
+
+Before you try the samples described here, familiarize yourself with OpenIG SAML 2.0 support by reading and working through the examples in xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider]. Before you start, you should have OpenIG protecting the sample application as a SAML 2.0 service provider, with OpenAM working as identity provider configured as described in that tutorial.
 
 [#federation-installation-multi]
-=== A.1. Installation Overview
+=== Installation Overview
 
-In this chapter you use the Fedlet configuration from xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] to create a configuration for each new protected application. You then import the new configurations as SAML 2.0 entities in OpenAM. If you subsequently edit a configuration, import it again.
-In the following examples, the first application has entity ID `sp1` and runs on the host `sp1.example.com` , the second application has entity ID `sp2` and runs on the host `sp2.example.com` . To prevent unwanted behavior, the applications must have different values.
+In this chapter you use the Fedlet configuration from xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider] to create a configuration for each new protected application. You then import the new configurations as SAML 2.0 entities in OpenAM. If you subsequently edit a configuration, import it again.
+
+In the following examples, the first application has entity ID `sp1` and runs on the host `sp1.example.com`, the second application has entity ID `sp2` and runs on the host `sp2.example.com`. To prevent unwanted behavior, the applications must have different values.
+
 [#d2528e8873]
-.Table A.1. Tasks for Configuring SAML 2.0 SSO and Federation
+.Tasks for Configuring SAML 2.0 SSO and Federation
 [cols="50%,50%"]
 |===
 |Task |See Section(s) 
 
 a|Prepare the network.
-
-a| xref:#prepare-network-multi[Section A.2, "Preparing the Network"] 
-
+a|xref:#prepare-network-multi[Preparing the Network]
 
 a|Prepare the configuration for two OpenIG service providers.
+a|xref:#prepare-cot-multi[Configuring the Circle of Trust]
 
-a| xref:#prepare-cot-multi[Section A.3, "Configuring the Circle of Trust"] 
-xref:#prepare-saml-conf1-multi[Section A.4, "Configuring the Service Provider for Application One"] 
-xref:#prepare-saml-conf2-multi[Section A.5, "Configuring the Service Provider for Application Two"] 
+ xref:#prepare-saml-conf1-multi[Configuring the Service Provider for Application One]
 
+ xref:#prepare-saml-conf2-multi[Configuring the Service Provider for Application Two]
 
 a|Import the service provider configurations into OpenAM.
-
-a| xref:#multisp-create-saml-entities[Section A.6, "Importing Service Provider Configurations Into OpenAM"] 
-
+a|xref:#multisp-create-saml-entities[Importing Service Provider Configurations Into OpenAM]
 
 a|Add OpenIG routes.
+a|xref:#multisp-conf[Preparing the Base Configuration File]
 
-a| xref:#multisp-conf[Section A.7.1, "Preparing the Base Configuration File"] 
-xref:#multisp-conf-sp1[Section A.7.2, "Preparing Routes for Application One"] 
-xref:#multisp-conf-sp2[Section A.7.3, "Preparing Routes for Application Two"] 
+ xref:#multisp-conf-sp1[Preparing Routes for Application One]
 
+ xref:#multisp-conf-sp2[Preparing Routes for Application Two]
 |===
 
 
 [#prepare-network-multi]
-=== A.2. Preparing the Network
+=== Preparing the Network
 
 Configure the network so that browser traffic to the application hosts is proxied through OpenIG.
-Add the following addresses to your hosts file: `sp1.example.com` and `sp2.example.com` .
+
+Add the following addresses to your hosts file: `sp1.example.com` and `sp2.example.com`.
 
 [source]
 ----
@@ -77,9 +77,9 @@ Add the following addresses to your hosts file: `sp1.example.com` and `sp2.examp
 
 
 [#prepare-cot-multi]
-=== A.3. Configuring the Circle of Trust
+=== Configuring the Circle of Trust
 
-Edit the `$HOME/.openig/SAML/fedlet.cot` file you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] to include the entity IDs `sp1` and `sp2` , as in the following example:
+Edit the `$HOME/.openig/SAML/fedlet.cot` file you created in xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider] to include the entity IDs `sp1` and `sp2`, as in the following example:
 
 [source, ini]
 ----
@@ -92,44 +92,44 @@ sun-fm-saml2-writerservice-url=
 
 
 [#prepare-saml-conf1-multi]
-=== A.4. Configuring the Service Provider for Application One
+=== Configuring the Service Provider for Application One
 
-To configure the service provider for application one, you can use the example files xref:#multisp-sp1[Example A.1, "Configuration File for Application One"] and xref:#multisp-sp1-extended[Example A.2, "Extended Configuration File for Application One"] , saving them as `sp1.xml` and `sp1-extended.xml` . Alternatively, follow the steps below to use the files you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] .
+To configure the service provider for application one, you can use the example files xref:#multisp-sp1[Configuration File for Application One] and xref:#multisp-sp1-extended[Extended Configuration File for Application One], saving them as `sp1.xml` and `sp1-extended.xml`. Alternatively, follow the steps below to use the files you created in xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider].
 
 [#d2528e8994]
-.Procedure A.1. To Configure the Service Provider for Application One By Using Files Created In Chapter 7, "OpenIG As a SAML 2.0 Service Provider"
+.To Configure the Service Provider for Application One By Using Files Created In Chapter 7, "OpenIG As a SAML 2.0 Service Provider"
 ====
 
-. Copy the SAML configuration files `sp.xml` and `sp-extended.xml` you created in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] , and save them as `$HOME/.openig/SAML/sp1.xml` and `$HOME/.openig/SAML/sp1-extended.xml` .
+. Copy the SAML configuration files `sp.xml` and `sp-extended.xml` you created in xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider], and save them as `$HOME/.openig/SAML/sp1.xml` and `$HOME/.openig/SAML/sp1-extended.xml`.
 
-. Make the following changes in `sp1.xml` :
+. Make the following changes in `sp1.xml`:
 +
 
-* For `entityID` , change `sp` to `sp1` . The `entityID` must match the application.
+* For `entityID`, change `sp` to `sp1`. The `entityID` must match the application.
 
-* On each line that starts with `Location` or `ResponseLocation` , change `sp.example.com` to `sp1.example.com` , and add `/metaAlias/sp1` at the end of the line.
-
-+
-For an example of how this file should be, see xref:#multisp-sp1[Example A.1, "Configuration File for Application One"] .
-
-. Make the following changes in `sp1-extended.xml` :
-+
-
-* For `entityID` , change `sp` to `sp1` .
-
-* For `SPSSOConfig metaAlias` , change `sp` to `sp1` .
-
-* For `appLogoutUrl` , change `sp` to `sp1` .
-
-* For `hosted=` , make sure that the value is `1` .
+* On each line that starts with `Location` or `ResponseLocation`, change `sp.example.com` to `sp1.example.com`, and add `/metaAlias/sp1` at the end of the line.
 
 +
-For an example of how this file should be, see xref:#multisp-sp1-extended[Example A.2, "Extended Configuration File for Application One"] .
+For an example of how this file should be, see xref:#multisp-sp1[Configuration File for Application One].
+
+. Make the following changes in `sp1-extended.xml`:
++
+
+* For `entityID`, change `sp` to `sp1`.
+
+* For `SPSSOConfig metaAlias`, change `sp` to `sp1`.
+
+* For `appLogoutUrl`, change `sp` to `sp1`.
+
+* For `hosted=`, make sure that the value is `1`.
+
++
+For an example of how this file should be, see xref:#multisp-sp1-extended[Extended Configuration File for Application One].
 
 ====
 
 [#multisp-sp1]
-.Example A.1. Configuration File for Application One
+.Configuration File for Application One
 ====
 
 [source, xml]
@@ -186,7 +186,7 @@ For an example of how this file should be, see xref:#multisp-sp1-extended[Exampl
 ====
 
 [#multisp-sp1-extended]
-.Example A.2. Extended Configuration File for Application One
+.Extended Configuration File for Application One
 ====
 
 [source, xml]
@@ -397,27 +397,27 @@ For an example of how this file should be, see xref:#multisp-sp1-extended[Exampl
 
 
 [#prepare-saml-conf2-multi]
-=== A.5. Configuring the Service Provider for Application Two
+=== Configuring the Service Provider for Application Two
 
 
 [#d2528e9132]
-.Procedure A.2. To Configure the Service Provider for Application Two
+.To Configure the Service Provider for Application Two
 ====
 
-. Copy the SAML configuration files `sp1.xml` and `sp1-extended.xml` you created in xref:#prepare-saml-conf1-multi[Section A.4, "Configuring the Service Provider for Application One"] , and save them as `$HOME/.openig/SAML/sp2.xml` and `$HOME/.openig/SAML/sp2-extended.xml` .
+. Copy the SAML configuration files `sp1.xml` and `sp1-extended.xml` you created in xref:#prepare-saml-conf1-multi[Configuring the Service Provider for Application One], and save them as `$HOME/.openig/SAML/sp2.xml` and `$HOME/.openig/SAML/sp2-extended.xml`.
 
-. In both files, replace all incidences of `sp1` with `sp2` . To prevent unwanted behavior. application two must have different values to application one.
+. In both files, replace all incidences of `sp1` with `sp2`. To prevent unwanted behavior. application two must have different values to application one.
 
 ====
 
 
 [#multisp-create-saml-entities]
-=== A.6. Importing Service Provider Configurations Into OpenAM
+=== Importing Service Provider Configurations Into OpenAM
 
 For each new protected application, import a SAML 2.0 entity into OpenAM. If you subsequently edit a service provider configuration, import it again.
 
 [#d2528e9166]
-.Procedure A.3. To Import the Service Provider Configurations Into OpenAM
+.To Import the Service Provider Configurations Into OpenAM
 ====
 
 . Log in to OpenAM console as administrator.
@@ -426,9 +426,9 @@ For each new protected application, import a SAML 2.0 entity into OpenAM. If you
 +
 The Import Entity Provider page is displayed.
 
-. For the metadata file, select File and upload `sp1.xml` . For the extended data file, select File and upload `sp1-extended.xml` .
+. For the metadata file, select File and upload `sp1.xml`. For the extended data file, select File and upload `sp1-extended.xml`.
 
-. Repeat the previous step to upload `sp2.xml` and `sp2-extended.xml` for `sp2` .
+. Repeat the previous step to upload `sp2.xml` and `sp2-extended.xml` for `sp2`.
 
 . Log out of the OpenAM console.
 
@@ -436,14 +436,14 @@ The Import Entity Provider page is displayed.
 
 
 [#multisp-create-gateway-conf]
-=== A.7. Preparing OpenIG Configurations
+=== Preparing OpenIG Configurations
 
-For each new protected application, prepare an OpenIG configuration. The configurations in this section follow the example in xref:chap-federation.adoc#chap-federation[Chapter 7, "OpenIG As a SAML 2.0 Service Provider"] .
+For each new protected application, prepare an OpenIG configuration. The configurations in this section follow the example in xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider].
 
 [#multisp-conf]
-==== A.7.1. Preparing the Base Configuration File
+==== Preparing the Base Configuration File
 
-Edit the base configuration file, `$HOME/.openig/config/routes/config.json` , so that it does not rebase incoming URLs. The following example file differs from that used in earlier tutorials:
+Edit the base configuration file, `$HOME/.openig/config/routes/config.json`, so that it does not rebase incoming URLs. The following example file differs from that used in earlier tutorials:
 
 [source, javascript]
 ----
@@ -474,18 +474,18 @@ Restart OpenIG to put the configuration changes into effect.
 
 
 [#multisp-conf-sp1]
-==== A.7.2. Preparing Routes for Application One
+==== Preparing Routes for Application One
 
 Set up the following routes for application one:
 
-*  `$HOME/.openig/config/routes/05-federate-sp1.json` , to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
+* `$HOME/.openig/config/routes/05-federate-sp1.json`, to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
 
-*  `$HOME/.openig/config/routes/05-saml-sp1.json` , to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
+* `$HOME/.openig/config/routes/05-saml-sp1.json`, to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
 
-To prevent unspecified behavior, the keys for session-stored values in the routes for application one, for example, `session.sp1Username` , must not be the same as those for application two.
+To prevent unspecified behavior, the keys for session-stored values in the routes for application one, for example, `session.sp1Username`, must not be the same as those for application two.
 
 [#multisp-sp1-route]
-.Example A.3. 05-federate-sp1.json
+.05-federate-sp1.json
 ====
 
 [source, javascript]
@@ -544,7 +544,7 @@ To prevent unspecified behavior, the keys for session-stored values in the route
 ====
 
 [#multisp-sp1-saml-route]
-.Example A.4. 05-saml-sp1.json
+.05-saml-sp1.json
 ====
 
 [source, javascript]
@@ -571,18 +571,18 @@ To prevent unspecified behavior, the keys for session-stored values in the route
 
 
 [#multisp-conf-sp2]
-==== A.7.3. Preparing Routes for Application Two
+==== Preparing Routes for Application Two
 
 Set up the following routes for application two:
 
-*  `$HOME/.openig/config/routes/05-federate-sp2.json` , to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
+* `$HOME/.openig/config/routes/05-federate-sp2.json`, to redirect the request for SAML authentication. After authentication, this route logs the user in to the application.
 
-*  `$HOME/.openig/config/routes/05-saml-sp2.json` , to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
+* `$HOME/.openig/config/routes/05-saml-sp2.json`, to map attributes from the SAML assertion into the context, and then redirect the request back to the first route.
 
-To prevent unspecified behavior, the keys for session-stored values in the routes for application two, for example, `session.sp2Username` , must not be the same as those for application one.
+To prevent unspecified behavior, the keys for session-stored values in the routes for application two, for example, `session.sp2Username`, must not be the same as those for application one.
 
 [#multisp-sp2-route]
-.Example A.5. 05-federate-sp2.json
+.05-federate-sp2.json
 ====
 
 [source, javascript]
@@ -641,7 +641,7 @@ To prevent unspecified behavior, the keys for session-stored values in the route
 ====
 
 [#multisp-sp2-saml-route]
-.Example A.6. 05-saml-sp2.json
+.05-saml-sp2.json
 ====
 
 [source, javascript]
@@ -669,19 +669,19 @@ To prevent unspecified behavior, the keys for session-stored values in the route
 
 
 [#multisp-try-it-out]
-=== A.8. Test the Configuration
+=== Test the Configuration
 
 If you use the example configurations described in this chapter, try the SAML 2.0 web single sign-on profile with application one by selecting either of the following links and logging in to OpenAM with username george and password costanza:
 
-* The link for link:http://sp1.example.com:8080/home[SP-initiated SSO, window=\_blank] .
+* The link for link:http://sp1.example.com:8080/home[SP-initiated SSO, window=\_blank].
 
-* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp1&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank] .
+* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp1&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank].
 
 Similarly, try the SAML 2.0 web single sign-on profile with application two by selecting either of the following links and logging in to OpenAM with username george and password costanza:
 
-* The link for link:http://sp2.example.com:8080/home[SP-initiated SSO, window=\_blank] .
+* The link for link:http://sp2.example.com:8080/home[SP-initiated SSO, window=\_blank].
 
-* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp2&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank] .
+* The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp2&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank].
 
 If you have not configured the examples exactly as shown in this guide, then adapt the SSO links accordingly.
 

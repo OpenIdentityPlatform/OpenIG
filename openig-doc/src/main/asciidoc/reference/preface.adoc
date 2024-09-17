@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -27,92 +27,112 @@
 This reference covers OpenIG configuration.
 
 [#d210e182]
-===  Who Should Use this Reference
+=== Who Should Use this Reference
 
 This reference is for OpenIG designers, developers, and administrators.
-For API specifications, see the appropriate link:../apidocs/index.html[Javadoc, window=\_blank] .
+
+For API specifications, see the appropriate link:../apidocs/index.html[Javadoc, window=\_blank].
 
 
 [#reserved-routes]
-===  Reserved Routes
+=== Reserved Routes
 
 OpenIG reserves all paths starting with `/openig` for administrative use.
+
 Resources exposed under `/openig` are only accessible to local client applications.
 
 
 [#reserved-field-names]
-===  Reserved Field Names
+=== Reserved Field Names
 
 OpenIG reserves all configuration field names that contain only alphanumeric characters.
-If you must define your own field names, for example, in custom decorators, use names with dots, `.` , or dashes, `-` . Examples include `my-decorator` and `com.example.myDecorator` .
+
+If you must define your own field names, for example, in custom decorators, use names with dots, `.`, or dashes, `-`. Examples include `my-decorator` and `com.example.myDecorator`.
 
 
 [#field-value-conventions]
-===  Field Value Conventions
+=== Field Value Conventions
 
 OpenIG configuration uses link:http://json.org[JSON, window=\_blank] notation.
 --
 This reference uses the following terms when referring to values of configuration object fields:
 
+[#definition-array]
 array::
 link:http://json.org[JSON, window=\_blank] array.
 
+[#definition-boolean]
 boolean::
-Either `true` or `false` .
+Either `true` or `false`.
 
+[#definition-configuration-expression]
 configuration expression::
 Expression for which no context is available.
-+
-A configuration expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] is independent of the request, response, and contexts, so do not use expressions that reference their properties. You can, however, use `${env['variable']}` , `${system['property']}` , and all the built-in functions listed in xref:expressions-conf.adoc#Functions[Functions(5)] .
 
++
+A configuration expression, described in xref:expressions-conf.adoc#Expressions[Expressions(5)] is independent of the request, response, and contexts, so do not use expressions that reference their properties. You can, however, use `${env['variable']}`, `${system['property']}`, and all the built-in functions listed in xref:expressions-conf.adoc#Functions[Functions(5)].
+
+[#definition-duration]
 duration::
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds` .
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
 Durations are not case sensitive.
+
 Negative durations are not supported.
+
 The following units can be used in durations:
 
-*  `indefinite` , `infinity` , `undefined` , `unlimited` : unlimited duration
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
-*  `zero` , `disabled` : zero-length duration
+* `zero`, `disabled`: zero-length duration
 
-*  `days` , `day` , `d` : days
+* `days`, `day`, `d`: days
 
-*  `hours` , `hour` , `h` : hours
+* `hours`, `hour`, `h`: hours
 
-*  `minutes` , `minute` , `min` , `m` : minutes
+* `minutes`, `minute`, `min`, `m`: minutes
 
-*  `seconds` , `second` , `sec` , `s` : seconds
+* `seconds`, `second`, `sec`, `s`: seconds
 
-*  `milliseconds` , `millisecond` , `millisec` , `millis` , `milli` , `ms` : milliseconds
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
 
-*  `microseconds` , `microsecond` , `microsec` , `micros` , `micro` , `us` : microseconds
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
 
-*  `nanoseconds` , `nanosecond` , `nanosec` , `nanos` , `nano` , `ns` : nanoseconds
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
 
 
+[#definition-expression]
 expression::
-See xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+See xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
+[#definition-lvalue-expression]
 lvalue-expression::
 Expression yielding an object whose value is to be set.
 
+[#definition-number]
 number::
 link:http://json.org[JSON, window=\_blank] number.
 
+[#definition-object]
 object::
 link:http://json.org[JSON, window=\_blank] object where the content depends on the object's type.
 
+[#definition-pattern]
 pattern::
 A regular expression according to the rules for the Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class.
 
+[#definition-pattern-template]
 pattern-template::
-Template for referencing capturing groups in a pattern by using `$n` , where _n_ is the index number of the capturing group starting from zero.
-+
-For example, if the pattern is `"\w+\s*=\s*(\w)+"` , the pattern-template is `"$1"` , and the text to match is `"key = value"` , the pattern-template yields `"value"` .
+Template for referencing capturing groups in a pattern by using `$n`, where __n__ is the index number of the capturing group starting from zero.
 
++
+For example, if the pattern is `"\w+\s*=\s*(\w)+"`, the pattern-template is `"$1"`, and the text to match is `"key = value"`, the pattern-template yields `"value"`.
+
+[#definition-reference]
 reference::
 Either references an object configured in the heap by the object's name or uses a local, inline configuration object where the name is optional.
 
+[#definition-string]
 string::
 link:http://json.org[JSON, window=\_blank] string.
 
@@ -120,94 +140,111 @@ link:http://json.org[JSON, window=\_blank] string.
 
 
 [#sec-about-crest]
-===  About ForgeRock Common REST
+=== About ForgeRock Common REST
 
 For many REST APIs that are not defined by external standards, ForgeRock products provide common ways to access web resources and collections of resources. This section covers what is common across products. Adapt the examples to your types of resources and to your deployment.
 
 [#about-crest-resources]
-====  Common REST Resources
+==== Common REST Resources
 
 Servers generally return JSON-format resources, though resource formats can depend on the implementation.
-Resources in collections can be found by their unique identifiers (IDs). IDs are exposed in the resource URIs. For example, if a server has a user collection under `/users` , then you can access a user at `/users/user-id` . The ID is also the value of the `_id` field of the resource.
+
+Resources in collections can be found by their unique identifiers (IDs). IDs are exposed in the resource URIs. For example, if a server has a user collection under `/users`, then you can access a user at `/users/user-id`. The ID is also the value of the `_id` field of the resource.
+
 Resources are versioned using revision numbers. A revision is specified in the resource's `_rev` field. Revisions make it possible to figure out whether to apply changes without resource locking and without distributed transactions.
 
 
 [#about-crest-verbs]
-====  Common REST Verbs
+==== Common REST Verbs
 
 --
-The common REST APIs use the following verbs, sometimes referred to collectively asCRUDPAQ. For details and HTTP-based examples of each, follow the links to the sections for each verb.
+The common REST APIs use the following verbs, sometimes referred to collectively as CRUDPAQ. For details and HTTP-based examples of each, follow the links to the sections for each verb.
 
 Create::
 Add a new resource.
+
 +
 This verb maps to HTTP PUT or HTTP POST.
+
 +
-For details, see xref:#about-crest-create[Section 5.5, "Create"] .
+For details, see xref:#about-crest-create[Create].
 
 Read::
 Retrieve a single resource.
+
 +
 This verb maps to HTTP GET.
+
 +
-For details, see xref:#about-crest-read[Section 5.6, "Read"] .
+For details, see xref:#about-crest-read[Read].
 
 Update::
 Replace an existing resource.
+
 +
 This verb maps to HTTP PUT.
+
 +
-For details, see xref:#about-crest-update[Section 5.7, "Update"] .
+For details, see xref:#about-crest-update[Update].
 
 Delete::
 Remove an existing resource.
+
 +
 This verb maps to HTTP DELETE.
+
 +
-For details, see xref:#about-crest-delete[Section 5.8, "Delete"] .
+For details, see xref:#about-crest-delete[Delete].
 
 Patch::
 Modify part of an existing resource.
+
 +
 This verb maps to HTTP PATCH.
+
 +
-For details, see xref:#about-crest-patch[Section 5.9, "Patch"] .
+For details, see xref:#about-crest-patch[Patch].
 
 Action::
 Perform a predefined action.
+
 +
 This verb maps to HTTP POST.
+
 +
-For details, see xref:#about-crest-action[Section 5.10, "Action"] .
+For details, see xref:#about-crest-action[Action].
 
 Query::
 Search a collection of resources.
+
 +
 This verb maps to HTTP GET.
+
 +
-For details, see xref:#about-crest-query[Section 5.11, "Query"] .
+For details, see xref:#about-crest-query[Query].
 
 --
 
 
 [#about-crest-parameters]
-====  Common REST Parameters
+==== Common REST Parameters
 
-Common REST reserved query string parameter names start with an underscore, `_` .
+Common REST reserved query string parameter names start with an underscore, `_`.
+
 Reserved query string parameters include, but are not limited to, the following names:
 [none]
-*  `_action` 
-*  `_fields` 
-*  `_mimeType` 
-*  `_pageSize` 
-*  `_pagedResultsCookie` 
-*  `_pagedResultsOffset` 
-*  `_prettyPrint` 
-*  `_queryExpression` 
-*  `_queryFilter` 
-*  `_queryId` 
-*  `_sortKeys` 
-*  `_totalPagedResultsPolicy` 
+* `_action`
+* `_fields`
+* `_mimeType`
+* `_pageSize`
+* `_pagedResultsCookie`
+* `_pagedResultsOffset`
+* `_prettyPrint`
+* `_queryExpression`
+* `_queryFilter`
+* `_queryId`
+* `_sortKeys`
+* `_totalPagedResultsPolicy`
 
 [NOTE]
 ====
@@ -217,16 +254,18 @@ Continue reading for details about how to use each parameter.
 
 
 [#about-crest-extensions]
-====  Common REST Extension Points
+==== Common REST Extension Points
 
-The _action_ verb is the main vehicle for extensions. For example, to create a new user with HTTP POST rather than HTTP PUT, you might use `/users?_action=create` . A server can define additional actions. For example, `/tasks/1?_action=cancel` .
-A server can define _stored queries_ to call by ID. For example, `/groups?_queryId=hasDeletedMembers` . Stored queries can call for additional parameters. The parameters are also passed in the query string. Which parameters are valid depends on the stored query.
+The __action__ verb is the main vehicle for extensions. For example, to create a new user with HTTP POST rather than HTTP PUT, you might use `/users?_action=create`. A server can define additional actions. For example, `/tasks/1?_action=cancel`.
+
+A server can define __stored queries__ to call by ID. For example, `/groups?_queryId=hasDeletedMembers`. Stored queries can call for additional parameters. The parameters are also passed in the query string. Which parameters are valid depends on the stored query.
 
 
 [#about-crest-create]
-====  Create
+==== Create
 
 There are two ways to create a resource, either with an HTTP POST or with an HTTP PUT.
+
 To create a resource using POST, perform an HTTP POST with the query string parameter `_action=create` and the JSON resource as a payload. Accept a JSON response. The server creates the identifier if not specified:
 
 [source, httprequest]
@@ -251,26 +290,28 @@ If-None-Match: *
 { JSON resource }
 ----
 The `_id` and content of the resource depend on the server implementation. The server is not required to use the `_id` that the client provides. The server response to the create request indicates the resource location as the value of the `Location` header.
-If you include the `If-None-Match` header, its value must be `*` . In this case, the request creates the object if it does not exist, and fails if the object does exist. If you include the `If-None-Match` header with any value other than `*` , the server returns an HTTP 400 Bad Request error. For example, creating an object with `If-None-Match: revision` returns a bad request error. If you do not include `If-None-Match: *` , the request creates the object if it does not exist, and _updates_ the object if it does exist.
+
+If you include the `If-None-Match` header, its value must be `*`. In this case, the request creates the object if it does not exist, and fails if the object does exist. If you include the `If-None-Match` header with any value other than `*`, the server returns an HTTP 400 Bad Request error. For example, creating an object with `If-None-Match: revision` returns a bad request error. If you do not include `If-None-Match: *`, the request creates the object if it does not exist, and __updates__ the object if it does exist.
 .Parameters
 --
 You can use the following parameters:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 [#about-crest-read]
-====  Read
+==== Read
 
-To retrieve a single resource, perform an HTTP GET on the resource by its case-sensitive identifier ( `_id` ) and accept a JSON response:
+To retrieve a single resource, perform an HTTP GET on the resource by its case-sensitive identifier (`_id`) and accept a JSON response:
 
 [source, httprequest]
 ----
@@ -282,20 +323,24 @@ Accept: application/json
 --
 You can use the following parameters:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
-+
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
 
-_mimeType=mime-type::
++
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
+
+`_mimeType=mime-type`::
 Some resources have fields whose values are multi-media resources such as a profile photo for example.
+
 +
-By specifying both a single _field_ and also the _mime-type_ for the response content, you can read a single field value that is a multi-media resource.
+By specifying both a single __field__ and also the __mime-type__ for the response content, you can read a single field value that is a multi-media resource.
+
 +
-In this case, the content type of the field value returned matches the _mime-type_ that you specify, and the body of the response is the multi-media resource.
+In this case, the content type of the field value returned matches the __mime-type__ that you specify, and the body of the response is the multi-media resource.
+
 +
 The `Accept` header is not used in this case. For example, `Accept: image/png` does not work. Use the `_mimeType` query string parameter instead.
 
@@ -303,9 +348,9 @@ The `Accept` header is not used in this case. For example, `Accept: image/png` d
 
 
 [#about-crest-update]
-====  Update
+==== Update
 
-To update a resource, perform an HTTP PUT including the case-sensitive identifier ( `_id` ) for the resource with the JSON resource as a payload. Use the `If-Match: _rev` header to check that you are actually updating the version you modified. Use `If-Match: *` if the version does not matter. Accept a JSON response:
+To update a resource, perform an HTTP PUT including the case-sensitive identifier (`_id`) for the resource with the JSON resource as a payload. Use the `If-Match: _rev` header to check that you are actually updating the version you modified. Use `If-Match: *` if the version does not matter. Accept a JSON response:
 
 [source, httprequest]
 ----
@@ -322,21 +367,22 @@ When updating a resource, include all the attributes to be retained. Omitting an
 --
 You can use the following parameters:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 [#about-crest-delete]
-====  Delete
+==== Delete
 
-To delete a single resource, perform an HTTP DELETE by its case-sensitive identifier ( `_id` ) and accept a JSON response:
+To delete a single resource, perform an HTTP DELETE by its case-sensitive identifier (`_id`) and accept a JSON response:
 
 [source, httprequest]
 ----
@@ -348,29 +394,30 @@ Accept: application/json
 --
 You can use the following parameters:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 [#about-crest-patch]
-====  Patch
+==== Patch
 
 To patch a resource, send an HTTP PATCH request with the following parameters:
 
-*  `operation` 
+* `operation`
 
-*  `field` 
+* `field`
 
-*  `value` 
+* `value`
 
-*  `from` (optional with copy and move operations)
+* `from` (optional with copy and move operations)
 
 You can include these parameters in the payload for a PATCH request, or in a JSON PATCH file. If successful, you'll see a JSON response similar to:
 
@@ -386,29 +433,30 @@ If-Match: _rev
 ----
 PATCH operations apply to three types of targets:
 
-* *single-valued* , such as an object, string, boolean, or number.
+* *single-valued*, such as an object, string, boolean, or number.
 
-* *list semantics array* , where the elements are ordered, and duplicates are allowed.
+* *list semantics array*, where the elements are ordered, and duplicates are allowed.
 
-* *set semantics array* , where the elements are not ordered, and duplicates are not allowed.
+* *set semantics array*, where the elements are not ordered, and duplicates are not allowed.
 
-ForgeRock PATCH supports several different `operations` . The following sections show each of these operations, along with options for the `field` and `value` :
+ForgeRock PATCH supports several different `operations`. The following sections show each of these operations, along with options for the `field` and `value`:
 
 [#crest-patch-add]
-=====  Patch Operation: Add
+===== Patch Operation: Add
 
 The `add` operation ensures that the target field contains the value provided, creating parent fields as necessary.
+
 If the target field is single-valued, then the value you include in the PATCH replaces the value of the target. Examples of a single-valued field include: object, string, boolean, or number.
 An `add` operation has different results on two standard types of arrays:
 
-* *List semantic arrays* : you can run any of these `add` operations on that type of array:
+* *List semantic arrays*: you can run any of these `add` operations on that type of array:
 
 ** If you `add` an array of values, the PATCH operation appends it to the existing list of values.
 
 ** If you `add` a single value, specify an ordinal element in the target array, or use the `{-}` special index to add that value to the end of the list.
 
 
-* *Set semantic arrays* : The list of values included in a patch are merged with the existing set of values. Any duplicates within the array are removed.
+* *Set semantic arrays*: The list of values included in a patch are merged with the existing set of values. Any duplicates within the array are removed.
 
 As an example, start with the following list semantic array resource:
 
@@ -439,10 +487,11 @@ The following is the resulting resource:
 
 
 [#crest-patch-copy]
-=====  Patch Operation: Copy
+===== Patch Operation: Copy
 
 The copy operation takes one or more existing values from the source field. It then adds those same values on the target field. Once the values are known, it is equivalent to performing an `add` operation on the target.
-The following `copy` operation takes the value from the source named `/hot/potato` , and then runs a `replace` operation on the target value, `/hot/tamale` .
+
+The following `copy` operation takes the value from the source named `/hot/potato`, and then runs a `replace` operation on the target value, `/hot/tamale`.
 
 [source, javascript]
 ----
@@ -454,13 +503,13 @@ The following `copy` operation takes the value from the source named `/hot/potat
   }
 ]
 ----
-If the source and value are configured as arrays, the result depends on whether the array has list semantics or set semantics, as described in xref:#crest-patch-add[Section 5.9.1, "Patch Operation: Add"] .
+If the source and value are configured as arrays, the result depends on whether the array has list semantics or set semantics, as described in xref:#crest-patch-add[Patch Operation: Add].
 
 
 [#crest-patch-increment]
-=====  Patch Operation: Increment
+===== Patch Operation: Increment
 
-The `increment` operation changes the value or values of the target field by the amount you specify. The value that you include must be one number, and may be positive or negative. The value of the target field must accept numbers. The following `increment` operation adds `1000` to the target value of `/user/payment` .
+The `increment` operation changes the value or values of the target field by the amount you specify. The value that you include must be one number, and may be positive or negative. The value of the target field must accept numbers. The following `increment` operation adds `1000` to the target value of `/user/payment`.
 
 [source, javascript]
 ----
@@ -476,10 +525,11 @@ Since the `value` of the `increment` is a single number, arrays do not apply.
 
 
 [#crest-patch-move]
-=====  Patch Operation: Move
+===== Patch Operation: Move
 
 The move operation removes existing values on the source field. It then adds those same values on the target field. It is equivalent to performing a `remove` operation on the source, followed by an `add` operation with the same values, on the target.
-The following `move` operation is equivalent to a `remove` operation on the source named `/hot/potato` , followed by a `replace` operation on the target value, `/hot/tamale` .
+
+The following `move` operation is equivalent to a `remove` operation on the source named `/hot/potato`, followed by a `replace` operation on the target value, `/hot/tamale`.
 
 [source, javascript]
 ----
@@ -491,13 +541,13 @@ The following `move` operation is equivalent to a `remove` operation on the sour
   }
 ]
 ----
-To apply a `move` operation on an array, you need a compatible single-value, list semantic array, or set semantic array on both the source and the target. For details, see the criteria described in xref:#crest-patch-add[Section 5.9.1, "Patch Operation: Add"] .
+To apply a `move` operation on an array, you need a compatible single-value, list semantic array, or set semantic array on both the source and the target. For details, see the criteria described in xref:#crest-patch-add[Patch Operation: Add].
 
 
 [#crest-patch-remove]
-=====  Patch Operation: Remove
+===== Patch Operation: Remove
 
-The `remove` operation ensures that the target field no longer contains the value provided. If the remove operation does not include a value, the operation removes the field. The following `remove` deletes the value of the `phoneNumber` , along with the field.
+The `remove` operation ensures that the target field no longer contains the value provided. If the remove operation does not include a value, the operation removes the field. The following `remove` deletes the value of the `phoneNumber`, along with the field.
 
 [source, javascript]
 ----
@@ -508,10 +558,10 @@ The `remove` operation ensures that the target field no longer contains the valu
   }
 ]
 ----
-If the object has more than one `phoneNumber` , those values are stored as an array.
+If the object has more than one `phoneNumber`, those values are stored as an array.
 A `remove` operation has different results on two standard types of arrays:
 
-* *List semantic arrays* : A `remove` operation deletes the specified element in the array. For example, the following operation removes the first phone number, based on its array index (zero-based):
+* *List semantic arrays*: A `remove` operation deletes the specified element in the array. For example, the following operation removes the first phone number, based on its array index (zero-based):
 +
 
 [source, javascript]
@@ -524,15 +574,16 @@ A `remove` operation has different results on two standard types of arrays:
 ]
 ----
 
-* *Set semantic arrays* : The list of values included in a patch are removed from the existing array.
+* *Set semantic arrays*: The list of values included in a patch are removed from the existing array.
 
 
 
 [#crest-patch-replace]
-=====  Patch Operation: Replace
+===== Patch Operation: Replace
 
-The `replace` operation removes any existing value(s) of the targeted field, and replaces them with the provided value(s). It is essentially equivalent to a `remove` followed by a `add` operation. If the arrays are used, the criteria is based on xref:#crest-patch-add[Section 5.9.1, "Patch Operation: Add"] . However, indexed updates are not allowed, even when the target is an array.
-The following `replace` operation removes the existing `telephoneNumber` value for the user, and then adds the new value of `+1 408 555 9999` .
+The `replace` operation removes any existing value(s) of the targeted field, and replaces them with the provided value(s). It is essentially equivalent to a `remove` followed by a `add` operation. If the arrays are used, the criteria is based on xref:#crest-patch-add[Patch Operation: Add]. However, indexed updates are not allowed, even when the target is an array.
+
+The following `replace` operation removes the existing `telephoneNumber` value for the user, and then adds the new value of `+1 408 555 9999`.
 
 [source, javascript]
 ----
@@ -569,7 +620,7 @@ Apply the following operations on that resource:
   }
 ]
 ----
-The PATCH operations are applied sequentially. The `remove` operation removes the first member of that resource, based on its array index, ( `fruits/0` ), with the following result:
+The PATCH operations are applied sequentially. The `remove` operation removes the first member of that resource, based on its array index, (`fruits/0`), with the following result:
 
 [source, javascript]
 ----
@@ -579,7 +630,7 @@ The PATCH operations are applied sequentially. The `remove` operation removes th
   }
 ]
 ----
-The second PATCH operation, a `replace` , is applied on the second member ( `fruits/1` ) of the intermediate resource, with the following result:
+The second PATCH operation, a `replace`, is applied on the second member (`fruits/1`) of the intermediate resource, with the following result:
 
 [source]
 ----
@@ -592,9 +643,9 @@ The second PATCH operation, a `replace` , is applied on the second member ( `fru
 
 
 [#crest-patch-transform]
-=====  Patch Operation: Transform
+===== Patch Operation: Transform
 
-The `transform` operation changes the value of a field based on a script or some other data transformation command. The following `transform` operation takes the value from the field named `/objects` , and applies the `something.js` script as shown:
+The `transform` operation changes the value of a field based on a script or some other data transformation command. The following `transform` operation takes the value from the field named `/objects`, and applies the `something.js` script as shown:
 
 [source, javascript]
 ----
@@ -614,50 +665,54 @@ The `transform` operation changes the value of a field based on a script or some
 
 
 [#crest-patch-limitations]
-=====  Patch Operation Limitations
+===== Patch Operation Limitations
 
 Some HTTP client libraries do not support the HTTP PATCH operation. Make sure that the library you use supports HTTP PATCH before using this REST operation.
-For example, the Java Development Kit HTTP client does not support PATCH as a valid HTTP method. Instead, the method `HttpURLConnection.setRequestMethod("PATCH")` throws `ProtocolException` .
+
+For example, the Java Development Kit HTTP client does not support PATCH as a valid HTTP method. Instead, the method `HttpURLConnection.setRequestMethod("PATCH")` throws `ProtocolException`.
 .Parameters
 --
 You can use the following parameters. Other parameters might depend on the specific action implementation:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 
 [#about-crest-action]
-====  Action
+==== Action
 
 Actions are a means of extending common REST APIs and are defined by the resource provider, so the actions you can use depend on the implementation.
-The standard action indicated by `_action=create` is described in xref:#about-crest-create[Section 5.5, "Create"] .
+
+The standard action indicated by `_action=create` is described in xref:#about-crest-create[Create].
 .Parameters
 --
 You can use the following parameters. Other parameters might depend on the specific action implementation:
 
-_prettyPrint=true::
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in the body of the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 [#about-crest-query]
-====  Query
+==== Query
 
-To query a resource collection (or resource container if you prefer to think of it that way), perform an HTTP GET and accept a JSON response, including at least a `_queryExpression` , `_queryFilter` , or `_queryId` parameter. These parameters cannot be used together:
+To query a resource collection (or resource container if you prefer to think of it that way), perform an HTTP GET and accept a JSON response, including at least a `_queryExpression`, `_queryFilter`, or `_queryId` parameter. These parameters cannot be used together:
 
 [source, httprequest]
 ----
@@ -670,8 +725,9 @@ The server returns the result as a JSON object including a "results" array and o
 --
 You can use the following parameters:
 
-_queryFilter=filter-expression::
+`_queryFilter=filter-expression`::
 Query filters request that the server return entries that match the filter expression. You must URL-escape the filter expression.
+
 +
 The string representation is summarized as follows. Continue reading for additional explanation:
 +
@@ -700,70 +756,81 @@ STRING         = ASCII string not containing white-space
 UTF8STRING     = UTF-8 string possibly containing white-space
 ----
 +
-Note that white space, double quotes ( `"` ), parentheses, and exclamation characters need URL encoding in HTTP query strings.
+Note that white space, double quotes (`"`), parentheses, and exclamation characters need URL encoding in HTTP query strings.
+
 +
 A simple filter expression can represent a comparison, presence, or a literal value.
+
 +
-For comparison expressions use _json-pointer comparator json-value_ , where the _comparator_ is one of the following:
+For comparison expressions use __json-pointer comparator json-value__, where the __comparator__ is one of the following:
 +
 [none]
-*  `eq` (equals)
-*  `co` (contains)
-*  `sw` (starts with)
-*  `lt` (less than)
-*  `le` (less than or equal to)
-*  `gt` (greater than)
-*  `ge` (greater than or equal to)
+* `eq` (equals)
+* `co` (contains)
+* `sw` (starts with)
+* `lt` (less than)
+* `le` (less than or equal to)
+* `gt` (greater than)
+* `ge` (greater than or equal to)
 +
-For presence, use _json-pointer pr_ to match resources where the JSON pointer is present.
+For presence, use __json-pointer pr__ to match resources where the JSON pointer is present.
+
 +
 Literal values include true (match anything) and false (match nothing).
-+
-Complex expressions employ `and` , `or` , and `!` (not), with parentheses, `(expression)` , to group expressions.
 
-_queryId=identifier::
++
+Complex expressions employ `and`, `or`, and `!` (not), with parentheses, `(expression)`, to group expressions.
+
+`_queryId=identifier`::
 Specify a query by its identifier.
+
 +
 Specific queries can take their own query string parameter arguments, which depend on the implementation.
 
-_pagedResultsCookie=string::
-The string is an opaque cookie used by the server to keep track of the position in the search results. The server returns the cookie in the JSON response as the value of `pagedResultsCookie` .
+`_pagedResultsCookie=string`::
+The string is an opaque cookie used by the server to keep track of the position in the search results. The server returns the cookie in the JSON response as the value of `pagedResultsCookie`.
+
 +
 In the request `_pageSize` must also be set and non-zero. You receive the cookie value from the provider on the first request, and then supply the cookie value in subsequent requests until the server returns a `null` cookie, meaning that the final page of results has been returned.
+
 +
 The `_pagedResultsCookie` parameter is supported when used with the `_queryFilter` parameter. The `_pagedResultsCookie` parameter is not guaranteed to work when used with the `_queryExpression` and `_queryId` parameters.
+
 +
 The `_pagedResultsCookie` and `_pagedResultsOffset` parameters are mutually exclusive, and not to be used together.
 
-_pagedResultsOffset=integer::
+`_pagedResultsOffset=integer`::
 When `_pageSize` is non-zero, use this as an index in the result set indicating the first page to return.
+
 +
 The `_pagedResultsCookie` and `_pagedResultsOffset` parameters are mutually exclusive, and not to be used together.
 
-_pageSize=integer::
+`_pageSize=integer`::
 Return query results in pages of this size. After the initial request, use `_pagedResultsCookie` or `_pageResultsOffset` to page through the results.
 
-_totalPagedResultsPolicy=string::
-When a `_pageSize` is specified, and non-zero, the server calculates the "totalPagedResults", in accordance with the `totalPagedResultsPolicy` , and provides the value as part of the response. The "totalPagedResults" is either an estimate of the total number of paged results ( `_totalPagedResultsPolicy=ESTIMATE` ), or the exact total result count ( `_totalPagedResultsPolicy=EXACT` ). If no count policy is specified in the query, or if `_totalPagedResultsPolicy=NONE` , result counting is disabled, and the server returns value of -1 for "totalPagedResults".
+`_totalPagedResultsPolicy=string`::
+When a `_pageSize` is specified, and non-zero, the server calculates the "totalPagedResults", in accordance with the `totalPagedResultsPolicy`, and provides the value as part of the response. The "totalPagedResults" is either an estimate of the total number of paged results (`_totalPagedResultsPolicy=ESTIMATE`), or the exact total result count (`_totalPagedResultsPolicy=EXACT`). If no count policy is specified in the query, or if `_totalPagedResultsPolicy=NONE`, result counting is disabled, and the server returns value of -1 for "totalPagedResults".
 
-_sortKeys=[+-]field[,[+-]field...]::
+`_sortKeys=[+-]field[,[+-]field...]`::
 Sort the resources returned based on the specified field(s), either in `+` (ascending, default) order, or in `-` (descending) order.
-+
-The `_sortKeys` parameter is not supported for predefined queries ( `_queryId` ).
 
-_prettyPrint=true::
++
+The `_sortKeys` parameter is not supported for predefined queries (`_queryId`).
+
+`_prettyPrint=true`::
 Format the body of the response.
 
-_fields=field[,field...]::
+`_fields=field[,field...]`::
 Return only the specified fields in each element of the "results" array in the response.
+
 +
-The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}` , `parent/child` refers to the `"child":"value"` .
+The `field` values are JSON pointers. For example if the resource is `{"parent":{"child":"value"}}`, `parent/child` refers to the `"child":"value"`.
 
 --
 
 
 [#about-crest-response-codes]
-====  HTTP Status Codes
+==== HTTP Status Codes
 
 When working with a common REST API over HTTP, client applications should expect at least the following HTTP status codes. Not all servers necessarily return all status codes identified here:
 --
@@ -825,56 +892,13 @@ The requested resource was temporarily unavailable. The service may have been di
 --
 
 
+include::../partials/sec-formatting-conventions.adoc[]
 
-[#formatting-conventions]
-===  Formatting Conventions
+include::../partials/sec-accessing-doc-online.adoc[]
 
-Most examples in the documentation are created in GNU/Linux or Mac OS X operating environments. If distinctions are necessary between operating environments, examples are labeled with the operating environment name in parentheses. To avoid repetition file system directory names are often given only in UNIX format as in `/path/to/server` , even if the text applies to `C:\path\to\server` as well.
-Absolute path names usually begin with the placeholder `/path/to/` . This path might translate to `/opt/` , `C:\Program Files\` , or somewhere else on your system.
-Command-line, terminal sessions are formatted as follows:
+include::../partials/sec-joining-the-community.adoc[]
 
-[source, console]
-----
-$ echo $JAVA_HOME
-/path/to/jdk
-----
-Command output is sometimes formatted for narrower, more readable output even though formatting parameters are not shown in the command.
-Program listings are formatted as follows:
+include::../partials/sec-support-contact.adoc[]
 
-[source, java]
-----
-class Test {
-    public static void main(String [] args)  {
-        System.out.println("This is a program listing.");
-    }
-}
-----
-
-
-[#accessing-doc-online]
-===  Accessing Documentation Online
-
-ForgeRock publishes comprehensive documentation online:
-
-* The ForgeRock link:https://backstage.forgerock.com/knowledge/kb[Knowledge Base, window=\_blank] offers a large and increasing number of up-to-date, practical articles that help you deploy and manage ForgeRock software.
-+
-While many articles are visible to community members, ForgeRock customers have access to much more, including advanced information for customers using ForgeRock software in a mission-critical capacity.
-
-* ForgeRock product documentation, such as this document, aims to be technically accurate and complete with respect to the software documented. It is visible to everyone and covers all product features and examples of how to use them.
-
-
-
-[#joining-the-community]
-===  Using the ForgeRock.org Site
-
-The link:https://forgerock.org[ForgeRock.org site, window=\_blank] has links to source code for ForgeRock open source software, as well as links to the ForgeRock forums and technical blogs.
-If you are a _ForgeRock customer_ , raise a support ticket instead of using the forums. ForgeRock support professionals will get in touch to help you.
-
-
-[#sec-support-contact]
-===  Getting Support and Contacting ForgeRock
-
-ForgeRock provides support services, professional services, classes through ForgeRock University, and partner services to assist you in setting up and maintaining your deployments. For a general overview of these services, see link:https://www.forgerock.com[https://www.forgerock.com, window=\_blank] .
-ForgeRock has staff members around the globe who support our international customers and partners. For details, visit link:https://www.forgerock.com[https://www.forgerock.com, window=\_blank] , or send an email to ForgeRock at link:mailto:info\@forgerock.com[info@forgerock.com, window=\_blank] .
 
 

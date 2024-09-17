@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -24,7 +24,8 @@
 == Decorators
 
 Decorators are objects that decorate other heap objects, adding the new behavior that the decorator provides. For example, you can configure a decorator object for capturing requests and responses to a file and then decorate other objects in the heap to trigger the capture.
-To decorate other objects individually, use a local decoration by adding the decorator's name value as a top-level field of the object. For example, suppose a capture decorator named capture is defined in the global configuration, `config.json` . The decorator is configured to capture the entity but not the context:
+
+To decorate other objects individually, use a local decoration by adding the decorator's name value as a top-level field of the object. For example, suppose a capture decorator named capture is defined in the global configuration, `config.json`. The decorator is configured to capture the entity but not the context:
 
 [source, javascript]
 ----
@@ -102,8 +103,11 @@ Decorations are inherited as follows:
 * The globalDecorations on a route are inherited on child routes.
 
 To prevent loops, decorators themselves cannot be decorated. Instead, decorators apply only to specific types of objects such as Filters and Handlers.
-OpenIG defines some decorators, such as audit, baseURI, capture, and timer. You can use these without configuring them explicitly. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)] .
-Take care when defining decorator names not to use names that unintentionally clash with field names for the decorated objects. For all heap objects, avoid decorators named `config` , `name` , and `type` . For Routes, avoid decorators named `auditService` , `baseURI` , `condition` , `globalDecorators` , `heap` , `handler` , `name` , and `session` . In `config.json` , also avoid `logSink` and `temporaryStorage` . In addition, avoid decorators named `comment` or `comments` . The best way to avoid a clash with other field names is to avoid OpenIG reserved field names, which include all purely alphanumeric field names. Instead use dots in your decorator names, such as `my.decorator` .
+
+OpenIG defines some decorators, such as audit, baseURI, capture, and timer. You can use these without configuring them explicitly. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)].
+
+Take care when defining decorator names not to use names that unintentionally clash with field names for the decorated objects. For all heap objects, avoid decorators named `config`, `name`, and `type`. For Routes, avoid decorators named `auditService`, `baseURI`, `condition`, `globalDecorators`, `heap`, `handler`, `name`, and `session`. In `config.json`, also avoid `logSink` and `temporaryStorage`. In addition, avoid decorators named `comment` or `comments`. The best way to avoid a clash with other field names is to avoid OpenIG reserved field names, which include all purely alphanumeric field names. Instead use dots in your decorator names, such as `my.decorator`.
+
 Decorations can apply more than once. For example, if you set a decoration both on a Route and also on an object defined within the route, then OpenIG can apply the decoration twice. The following Route results in the request being captured twice:
 
 [source, javascript]
@@ -124,51 +128,55 @@ OpenIG applies decorations in this order.
 
 . Route decorations (those decorating a route's handler)
 
-Interface Stability: Evolving (For details, see xref:appendix-interface-stability.adoc#interface-stability[Section A.2, "ForgeRock Product Interface Stability"] .)
+Interface Stability: Evolving (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
 [#AuditDecorator]
 === AuditDecorator — trigger notification of audit events for Filters and Handlers
 
 [#d210e8926]
 ==== Description
 Triggers notification of audit events for applicable Filters and Handlers.
-Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[Section A.2, "ForgeRock Product Interface Stability"] .)
+
+Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+
 OpenIG first notifies an audit system sink. The audit system sink takes responsibility for forwarding notifications to registered audit event listeners. The listeners take responsibility for dealing with the audit events. What a listener does is implementation specific, but it could for example publish the event to an endpoint or to a central system, log the event in a file, or raise an alert.
 --
 To help listeners determine what to do with audit events, each audit event holds the following information about what it represents:
 
-event.data::
-A reference to the data involved in the event, providing access to the `request` , `response` , and `contexts` objects.
+`event.data`::
+A reference to the data involved in the event, providing access to the `request`, `response`, and `contexts` objects.
 
-event.source::
+`event.source`::
 The source of the audit event, meaning the name of the object under audit.
-+
-For details, see link:../apidocs/index.html?org/forgerock/openig/audit/AuditSource.html[org.forgerock.openig.audit.AuditSource, window=\_blank] .
 
-event.tags::
++
+For details, see link:../apidocs/index.html?org/forgerock/openig/audit/AuditSource.html[org.forgerock.openig.audit.AuditSource, window=\_blank].
+
+`event.tags`::
 Strings that qualify the event. Entities receiving notifications can use the tags to select audit events of interest.
+
 +
 Define your own audit tags in order to identify particular events or routes.
 +
-OpenIG provides the following built-in tags in link:../apidocs/index.html?org/forgerock/openig/audit/Tag.html[org.forgerock.openig.audit.Tag, window=\_blank] :
+OpenIG provides the following built-in tags in link:../apidocs/index.html?org/forgerock/openig/audit/Tag.html[org.forgerock.openig.audit.Tag, window=\_blank]:
 
-*  `request` : This event happens before OpenIG calls the decorated object.
+* `request`: This event happens before OpenIG calls the decorated object.
 
-*  `response` : This event happens after the call to the decorated object returns or throws an exception.
+* `response`: This event happens after the call to the decorated object returns or throws an exception.
 +
 When decorating a Filter, realize that the filter returns after handling the response, even if it only filters the request and so does nothing to the response but pass it along.
 
-*  `completed` : This event happens when the processing unit under audit has successfully handled the response. This tag always complements a `response` tag.
+* `completed`: This event happens when the processing unit under audit has successfully handled the response. This tag always complements a `response` tag.
 +
 Note that `completed` says nothing about the client application's perception of whether the result of the response was successful. For example, a Handler could successfully pass back an HTTP 404 Not Found response.
 
-*  `exception` : This event happens when the processing unit under audit handled the request and response processing with errors. This tag always complements a `response` tag.
+* `exception`: This event happens when the processing unit under audit handled the request and response processing with errors. This tag always complements a `response` tag.
 +
 Note that the source object might not have thrown an exception itself, so it is not necessarily the source of the error.
 +
 Also note that `exception` says nothing about the client application's perception of whether the result of the response was a failure. For example, another processing unit could still pass back a success response to the client application or proxy that engaged the request.
 
 
-event.timestamp::
+`event.timestamp`::
 Timestamp indicating when the event happened, with millisecond precision.
 
 --
@@ -187,21 +195,23 @@ Timestamp indicating when the event happened, with millisecond precision.
 ----
 --
 
-"name": string, required except for inline objects::
+`"name"`: string, required except for inline objects::
 The unique name of the object, just like an object that is not decorated.
 
-"type": string, required::
+`"type"`: string, required::
 The class name of the decorated object, which must be either a Filter or a Handler.
-+
-See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"config": object, required unless empty::
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
 The configuration of the object, just like an object that is not decorated.
 
-"audit": string or array of strings, required::
+`"audit"`: string or array of strings, required::
 Set the value to the tag(s) used to select audit events of interest.
+
 +
-To activate the audit decoration without setting any user-defined tags, set audit to any other value, such as `"audit": true` .
+To activate the audit decoration without setting any user-defined tags, set audit to any other value, such as `"audit": true`.
 
 --
 
@@ -231,11 +241,11 @@ The following example triggers an audit event only on a particular object:
     "audit": "Epic failure"
 }
 ----
-To observe audit events, use a registered audit agent such as a MonitorEndpointHandler, which is described in xref:handlers-conf.adoc#MonitorEndpointHandler[MonitorEndpointHandler(5)] .
+To observe audit events, use a registered audit agent such as a MonitorEndpointHandler, which is described in xref:handlers-conf.adoc#MonitorEndpointHandler[MonitorEndpointHandler(5)].
 
 [#d210e9106]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/audit/decoration/AuditDecorator.html[org.forgerock.openig.audit.decoration.AuditDecorator, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/audit/decoration/AuditDecorator.html[org.forgerock.openig.audit.decoration.AuditDecorator, window=\_blank]
 
 '''
 [#BaseUriDecorator]
@@ -256,6 +266,7 @@ Overrides the scheme, host, and port of the existing request URI, rebasing the U
 }
 ----
 A BaseUriDecorator does not have configurable properties.
+
 OpenIG creates a default BaseUriDecorator named baseURI at startup time in the top-level heap, so you can use baseURI as the decorator name without adding the decorator declaration explicitly.
 
 [#d210e9146]
@@ -272,19 +283,21 @@ OpenIG creates a default BaseUriDecorator named baseURI at startup time in the t
 ----
 --
 
-"name": string, required except for inline objects::
+`"name"`: string, required except for inline objects::
 The unique name of the object, just like an object that is not decorated
 
-"type": string, required::
+`"type"`: string, required::
 The class name of the decorated object, which must be either a Filter or a Handler.
-+
-See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"config": object, required unless empty::
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
 The configuration of the object, just like an object that is not decorated
 
-decorator name: string, required::
+__decorator name__: string, required::
 A string representing the scheme, host, and port of the new base URI. The port is optional when using the defaults (80 for HTTP, 443 for HTTPS).
+
 +
 OpenIG ignores this setting if the value is not a string.
 
@@ -301,7 +314,7 @@ Add a custom decorator to the heap named myBaseUri:
     "type": "BaseUriDecorator"
 }
 ----
-Set a Router's base URI to `\https://www.example.com:8443` :
+Set a Router's base URI to `\https://www.example.com:8443`:
 
 [source, javascript]
 ----
@@ -314,7 +327,7 @@ Set a Router's base URI to `\https://www.example.com:8443` :
 
 [#d210e9209]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/decoration/baseuri/BaseUriDecorator.html[org.forgerock.openig.decoration.baseuri.BaseUriDecorator, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/decoration/baseuri/BaseUriDecorator.html[org.forgerock.openig.decoration.baseuri.BaseUriDecorator, window=\_blank]
 
 '''
 [#CaptureDecorator]
@@ -342,22 +355,27 @@ Captures request and response messages for further analysis.
 --
 The decorator configuration has these properties:
 
-"logSink": LogSink reference, optional::
+`"logSink"`: __LogSink reference, optional__::
 Capture requests and responses to this LogSink.
+
 +
 Provide either the name of a LogSink object defined in the heap, or an inline LogSink configuration object.
+
 +
 Default: use the LogSink configured for the decorated object. This makes it possible to keep all logs in a central location.
 
-"captureEntity": boolean, optional::
+`"captureEntity"`: __boolean, optional__::
 Whether the message entity should be captured.
+
 +
 The filter omits binary entities, instead writing a `[binary entity]` marker to the file.
+
 +
 Default: false
 
-"captureContext": boolean, optional::
+`"captureContext"`: __boolean, optional__::
 Whether the context should be captured as JSON.
+
 +
 Default: false
 
@@ -377,40 +395,43 @@ Default: false
 ----
 --
 
-"name": string, required except for inline objects::
+`"name"`: string, required except for inline objects::
 The unique name of the object, just like an object that is not decorated
 
-"type": string, required::
+`"type"`: string, required::
 The class name of the decorated object, which must be either a Filter or a Handler.
-+
-See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"config": object, required unless empty::
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
 The configuration of the object, just like an object that is not decorated
 
-decorator name: capture point(s), optional::
-The _decorator name_ must match the name of the CaptureDecorator. For example, if the CaptureDecorator has `"name": "capture"` , then _decorator name_ is capture.
+__decorator name__: capture point(s), optional::
+The __decorator name__ must match the name of the CaptureDecorator. For example, if the CaptureDecorator has `"name": "capture"`, then __decorator name__ is capture.
 +
 [open]
 ====
 The capture point(s) are either a single string, or an array of strings. The strings are documented here in lowercase, but are not case-sensitive:
 
-"all"::
+`"all"`::
 Capture at all available capture points
 
-"request"::
+`"request"`::
 Capture the request as it enters the Filter or Handler
 
-"filtered_request"::
+`"filtered_request"`::
 Capture the request as it leaves the Filter
+
 +
 Only applies to Filters
 
-"response"::
+`"response"`::
 Capture the response as it enters the Filter or leaves the Handler
 
-"filtered_response"::
+`"filtered_response"`::
 Capture the response as it leaves the Filter
+
 +
 Only applies to Filters
 
@@ -555,7 +576,7 @@ To capture the context as JSON, excluding the request and response, before sendi
 
 [#d210e9420]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/decoration/capture/CaptureDecorator.html[org.forgerock.openig.decoration.capture.CaptureDecorator, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/decoration/capture/CaptureDecorator.html[org.forgerock.openig.decoration.capture.CaptureDecorator, window=\_blank]
 
 '''
 [#TimerDecorator]
@@ -564,8 +585,10 @@ link:../apidocs/index.html?org/forgerock/openig/decoration/capture/CaptureDecora
 [#d210e9440]
 ==== Description
 Records time in milliseconds to process applicable Filters and Handlers. OpenIG writes the records to the LogSink configured for the decorated heap object. If no LogSink is defined for the decorated heap object, then OpenIG writes to the LogSink configured for the heap. Records include the time elapsed while processing the request and response, and for Filters the elapsed time spent processing the request and response within the Filter itself.
-OpenIG records times at log level `STAT` .
-The TimerDecorator is not applicable to the GatewayHttpApplication, as the GatewayHttpApplication is not declared in the heap. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)] .
+
+OpenIG records times at log level `STAT`.
+
+The TimerDecorator is not applicable to the GatewayHttpApplication, as the GatewayHttpApplication is not declared in the heap. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)].
 
 [#d210e9459]
 ==== Decorator Usage
@@ -578,6 +601,7 @@ The TimerDecorator is not applicable to the GatewayHttpApplication, as the Gatew
 }
 ----
 A TimerDecorator does not have configurable properties.
+
 OpenIG configures a default TimerDecorator named timer. You can use timer as the decorator name without explicitly declaring a decorator named timer.
 
 [#d210e9469]
@@ -594,23 +618,26 @@ OpenIG configures a default TimerDecorator named timer. You can use timer as the
 ----
 --
 
-"name": string, required except for inline objects::
+`"name"`: string, required except for inline objects::
 The unique name of the object, just like an object that is not decorated
 
-"type": string, required::
+`"type"`: string, required::
 The class name of the decorated object, which must be either a Filter or a Handler.
-+
-See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"config": object, required unless empty::
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
 The configuration of the object, just like an object that is not decorated
 
-decorator name: boolean, required::
-OpenIG looks for the presence of the _decorator name_ field for the TimerDecorator.
+`decorator name`: boolean, required::
+OpenIG looks for the presence of the __decorator name__ field for the TimerDecorator.
+
 +
-To activate the timer, set the value of the _decorator name_ field to `true` .
+To activate the timer, set the value of the __decorator name__ field to `true`.
+
 +
-To deactivate the TimerDecorator temporarily, set the value to `false` .
+To deactivate the TimerDecorator temporarily, set the value to `false`.
 
 --
 
@@ -638,6 +665,7 @@ TUE DEC 02 17:20:08 CET 2014 (STAT) @Timer[top-level-handler]
 Elapsed time: 40 ms
 ----
 When you decorate a Filter with a TimerDecorator, OpenIG can record two timer messages in the LogSink: the elapsed time for operations traversing the Filter, and the elapsed time spent within the Filter.
+
 To record times spent within all Filters and the handler, decorate the Route as in the following example:
 
 [source, javascript]
@@ -732,7 +760,7 @@ Elapsed time: 211 ms
 THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
 Elapsed time (within the object): 81 ms
 ----
-You can then deactivate the timer by setting the values to `false` :
+You can then deactivate the timer by setting the values to `false`:
 
 [source, javascript]
 ----
@@ -743,6 +771,6 @@ You can then deactivate the timer by setting the values to `false` :
 
 [#d210e9567]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/decoration/timer/TimerDecorator.html[org.forgerock.openig.decoration.timer.TimerDecorator, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/decoration/timer/TimerDecorator.html[org.forgerock.openig.decoration.timer.TimerDecorator, window=\_blank]
 
 

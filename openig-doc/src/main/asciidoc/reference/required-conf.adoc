@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC
+  Portions Copyright 2024 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -29,24 +29,24 @@ You must specify at least the entry point for incoming requests, the OpenIG Serv
 
 [#d210e2027]
 ==== Description
-The GatewayHttpApplication is the entry point for all incoming requests. It is responsible for initializing a heap of objects, described in xref:#heap-objects[Heap Objects(5)] , and providing the main Handler that receives all the incoming requests. The configuration is loaded from a JSON-encoded configuration file, expected by default at `$HOME/.openig/config/config.json` .
+The GatewayHttpApplication is the entry point for all incoming requests. It is responsible for initializing a heap of objects, described in xref:#heap-objects[Heap Objects(5)], and providing the main Handler that receives all the incoming requests. The configuration is loaded from a JSON-encoded configuration file, expected by default at `$HOME/.openig/config/config.json`.
 The GatewayHttpApplication creates the following objects by default:
 
-* An AuditDecorator that you can use to trigger notification for audit events. The default AuditDecorator is named audit. For details, see xref:decorators-conf.adoc#AuditDecorator[AuditDecorator(5)] .
+* An AuditDecorator that you can use to trigger notification for audit events. The default AuditDecorator is named audit. For details, see xref:decorators-conf.adoc#AuditDecorator[AuditDecorator(5)].
 
-* A BaseUriDecorator that you can use to override the scheme, host, and port of the existing request URI. The default BaseUriDecorator is named baseURI. For details, see xref:decorators-conf.adoc#BaseUriDecorator[BaseUriDecorator(5)] .
+* A BaseUriDecorator that you can use to override the scheme, host, and port of the existing request URI. The default BaseUriDecorator is named baseURI. For details, see xref:decorators-conf.adoc#BaseUriDecorator[BaseUriDecorator(5)].
 
-* A CaptureDecorator that you can use to capture requests and response messages. The default CaptureDecorator is named capture. For details, see xref:decorators-conf.adoc#CaptureDecorator[CaptureDecorator(5)] .
+* A CaptureDecorator that you can use to capture requests and response messages. The default CaptureDecorator is named capture. For details, see xref:decorators-conf.adoc#CaptureDecorator[CaptureDecorator(5)].
 
-* A TimerDecorator that you can use to record time spent within Filters and Handlers. The default TimerDecorator is named timer. For details, see xref:decorators-conf.adoc#TimerDecorator[TimerDecorator(5)] .
+* A TimerDecorator that you can use to record time spent within Filters and Handlers. The default TimerDecorator is named timer. For details, see xref:decorators-conf.adoc#TimerDecorator[TimerDecorator(5)].
 
 The GatewayHttpApplication declares default configurations in the heap for the following objects:
 
-* A ClientHandler named `ClientHandler` for communicating with protected applications. For details, see xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)] .
+* A ClientHandler named `ClientHandler` for communicating with protected applications. For details, see xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)].
 
-* A ClientHandler named `ForgeRockClientHandler` for sending a ForgeRock Common Audit transaction ID when communicating with protected applications. The default object wraps the `ClientHandler` .
+* A ClientHandler named `ForgeRockClientHandler` for sending a ForgeRock Common Audit transaction ID when communicating with protected applications. The default object wraps the `ClientHandler`.
 
-The GatewayHttpApplication also looks for an object named Session in the heap. If it finds such an object, it uses that object as the default session producer. For example, to store session information in an HTTP cookie on the user-agent, you can define a JwtSession named Session in `config.json` . If you do that, however, stored session information must fit the constraints for storage in a JWT and in a cookie, as described in xref:misc-conf.adoc#JwtSession[JwtSession(5)] . If no such object is found, `session` is based on the Servlet HttpSession that is handled by the container where OpenIG runs.
+The GatewayHttpApplication also looks for an object named Session in the heap. If it finds such an object, it uses that object as the default session producer. For example, to store session information in an HTTP cookie on the user-agent, you can define a JwtSession named Session in `config.json`. If you do that, however, stored session information must fit the constraints for storage in a JWT and in a cookie, as described in xref:misc-conf.adoc#JwtSession[JwtSession(5)]. If no such object is found, `session` is based on the Servlet HttpSession that is handled by the container where OpenIG runs.
 
 [#d210e2093]
 ==== Usage
@@ -65,39 +65,47 @@ The GatewayHttpApplication also looks for an object named Session in the heap. I
 ==== Properties
 --
 
-"handler": Handler reference, required::
+`"handler"`: __Handler reference, required__::
 Dispatch all requests to this handler.
+
 +
 Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
-+
-See also xref:handlers-conf.adoc#handlers-conf[Handlers] .
 
-"heap": array of configuration objects, optional::
-The heap object configuration, described in xref:#heap-objects[Heap Objects(5)] .
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"heap"`: __array of configuration objects, optional__::
+The heap object configuration, described in xref:#heap-objects[Heap Objects(5)].
+
 +
 You can omit an empty array. If you only have one object in the heap, you can inline it as the handler value.
 
-"logSink": LogSink reference, optional::
+`"logSink"`: __LogSink reference, optional__::
 Send log messages to this LogSink.
+
 +
 Provide either the name of a LogSink object defined in the heap, or an inline LogSink configuration object.
+
 +
 Default: use the heap object named LogSink. Otherwise use an internally-created ConsoleLogSink object that is named LogSink and that uses default settings for a ConsoleLogSink object.
 
-"temporaryStorage": TemporaryStorage reference, optional::
+`"temporaryStorage"`: __TemporaryStorage reference, optional__::
 Cache content during processing based on this TemporaryStorage configuration.
+
 +
 Provide either the name of a TemporaryStorage object defined in the heap, or an inline TemporaryStorage configuration object.
+
 +
 Default: use the heap object named TemporaryStorage. Otherwise use an internally-created TemporaryStorage object that is named TemporaryStorage and that uses default settings for a TemporaryStorage object.
+
 +
-See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)] .
+See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)].
 
 --
 
 [#d210e2165]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/http/GatewayHttpApplication.html[org.forgerock.openig.http.GatewayHttpApplication, window=\_blank] 
+link:../apidocs/index.html?org/forgerock/openig/http/GatewayHttpApplication.html[org.forgerock.openig.http.GatewayHttpApplication, window=\_blank]
 
 '''
 [#heap-objects]
@@ -105,7 +113,7 @@ link:../apidocs/index.html?org/forgerock/openig/http/GatewayHttpApplication.html
 
 [#d210e2184]
 ==== Description
-A heap is a collection of associated objects, initialized from declarative configuration artifacts. All configurable objects in OpenIG are heap objects. Heap objects are created and initialized by associated heaplets, which retrieve any objects an object depends on from the heap. The heap configuration is included as an object in the GatewayHttpApplication configuration, as described in xref:#GatewayHttpApplication[GatewayHttpApplication(5)] .
+A heap is a collection of associated objects, initialized from declarative configuration artifacts. All configurable objects in OpenIG are heap objects. Heap objects are created and initialized by associated heaplets, which retrieve any objects an object depends on from the heap. The heap configuration is included as an object in the GatewayHttpApplication configuration, as described in xref:#GatewayHttpApplication[GatewayHttpApplication(5)].
 
 [#d210e2196]
 ==== Usage
@@ -128,14 +136,15 @@ A heap is a collection of associated objects, initialized from declarative confi
 ==== Properties
 --
 
-"name": string, required except for inline objects::
+`"name"`: __string, required except for inline objects__::
 The unique name to give the heap object in the heap. This name is used to resolve the heap object, for example, when another heap object names a heap object dependency.
 
-"type": string, required::
+`"type"`: __string, required__::
 The class name of the object to be created. To determine the type name, see the object's documentation in this reference.
 
-"config": object, required::
+`"config"`: __object, required__::
 The configuration that is specific to the heap object being created.
+
 +
 If all the fields are optional and the configuration uses only default settings, you can omit the config field instead of including an empty config object as the field value.
 
@@ -146,30 +155,38 @@ If all the fields are optional and the configuration uses only default settings,
 --
 OpenIG automatically creates some configuration objects that it needs for its own use. An automatically created object can be overridden by creating a heap object with the same name. Automatically created objects include the following:
 
-"ApiProtectionFilter"::
-The default filter used to protect administrative APIs on reserved routes. Reserved routes are described in xref:preface.adoc#reserved-routes[Section 2, "Reserved Routes"] .
+`"ApiProtectionFilter"`::
+The default filter used to protect administrative APIs on reserved routes. Reserved routes are described in xref:preface.adoc#reserved-routes[Reserved Routes].
+
 +
 Default: a filter that allows access only from the loopback address.
-+
-To override this filter, declare a different filter with the same name in the top-level heap found in `config.json` .
 
-"LogSink"::
++
+To override this filter, declare a different filter with the same name in the top-level heap found in `config.json`.
+
+`"LogSink"`::
 The default object to use for writing all audit and performance logging.
+
 +
 Default: A ConsoleLogSink object named "LogSink" with the default configuration is added to the top-level heap.
+
 +
 Routes can use this object without explicitly defining it. To override this object, create a LogSink heap object with the same name.
-+
-See also xref:logging-conf.adoc#ConsoleLogSink[ConsoleLogSink(5)] .
 
-"TemporaryStorage"::
++
+See also xref:logging-conf.adoc#ConsoleLogSink[ConsoleLogSink(5)].
+
+`"TemporaryStorage"`::
 The default object to use for managing temporary buffers.
+
 +
 Default: a TemporaryStorage object named "TemporaryStorage" with the default configuration is added to the top-level heap.
+
 +
 Routes can use this object without explicitly defining it. To override this object, create a TemporaryStorage heap object with the same name.
+
 +
-See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)] .
+See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)].
 
 --
 
@@ -178,15 +195,17 @@ See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)] .
 --
 Every heap object has a set of implicit properties, which can be overridden on an object-by-object basis:
 
-"logSink": string::
+`"logSink"`: __string__::
 Specifies the heap object that should be used for audit and performance logging.
-+
-Default: `LogSink` .
 
-"temporaryStorage": string::
-Specifies the heap object that should be used for temporary buffer storage.
 +
-Default: `TemporaryStorage` .
+Default: `LogSink`.
+
+`"temporaryStorage"`: __string__::
+Specifies the heap object that should be used for temporary buffer storage.
+
++
+Default: `TemporaryStorage`.
 
 --
 
@@ -197,8 +216,11 @@ Default: `TemporaryStorage` .
 [#d210e2341]
 ==== Description
 Filters, handlers, and other objects whose configuration settings are defined by strings, integers, or booleans, can alternatively be defined by expressions that match the expected type.
+
 Expressions can retrieve the values for configuration settings from system properties or environment variables. When OpenIG starts up or when a route is reloaded, the expressions are evaluated. If you change the value of a system property or environment variable and then restart OpenIG or reload the route, the configuration settings are updated with the new values.
-If a configuration setting is required and the expression returns `null` , an error occurs when OpenIG starts up or when the route is reloaded. If the configuration setting is optional, there is no error.
+
+If a configuration setting is required and the expression returns `null`, an error occurs when OpenIG starts up or when the route is reloaded. If the configuration setting is optional, there is no error.
+
 In the following example, `"numberOfRequests"` is defined by an expression that recovers the system property `"requestsPerSecond"` and transforms it into an integer. Similarly, `"monitor"` is defined by an expression that recovers the environment variable `"ENABLE_MONITORING"` and transforms it into a boolean:
 
 [source, javascript]
@@ -226,7 +248,7 @@ In the following example, `"numberOfRequests"` is defined by an expression that 
   "condition": "${matches(request.uri.path, '^/throttle-simple')}"
 }
 ----
-If `"requestsPerSecond"=150` and `"ENABLE_MONITORING"=false` , after the expressions are evaluated OpenIG views the example route as follows:
+If `"requestsPerSecond"=150` and `"ENABLE_MONITORING"=false`, after the expressions are evaluated OpenIG views the example route as follows:
 
 [source, javascript]
 ----
@@ -253,6 +275,6 @@ If `"requestsPerSecond"=150` and `"ENABLE_MONITORING"=false` , after the express
   "condition": "${matches(request.uri.path, '^/throttle-simple')}"
 }
 ----
-For information about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)] .
+For information about expressions, see xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 
