@@ -1,0 +1,386 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-throttling]
+== Throttling the Rate of Requests to a Protected Application
+
+To protect applications from being overused by clients, use a throttling filter to limit how many requests can be made in a defined time. This section describes how to set up two throttling filters. For more configuration options, see xref:../reference/throttling-conf.adoc#ThrottlingFilter[ThrottlingFilter(5)] in the __Configuration Reference__.
+
+The throttling filter limits the rate that requests pass through a filter. The maximum number of requests that are allowed in a defined time is called the __throttling rate__.
+
+The throttling filter uses a strategy based on the token bucket algorithm, which allows some bursts. Because of traffic bursts, the throttling rate can occasionally be higher than the defined limit - for example, with a throttling rate of 10 requests/10 seconds there can be more than 10 requests in the 10 second duration. However, the number of concurrent requests cannot exceed that defined for the throttling rate - for example, with a throttling rate of 10 requests/10 seconds there cannot be more than 10 concurrent requests.
+
+When the throttling rate is reached, OpenIG issues an HTTP status code 429 `Too Many Requests` and a `Retry-After` header like the following, where the value is the number of seconds to wait before trying the request again:
+
+[source, console]
+----
+GET http://openig.example.com:8080/throttle-scriptable HTTP/1.1
+
+   . . .
+
+   HTTP/1.1 429 Too Many Requests
+   Retry-After: 10
+----
+
+[#throttling-simple]
+=== Configuring a Simple Throttling Filter
+
+This example applies a throttling rate of 6 requests/10 seconds to requests from users in the accounts department of `example.com`. The throttling rate is applied according to the evaluation of `requestGroupingPolicy`. In the example, this parameter evaluates to the first `UserID` in the request header.
+
+[#figure-throttling-simple]
+image::images/throttling-simple.png[]
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "ThrottlingFilter",
+          "config": {
+            "requestGroupingPolicy": "${request.headers['UserId'][0]}",
+            "rate": {
+              "numberOfRequests": 6,
+              "duration": "10 seconds"
+            }
+          }
+        }
+      ],
+      "handler": "ClientHandler"
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/throttle-simple')}"
+}
+----
+
+[#d2528e7980]
+.To Configure a Simple Throttling Filter
+====
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+. Add the example route to the OpenIG configuration as `$HOME/.openig/config/routes/00-throttle-simple.json`.
++
+On Windows, add the route as `%appdata%\OpenIG\config\routes\00-throttle-simple.json`.
+
+. With OpenIG and the protected application running, access the following route in a loop: link:http://openig.example.com:8080/throttle-simple[http://openig.example.com:8080/throttle-simple, window=\_blank].
++
+Accessing the route in a loop runs the request multiple times in quick succession, allowing you to test the throttling rate. You can use a command-line tool such as `curl` to run the following commands in quick succession or in a bash script:
++
+
+[source, console]
+----
+$ curl -v http://openig.example.com:8080/throttle-simple/\[01-10\] \
+  --header "UserId:Alice" \
+  > /tmp/Alice.txt 2>&1
+
+$ curl -v http://openig.example.com:8080/throttle-simple/\[01-10\] \
+  --header "UserId:Bob" \
+  > /tmp/Bob.txt 2>&1
+----
+
+. Search the output files to see the results for Alice and Bob:
++
+
+[source, console]
+----
+$ grep "< HTTP/1.1" /tmp/Alice.txt | sort | uniq -c
+     
+ 6 < HTTP/1.1 200 OK
+ 4 < HTTP/1.1 429 Too Many Requests
+     
+$ grep "< HTTP/1.1" /tmp/Bob.txt | sort | uniq -c
+     
+ 6 < HTTP/1.1 200 OK
+ 4 < HTTP/1.1 429 Too Many Requests
+----
++
+Notice that the first six requests for both Alice and Bob returned a success response. After Alice and Bob reached their throttling rate, their remaining requests returned the HTTP status code 429 `Too Many Requests`.
++
+The throttling rate is applied independently to Alice and Bob, so no matter how many requests Alice sends in 10 seconds Bob can still send up to 6 requests in the same 10 seconds.
+
+====
+
+
+[#throttling-mapped]
+=== Configuring a Mapped Throttling Filter
+
+The following example route uses a mapped throttling policy to map requests from users in the accounts and sales departments of `example.com` to different throttling rates. Requests from other departments use the default throttling rate.
+
+The throttling rate is assigned according to the evaluation of `throttlingRateMapper`. In the example, this parameter evaluates to the value of the request header `X-Forwarded-For`, representing the hostname of the department.
+
+[#figure-throttling-mapped]
+image::images/throttling-mapped.png[]
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "ThrottlingFilter",
+          "config": {
+            "requestGroupingPolicy": "${request.headers['UserId'][0]}",
+            "throttlingRatePolicy": {
+              "type": "MappedThrottlingPolicy",
+              "config": {
+                "throttlingRateMapper": "${request.headers['X-Forwarded-For'][0]}",
+                "throttlingRatesMapping": {
+                  "accounts.example.com": {
+                    "numberOfRequests": 6,
+                    "duration": "10 seconds"
+                  },
+                  "sales.example.com": {
+                    "numberOfRequests": 3,
+                    "duration": "10 seconds"
+                  }
+                },
+                "defaultRate": {
+                  "numberOfRequests": 1,
+                  "duration": "10 seconds"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "handler": "ClientHandler"
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/throttle-mapped')}"
+}
+----
+
+[#d2528e8074]
+.To Configure a Mapped Throttling Filter
+====
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+. Add the example route to the OpenIG configuration as `$HOME/.openig/config/routes/00-throttle-mapped.json`.
++
+On Windows, add the route as `%appdata%\OpenIG\config\routes\00-throttle-mapped.json`.
+
+. With OpenIG and the protected application running, access the following route in a loop: link:http://openig.example.com:8080/throttle-mapped[http://openig.example.com:8080/throttle-mapped, window=\_blank].
++
+Accessing the route in a loop runs the request multiple times in quick succession, allowing you to test the throttling rate. You can use a command-line tool such as `curl` to run the following commands in quick succession or in a bash script:
++
+
+[source, console]
+----
+$ curl -v http://openig.example.com:8080/throttle-mapped/\[01-10\] \
+  --header "X-Forwarded-For:accounts.example.com" \
+  --header "UserId:Alice" \
+  > /tmp/Alice.txt 2>&1
+
+$ curl -v http://openig.example.com:8080/throttle-mapped/\[01-10\] \
+  --header "X-Forwarded-For:accounts.example.com" \
+  --header "UserId:Bob" \
+  > /tmp/Bob.txt 2>&1
+
+$ curl -v http://openig.example.com:8080/throttle-mapped/\[01-10\] \
+  --header "X-Forwarded-For:sales.example.com" \
+  --header "UserId:Carol" \
+  > /tmp/Carol.txt 2>&1
+
+$ curl -v http://openig.example.com:8080/throttle-mapped/\[01-10\] \
+  --header "X-Forwarded-For:finance.example.com" \
+  --header "UserId:Dave" \
+  > /tmp/Dave.txt 2>&1
+----
+
+. Search the output files to see the result for each user and each organization:
++
+
+[source, console]
+----
+$ grep "< HTTP/1.1" /tmp/Alice.txt | sort | uniq -c
+     
+ 6 < HTTP/1.1 200 OK
+ 4 < HTTP/1.1 429 Too Many Requests
+     
+$ grep "< HTTP/1.1" /tmp/Bob.txt | sort | uniq -c
+     
+ 6 < HTTP/1.1 200 OK
+ 4 < HTTP/1.1 429 Too Many Requests
+     
+$ grep "< HTTP/1.1" /tmp/Carol.txt | sort | uniq -c
+     
+ 3 < HTTP/1.1 200 OK
+ 7 < HTTP/1.1 429 Too Many Requests
+     
+$ grep "< HTTP/1.1" /tmp/Dave.txt | sort | uniq -c
+     
+ 1 < HTTP/1.1 200 OK
+ 9 < HTTP/1.1 429 Too Many Requests
+----
++
+Notice that the first six requests from Alice and Bob in accounts are successful, and the first three requests from Carol in sales are successful, consistent with the mapping in `00-throttle-mapped.json`. Requests from finance are not mapped, and therefore receive the default rate.
+
+====
+
+
+[#throttling-scriptable]
+=== Configuring a Scriptable Throttling Filter
+
+In this example, the `DefaultRateThrottlingPolicy` delegates the management of throttling to the scriptable throttling policy.
+
+The script applies a throttling rate of 6 requests/10 seconds to requests from the accounts department of `example.com`. For all other requests, the script returns `null`. When the script returns `null`, the default rate of 1 request/10 seconds is applied.
+
+[#figure-throttling-scriptable]
+image::images/throttling-scriptable.png[]
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "ThrottlingFilter",
+          "config": {
+            "requestGroupingPolicy": "${request.headers['UserId'][0]}",
+            "throttlingRatePolicy": {
+              "type": "DefaultRateThrottlingPolicy",
+              "config": {
+                "delegateThrottlingRatePolicy": {
+                  "type": "ScriptableThrottlingPolicy",
+                  "config": {
+                    "type": "application/x-groovy",
+                    "file": "ThrottlingScript.groovy"
+                  }
+                },
+                "defaultRate": {
+                  "numberOfRequests": 1,
+                  "duration": "10 seconds"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "handler": "ClientHandler"
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/throttle-scriptable')}"
+}
+----
+
+[source, javascript]
+----
+/**
+ * ThrottlingScript.groovy
+ *
+ * Script to throttle access for requests from the accounts department
+ * of example.com. Other requests return null.
+ */
+
+if (request.headers['X-Forwarded-For'].values[0]  == 'accounts.example.com') {
+    return new ThrottlingRate(6, '10 seconds')
+} else {
+    return null
+}
+----
+
+[#d2528e8189]
+.To Configure a Scriptable Throttling Filter
+====
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+. Add the example route to the OpenIG configuration as `$HOME/.openig/config/routes/00-throttle-scriptable.json`.
++
+On Windows, add the route as `%appdata%\OpenIG\config\routes\00-throttle-scriptable.json`.
+
+. Add the example script as `$HOME/.openig/scripts/groovy/ThrottlingScript.groovy`.
++
+On Windows, add the script as `%appdata%\OpenIG\scripts\groovy\ThrottlingScript.groovy`.
+
+. With OpenIG and the protected application running, access the following route in a loop: link:http://openig.example.com:8080/throttle-scriptable[http://openig.example.com:8080/throttle-scriptable, window=\_blank].
++
+Accessing the route in a loop runs the request multiple times in quick succession, allowing you to test the throttling rate. You can use a command-line tool such as `curl` to run the following commands in quick succession or in a bash script:
++
+
+[source, console]
+----
+$ curl -v http://openig.example.com:8080/throttle-scriptable/\[01-10\] \
+     --header "X-Forwarded-For:accounts.example.com" \
+     --header "UserId:Alice" \
+     > /tmp/Alice.txt 2>&1
+
+     $ curl -v http://openig.example.com:8080/throttle-scriptable/\[01-10\] \
+     --header "X-Forwarded-For:accounts.example.com" \
+     --header "UserId:Bob" \
+     > /tmp/Bob.txt 2>&1
+
+     $ curl -v http://openig.example.com:8080/throttle-scriptable/\[01-10\] \
+     --header "X-Forwarded-For:sales.example.com" \
+     --header "UserId:Carol" \
+     > /tmp/Carol.txt 2>&1
+----
+
+. Search the output files to see the result for each user and each organization:
++
+
+[source, console]
+----
+$ grep "< HTTP/1.1" /tmp/Alice.txt | sort | uniq -c
+     
+      6 < HTTP/1.1 200 OK
+      4 < HTTP/1.1 429 Too Many Requests
+     
+     $ grep "< HTTP/1.1" /tmp/Bob.txt | sort | uniq -c
+     
+      6 < HTTP/1.1 200 OK
+      4 < HTTP/1.1 429 Too Many Requests
+     
+     $ grep "< HTTP/1.1" /tmp/Carol.txt | sort | uniq -c
+     
+      1 < HTTP/1.1 200 OK
+      9 < HTTP/1.1 429 Too Many Requests
+----
++
+Notice that the first six requests from Alice and Bob in accounts are successful, consistent with the value in `ThrottlingScript.groovy`. The script returns `null` for requests from Carol in sales, so those requests receive the default throttling rate.
+
+====
+
+
+[#d2528e8272]
+=== Dynamic Throttling Rate
+
+In xref:#throttling-mapped[ Configuring a Mapped Throttling Filter ], requests from the same user were always sent from the same department in `example.com`. This example shows what happens to the throttling rate when a user sends requests from more than one department.
+
+The throttling rate is applied to users according to the evaluation of `requestGroupingPolicy`, and different throttling rates are mapped to different departments of `example.com` according to the evaluation of `throttlingRateMapper`.
+
+[#figure-throttling-rate-changed]
+image::images/throttling-rate-changed.png[]
+In the example, Alice sends five requests from the accounts department, quickly followed by four requests from sales, and then three more requests from accounts.
+
+After making five requests from accounts, Alice has almost reached the throttling rate. When she switches to sales, the number of requests she has already made is disregarded and the full throttling rate for sales is applied. Alice can now make three more requests from sales even though she had nearly reached her throttling rate for accounts.
+
+After making three requests from sales, Alice has reached her throttling rate. When she makes a fourth request from sales, the request is refused. Alice switches back to accounts and can now make six more requests even though she had reached her throttling rate for sales.
+
+When you configure `requestGroupingPolicy` and `throttlingRateMapper`, bear in mind what happens when requests from the same `requestGroupingPolicy` can be mapped to different throttling rates by the `throttlingRateMapper`.
+
+

@@ -297,7 +297,10 @@
     <profile>
       <id>man-pages</id>
       <activation>
-        <os><family>unix</family></os>
+        <os>
+          <family>unix</family>
+          <name>Linux</name>
+        </os>
         <jdk>1.8</jdk>
       </activation>
       <build>
@@ -314,6 +317,21 @@
                   <goal>build</goal>
                   <goal>release</goal>
                 </goals>
+              </execution>
+              <execution>
+                <id>build-man-pages-asciidoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>asciidoc-pre-process</goal>
+                  <goal>antora</goal>
+                  <goal>asciidoc-to-pdf</goal>
+                </goals>
+                <configuration>
+                  <documents>
+                    <document>gateway-guide</document>
+                     <document>reference</document>
+                  </documents>
+                </configuration>
               </execution>
             </executions>
             <configuration>

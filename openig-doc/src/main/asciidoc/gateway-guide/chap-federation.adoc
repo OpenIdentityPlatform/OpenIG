@@ -1,0 +1,721 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-federation]
+== OpenIG As a SAML 2.0 Service Provider
+
+The federation component of OpenIG is a standards-based authentication service used by OpenIG to validate users and log them in to applications that OpenIG protects. The federation component implements SAML 2.0. In this chapter, you will learn:
+
+* How OpenIG works as a SAML 2.0 service provider.
+
+* How to configure OpenIG as a service provider for a single application.
+
+xref:appendix-multiple-sps.adoc#appendix-multiple-sps[Appendix A, "SAML 2.0 and Multiple Applications] describes how to set up OpenIG as a SAML 2.0 service provider for two applications, using OpenAM as the identity provider.
+
+[#about-saml2]
+=== About SAML 2.0 SSO and Federation
+
+Federation allows organizations to share identities and services without giving away their identity information or the services they provide. Federation depends on standards to orchestrate interaction and exchange information between providers.
+
+SAML 2.0 is a standard that describes the messages that providers exchange and the way that they exchanged them. SAML 2.0 enables web single sign-on (SSO), for example, where the service managing the user's identity does not belong to the same organization and does not use the same software as the service that the user wants to access.
+The following terms are used for federation and SAML:
+
+* __Identity Provider__ (IDP): The service that manages the user identity.
+
+* __Service Provider__ (SP): The service that a user wants to access.
+
+* __Circle of trust__ (CoT): An identity provider and service provider that participate in the federation.
+
+When an identity provider and a service provider participate in federation, they agree on what security information to exchange, and mutually configure access to each others' services. The metadata that identity providers and service providers share is in an XML format defined by the SAML 2.0 standard.
+
+[#d2528e3270]
+==== Steps in SSO
+
+SSO can be initiated by the SP (__SP initiated SSO__) or by the IDP (__IDP initiated SSO__).
+
+Before SSO can be initiated by an IDP, the IDP must be configured with links that refer to the SP, and the user must be authenticated to the IDP. Instead of accessing app.example.com directly on the SP, the user accesses a link on the IDP that refers to the remote SP. The IDP provides SAML assertions for the user to the SP.
+
+When SSO is initiated by the SP, the user attempts to access app.example.com directly on the SP. Because the user's federated identity is managed by the IDP, the SP sends a SAML authentication request to the IDP. After authenticating the user, the IDP provides SAML assertions for the user to the SP.
+
+In both cases, the SAML assertion sent from the IDP to the SP attests which user is authenticated, when the authentication succeeded, how long the assertion is valid, and so on. The assertions can optionally contain additional and configurable attribute values, such as user meta-information or anything else provided by the IDP.
+
+The SP uses the SAML assertions from the IDP to make authorization decisions, for example, to let an authenticated user complete a purchase that gets charged to the user's account at the identity provider.
+
+SAML assertions can optionally be signed and encrypted.
+
+
+[#d2528e3291]
+==== OpenIG As a SAML 2.0 SP
+
+OpenIG acts as a SAML 2.0 SP for SSO, providing users with an interface to applications that don't support SAML 2.0.
+
+When SSO is initiated by the IDP, the IDP sends an unsolicited authentication statement to OpenIG. When SSO is initiated by OpenIG, OpenIG calls the federation component to initiate SSO with the IDP. In both cases, the job of the federation component is to authenticate the user and to pass the required attributes to OpenIG so that OpenIG can log the user into protected applications.
+
+
+
+[#federation-installation]
+=== Installation Overview
+
+This tutorial assumes that you are familiar with SAML 2.0 federation and with the components involved, including OpenAM. For information about OpenAM, read the documentation for your version of OpenAM.
+
+This tutorial does not address PKI configuration for validation and encryption, although OpenIG is capable of handling both, just as any OpenAM Fedlet can handle both.
+
+This tutorial takes you through the steps to set up OpenAM as an IDP and OpenIG as an SP to protect an application. To set up multiple SPs, read this chapter, work through the samples, and then consider the explanation in xref:appendix-multiple-sps.adoc#appendix-multiple-sps[Appendix A, "SAML 2.0 and Multiple Applications].
+
+[#d2528e3314]
+.Tasks for Configuring SAML 2.0 SSO and Federation
+[cols="50%,50%"]
+|===
+|Task |See Section(s) 
+
+a|Prepare the network.
+a|xref:#prepare-network[Preparing the Network]
+
+a|Configure OpenAM As an IDP.
+a|xref:#set-up-openam[ Setting Up OpenAM for This Tutorial ]
+
+ xref:#hosted-id[ Setting Up a Hosted Identity Provider ]
+
+ xref:#fedlet[ Setting up a Fedlet ]
+
+a|Configuring OpenIG as a SP.
+a|xref:#copy-conf-files[ Retrieve the Fedlet Configuration Files ]
+
+ xref:#route-credential-injection[ Adding a Route for Credential Injection ]
+
+ xref:#route-saml-fed[ Adding a Route for SAML Federation ]
+|===
+
+[#d2528e3373]
+.Fedlet Configuration Files
+[cols="50%,50%"]
+|===
+|File |Description 
+
+a|`fedlet.cot`
+a|Circle of trust for OpenIG and the identity provider.
+
+a|`idp.xml`
+a|Standard metadata (usually generated by the IDP).
+
+a|`idp-extended.xml`
+a|Metadata extensions (usually generated by the IDP).
+
+a|`sp.xml`
+a|Standard metadata for the OpenIG SP (usually generated by the IDP).
+
+a|`sp-extended.xml`
+a|Metadata extensions for the OpenIG SP (usually generated by the IDP).
+|===
+For examples of the federation configuration files, see xref:#example-fedlet-files[ Example Federation Configuration Files ]. You can copy and edit these files to create new configurations.
+
+
+[#prepare-network]
+=== Preparing the Network
+
+Configure the network so that browser traffic to the application hosts is proxied through OpenIG. The example in this chapter uses the host name `sp.example.com`.
+
+Add the following address to your hosts file: `sp.example.com`.
+
+[source]
+----
+127.0.0.1    localhost openam.example.com openig.example.com app.example.com sp.example.com
+----
+
+
+[#fed-tutorial-configure-openam]
+=== Configuring OpenAM As an IDP
+
+
+[#set-up-openam]
+==== Setting Up OpenAM for This Tutorial
+
+
+[#d2528e3483]
+.To Set Up OpenAM for This Tutorial
+====
+
+. Install and configure OpenAM on `\http://openam.example.com:8088/openam`, with the default configuration. If you use a different configuration, make sure you substitute in the tutorial accordingly.
+
+. In the top level realm, browse to Subject and create a user with following credentials:
+
+* ID (Username): `george`
+
+* Last Name: `costanza`
+
+* Full Name: `george costanza`
+
+* Password: `costanza`
+
+
+. Edit the user to add the following information:
+
+* Email Address: `george`
+
+* Employee Number: `costanza`
+
++
+For simplicity, this tutorial uses `mail` to hold the username, and `employeenumber` to hold the password. Both attributes are in the standard user profile with the default OpenAM configuration, and neither is needed for anything else in this tutorial. In a real deployment, you would use other attributes to represent real user profiles.
+
+. Test that you can log in to OpenAM with this username and password.
+
+====
+
+
+[#hosted-id]
+==== Setting Up a Hosted Identity Provider
+
+
+[#d2528e3550]
+.To Set Up a Hosted Identity Provider
+====
+
+. For OpenAM 13 and later, select the top level realm and browse to Create SAMLv2 Providers > Create Hosted Identity Provider.
++
+For OpenAM 12 and earlier, select the Common Tasks page in the console.
++
+A configuration page for the IDP is displayed.
+
+. In metadata > Name, change `\http://openam.example.com:8088/openam` to `openam`.
++
+This makes it easier to refer to OpenAM as the IDP later.
+
+. In metadata > Signing Key, select `test`.
+
+. In Circle of Trust, select an existing circle of trust (CoT) or select Add and enter the name of a new CoT. In this example, the CoT is called `Circle of Trust`.
+
+. In Attribute Mapping, map the `mail` attribute to `mail`, and map the `employeenumber` attribute to `employeenumber`.
++
+The SAML 2.0 attribute mapping indicates that OpenIG (the SP) wants OpenAM (the IDP) to get the value of these attributes from the user profile and send them to OpenIG. OpenIG can use the attribute values to log the user in to the application it protects.
+
+. Select Configure.
++
+A confirmation page is displayed. You can start to create a Fedlet from this page or go back to the top level realm, as described in the following procedure.
+
+====
+
+
+[#fedlet]
+==== Setting up a Fedlet
+
+A Fedlet is an example web application that acts as a lightweight SAML v2.0 SP. When you create a Fedlet, the federation configuration files are created in a directory similar to this: `$HOME/openam/myfedlets/openig-fedlet/Fedlet.zip`.
+
+[#d2528e3616]
+.To Set Up a Fedlet
+====
+
+. For OpenAM 13 and later, in the top level realm browse to Create Fedlet.
++
+For OpenAM 12 and earlier, select the Common Tasks page in the console.
+
+. In Name, enter a name for the Fedlet. In this tutorial, the Fedlet is named `sp`.
+
+. In Destination URL, enter the following URL for the SP: `\http://sp.example.com:8080/saml`.
+
+. In Attribute Mapping, map the `mail` attribute to `mail`, and map the `employeenumber` attribute to `employeenumber`.
+
+. Select Create.
++
+After successfully creating the Fedlet, OpenAM displays the location of the configuration files. Depending on your version of OpenAM, the configuration files are in a `war` directory or .zip file.
++
+The .zip file is named something like `$HOME/openam/myfedlets/sp/Fedlet.zip` on the system where OpenAM runs.
+
+====
+
+
+
+[#fed-tutorial-configure-federation]
+=== Configuring OpenIG As an SP
+
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started]. Getting the basic setup to work before you configure federation makes it simpler to troubleshoot if anything goes wrong.
+
+To test your setup, access the HTTP server home page through OpenIG at link:http://openig.example.com:8080[http://openig.example.com:8080, window=\_blank]. Log in as username `george`, password `costanza`. You should see a page showing the username and some information about the request.
+
+[#copy-conf-files]
+==== Retrieve the Fedlet Configuration Files
+
+
+[#d2528e3684]
+.To Retrieve the Fedlet Configuration Files
+====
+
+. Unpack the configuration files from the Fedlet you created in xref:#fedlet[ Setting up a Fedlet ]. For example, unpack the .zip file as follows:
++
+
+[source, console]
+----
+$ cd $HOME/openam/myfedlets/sp
+$ unzip Fedlet.zip
+$ mkdir $HOME/.openig/SAML
+$ cp conf/* $HOME/.openig/SAML
+$ ls -l $HOME/.openig/SAML
+
+FederationConfig.properties
+fedlet.cot
+idp-extended.xml
+idp.xml
+sp-extended.xml
+sp.xml
+----
+
+. Restart OpenIG.
+
+====
+
+
+[#route-credential-injection]
+==== Adding a Route for Credential Injection
+
+Create the configuration file `$HOME/.openig/config/routes/05-saml.json`.
+
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\05-saml.json`.
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "SamlFederationHandler",
+    "config": {
+      "assertionMapping": {
+        "username": "mail",
+        "password": "employeenumber"
+      },
+      "redirectURI": "/federate"
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/saml')}",
+  "session": "JwtSession"
+}
+----
+The route injects credentials into the context, based on attribute values from the SAML assertion returned on successful authentication. Note the following features of the route:
+
+* The route matches requests to `/saml`.
+
+* The `SamlFederationHandler` extracts credentials from the attributes returned in the SAML 2.0 assertion. It then redirects to the `/federate` route.
+
+* The route uses the `JwtSession` implementation, meaning it stores encrypted session information in a browser cookie. The name is a reference to the `JwtSession` object defined in `config.json`. For details, see xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the __Configuration Reference__.
+
+
+
+[#route-saml-fed]
+==== Adding a Route for SAML Federation
+
+Create the configuration file `$HOME/.openig/config/routes/05-federate.json`.
+
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\05-federate.json`.
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "DispatchHandler",
+    "config": {
+      "bindings": [
+        {
+          "condition": "${empty session.username}",
+          "handler": {
+            "type": "StaticResponseHandler",
+            "config": {
+              "status": 302,
+              "reason": "Found",
+              "headers": {
+                "Location": [
+                  "http://sp.example.com:8080/saml/SPInitiatedSSO"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "handler": {
+            "type": "Chain",
+            "config": {
+              "filters": [
+                {
+                  "type": "StaticRequestFilter",
+                  "config": {
+                    "method": "POST",
+                    "uri": "http://app.example.com:8081",
+                    "form": {
+                      "username": [
+                        "${session.username}"
+                      ],
+                      "password": [
+                        "${session.password}"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "handler": "ClientHandler"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/federate')}",
+  "session": "JwtSession"
+}
+----
+Notice the following features of the route:
+
+* The route matches requests to `/federate`. This is the route you use to test the configuration.
+
+* If the username has not been populated in the context, the user has not yet authenticated with the IDP. In this case,
++
+
+** The `DispatchHandler` dispatches requests to the `StaticResponseHandler`.
+
+** The `StaticResponseHandler` redirects to the SP-initiated SSO end point to initiate SAML 2.0 web browser SSO.
+
+** After authentication is successful, the `SamlFederationHandler` injects credentials into the session.
+
++
+If the credentials have been inserted into the context, or after successful authentication in the previous step, the `DispatchHandler` dispatches requests to the `Chain` to log the user in to the protected application.
+
+* The `StaticRequestFilter` retrieves the username and password from the context and replaces your browser's original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
+
+* The route uses the `JwtSession` implementation, meaning it stores encrypted session information in a browser cookie. The name is a reference to the `JwtSession` object defined in `config.json`. For details, see xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the __Configuration Reference__.
+
+
+[TIP]
+====
+If more dynamic control is needed for the URL where the user agent is redirected, then use the `RelayState` query string parameter in the URL of the redirect `Location` header. The `RelayState` query string parameter specifies where to redirect the user when the SAML 2.0 web browser SSO process is complete. The `RelayState` overrides the redirectURI set in the `SamlFederationHandler`. The `RelayState` value must be URL-encoded. When using an expression, use the `urlEncode()` function to encode the value. For example: `${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}`. In the following example, the user is finally redirected to the original URI from the request:
+
+[source, javascript]
+----
+"headers": {
+    "Location": [
+        "http://openig.example.com:8080/saml/SPInitiatedSSO?RelayState=${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}"
+    ]
+}
+----
+====
+
+
+
+[#fed-tutorial-testing]
+=== Testing the Configuration
+
+
+[#d2528e3876]
+==== Testing IDP-initiated SSO
+
+
+* Log out of the OpenAM console and select this link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank]. The OpenAM login page is displayed.
+
+* Log in to OpenAM with username `george` and password `costanza`. OpenIG returns the response page showing that the user has logged in.
+
+The following sequence diagram shows what just happened.
+
+[#saml-idp-initiated]
+image::images/saml-idp-initiated.png[]
+
+
+[#d2528e3906]
+==== Testing SP-initiated SSO
+
+
+* Log out of the OpenAM console, and browse to the URL for the route at link:http://openig.example.com:8080/federate[http://openig.example.com:8080/federate, window=\_blank]. The OpenAM login page is displayed.
+
+* Log in to OpenAM with the username `george` and password `costanza`. OpenIG returns the response page showing that the user has logged in.
+
+The following sequence diagram shows what just happened.
+
+[#saml-sp-initiated]
+image::images/saml-sp-initiated.png[]
+
+
+
+[#example-fedlet-files]
+=== Example Federation Configuration Files
+
+
+[#d2528e3938]
+==== Circle of Trust
+
+The following example of `$HOME/.openig/SAML/fedlet.cot` defines a CoT between OpenAM as the IDP and an OpenIG SP:
+
+[source, ini]
+----
+cot-name=Circle of Trust
+sun-fm-cot-status=Active
+sun-fm-trusted-providers=openam,sp
+sun-fm-saml2-readerservice-url=
+sun-fm-saml2-writerservice-url=
+----
+
+
+[#d2528e3948]
+==== SAML Configuration File
+
+The following example of `$HOME/.openig/SAML/sp.xml` defines a SAML configuration file for an OpenIG service provider, `sp`:
+
+[source, xml]
+----
+<EntityDescriptor
+  entityID="sp"
+  xmlns="urn:oasis:names:tc:SAML:2.0:metadata">
+  <SPSSODescriptor
+    AuthnRequestsSigned="false"
+    WantAssertionsSigned="false"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      Location="http://sp.example.com:8080/saml/fedletSloRedirect"
+      ResponseLocation="http://sp.example.com:8080/saml/fedletSloRedirect"/>
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      Location="http://sp.example.com:8080/saml/fedletSloPOST"
+      ResponseLocation="http://sp.example.com:8080/saml/fedletSloPOST"/>
+    <SingleLogoutService
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+      Location="http://sp.example.com:8080/saml/fedletSloSoap"/>
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+    <AssertionConsumerService
+      isDefault="true"
+      index="0"
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+      Location="http://sp.example.com:8080/saml/fedletapplication"/>
+    <AssertionConsumerService
+      index="1"
+      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+      Location="http://sp.example.com:8080/saml/fedletapplication"/>
+  </SPSSODescriptor>
+  <RoleDescriptor
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:query="urn:oasis:names:tc:SAML:metadata:ext:query"
+    xsi:type="query:AttributeQueryDescriptorType"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+  </RoleDescriptor>
+  <XACMLAuthzDecisionQueryDescriptor
+    WantAssertionsSigned="false"
+    protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+  </XACMLAuthzDecisionQueryDescriptor>
+</EntityDescriptor>
+----
+
+
+[#d2528e3961]
+==== Extended Configuration File
+
+The following example of `$HOME/.openig/SAML/sp-extended.xml` defines a SAML configuration file for an OpenIG service provider, `sp`:
+
+[source, xml]
+----
+<EntityConfig xmlns="urn:sun:fm:SAML:2.0:entityconfig"
+    xmlns:fm="urn:sun:fm:SAML:2.0:entityconfig"
+    hosted="1"
+    entityID="sp">
+
+    <SPSSOConfig metaAlias="/sp">
+        <Attribute name="description">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthOn">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="basicAuthUser">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthPassword">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="autofedEnabled">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="autofedAttribute">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="transientUser">
+            <Value>anonymous</Value>
+        </Attribute>
+        <Attribute name="spAdapter">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="spAdapterEnv">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="fedletAdapter">
+            <Value>com.sun.identity.saml2.plugins.DefaultFedletAdapter</Value>
+        </Attribute>
+        <Attribute name="fedletAdapterEnv">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="spAccountMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultLibrarySPAccountMapper</Value>
+        </Attribute>
+        <Attribute name="useNameIDAsSPUserID">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="spAttributeMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultSPAttributeMapper</Value>
+        </Attribute>
+        <Attribute name="spAuthncontextMapper">
+            <Value>com.sun.identity.saml2.plugins.DefaultSPAuthnContextMapper</Value>
+        </Attribute>
+        <Attribute name="spAuthncontextClassrefMapping">
+            <Value>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport|0|default</Value>
+        </Attribute>
+        <Attribute name="spAuthncontextComparisonType">
+           <Value>exact</Value>
+        </Attribute>
+        <Attribute name="attributeMap">
+           <Value>employeenumber=employeenumber</Value>
+           <Value>mail=mail</Value>
+        </Attribute>
+        <Attribute name="saml2AuthModuleName">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="localAuthURL">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="intermediateUrl">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="defaultRelayState">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="appLogoutUrl">
+           <Value>http://sp1.example.com:8080/saml/logout</Value>
+       </Attribute>
+       <Attribute name="assertionTimeSkew">
+           <Value>300</Value>
+       </Attribute>
+       <Attribute name="wantAttributeEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantAssertionEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantNameIDEncrypted">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantPOSTResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantArtifactResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantLogoutRequestSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantLogoutResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantMNIRequestSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="wantMNIResponseSigned">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="responseArtifactMessageEncoding">
+           <Value>URI</Value>
+       </Attribute>
+       <Attribute name="cotlist">
+       <Value>Circle of Trust</Value></Attribute>
+       <Attribute name="saeAppSecretList">
+       </Attribute>
+       <Attribute name="saeSPUrl">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="saeSPLogoutUrl">
+       </Attribute>
+       <Attribute name="ECPRequestIDPListFinderImpl">
+           <Value>com.sun.identity.saml2.plugins.ECPIDPFinder</Value>
+       </Attribute>
+       <Attribute name="ECPRequestIDPList">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="ECPRequestIDPListGetComplete">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="enableIDPProxy">
+           <Value>false</Value>
+       </Attribute>
+       <Attribute name="idpProxyList">
+           <Value></Value>
+       </Attribute>
+       <Attribute name="idpProxyCount">
+           <Value>0</Value>
+       </Attribute>
+       <Attribute name="useIntroductionForIDPProxy">
+           <Value>false</Value>
+       </Attribute>
+       <Attribute name="spSessionSyncEnabled">
+           <Value>false</Value>
+       </Attribute>
+        <Attribute name="relayStateUrlList">
+        </Attribute>
+    </SPSSOConfig>
+    <AttributeQueryConfig metaAlias="/attrQuery">
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="wantNameIDEncrypted">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="cotlist">
+            <Value>Circle of Trust</Value>
+        </Attribute>
+    </AttributeQueryConfig>
+    <XACMLAuthzDecisionQueryConfig metaAlias="/pep">
+        <Attribute name="signingCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="encryptionCertAlias">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthOn">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="basicAuthUser">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="basicAuthPassword">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="wantXACMLAuthzDecisionResponseSigned">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="wantAssertionEncrypted">
+            <Value>false</Value>
+        </Attribute>
+        <Attribute name="cotlist">
+            <Value>Circle of Trust</Value>
+        </Attribute>
+    </XACMLAuthzDecisionQueryConfig>
+</EntityConfig>
+----
+
+
+

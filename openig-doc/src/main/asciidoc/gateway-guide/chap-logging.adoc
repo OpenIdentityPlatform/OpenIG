@@ -1,0 +1,283 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-logging]
+== Logging Events in OpenIG
+
+OpenIG provides the following mechanisms to log events and record log messages:
+
+* `ConsoleLogSink` to write log messages to the standard error stream.
+
+* `FileLogSink` to write log messages to a file, using the UTF-8 character set.
+
+* `Slf4jLogSink` to delegate the writing of log messages to SLF4J.
+
+For information about how to configure these logging mechanisms, see xref:../reference/logging-conf.adoc#logging-conf[Logging Framework] in the __Configuration Reference__. This chapter describes the default logging behavior in OpenIG, and how to separate logging for routes and third-party dependencies.
+
+[#d2528e8353]
+=== Default Logging Behaviour
+
+By default, OpenIG declares a `ConsoleLogSink` named `LogSink`, with level `INFO`, and every heap object logs in a sink named `LogSink`.
+
+When no other logging is configured, all log messages are sent to the default `ConsoleLogSink` provided by OpenIG, and messages with level `INFO` are displayed on the console. Routes can use the `ConsoleLogSink` without explicitly defining it.
+
+To override the default logging for all heap objects, change the default values for the `ConsoleLogSink` object in `config.json`. The following example from `config.json` writes all log messages to file instead of to console, using a `FileLogSink` named `LogSink`.
+
+[source, javascript]
+----
+{
+  "name": "LogSink",
+  "type": "FileLogSink",
+  "config": {
+    "file": "${system['log'] ? system['log'] : '/tmp/proxy.log'}",
+    "level": "DEBUG"
+  }
+}
+----
+To override the default logging for specific heap objects only, create a `ConsoleLogSink` or `FileLogSink` heap object in a route, using a unique name. Bind the new sink to the object through the `logSink` configuration attribute. The following example creates a `ConsoleLogSink` with a non-default logging level to be used by the client filter.
+
+[source, javascript]
+----
+{
+  "name": "MyLogSink",
+  "type": "ConsoleLogSink",
+  "config": {
+    "level": "DEBUG"
+  }
+},
+{
+  "name": "MyClientFilter",
+  "type": "OAuth2ClientFilter",
+  "config": {
+     "logSink": "MyLogSink"
+  }
+}
+----
+Log messages from third-party dependencies, such as the ForgeRock common audit framework, are managed by SLF4J. Messages with level `INFO` are displayed on the console and written to `$HOME/.openig/logs/route-system.log`.
+
+The default configuration of SLF4J log messages is defined in OpenIG. Log messages are highlighted with a color related to their logging level. Exception titles and the top line of the stack trace are displayed.
+
+
+[#d2528e8428]
+=== Configuring Logback
+
+To create separate logging behavior for routes and third-party dependencies, use an `Slf4jLogSink` and create a file `$HOME/.openig/config/logback.xml` to override the default configuration for Logback.
+
+The Logback configuration is very flexible. For a full description of its parameters, see link:http://logback.qos.ch/index.html[the Logback website, window=\_blank]. The following elements are used in the default configuration of OpenIG or in the example:
+
+* *Root logger
+* to set the overall logging level for log messages from OpenIG, third-party dependencies, and associated appenders.
+
+* *Loggers
+* to identify routes and third-party dependencies for which to separate logging.
++
+Logger names follow a hierarchical naming rule. The logger name must match or be a descendant of the `base` parameter of `Slf4jLogSink`. The logging is separated according to a key defined in the sifting appender. For more information, see xref:../reference/logging-conf.adoc#Slf4jLogSink[Slf4jLogSink(5)] in the __Configuration Reference__.
+
+* *Appenders
+* to define the output destination and format of the log messages. More than one appender can be attached to a logger or root logger. The example in this section uses the following appenders:
++
+
+** `ConsoleAppender` to display log messages to the console.
+
+** `SiftingAppender` to separate logging according to a key.
+
+** `RollingFileAppender` to roll log files when conditions are met.
+
++
+
+
+
+[#chap-logging-example]
+=== Separating Logs for Different Routes
+
+This section describes how to create a separate log file to monitor access to OpenIG from a specific route.
+
+[#d2528e8498]
+.To Create Separate Log File for Requests From a Specific Route
+====
+Before you start, prepare OpenIG and the minimal HTTP server as shown in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+. Add the following route to the OpenIG configuration as `$HOME/.openig/config/routes/40-logging.json`.
++
+On Windows, add the route as `%appdata%\OpenIG\config\routes\40-logging.json`.
++
+
+[source, javascript]
+----
+{
+  "heap": [
+    {
+      "name": "LogSink",
+      "type": "Slf4jLogSink",
+      "config": {
+        "base": "com.example.app"
+      }
+    }
+  ],
+  "handler": "ClientHandler",
+  "capture": "all",
+  "condition": "${matches(request.uri.path, '^/logging')}"
+}
+----
++
+This route defines an `Slf4jLogSink` with the base `com.example.app`. When a request matches `/logging`, it is handled by a client handler, and the request and response messages are captured.
+
+. Add the following file to the OpenIG configuration as `$HOME/.openig/config/logback.xml`.
++
+On Windows, add the route as `%appdata%\OpenIG\config\logback.xml`.
++
+
+[source, javascript]
+----
+<?xml version="1.0" encoding="UTF-8"?><configuration scan="true" scanPeriod="5 seconds">
+
+ <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  <encoder>
+   <pattern>%nopex[%thread] %highlight(%-5level) %boldWhite(%logger{35}) -
+    %message%n%highlight(%rootException{short})
+   </pattern>
+  </encoder>
+ </appender>
+
+ <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+  <discriminator>
+   <key>routeId</key>
+   <defaultValue>system</defaultValue>
+  </discriminator>
+  <sift>
+   <!-- Create a separate log file for each <key> -->
+   <appender name="FILE-${routeId}" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${openig.base}/logs/route-${routeId}.log</file>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+     <!-- Rotate files daily -->
+     <fileNamePattern>${openig.base}/logs/route-${routeId}-%d{yyyy-MM-dd}.log</fileNamePattern>
+
+     <!-- Keep files for 30 days -->
+     <maxHistory>30</maxHistory>
+
+     <!-- Cap total log size at 3GB -->
+     <totalSizeCap>1KB</totalSizeCap>
+    </rollingPolicy>
+
+    <encoder>
+     <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+   </appender>
+  </sift>
+ </appender>
+
+ <logger name="com.example.app" level="DEBUG"/>
+
+ <root level="INFO">
+  <appender-ref ref="SIFT"/>
+  <appender-ref ref="STDOUT"/>
+ </root>
+</configuration>
+----
++
+This file defines the following configuration items:
++
+
+* A root logger to set the overall log level to `INFO`.
+
+* A logger with the name `com.example.app`, which matches the `base` parameter defined in the `Slf4jLogSink`. This logger logs to the `STDOUT` and `SIFT` appenders defined in the ascendant root logger.
++
+
+[NOTE]
+======
+Because of cumulative logging, if a logger and its ascendant logger are configured with the same appenders, logging is duplicated. To disable cumulative logging, use `additivity="false"` in the logger. For more information, see link:http://logback.qos.ch/index.html[the Logback website, window=\_blank].
+======
+
+* A `ConsoleAppender` to define the format of log messages on the console.
+
+* A `SiftingAppender` to separate logging according to the parameter `routeId`. This appender delegates log writing to the nested `RollingFileAppender`.
+
+* The `RollingFileAppender` to create one log file for each route, named with the route ID. The rolling policy defines the name of rotated files, how often they are rotated, their maximum size, and how long they are kept.
+
+* The configuration `scan="true"` requires the file to be scanned for changes. The file is scanned after both of the following criteria are met:
++
+
+** The specified number of logging operations have occurred, where the default is 16.
+
+** The scan period has elapsed, where the example specifies 5 seconds.
+
++
+
++
+
+. Access the route on `\http://openig.example.com:8080/logging`.
++
+The home page of the minimal HTTP server should be displayed and the following files should be created:
++
+
+* `$HOME/.openig/logs/route-system.log`, containing `INFO` log messages for all requests to OpenIG.
++
+
+[source, console]
+----
+617 [openig.example.com-startStop-1]INFO o.f.o.http.GatewayHttpApplication-OpenIG base directory : /openig_base
+642 [openig.example.com-startStop-1]INFO o.f.o.http.GatewayHttpApplication-Reading config from /openig_base/config/config.json
+----
+
+* `$HOME/.openig/logs/route-40-logging.log`, containing `DEBUG` log messages for requests to OpenIG, accessed through the route `40-logging.json`.
++
+
+[source, console]
+----
+14380 [http-nio-8080-exec-1] INFO  c.e.app.capturetop-level-handler -
+
+--- (request) id:c383f337-6cd4-4f62-b2a2-fe75b0d9754c-1 --->
+
+GET http://app.example.com:8081/logging HTTP/1.1
+accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+accept-encoding: gzip, deflate
+accept-language: en-US;q=1,en;q=0.9
+connection: keep-alive
+dnt: 1
+host: openig.example.com:8080
+user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0
+
+14443 [I/O dispatcher 1] INFO  c.e.app.capturetop-level-handler -
+
+--- (response) id:c383f337-6cd4-4f62-b2a2-fe75b0d9754c-1 ---
+
+HTTP/1.1 200 OK
+Content-Length: 1809
+Content-Type: text/html; charset=ISO-8859-1
+
+. . .
+----
+
++
+If `logback.xml` contains errors, messages like these are displayed on the console but the log files are not created:
++
+
+[source, console]
+----
+14:38:59,667 |-ERROR in ch.qos.logback.core.joran.spi.Interpreter@20:72 ...
+14:38:59,690 |-ERROR in ch.qos.logback.core.joran.action.AppenderRefAction ...
+----
+
+====
+
+

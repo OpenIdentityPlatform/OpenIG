@@ -1,0 +1,225 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-pep]
+== OpenIG As an OpenAM Policy Enforcement Point
+
+OpenIG can function as a policy enforcement point (PEP) with OpenAM as the policy decision point (PDP). In this chapter, you will learn how to configure OpenIG to:
+
+* Enforce policy decisions from OpenAM
+
+* Skip policy enforcement for resources that do not require policy protection
+
+
+[#about-pep]
+=== About OpenIG As a PEP With OpenAM As PDP
+
+In access management, a __policy enforcement point__ (PEP) intercepts requests for a resource, provides information about the request to a __policy decision point__ (PDP), and then grants or denies access to the resource based on the policy decision.
+
+The PDP evaluates requests based on the context and the policies configured. It returns decisions that indicate what actions are allowed or denied, as well as any advices, subject attributes, or static attributes for the specified resources.
+
+OpenAM allows the administrator to maintain centralized, fine-grained, declarative policies describing who can access what resources, and under what conditions access is authorized. OpenAM evaluates access decisions based on applicable policies, which can be managed by OpenAM realm, and by OpenAM application.
+
+OpenAM provides a REST API for authorized users to request policy decisions. OpenIG provides a PolicyEnforcementFilter that uses the REST API.
+
+You configure OpenIG to use a PolicyEnforcementFilter, which relies on OpenAM policies to protect a resource. For reference information about the filter, see xref:../reference/filters-conf.adoc#PolicyEnforcementFilter[PolicyEnforcementFilter(5)] in the __Configuration Reference__.
+
+
+[#pep-before-you-start]
+=== Preparing the Tutorial
+
+This tutorial shows you how OpenIG can act as a PEP, requesting policy decisions from OpenAM as a PDP. You add an OpenIG route that does the following:
+
+* When a user requests access to resources that do not require protection, the route allows the request to pass through.
+
+* When a user requests access to protected resources:
+
+** If the request is missing the expected OpenAM SSO token cookie, then the route redirects the user to OpenAM for authentication.
+
+** Otherwise, the route requests a policy decision from OpenAM.
++
+If the decision indicates that the request is allowed, processing continues. If the decision indicates that request is denied, OpenIG returns 403 Forbidden. If an error occurs during the process, OpenIG returns 500 Internal Server Error.
+
+
+Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
+
+OpenIG should be running in Jetty, configured to access the minimal HTTP server as described in that chapter.
+
+Now proceed to xref:#pdp-conf[Setting Up OpenAM As a PDP].
+
+
+[#pdp-conf]
+=== Setting Up OpenAM As a PDP
+
+OpenAM must have at least one policy that applies to requests to make policy decisions allowing access to resources. For OpenIG to request policy decisions, it must use the credentials of a user with the privilege to do so. This section describes what policy to create, and how to prepare a user who can request policy decisions.
+
+[#pdp-conf-policy]
+.To Create a Policy in OpenAM
+====
+Follow these steps:
+
+. Log in to OpenAM console as administrator (`amadmin`).
+
+. In the top-level realm, create an authorization policy in the `iPlanetAMWebAgentService` policy set called `Policy for OpenIG as PEP`.
+
+. Configure the policy with the following characteristics:
++
+--
+
+Resources::
+Protect the URL for the minimal HTTP server `app.example.com:8081/pep`.
++
+This policy applies to resources served by the minimal HTTP server as they are accessed through OpenIG.
+
+Actions::
+Allow HTTP `GET`.
+
+Subjects::
+Add a subject condition of type `Authenticated Users`.
+
+--
+
+. Make sure all the changes are saved.
+
+====
+
+[#pdp-conf-admin]
+.To Create a Policy Administrator in OpenAM
+====
+Follow these steps:
+
+. In the top-level realm, create a subject with ID `policyAdmin` and password `password`.
+
+. Create a `policyAdmins` group and add the user you created.
+
+. In the privileges configuration, add the `REST calls for policy evaluation` privilege for the `policyAdmins` group.
++
+This allows the user to request policy decisions.
+
+. Make sure all the changes are saved.
+
+====
+Now proceed to xref:#pep-conf[Setting Up OpenIG As a PEP].
+
+
+[#pep-conf]
+=== Setting Up OpenIG As a PEP
+
+To configure OpenIG as a PEP, use a `PolicyEnforcementFilter` as described in xref:../reference/filters-conf.adoc#PolicyEnforcementFilter[PolicyEnforcementFilter(5)] in the __Configuration Reference__.
+
+Include the following route configuration file as `$HOME/.openig/config/routes/04-pep.json`:
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "DispatchHandler",
+    "config": {
+      "bindings": [
+        {
+          "condition": "${request.cookies['iPlanetDirectoryPro'] == null}",
+          "handler": {
+            "type": "StaticResponseHandler",
+            "config": {
+              "status": 302,
+              "reason": "Found",
+              "headers": {
+                "Location": [
+                  "http://openam.example.com:8088/openam/XUI/#login/&goto=${urlEncode(contexts.router.originalUri)}"
+                ]
+              },
+              "entity": "Redirecting to OpenAM..."
+            }
+          }
+        },
+        {
+          "comment": "This condition is optional, but included for clarity.",
+          "condition": "${request.cookies['iPlanetDirectoryPro'] != null}",
+          "handler": {
+            "type": "Chain",
+            "config": {
+              "filters": [
+                {
+                  "type": "PolicyEnforcementFilter",
+                  "config": {
+                    "openamUrl": "http://openam.example.com:8088/openam/",
+                    "pepUsername": "policyAdmin",
+                    "pepPassword": "password",
+                    "ssoTokenSubject": "${request.cookies['iPlanetDirectoryPro'][0].value}"
+                  }
+                }
+              ],
+              "handler": "ClientHandler"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/pep') and not contains(request.uri.path, 'not-enforced')}"
+}
+----
+On Windows, the file name should be `%appdata%\OpenIG\config\routes\04-pep.json`.
+Notice the following features of the new route:
+
+* If the request path contains `not-enforced`, the route is skipped.
++
+This is similar to the not-enforced URL behavior of OpenAM policy agents.
+
+* The main `DispatchHandler` has the following bindings:
++
+
+** If the request is missing an `iPlanetDirectoryPro` SSO cookie, the `StaticResponseHandler` redirects to OpenAM for authentication, with a `goto` parameter to have OpenAM redirect back to the request URL on successful authentication.
++
+When redirecting to OpenAM, OpenIG uses the XUI URL. If you use the classic UI, adjust the location accordingly.
++
+Adding other parameters is left as an exercise for the reader. See the OpenAM documentation for details.
+
+** Otherwise, the `PolicyEnforcementFilter` uses the SSO cookie value to identify the subject making the request, and calls to OpenAM for a policy decision.
++
+On success, the `PolicyEnforcementFilter` lets processing continue, and the resource is returned in response to the request.
+
+
+* The route matches requests to `/pep`.
+
+Now proceed to xref:#pep-trying-it-out[Test the Setup].
+
+
+[#pep-trying-it-out]
+=== Test the Setup
+
+To test your configuration, log out of OpenAM and then try the following:
+
+* Browse to link:http://openig.example.com:8080/pep/not-enforced/[http://openig.example.com:8080/pep/not-enforced/, window=\_blank].
++
+Because the request URI contains `not-enforced`, the condition does not match the route in `04-pep.json`. The request uses the default OpenIG route and is dispatched directly to the minimal HTTP server. The request does not go through the PEP, and no access control is performed by OpenIG.
+
+* Browse to link:http://openig.example.com:8080/pep/[http://openig.example.com:8080/pep/, window=\_blank].
++
+OpenIG redirects you to OpenAM for authentication, where you can log in as user `demo`, password `changeit`.
++
+On successful authentication, OpenAM redirects you back to the request URL, and OpenIG requests a policy decision with the SSO cookie value.
++
+OpenAM returns a policy decision granting access to the resource, and OpenIG allows the minimal HTTP server to return its home page.
+
+
+

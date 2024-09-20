@@ -1,0 +1,881 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#expressions-conf]
+== Expressions
+
+Many configuration parameters support dynamic expressions.
+[#Expressions]
+=== Expressions — expression configuration parameter values
+
+[#expressions-description]
+==== Description
+Expressions are specified as configuration parameter values for a number of built-in objects. Such expressions conform to the Universal Expression Language as specified in link:http://www.jcp.org/en/jsr/detail?id=245[JSR-245, window=\_blank].
+
+[#d210e15763]
+==== General Syntax
+All expressions follow standard Universal Expression Language syntax: `${expression}`. The expression can be a simple reference to a value, a function call, or arbitrarily complex arithmetic, logical, relational and conditional operations. When supplied within a configuration parameter, an expression is always a string enclosed in quotation marks, for example: `"${request.method}"`.
+
+[#d210e15774]
+==== Value Expressions
+A value expression references a value relative to the scope supplied to the expression. For example, `"${request.method}"` references the method of an incoming HTTP request.
+
+An __lvalue-expression__ is a specific type of value expression that references a value to be written. For example, `"${session.gotoURL}"` specifies a session attribute named `gotoURL` to write a value to. Attempts to write values to read-only values are ignored.
+
+[#d210e15793]
+==== Indexed Properties
+Properties of values are accessed using the `.` and `[]` operators, and can be nested arbitrarily.
+
+The value expressions `"${request.method}"` and `"${request['method']}"` are equivalent.
+
+In the case of arrays, the index of an element in the array is expressed as a number in brackets. For example, `"${request.headers['Content-Type'][0]}"` references the first `Content-Type` header value in a request. If a property does not exist, then the index reference yields a `null` (empty) value.
+
+[#d210e15823]
+==== Operations
+Universal Expression Language supports arbitrarily complex arithmetic, logical, relational and conditional operations. They are, in order of precedence:
+
+* Index property value: `[]`, `.`
+
+* Change precedence of operation: `()`
+
+* Unary negative: `-`
+
+* Logical operations: `not`, `!`, `empty`
+
+* Arithmetic operations: `*`, `/`, `div`, `%`, `mod`
+
+* Binary arithmetic operations: `+`, `-`
+
+* Relational operations: `<`, `>`, `<=`, `>=`, `lt`, `gt`, `le`, `ge`, `==`, `!=`, `eq`, `ne`
+
+* Logical operations: `&&`, `and`, `||`, `or`
+
+* Conditional operations: `?`, `:`
+
+
+[#d210e15952]
+==== System Properties and Environment Variables
+You can use expressions to retrieve Java system properties, and to retrieve environment variables.
+
+For system properties, `${system['property']}` yields the value of __property__, or `null` if there is no value for __property__. For example, `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
+
+For environment variables, `${env['variable']}` yields the value of __variable__, or `null` if there is no value for __variable__. For example, `${env['HOME']}` yields the home directory of the user running the application server for OpenIG.
+
+[#d210e15997]
+==== Functions
+A number of built-in functions described in xref:#Functions[Functions(5)] can be called within an expression.
+
+Syntax is `${function(parameter, ...)}`, where zero or more parameters are supplied to the function. For example, `"${toLowerCase(request.method)}"` yields the method of the request, converted to lower case. Functions can be operands for operations, and can yield parameters for other function calls.
+
+[#d210e16012]
+==== Escaping Literal Expressions
+Use the backslash `\` character as the escape character. For example, `${true}` as an expression normally evaluates to `true`. To include the string `${true}` in an expression, write `${true}`.
+
+You can also escape literal expressions by single-quoting the initial characters. For example, `${'${'}true}` evaluates to `${true}`. To include a single backslash `\` character, write `${'\\'}`. To include a double backslash, write `${'\\\\'}`.
+
+[#d210e16049]
+==== Embedding Expressions
+Although an expression cannot be embedded as `${expression}` inside another expression, embedding system property, environment variable, and function expressions within each other is fine. Do not enclose the embedded elements in `${}`.
+
+The following single line example embeds an `env` environment variable expression and the Java `String.concat()` method in the argument to a `read()` function:
+
+[source, javascript]
+----
+"entity" : "${read(env['OPENIG_BASE'].concat('/html/defaultResponse.html'))}"
+----
+In the example the entity property value is set to the contents of the file `$OPENIG_BASE/html/defaultResponse.html`.
+
+[#d210e16082]
+==== Extensions
+OpenIG offers a plugin interface for extending expressions. See xref:../gateway-guide/chap-extending.adoc#extension-points[Key Extension Points] in the __Gateway Guide__.
+
+If your deployment uses expression plugins, read the plugin documentation about the additional expressions you can use.
+
+[#d210e16091]
+==== Examples
+
+[source, javascript]
+----
+"${request.uri.path == '/wordpress/wp-login.php'
+   and request.form['action'][0] != 'logout'}"
+
+"${request.uri.host == 'wiki.example.com'}"
+
+"${request.cookies[keyMatch(request.cookies,'^SESS.*')][0].value}"
+
+"${toString(request.uri)}"
+
+"${request.method == 'POST' and request.uri.path == '/wordpress/wp-login.php'}"
+
+"${request.method != 'GET'}"
+
+"${request.headers['cookie'][0]}"
+
+"${request.uri.scheme == 'http'}"
+
+"${not (response.status.code == 302 and not empty session.gotoURL)}"
+
+"${response.headers['Set-Cookie'][0]}"
+
+"${request.headers['host'][0]}"
+
+"${not empty system['OPENIG_BASE'] ? system['OPENIG_BASE'] : '/path/to'}/logs/gateway.log"
+----
+
+[#d210e16099]
+==== See Also
+xref:object-model-conf.adoc#Contexts[Contexts(5)], xref:#Functions[Functions(5)], xref:object-model-conf.adoc#Request[Request(5)], xref:object-model-conf.adoc#Response[Response(5)]
+
+'''
+[#Functions]
+=== Functions — built-in functions to call within expressions
+
+[#functions-description]
+==== Description
+A set of built-in functions that can be called from within expressions, which are described in xref:#Expressions[Expressions(5)].
+
+[#functions-array]
+==== array
+
+[source]
+----
+array(strings...)
+----
+Returns an array of the strings given as argument.
+.Parameters
+--
+
+strings::
+the strings to put in the array.
+
+--
+.Returns
+--
+
+array::
+the resulting array of containing the given strings.
+
+--
+
+[#functions-contains]
+==== contains
+
+[source]
+----
+contains(object, value)
+----
+Returns `true` if the object contains the specified value. If the object is a string, a substring is searched for the value. If the object is a collection or array, its elements are searched for the value.
+.Parameters
+--
+
+object::
+the object to be searched for the presence of.
+
+value::
+the value to be searched for.
+
+--
+.Returns
+--
+
+true::
+if the object contains the specified value.
+
+--
+
+[#functions-decodeBase64]
+==== decodeBase64
+
+[source]
+----
+decodeBase64(string)
+----
+Returns the base64-decoded string, or `null` if the string is not valid Base64.
+.Parameters
+--
+
+string::
+The base64-encoded string to decode.
+
+--
+.Returns
+--
+
+string::
+The base64-decoded string.
+
+--
+
+[#functions-encodeBase64]
+==== encodeBase64
+
+[source]
+----
+encodeBase64(string)
+----
+Returns the base64-encoded string, or `null` if the string is `null`.
+.Parameters
+--
+
+string::
+The string to encode into Base64.
+
+--
+.Returns
+--
+
+string::
+The base64-encoded string.
+
+--
+
+[#functions-formDecodeParameterNameOrValue]
+==== formDecodeParameterNameOrValue
+
+[source]
+----
+formDecodeParameterNameOrValue(string)
+----
+Returns the string that results from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded`, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the parameter name or value
+
+--
+.Returns
+--
+
+string::
+The string resulting from decoding the provided form encoded parameter name or value as per `application/x-www-form-urlencoded`.
+
+--
+
+[#functions-formEncodeParameterNameOrValue]
+==== formEncodeParameterNameOrValue
+
+[source]
+----
+formEncodeParameterNameOrValue(string)
+----
+Returns the string that results from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded`, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the parameter name or value
+
+--
+.Returns
+--
+
+string::
+The string resulting from form encoding the provided parameter name or value as per `application/x-www-form-urlencoded`.
+
+--
+
+[#functions-indexOf]
+==== indexOf
+
+[source]
+----
+indexOf(string, substring)
+----
+Returns the index within a string of the first occurrence of a specified substring.
+.Parameters
+--
+
+string::
+the string in which to search for the specified substring.
+
+substring::
+the value to search for within the string.
+
+--
+.Returns
+--
+
+number::
+the index of the first instance of substring, or -1 if not found.
+
++
+The index count starts from 1, not 0.
+
+--
+
+[#functions-join]
+==== join
+
+[source]
+----
+join(strings, separator)
+----
+Joins an array of strings into a single string value, with a specified separator.
+.Parameters
+--
+
+separator::
+the separator to place between joined elements.
+
+strings::
+the array of strings to be joined.
+
+--
+.Returns
+--
+
+string::
+the string containing the joined strings.
+
+--
+
+[#functions-keyMatch]
+==== keyMatch
+
+[source]
+----
+keyMatch(map, pattern)
+----
+Returns the first key found in a map that matches the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank], or `null` if no such match is found.
+.Parameters
+--
+
+map::
+the map whose keys are to be searched.
+
+pattern::
+a string containing the regular expression pattern to match.
+
+--
+.Returns
+--
+
+string::
+the first matching key, or `null` if no match found.
+
+--
+
+[#functions-length]
+==== length
+
+[source]
+----
+length(object)
+----
+Returns the number of items in a collection, or the number of characters in a string.
+.Parameters
+--
+
+object::
+the object whose length is to be determined.
+
+--
+.Returns
+--
+
+number::
+the length of the object, or 0 if length could not be determined.
+
+--
+
+[#functions-matchingGroups]
+==== matchingGroups
+
+[source]
+----
+matchingGroups(string, pattern)
+----
+Returns an array of matching groups for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] applied to the specified string, or `null` if no such match is found. The first element of the array is the entire match, and each subsequent element correlates to any capture group specified within the regular expression.
+.Parameters
+--
+
+string::
+the string to be searched.
+
+pattern::
+a string containing the regular expression pattern to match.
+
+--
+.Returns
+--
+
+array::
+an array of matching groups, or `null` if no such match is found.
+
+--
+
+[#functions-matches]
+==== matches
+
+[source]
+----
+matches(string, pattern)
+----
+Returns `true` if the string contains a match for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
+.Parameters
+--
+
+string::
+the string to be searched.
+
+pattern::
+a string containing the regular expression pattern to find.
+
+--
+.Returns
+--
+
+true::
+if the string contains the specified regular expression pattern.
+
+--
+
+[#functions-read]
+==== read
+
+[source]
+----
+read(string)
+----
+Takes a file name as a `string`, and returns the content of the file as a plain string, or `null` on error (due to the file not being found, for example).
+
+Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir`.
+.Parameters
+--
+
+string::
+The name of the file to read.
+
+--
+.Returns
+--
+
+string::
+The content of the file or `null` on error.
+
+--
+
+[#functions-readProperties]
+==== readProperties
+
+[source]
+----
+readProperties(string)
+----
+Takes a Java Properties file name as a `string`, and returns the content of the file as a key/value map of properties, or `null` on error (due to the file not being found, for example).
+
+Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir`.
+
+For example, to get the value of the `key` property in the properties file `/path/to/my.properties`, use `${readProperties('/path/to/my.properties')['key']}`.
+.Parameters
+--
+
+string::
+The name of the Java Properties file to read.
+
+--
+.Returns
+--
+
+object::
+The key/value map of properties or `null` on error.
+
+--
+
+[#functions-split]
+==== split
+
+[source]
+----
+split(string, pattern)
+----
+Splits the specified string into an array of substrings around matches for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
+.Parameters
+--
+
+string::
+the string to be split.
+
+pattern::
+the regular expression to split substrings around.
+
+--
+.Returns
+--
+
+array::
+the resulting array of split substrings.
+
+--
+
+[#functions-toLowerCase]
+==== toLowerCase
+
+[source]
+----
+toLowerCase(string)
+----
+Converts all of the characters in a string to lower case.
+.Parameters
+--
+
+string::
+the string whose characters are to be converted.
+
+--
+.Returns
+--
+
+string::
+the string with characters converted to lower case.
+
+--
+
+[#functions-toString]
+==== toString
+
+[source]
+----
+toString(object)
+----
+Returns the string value of an arbitrary object.
+.Parameters
+--
+
+object::
+the object whose string value is to be returned.
+
+--
+.Returns
+--
+
+string::
+the string value of the object.
+
+--
+
+[#functions-toUpperCase]
+==== toUpperCase
+
+[source]
+----
+toUpperCase(string)
+----
+Converts all of the characters in a string to upper case.
+.Parameters
+--
+
+string::
+the string whose characters are to be converted.
+
+--
+.Returns
+--
+
+string::
+the string with characters converted to upper case.
+
+--
+
+[#functions-trim]
+==== trim
+
+[source]
+----
+trim(string)
+----
+Returns a copy of a string with leading and trailing whitespace omitted.
+.Parameters
+--
+
+string::
+the string whose white space is to be omitted.
+
+--
+.Returns
+--
+
+string::
+the string with leading and trailing white space omitted.
+
+--
+
+[#functions-urlDecode]
+==== urlDecode
+
+[source]
+----
+urlDecode(string)
+----
+Returns the URL decoding of the provided string.
+
+This is equivalent to xref:#functions-formDecodeParameterNameOrValue["formDecodeParameterNameOrValue"].
+.Parameters
+--
+
+string::
+The string to be URL decoded, which may be `null`.
+
+--
+.Returns
+--
+
+string::
+The URL decoding of the provided string, or `null` if string was `null`.
+
+--
+
+[#functions-urlEncode]
+==== urlEncode
+
+[source]
+----
+urlEncode(string)
+----
+Returns the URL encoding of the provided string.
+
+This is equivalent to xref:#functions-formEncodeParameterNameOrValue["formEncodeParameterNameOrValue"].
+.Parameters
+--
+
+string::
+The string to be URL encoded, which may be `null`.
+
+--
+.Returns
+--
+
+string::
+The URL encoding of the provided string, or `null` if string was `null`.
+
+--
+
+[#functions-urlDecodeFragment]
+==== urlDecodeFragment
+
+[source]
+----
+urlDecodeFragment(string)
+----
+Returns the string that results from decoding the provided URL encoded fragment as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the fragment
+
+--
+.Returns
+--
+
+string::
+The string resulting from decoding the provided URL encoded fragment as per RFC 3986.
+
+--
+
+[#functions-urlDecodePathElement]
+==== urlDecodePathElement
+
+[source]
+----
+urlDecodePathElement(string)
+----
+Returns the string that results from decoding the provided URL encoded path element as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the path element
+
+--
+.Returns
+--
+
+string::
+The string resulting from decoding the provided URL encoded path element as per RFC 3986.
+
+--
+
+[#functions-urlDecodeQueryParameterNameOrValue]
+==== urlDecodeQueryParameterNameOrValue
+
+[source]
+----
+urlDecodeQueryParameterNameOrValue(string)
+----
+Returns the string that results from decoding the provided URL encoded query parameter name or value as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the parameter name or value
+
+--
+.Returns
+--
+
+string::
+The string resulting from decoding the provided URL encoded query parameter name or value as per RFC 3986.
+
+--
+
+[#functions-urlDecodeUserInfo]
+==== urlDecodeUserInfo
+
+[source]
+----
+urlDecodeUserInfo(string)
+----
+Returns the string that results from decoding the provided URL encoded userInfo as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the userInfo
+
+--
+.Returns
+--
+
+string::
+The string resulting from decoding the provided URL encoded userInfo as per RFC 3986.
+
+--
+
+[#functions-urlEncodeFragment]
+==== urlEncodeFragment
+
+[source]
+----
+urlEncodeFragment(string)
+----
+Returns the string that results from URL encoding the provided fragment as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the fragment
+
+--
+.Returns
+--
+
+string::
+The string resulting from URL encoding the provided fragment as per RFC 3986.
+
+--
+
+[#functions-urlEncodePathElement]
+==== urlEncodePathElement
+
+[source]
+----
+urlEncodePathElement(string)
+----
+Returns the string that results from URL encoding the provided path element as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the path element
+
+--
+.Returns
+--
+
+string::
+The string resulting from URL encoding the provided path element as per RFC 3986.
+
+--
+
+[#functions-urlEncodeQueryParameterNameOrValue]
+==== urlEncodeQueryParameterNameOrValue
+
+[source]
+----
+urlEncodeQueryParameterNameOrValue(string)
+----
+Returns the string that results from URL encoding the provided query parameter name or value as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the parameter name or value
+
+--
+.Returns
+--
+
+string::
+The string resulting from URL encoding the provided query parameter name or value as per RFC 3986.
+
+--
+
+[#functions-urlEncodeUserInfo]
+==== urlEncodeUserInfo
+
+[source]
+----
+urlEncodeUserInfo(string)
+----
+Returns the string that results from URL encoding the provided userInfo as per RFC 3986, which can be `null` if the input is `null`.
+.Parameters
+--
+
+string::
+the userInfo
+
+--
+.Returns
+--
+
+string::
+The string resulting from URL encoding the provided userInfo as per RFC 3986.
+
+--
+
+[#functions-javadoc]
+==== Javadoc
+Some functions are provided by link:../apidocs/index.html?org/forgerock/openig/el/Functions.html[org.forgerock.openig.el.Functions, window=\_blank].
+
+Other functions are provided by link:../apidocs/index.html?org/forgerock/http/util/Uris.html[org.forgerock.http.util.Uris, window=\_blank].
+
+'''
+[#Patterns]
+=== Patterns — regular expression patterns
+
+[#d210e17106]
+==== Description
+Patterns in configuration parameters and expressions use the standard Java regular expression link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class. For more information on regular expressions, see Oracle's link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[tutorial on Regular Expressions, window=\_blank].
+
+[#d210e17122]
+==== Pattern Templates
+A regular expression pattern template expresses a transformation to be applied for a matching regular expression pattern. It may contain references to link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#cg[capturing groups, window=\_blank] within the match result. Each occurrence of `$g` (where __g__ is an integer value) is substituted by the indexed capturing group in a match result. Capturing group zero `"$0"` denotes the entire pattern match. A dollar sign or numeral literal immediately following a capture group reference can be included as a literal in the template by preceding it with a backslash ( `\` ). Backslash itself must be also escaped in this manner.
+
+[#d210e17142]
+==== See Also
+Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class
+
+link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[Regular Expressions tutorial, window=\_blank]
+
+

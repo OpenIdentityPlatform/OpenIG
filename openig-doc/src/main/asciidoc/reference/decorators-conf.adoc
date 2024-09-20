@@ -1,0 +1,776 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#decorators-conf]
+== Decorators
+
+Decorators are objects that decorate other heap objects, adding the new behavior that the decorator provides. For example, you can configure a decorator object for capturing requests and responses to a file and then decorate other objects in the heap to trigger the capture.
+
+To decorate other objects individually, use a local decoration by adding the decorator's name value as a top-level field of the object. For example, suppose a capture decorator named capture is defined in the global configuration, `config.json`. The decorator is configured to capture the entity but not the context:
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureEntity": true,
+        "_captureContext": true
+    }
+}
+----
+The following ClientHandler configuration would then capture requests including the entity before they are forwarded to the server:
+
+[source, javascript]
+----
+{
+    "name": "ClientHandler",
+    "type": "ClientHandler",
+    "capture": "request"
+}
+----
+To decorate the handler for a route, add the decorator as a top-level field of the route. The following route includes an audit decoration on the handler. This configuration decorates the ClientHandler only for the current route. It does not decorate other uses of ClientHandler in other routes:
+
+[source, javascript]
+----
+{
+    "handler": "ClientHandler",
+    "audit": "Default route"
+}
+----
+The decoration as a top-level field also does not decorate heap objects. To decorate all applicable objects defined within a Route's heap, configure globalDecorators as a top-level field of the Route. The globalDecorators field takes a map of the decorations to apply. For example, the following route has audit and capture decorations that apply to the Chain, HeaderFilter, and StaticResponseHandler. In other words, the decorations apply to all objects in this route's heap:
+
+[source, javascript]
+----
+{
+    "globalDecorators": {
+        "audit": "My static route",
+        "capture": "all"
+    },
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "RESPONSE",
+                        "add": [
+                            {
+                                "X-Powered-By": [
+                                    "OpenIG"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "entity": "Hello World"
+                }
+            }
+        }
+    },
+    "condition": "${matches(request.uri.path, '^/static')}"
+}
+----
+Decorations are inherited as follows:
+
+* Local decorations that are part of an object's declaration are inherited wherever the object is used.
+
+* The globalDecorations on a route are inherited on child routes.
+
+To prevent loops, decorators themselves cannot be decorated. Instead, decorators apply only to specific types of objects such as Filters and Handlers.
+
+OpenIG defines some decorators, such as audit, baseURI, capture, and timer. You can use these without configuring them explicitly. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)].
+
+Take care when defining decorator names not to use names that unintentionally clash with field names for the decorated objects. For all heap objects, avoid decorators named `config`, `name`, and `type`. For Routes, avoid decorators named `auditService`, `baseURI`, `condition`, `globalDecorators`, `heap`, `handler`, `name`, and `session`. In `config.json`, also avoid `logSink` and `temporaryStorage`. In addition, avoid decorators named `comment` or `comments`. The best way to avoid a clash with other field names is to avoid OpenIG reserved field names, which include all purely alphanumeric field names. Instead use dots in your decorator names, such as `my.decorator`.
+
+Decorations can apply more than once. For example, if you set a decoration both on a Route and also on an object defined within the route, then OpenIG can apply the decoration twice. The following Route results in the request being captured twice:
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "ClientHandler",
+    "capture": "request"
+  },
+  "capture": "all"
+}
+----
+OpenIG applies decorations in this order.
+
+. Local decorations
+
+. globalDecorations (first those of the parent, then those declared in the current route)
+
+. Route decorations (those decorating a route's handler)
+
+Interface Stability: Evolving (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+[#AuditDecorator]
+=== AuditDecorator — trigger notification of audit events for Filters and Handlers
+
+[#d210e8926]
+==== Description
+Triggers notification of audit events for applicable Filters and Handlers.
+
+Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+
+OpenIG first notifies an audit system sink. The audit system sink takes responsibility for forwarding notifications to registered audit event listeners. The listeners take responsibility for dealing with the audit events. What a listener does is implementation specific, but it could for example publish the event to an endpoint or to a central system, log the event in a file, or raise an alert.
+--
+To help listeners determine what to do with audit events, each audit event holds the following information about what it represents:
+
+`event.data`::
+A reference to the data involved in the event, providing access to the `request`, `response`, and `contexts` objects.
+
+`event.source`::
+The source of the audit event, meaning the name of the object under audit.
+
++
+For details, see link:../apidocs/index.html?org/forgerock/openig/audit/AuditSource.html[org.forgerock.openig.audit.AuditSource, window=\_blank].
+
+`event.tags`::
+Strings that qualify the event. Entities receiving notifications can use the tags to select audit events of interest.
+
++
+Define your own audit tags in order to identify particular events or routes.
++
+OpenIG provides the following built-in tags in link:../apidocs/index.html?org/forgerock/openig/audit/Tag.html[org.forgerock.openig.audit.Tag, window=\_blank]:
+
+* `request`: This event happens before OpenIG calls the decorated object.
+
+* `response`: This event happens after the call to the decorated object returns or throws an exception.
++
+When decorating a Filter, realize that the filter returns after handling the response, even if it only filters the request and so does nothing to the response but pass it along.
+
+* `completed`: This event happens when the processing unit under audit has successfully handled the response. This tag always complements a `response` tag.
++
+Note that `completed` says nothing about the client application's perception of whether the result of the response was successful. For example, a Handler could successfully pass back an HTTP 404 Not Found response.
+
+* `exception`: This event happens when the processing unit under audit handled the request and response processing with errors. This tag always complements a `response` tag.
++
+Note that the source object might not have thrown an exception itself, so it is not necessarily the source of the error.
++
+Also note that `exception` says nothing about the client application's perception of whether the result of the response was a failure. For example, another processing unit could still pass back a success response to the client application or proxy that engaged the request.
+
+
+`event.timestamp`::
+Timestamp indicating when the event happened, with millisecond precision.
+
+--
+
+[#d210e9039]
+==== Decorated Object Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    "audit": string or array of strings
+}
+----
+--
+
+`"name"`: string, required except for inline objects::
+The unique name of the object, just like an object that is not decorated.
+
+`"type"`: string, required::
+The class name of the decorated object, which must be either a Filter or a Handler.
+
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
+The configuration of the object, just like an object that is not decorated.
+
+`"audit"`: string or array of strings, required::
+Set the value to the tag(s) used to select audit events of interest.
+
++
+To activate the audit decoration without setting any user-defined tags, set audit to any other value, such as `"audit": true`.
+
+--
+
+[#d210e9089]
+==== Examples
+The following example triggers an audit event on a default route:
+
+[source, javascript]
+----
+{
+    "handler": "ClientHandler",
+    "audit": "Default route"
+}
+----
+The following example triggers an audit event only on a particular object:
+
+[source, javascript]
+----
+{
+    "name": "My Serious Error Handler",
+    "type": "StaticResponseHandler",
+    "config": {
+        "status": 500,
+        "reason": "Error",
+        "entity": "<html><p>Epic #FAIL</h2></html>"
+    },
+    "audit": "Epic failure"
+}
+----
+To observe audit events, use a registered audit agent such as a MonitorEndpointHandler, which is described in xref:handlers-conf.adoc#MonitorEndpointHandler[MonitorEndpointHandler(5)].
+
+[#d210e9106]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/audit/decoration/AuditDecorator.html[org.forgerock.openig.audit.decoration.AuditDecorator, window=\_blank]
+
+'''
+[#BaseUriDecorator]
+=== BaseUriDecorator — override scheme, host, and port of request URI
+
+[#d210e9126]
+==== Description
+Overrides the scheme, host, and port of the existing request URI, rebasing the URI and so making requests relative to a new base URI. Rebasing changes only the scheme, host, and port of the request URI. Rebasing does not affect the path, query string, or fragment.
+
+[#d210e9136]
+==== Decorator Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "BaseUriDecorator"
+}
+----
+A BaseUriDecorator does not have configurable properties.
+
+OpenIG creates a default BaseUriDecorator named baseURI at startup time in the top-level heap, so you can use baseURI as the decorator name without adding the decorator declaration explicitly.
+
+[#d210e9146]
+==== Decorated Object Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    decorator name: string
+}
+----
+--
+
+`"name"`: string, required except for inline objects::
+The unique name of the object, just like an object that is not decorated
+
+`"type"`: string, required::
+The class name of the decorated object, which must be either a Filter or a Handler.
+
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
+The configuration of the object, just like an object that is not decorated
+
+__decorator name__: string, required::
+A string representing the scheme, host, and port of the new base URI. The port is optional when using the defaults (80 for HTTP, 443 for HTTPS).
+
++
+OpenIG ignores this setting if the value is not a string.
+
+--
+
+[#d210e9193]
+==== Examples
+Add a custom decorator to the heap named myBaseUri:
+
+[source, javascript]
+----
+{
+    "name": "myBaseUri",
+    "type": "BaseUriDecorator"
+}
+----
+Set a Router's base URI to `\https://www.example.com:8443`:
+
+[source, javascript]
+----
+{
+    "name": "Router",
+    "type": "Router",
+    "myBaseUri": "https://www.example.com:8443/"
+}
+----
+
+[#d210e9209]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/decoration/baseuri/BaseUriDecorator.html[org.forgerock.openig.decoration.baseuri.BaseUriDecorator, window=\_blank]
+
+'''
+[#CaptureDecorator]
+=== CaptureDecorator — capture request and response messages
+
+[#d210e9229]
+==== Description
+Captures request and response messages for further analysis.
+
+[#d210e9239]
+==== Decorator Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "CaptureDecorator",
+    "config": {
+        "logSink": LogSink reference,
+        "captureEntity": boolean,
+        "captureContext": boolean
+    }
+}
+----
+--
+The decorator configuration has these properties:
+
+`"logSink"`: __LogSink reference, optional__::
+Capture requests and responses to this LogSink.
+
++
+Provide either the name of a LogSink object defined in the heap, or an inline LogSink configuration object.
+
++
+Default: use the LogSink configured for the decorated object. This makes it possible to keep all logs in a central location.
+
+`"captureEntity"`: __boolean, optional__::
+Whether the message entity should be captured.
+
++
+The filter omits binary entities, instead writing a `[binary entity]` marker to the file.
+
++
+Default: false
+
+`"captureContext"`: __boolean, optional__::
+Whether the context should be captured as JSON.
+
++
+Default: false
+
+--
+
+[#d210e9291]
+==== Decorated Object Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    decorator name: capture point(s)
+}
+----
+--
+
+`"name"`: string, required except for inline objects::
+The unique name of the object, just like an object that is not decorated
+
+`"type"`: string, required::
+The class name of the decorated object, which must be either a Filter or a Handler.
+
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
+The configuration of the object, just like an object that is not decorated
+
+__decorator name__: capture point(s), optional::
+The __decorator name__ must match the name of the CaptureDecorator. For example, if the CaptureDecorator has `"name": "capture"`, then __decorator name__ is capture.
++
+[open]
+====
+The capture point(s) are either a single string, or an array of strings. The strings are documented here in lowercase, but are not case-sensitive:
+
+`"all"`::
+Capture at all available capture points
+
+`"request"`::
+Capture the request as it enters the Filter or Handler
+
+`"filtered_request"`::
+Capture the request as it leaves the Filter
+
++
+Only applies to Filters
+
+`"response"`::
+Capture the response as it enters the Filter or leaves the Handler
+
+`"filtered_response"`::
+Capture the response as it leaves the Filter
+
++
+Only applies to Filters
+
+====
+
+--
+
+[#d210e9388]
+==== Examples
+Decorator configured to log the entity:
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureEntity": true
+    }
+}
+----
+Decorator configured not to log the entity:
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator"
+}
+----
+Decorator configured to log the context in JSON format, excluding the request and the response:
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "captureContext": true
+    }
+}
+----
+To capture requests and responses with the entity before sending the request and before returning the response, do so as in the following example:
+
+[source, javascript]
+----
+{
+    "heap": [
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureEntity": true
+            }
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler",
+            "capture": [
+                "request",
+                "response"
+            ]
+        }
+    ],
+    "handler": "ClientHandler"
+}
+----
+To capture all transformed requests and responses as they leave filters, decorate the Route as in the following example. This Route uses the default CaptureDecorator:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "REQUEST",
+                        "add": {
+                            "X-RequestHeader": [
+                                "Capture at filtered_request point",
+                                "And at filtered_response point"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "RESPONSE",
+                        "add": {
+                            "X-ResponseHeader": [
+                                "Capture at filtered_response point"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "reason": "OK",
+                    "entity": "<html><p>Hello, World!</p></html>"
+                }
+            }
+        }
+    },
+    "capture": [
+        "filtered_request",
+        "filtered_response"
+    ]
+}
+----
+To capture the context as JSON, excluding the request and response, before sending the request and before returning the response, do so as in the following example:
+
+[source, javascript]
+----
+{
+    "heap": [
+        {
+            "name": "capture",
+            "type": "CaptureDecorator",
+            "config": {
+                "captureContext": true
+            }
+        },
+        {
+            "name": "ClientHandler",
+            "type": "ClientHandler",
+            "capture": [
+                "request",
+                "response"
+            ]
+        }
+    ],
+    "handler": "ClientHandler"
+}
+----
+
+[#d210e9420]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/decoration/capture/CaptureDecorator.html[org.forgerock.openig.decoration.capture.CaptureDecorator, window=\_blank]
+
+'''
+[#TimerDecorator]
+=== TimerDecorator — record times to process Filters and Handlers
+
+[#d210e9440]
+==== Description
+Records time in milliseconds to process applicable Filters and Handlers. OpenIG writes the records to the LogSink configured for the decorated heap object. If no LogSink is defined for the decorated heap object, then OpenIG writes to the LogSink configured for the heap. Records include the time elapsed while processing the request and response, and for Filters the elapsed time spent processing the request and response within the Filter itself.
+
+OpenIG records times at log level `STAT`.
+
+The TimerDecorator is not applicable to the GatewayHttpApplication, as the GatewayHttpApplication is not declared in the heap. For details, see xref:required-conf.adoc#GatewayHttpApplication[GatewayHttpApplication(5)].
+
+[#d210e9459]
+==== Decorator Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "TimerDecorator"
+}
+----
+A TimerDecorator does not have configurable properties.
+
+OpenIG configures a default TimerDecorator named timer. You can use timer as the decorator name without explicitly declaring a decorator named timer.
+
+[#d210e9469]
+==== Decorated Object Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": string,
+    "config": object,
+    decorator name: boolean
+}
+----
+--
+
+`"name"`: string, required except for inline objects::
+The unique name of the object, just like an object that is not decorated
+
+`"type"`: string, required::
+The class name of the decorated object, which must be either a Filter or a Handler.
+
++
+See also xref:filters-conf.adoc#filters-conf[Filters] and xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"config"`: object, required unless empty::
+The configuration of the object, just like an object that is not decorated
+
+`decorator name`: boolean, required::
+OpenIG looks for the presence of the __decorator name__ field for the TimerDecorator.
+
++
+To activate the timer, set the value of the __decorator name__ field to `true`.
+
++
+To deactivate the TimerDecorator temporarily, set the value to `false`.
+
+--
+
+[#d210e9531]
+==== Examples
+To record times spent within the client handler, and elapsed time for operations traversing the client handler, use a configuration such as the following:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "ClientHandler"
+    },
+    "timer": true
+}
+----
+This configuration could result in the following log messages:
+
+[source]
+----
+TUE DEC 02 17:20:08 CET 2014 (STAT) @Timer[top-level-handler]
+Started
+------------------------------
+TUE DEC 02 17:20:08 CET 2014 (STAT) @Timer[top-level-handler]
+Elapsed time: 40 ms
+----
+When you decorate a Filter with a TimerDecorator, OpenIG can record two timer messages in the LogSink: the elapsed time for operations traversing the Filter, and the elapsed time spent within the Filter.
+
+To record times spent within all Filters and the handler, decorate the Route as in the following example:
+
+[source, javascript]
+----
+{
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "OAuth2ResourceServerFilter",
+          "config": {
+            "providerHandler": "ClientHandler",
+            "scopes": [
+              "mail",
+              "employeenumber"
+            ],
+            "tokenInfoEndpoint": "http://openam.example.com:8088/openam/oauth2/tokeninfo",
+            "requireHttps": false
+          },
+          "capture": "filtered_request",
+          "timer": true
+        },
+        {
+          "type": "AssignmentFilter",
+          "config": {
+            "onRequest": [
+              {
+                "target": "${session.username}",
+                "value": "${contexts.oauth2.accessToken.info.mail}"
+              },
+              {
+                "target": "${session.password}",
+                "value": "${contexts.oauth2.accessToken.info.employeenumber}"
+              }
+            ]
+          },
+          "timer": true
+        },
+        {
+          "type": "StaticRequestFilter",
+          "config": {
+            "method": "POST",
+            "uri": "http://app.example.com:8081",
+            "form": {
+              "username": [
+                "${session.username}"
+              ],
+              "password": [
+                "${session.password}"
+              ]
+            }
+          },
+          "timer": true
+        }
+      ],
+      "handler": "ClientHandler"
+    }
+  },
+  "condition": "${matches(request.uri.path, '^/rs')}",
+  "timer": true
+}
+----
+This configuration could result in the following log messages:
+
+[source]
+----
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Started
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
+Started
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Started
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time: 119 ms
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{StaticRequestFilter}/handler/config/filters/2]
+Elapsed time (within the object): 1 ms
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
+Elapsed time: 128 ms
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{AssignmentFilter}/handler/config/filters/1]
+Elapsed time (within the object): 7 ms
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time: 211 ms
+------------------------------
+THU DEC 11 16:06:23 CET 2014 (STAT) @Timer[{OAuth2ResourceServerFilter}/handler/config/filters/0]
+Elapsed time (within the object): 81 ms
+----
+You can then deactivate the timer by setting the values to `false`:
+
+[source, javascript]
+----
+{
+    "timer": false
+}
+----
+
+[#d210e9567]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/decoration/timer/TimerDecorator.html[org.forgerock.openig.decoration.timer.TimerDecorator, window=\_blank]
+
+

@@ -1,0 +1,433 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#object-model-conf]
+== Requests, Responses, and Contexts
+
+This part of the reference describes the OpenIG object model. The top-level objects are request, response, and contexts.
+[#Attributes]
+=== Attributes — context for arbitrary information
+
+[#d210e17171]
+==== Description
+Provides a map for arbitrary context information.
+
+This is one of the contexts described in xref:#Contexts[Contexts(5)].
+
+[#d210e17185]
+==== Properties
+--
+
+`"attributes"`: map::
+Map of arbitrary information where the keys are strings, and the values are objects.
+
++
+This is never `null`.
+
+--
+
+[#d210e17202]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[org.forgerock.services.context.AttributesContext, window=\_blank]
+
+'''
+[#Client]
+=== Client — HTTP client context information
+
+[#d210e17222]
+==== Description
+Provides information about the client sending the request.
+
+This is one of the contexts described in xref:#Contexts[Contexts(5)].
+
+[#d210e17236]
+==== Properties
+--
+
+`"certificates"`: array::
+List of X.509 certificates presented by the client
+
++
+If the client does not present any certificates, OpenIG returns an empty list.
+
++
+This is never `null`.
+
+`"isExternal"`: boolean::
+True if the client connection is external.
+
+`"isSecure"`: boolean::
+True if the client connection is secure.
+
+`"localAddress"`: string::
+The IP address of the interface that received the request
+
+`"localPort"`: number::
+The port of the interface that received the request
+
+`"remoteAddress"`: string::
+The IP address of the client (or the last proxy) that sent the request
+
+`"remotePort"`: number::
+The source port of the client (or the last proxy) that sent the request
+
+`"remoteUser"`: string::
+The login of the user making the request, or `null` if unknown
+
++
+This is likely to be `null` unless you have deployed OpenIG with a non-default deployment descriptor that secures the OpenIG web application.
+
+`"userAgent"`: string::
+The value of the User-Agent HTTP header in the request if any, otherwise `null`
+
+--
+
+[#d210e17330]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/services/context/ClientContext.html[org.forgerock.services.context.ClientContext, window=\_blank]
+
+'''
+[#Contexts]
+=== Contexts — HTTP request contexts
+
+[#d210e17350]
+==== Description
+The root object for request context information.
+
+Contexts is a map of available contexts, which implement the link:../apidocs/index.html?org/forgerock/services/context/Context.html[Context, window=\_blank] interface. The contexts map's keys are strings and the values are context objects. A context holds type-safe information useful for processing requests and responses. The `contexts` map is populated dynamically when creating bindings for evaluation of expressions and scripts.
+--
+All context objects have the following properties:
+
+`"contextName"`: string::
+Name of the context.
+
+`"id"`: string::
+Read-only string uniquely identifying the context object.
+
+`"rootContext"`: boolean::
+True if the context object is a RootContext (has no parent).
+
+`"parent"`: Context object::
+Parent of this context object.
+
+--
+
+[#d210e17401]
+==== Properties
+--
+The contexts object provides access to the following contexts:
+
+`"attributes"`: AttributesContext object::
+Arbitrary state information.
+
++
+OpenIG can use this to inject arbitrary state information into the context.
+
++
+See also xref:#Attributes[Attributes(5)].
+
+`"client"`: ClientContext object::
+Information about the client making the request.
+
++
+See also xref:#Client[Client(5)].
+
+`"router"`: UriRouterContext object::
+Routing information associated with the request.
+
++
+See also xref:#UriRouterContext[UriRouterContext(5)].
+
+`"session"`: SessionContext object::
+Session context associated with the remote client.
+
++
+See also xref:#Session[Session(5)].
+
+--
+
+[#d210e17457]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/services/context/Context.html[org.forgerock.services.context.Context, window=\_blank]
+
+'''
+[#Request]
+=== Request — HTTP request
+
+[#d210e17477]
+==== Description
+An HTTP request message.
+
+[#d210e17485]
+==== Properties
+--
+
+`"method"`: __string__::
+The method to be performed on the resource. Example: `"GET"`.
+
+`"uri"`: __object__::
+The fully-qualified URI of the resource being accessed. Example: `"http://www.example.com/resource.txt"`.
+
++
+See also xref:#URI[URI(5)].
+
+`"version"`: __string__::
+Protocol version. Example: `"HTTP/1.1"`.
+
+`"headers"`: __object__::
+Exposes message header fields as name-value pairs, where name is header name and value is an array of header values.
+
+`"cookies"`: __object__::
+Exposes incoming request cookies as name-value pairs, where name is cookie name and value is an array of string cookie values.
+
+`"form"`: __object__::
+Exposes query parameters and/or `application/x-www-form-urlencoded` entity as name-value pairs, where name is the field name and value is an array of string values.
+
+`"entity"`: __object__::
+The message entity body (no accessible properties).
+
+--
+
+[#d210e17575]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[org.forgerock.http.protocol.Request, window=\_blank]
+
+'''
+[#Response]
+=== Response — HTTP response
+
+[#d210e17593]
+==== Description
+An HTTP response message.
+
+[#d210e17601]
+==== Properties
+--
+
+`"cause"`: __Exception object__::
+The cause of an error if the status code is in the range 4xx-5xx. Possibly null.
+
+`"status"`: __Status object__::
+The response status.
+
++
+For details, see xref:#Status[Status(5)].
+
+`"version"`: __string__::
+Protocol version. Example: `"HTTP/1.1"`.
+
+`"headers"`: __object__::
+Exposes message header fields as name-value pairs, where name is header name and value is an array of header values.
+
+`"entity"`: __object__::
+The message entity body (no accessible properties).
+
+--
+
+[#d210e17662]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[org.forgerock.http.protocol.Response, window=\_blank]
+
+'''
+[#Session]
+=== Session — HTTP session context
+
+[#d210e17680]
+==== Description
+Provides access to the HTTP session context.
+
+This is one of the contexts described in xref:#Contexts[Contexts(5)].
+
+[#d210e17694]
+==== Properties
+--
+
+`"session"`: map::
+Provides access to the HTTP session, which is a map. Session attributes are name-value pairs, where both keys and value are strings.
+
+--
+
+[#d210e17706]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[org.forgerock.http.session.SessionContext, window=\_blank]
+
+'''
+[#Status]
+=== Status — HTTP response status
+
+[#d210e17726]
+==== Description
+Represents an HTTP response status. For details, see link:https://tools.ietf.org/html/rfc7231#section-6.1[RFC 7231: HTTP/1.1 Semantics and Content, Section 6.1. Overview of Status Codes, window=\_blank].
+
+[#d210e17741]
+==== Properties
+--
+
+`"code"`: __integer__::
+Three-digit integer reflecting the HTTP status code.
+
+`"family"`: __enum__::
+Family Enum value representing the class of response that corresponds to the code:
++
+[open]
+====
+
+`Family.INFORMATIONAL`::
+Status code reflects a provisional, informational response: 1xx.
+
+`Family.SUCCESSFUL`::
+The server received, understood, accepted and processed the request successfully. Status code: 2xx.
+
+`Family.REDIRECTION`::
+Status code indicates that the client must take additional action to complete the request: 3xx.
+
+`Family.CLIENT_ERROR`::
+Status code reflects a client error: 4xx.
+
+`Family.SERVER_ERROR`::
+Status code indicates a server-side error: 5xx.
+
+`Family.UNKNOWN`::
+Status code does not belong to one of the known families: 600+.
+
+====
+
+`"reasonPhrase"`: __string__::
+The human-readable reason-phrase corresponding to the status code.
+
++
+For details, see link:https://tools.ietf.org/html/rfc7231#section-6.1[RFC 7231: HTTP/1.1 Semantics and Content, Section 6.1. Overview of Status Codes, window=\_blank].
+
+`"isClientError"`: __boolean__::
+True if Family.CLIENT_ERROR.
+
+`"isInformational"`: __boolean__::
+True if Family.INFORMATIONAL.
+
+`"isRedirection"`: __boolean__::
+True if Family.REDIRECTION.
+
+`"isServerError"`: __boolean__::
+True if Family.SERVER_ERROR.
+
+`"isSuccessful"`: __boolean__::
+True if Family.SUCCESSFUL.
+
+--
+
+[#d210e17875]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/protocol/Status.html[org.forgerock.http.protocol.Status, window=\_blank]
+
+'''
+[#URI]
+=== URI — Uniform Resource Identifier
+
+[#d210e17895]
+==== Description
+Represents a Uniform Resource Identifier (URI) reference.
+
+[#d210e17905]
+==== Properties
+--
+
+`"scheme"`: __string__::
+The scheme component of the URI, or `null` if the scheme is undefined.
+
+`"authority"`: __string__::
+The decoded authority component of the URI, or `null` if the authority is undefined.
+
++
+Use "rawAuthority" to access the raw (encoded) component.
+
+`"userInfo"`: __string__::
+The decoded user-information component of the URI, or `null` if the user information is undefined.
+
++
+Use "rawUserInfo" to access the raw (encoded) component.
+
+`"host"`: __string__::
+The host component of the URI, or `null` if the host is undefined.
+
+`"port"`: __number__::
+The port component of the URI, or `null` if the port is undefined.
+
+`"path"`: __string__::
+The decoded path component of the URI, or `null` if the path is undefined.
+
++
+Use "rawPath" to access the raw (encoded) component.
+
+`"query"`: __string__::
+The decoded query component of the URI, or `null` if the query is undefined.
+
++
+Use "rawQuery" to access the raw (encoded) component.
+
+`"fragment"`: __string__::
+The decoded fragment component of the URI, or `null` if the fragment is undefined.
+
++
+Use "rawFragment" to access the raw (encoded) component.
+
+--
+
+[#d210e18023]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/MutableUri.html[org.forgerock.http.MutableUri, window=\_blank]
+
+'''
+[#UriRouterContext]
+=== Router — HTTP request routing context information
+
+[#d210e18043]
+==== Description
+Provides context information related to HTTP request routing.
+
+This is one of the contexts described in xref:#Contexts[Contexts(5)].
+
+[#d210e18057]
+==== Properties
+--
+
+`"matchedUri"`: string::
+The portion of the request URI that matched the URI template.
+
+`"originalUri"`: URI::
+The original target link:https://docs.oracle.com/javase/7/docs/api/index.html?java/net/URI.html[URI, window=\_blank] for the request, as received by the web container.
+
++
+The value of this field is read-only.
+
+`"remainingUri"`: string::
+The portion of the request URI that is remaining to be matched.
+
+`"uriTemplateVariables"`: map::
+An unmodifiable Map where the keys and values are strings. The map contains the parsed URI template variables keyed on the URI template variable name.
+
+--
+
+[#d210e18098]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/http/routing/UriRouterContext.html[org.forgerock.http.routing.UriRouterContext, window=\_blank]
+
+

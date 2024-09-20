@@ -1,0 +1,387 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#chap-start-here]
+== Understanding OpenIG
+
+This chapter introduces OpenIG. In this chapter, you will learn the essentials of using OpenIG including:
+
+* What problems OpenIG solves and where it fits in your deployment
+
+* How OpenIG acts on HTTP requests and responses
+
+* How the configuration files for OpenIG are organized
+
+* The roles played by routes, filters, handlers, and chains, which are the building blocks of an OpenIG configuration
+
+
+[#about]
+=== About OpenIG
+
+Most organizations have valuable existing services that are not easily integrated into newer architectures. These existing services cannot often be changed. Many client applications cannot communicate as they lack a gateway to bridge the gap. xref:#figure-missing-gateway[Missing Gateway] illustrates one example of a missing gateway.
+
+[#figure-missing-gateway]
+image::images/missing-gateway.png[]
+OpenIG works as an HTTP gateway, also known as a reverse proxy. OpenIG is deployed on a network so it can intercept both client requests and server responses. xref:#figure-gateway-deployed[OpenIG Deployed] illustrates a OpenIG deployment.
+
+[#figure-gateway-deployed]
+image::images/gateway-deployed.png[]
+Clients interact with protected servers through OpenIG. OpenIG can be configured to add new capabilities to existing services without affecting current clients or servers.
+The list that follows features you can add to your solution by using OpenIG:
+
+* Access management integration
+
+* Application and API security
+
+* Credential replay
+
+* OAuth 2.0 support
+
+* OpenID Connect 1.0 support
+
+* Network traffic control
+
+* Proxy with request and response capture
+
+* Request and response rewriting
+
+* SAML 2.0 federation support
+
+* Single sign-on (SSO)
+
+OpenIG supports these capabilities as out of the box configuration options. Once you understand the essential concepts covered in this chapter, try the additional instructions in this guide to use OpenIG to add other features.
+
+
+[#the-object-model]
+=== The Object Model
+
+OpenIG handles HTTP requests and responses in user-defined chains, making it possible to manage and to monitor processing at any point in a chain. The OpenIG object model provides both access to the requests and responses that pass through each chain, and also context information associated with each request.
+
+Contexts provide information about the client making the request, the session, the authentication or authorization identity of the principal, and any other state information associated with the request. Contexts provide a means to access state information throughout the duration of the HTTP session between the client and protected application, including when this involves interaction with additional services.
+
+
+[#the-configuration]
+=== The Configuration
+
+The configuration for OpenIG is stored in flat files, which are mainly in JavaScript Object Notation (JSON) format.footnote:d2528e455[OpenIG also uses Java properties files and XML files for SAML 2.0.] Configure OpenIG by editing the JSON files.
+
+When installation is complete, add at least one configuration file. Each configuration file holds a JSON object, which specifies a __handler__ to process the request. A handler is an object responsible for producing a response to a request. Every route must call a handler.
+
+The following very simple configuration routes requests to be handled according to separate route configurations:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Router"
+    }
+}
+----
+Notice in this case that the handler field takes an object as its value. This is an inline declaration. If you only use the object once where it is declared, then it makes sense to use an inline declaration.
+
+To change the definition of an object defined by default or when you need to declare an object once and use it multiple times, declare the object in the __heap__. The heap is a collection of named configuration objects that can be referenced by their names from elsewhere in the configuration.
+
+The following example declares a reusable router object and references it by its name, as follows:
+
+[source, javascript]
+----
+{
+    "handler": "My Router",
+    "heap": [
+        {
+            "name": "My Router",
+            "type": "Router"
+        }
+    ]
+}
+----
+Notice that the heap takes an array. Because the heap holds configuration objects all at the same level, you can impose any hierarchy or order that you like when referencing objects. Note that when you declare all objects in the heap and reference them by name, neither hierarchy nor ordering are obvious from the structure of the configuration file alone.
+Each configuration object has a __type__, a __name__, and an optional __config__. For example:
+
+* The type must be the type name of the configuration object. OpenIG defines many types for different purposes.
+
+* The name takes a string that is unique in the list of objects.
++
+You can omit this field when declaring objects inline.
+
+* The contents of the config object depend on the type.
++
+When all the configuration settings for the type are optional, the config field is also optional, as in the router example. If all configuration settings are optional, then omitting the config field, setting the config field to an empty object, `"config": {}`, or setting `"config": null` all signify that the object uses default settings.
+
+* Filters, handlers, and other objects whose configuration settings are defined by strings, integers, or booleans, can alternatively be defined by expressions that match the expected type.
+
+The configuration can specify additional objects as well. For example, you can configure a __ClientHandler__ object that OpenIG uses to connect to servers. The following ClientHandler configuration uses defaults for all settings, except __hostnameVerifier__, which it configures to verify host names in SSL certificates:
+
+[source, javascript]
+----
+{
+    "name": "ClientHandler",
+    "type": "ClientHandler",
+    "config": {
+        "hostnameVerifier": "STRICT"
+    }
+}
+----
+__Decorators__ are additional heap objects that let you extend what another object can do. For example, a __CaptureDecorator__ extends the capability of filters and handlers to log requests and responses. A __TimerDecorator__ logs processing times. Decorate configuration objects with decorator names as field names. By default OpenIG defines both a CaptureDecorator named `capture` and also a TimerDecorator named `timer`. Log requests, responses, and processing times by adding decorations as shown in the following example:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Router",
+        "capture": [ "request", "response" ],
+        "timer": true
+    }
+}
+----
+OpenIG also creates additional utility objects with default settings, including ClientHandler, __LogSink__, and __TemporaryStorage__. These objects can be referenced by name and do not need to be configured unless they are needed to override the default configurations.
+
+__Routes__ are configuration objects whose behavior is triggered when their conditions are matched. Routes inherit settings from their parent configurations. This means that you can configure global objects in the heap of the base configuration for example, and then reference the objects by name in any other OpenIG configuration.
+
+
+[#routing]
+=== Routing
+
+OpenIG routing lets you use multiple configuration files. Routing also lets OpenIG reload configurations that you change at runtime without restarting OpenIG.
+
+Use routing where OpenIG protects multiple services or multiple and different endpoints of the same service. Routing is also used when processing a request involves multiple steps, because the client must be redirected to authenticate with an identity provider before accessing the service.
+
+As illustrated in xref:#the-configuration[The Configuration] a __router__ manages the routes in its file system directory, periodically reloading changed routes unless it is configured to load them only at startup.
+
+A router does not explicitly specify any routes. Instead the router specifies a directory where route configuration files are found, or uses the default directory. Routes specify their own __condition__, which is an expression that evaluates to true, false, or null. If a route condition is true, then the route handles the request.
+
+The following example specifies a condition that is true when the request path is `/login`:
+
+[source, javascript]
+----
+"condition": "${matches(request.uri.path, '^/login')}"
+----
+If the route has no condition, or if the value of the condition is null, then the route matches any request. Furthermore, OpenIG orders routes lexicographically by file name.
+
+You can use these features to have both optional and default routes. For example, you could name your routes to check conditions in order: `01-login.json`, `02-protected.json`, `99-default.json`. Alternatively, you can name routes by using the name property on the route.
+
+A router configuration can specify where to look for route files. As a router is a kind of handler, routes can have routers, too.
+
+
+[#filters-handlers-chains]
+=== Filters, Handlers, and Chains
+
+Routing only delegates request handling. It does not actually modify the request, the response, or the context. To modify these, chain together filters and handlers:
+
+* A __handler__ either delegates to another handler, or it produces a response.
++
+One way to produce a response is to send a request to and receive a response from an external service. In this case, OpenIG acts as a client of the service, often on behalf of the client whose request initiated the request.
++
+Another way to produce a response is to build a response either statically or based on something in the context. In this case, OpenIG plays the role of server, generating a response to return to the client.
+
+* A __filter__ either transforms data in the request, response, or context, or performs an action when the request or response passes through the filter.
++
+A filter can leave the request, response, and contexts unchanged. For example, it can log the context as it passes through the filter. Alternatively, it can change request or response. For example, it can generate a static request to replace the client request, add a header to the request, or remove a header from a response.
+
+* A __chain__ is a type of handler that dispatches processing to a list of filters in order, and then to the handler.
++
+A chain can be placed anywhere in a configuration that a handler can be placed. Filters process the incoming request and pass it on to the next filter and the handler. After the handler produces a response, the filters process the outgoing response as it makes its way to the client. Note that the same filter can process both the incoming request and the outgoing response but most filters do one or the other.
+
+xref:#figure-chain[Flow Inside a Chain] shows the flow inside a chain, where a request filter transforms the request, a handler sends the request to a protected application, and then a response filter transforms the response. Notice how the flow traverses the filters in reverse order when the response comes back from the handler.
+
+[#figure-chain]
+image::images/chain.png[]
+The route configuration in xref:#example-chain[Chain to a Protected Application] demonstrates the flow through a chain to a protected application.
+
+[#example-chain]
+.Chain to a Protected Application
+====
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "Chain",
+        "comment": "Base configuration defines the capture decorator",
+        "config": {
+            "filters": [
+                {
+                    "type": "HeaderFilter",
+                    "comment": "Add a header to all requests",
+                    "config": {
+                        "messageType": "REQUEST",
+                        "add": {
+                            "MyHeaderFilter_request": [
+                                "Added by HeaderFilter to request"
+                            ]
+                        }
+                    }
+                },
+                {
+                     "type": "HeaderFilter",
+                     "comment": "Add a header to all responses",
+                     "config": {
+                         "messageType": "RESPONSE",
+                         "add": {
+                             "MyHeaderFilter_response": [
+                                 "Added by HeaderFilter to response"
+                            ]
+                         }
+                     }
+                }
+            ],
+            "handler": {
+                "type": "ClientHandler",
+                "comment": "Log the request, pass it to the protected application,
+                            and then log the response",
+                "capture": "all",
+                "baseURI": "http://app.example.com:8081"
+            }
+        }
+    }
+}
+----
+The chain receives the request and context and processes it as follows:
+
+* The first `HeaderFilter` adds a header to the incoming request.
+
+* The second `HeaderFilter` is configured to manage responses, not requests, so it simply passes the request and context to the handler.
+
+* The `ClientHandler` captures (logs) the request.
+
+* The `ClientHandler` passes the transformed request to the protected application.
+
+* The protected application passes a response to the `ClientHandler`.
+
+* The `ClientHandler` captures (logs) the response.
+
+* The second `HeaderFilter` adds a header added to the response.
+
+* The first `HeaderFilter` is configured to manage requests, not responses, so it simply passes the response back to OpenIG.
+
+====
+xref:#example-chain[Chain to a Protected Application] explained how a chain processes a request and its context. xref:#example-chain-request-response[Requests and Responses in a Chain] illustrates the HTTP requests and responses captured as they flow through the chain.
+
+[#example-chain-request-response]
+.Requests and Responses in a Chain
+====
+
+[source, httprequest]
+----
+### Original request from user-agent
+GET http://openig.example.com:8080/ HTTP/1.1
+Accept: */*
+Host: openig.example.com:8080
+
+### Add a header to the request (inside OpenIG) and direct it to the protected application
+GET http://app.example.com:8081/ HTTP/1.1
+Accept: */*
+Host: openig.example.com:8080
+MyHeaderFilter_request: Added by HeaderFilter to request
+
+### Return the response to the user-agent
+HTTP/1.1 200 OK
+Content-Length: 1809
+Content-Type: text/html; charset=ISO-8859-1
+
+### Add a header to the response (inside OpenIG)
+HTTP/1.1 200 OK
+Content-Length: 1809
+MyHeaderFilter_response: Added by HeaderFilter to response
+----
+====
+
+
+[#config-comments]
+=== Using Comments in OpenIG Configuration Files
+
+The JSON format does not specify a notation for comments. If OpenIG does not recognize a JSON field name, it ignores the field. As a result, it is possible to use comments in configuration files.
+Use the following conventions when commenting to ensure your configuration files are easier to read:
+
+* Use `comment` fields to add text comments. xref:#figure-comment-field[Using a Comment Field] illustrates a CaptureDecorator configuration that includes a text comment.
+
+
+[#figure-comment-field]
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "comment": "Write request and response information to the LogSink",
+    "config": {
+        "captureEntity": true
+    }
+}
+----
+
+
+* Use an underscore (`_`) to comment a field temporarily. xref:#figure-comment-underscore[Using an Underscore] illustrates a `CaptureDecorator` that has `"captureEntity": true` commented out. As a result, it uses the default setting (`"captureEntity": false`).
+
+
+[#figure-comment-underscore]
+
+[source, javascript]
+----
+{
+    "name": "capture",
+    "type": "CaptureDecorator",
+    "config": {
+        "_captureEntity": true
+    }
+}
+----
+
+
+
+
+[#next-steps]
+=== Next Steps
+
+Now that you understand the essential concepts, start using OpenIG with the help of the following chapters:
+--
+
+xref:chap-quickstart.adoc#chap-quickstart[Getting Started]::
+This chapter shows you how to get OpenIG up and running quickly.
+
+xref:chap-install.adoc#chap-install[Installation in Detail]::
+This chapter covers more advanced installation procedures.
+
+xref:chap-credentials-tutorial.adoc#chap-credentials-tutorial[Getting Login Credentials From Data Sources]::
+This chapter shows you how to configure OpenIG to look up credentials in external sources, such as a file or a database.
+
+xref:chap-password-capture-replay-tutorial.adoc#chap-password-capture-replay-tutorial[Getting Login Credentials From OpenAM]::
+This chapter walks you through an OpenAM integration with OpenAM's password capture and replay feature.
+
+xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider]::
+This chapter shows how to configure OpenIG as a SAML 2.0 Identity Provider.
+
+xref:chap-oauth2-rs.adoc#chap-oauth2-rs[OpenIG As an OAuth 2.0 Resource Server]::
+This chapter explains how OpenIG acts as an OAuth 2.0 Resource Server, and follows with a tutorial that shows you how to use OpenIG as a resource server.
+
+xref:chap-oauth2-client.adoc#chap-oauth2-client[OpenIG As an OAuth 2.0 Client or OpenID Connect Relying Party]::
+This chapter explains how OpenIG acts as an OAuth 2.0 client or OpenID Connect 1.0 relying party, and follows with a tutorial that shows you how to use OpenIG as an OpenID Connect 1.0 relying party.
+
+xref:chap-routing.adoc#chap-routing[Configuring Routes]::
+This chapter shows how to configure OpenIG to allow dynamic configuration changes and route to multiple applications.
+
+xref:chap-gateway-templates.adoc#chap-gateway-templates[Configuration Templates]::
+This chapter provides sample OpenIG configuration files for common use cases.
+
+--
+
+

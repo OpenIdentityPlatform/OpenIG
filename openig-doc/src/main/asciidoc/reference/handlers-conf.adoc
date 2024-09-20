@@ -1,0 +1,1362 @@
+////
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance with the
+  License.
+ 
+  You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+  specific language governing permission and limitations under the License.
+ 
+  When distributing Covered Software, include this CDDL Header Notice in each file and include
+  the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+  Header, with the fields enclosed by brackets [] replaced by your own identifying
+  information: "Portions copyright [year] [name of copyright owner]".
+ 
+  Copyright 2017 ForgeRock AS.
+  Portions Copyright 2024 3A Systems LLC.
+////
+
+:figure-caption!:
+:example-caption!:
+:table-caption!:
+
+
+[#handlers-conf]
+== Handlers
+
+Handler objects process an HTTP request by producing an associated response.
+[#Chain]
+=== Chain — dispatch the request to ordered list of filters and finally a handler
+
+[#d210e2406]
+==== Description
+A chain is responsible for dispatching a request to an ordered list of filters, and finally a handler.
+
+[#d210e2416]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "Chain",
+     "config": {
+         "filters": [ Filter reference, ... ],
+         "handler": Handler reference
+     }
+}
+----
+
+[#d210e2422]
+==== Properties
+--
+
+`"filters"`: __array of Filter references, required__::
+An array of names of Filter objects defined in the heap, and inline Filter configuration objects.
+
++
+The chain dispatches the request to these filters in the order they appear in the array.
+
++
+See also xref:filters-conf.adoc#filters-conf[Filters].
+
+`"handler"`: __Handler reference, required__::
+Either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
++
+The chain dispatches to this handler once the request has traversed all of the specified filters.
+
++
+See also xref:#handlers-conf[Handlers].
+
+--
+
+[#d210e2458]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "LoginChain",
+     "type": "Chain",
+     "config": {
+         "filters": [ "LoginFilter" ],
+         "handler": "ClientHandler"
+     }
+}
+----
+
+[#d210e2464]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/filter/Chain.html[org.forgerock.openig.filter.Chain, window=\_blank]
+
+'''
+[#ClientHandler]
+=== ClientHandler — submit requests to remote servers
+
+[#d210e2484]
+==== Description
+Submits requests to remote servers.
+
+[#d210e2494]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "ClientHandler",
+     "config": {
+         "connections": number,
+         "disableReuseConnection": boolean,
+         "disableRetries": boolean,
+         "hostnameVerifier": string,
+         "soTimeout": duration string,
+         "connectionTimeout": duration string,
+         "numberOfWorkers": number,
+         "sslCipherSuites": array,
+         "sslContextAlgorithm": string,
+         "sslEnabledProtocols": array,
+         "keyManager": KeyManager reference(s),
+         "trustManager": TrustManager reference(s),
+     }
+}
+----
+
+[#d210e2500]
+==== Properties
+--
+
+`"connections"`: __number, optional__::
+The maximum number of connections in the HTTP client connection pool.
+
++
+Default: 64
+
+`"connectionTimeout"`: __duration string, optional__::
+Amount of time to wait to establish a connection, expressed as a duration
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
+Durations are not case sensitive.
+
+Negative durations are not supported.
+
+The following units can be used in durations:
+
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
+
+* `zero`, `disabled`: zero-length duration
+
+* `days`, `day`, `d`: days
+
+* `hours`, `hour`, `h`: hours
+
+* `minutes`, `minute`, `min`, `m`: minutes
+
+* `seconds`, `second`, `sec`, `s`: seconds
+
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
+
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
+
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+
++
+Default: 10 seconds
+
+`"disableRetries"`: __boolean, optional__::
+Whether to disable automatic retries for failed requests.
+
++
+Default: `false`
+
+`"disableReuseConnection"`: __boolean, optional__::
+Whether to disable connection reuse.
+
++
+Default: `false`
+
+`"hostnameVerifier"`: __string, optional__::
+How to handle hostname verification for outgoing SSL connections.
++
+Set this to one of the following values:
+
+* `ALLOW_ALL`: turn off verification.
+
+* `STRICT`: match the hostname either as the value of the the first CN, or any of the subject-alt names.
++
+A wildcard can occur in the CN, and in any of the subject-alt names. Wildcards match one domain level, so `*.example.com` matches `www.example.com` but not `some.host.example.com`.
+
++
+Default: `ALLOW_ALL`
+
+`"numberOfWorkers"`: __number, optional__::
+The number of worker threads dedicated to processing outgoing requests.
+
++
+Increasing the value of this attribute can be useful in deployments where a high number of simultaneous connections remain open, waiting for protected applications to respond.
+
++
+Default: One thread per CPU available to the JVM.
+
+`"keyManager"`: __KeyManager reference(s), optional__::
+The key manager(s) that handle(s) this client's keys and certificates.
+
++
+The value of this field can be a single reference, or an array of references.
+
++
+Provide either the name(s) of KeyManager object(s) defined in the heap, or specify the configuration object(s) inline.
+
++
+You can specify either a single KeyManager, as in `"keyManager": "MyKeyManager"`, or an array of KeyManagers, as in `"keyManager": [ "FirstKeyManager", "SecondKeyManager" ]`.
+
++
+If you do not configure a key manager, then the client cannot present a certificate, and so cannot play the client role in mutual authentication.
+
++
+See also xref:misc-conf.adoc#KeyManager[KeyManager(5)].
+
+`"soTimeout"`: __duration string, optional__::
+Socket timeout, after which stalled connections are destroyed, expressed as a duration
++
+A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+
+Durations are not case sensitive.
+
+Negative durations are not supported.
+
+The following units can be used in durations:
+
+* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
+
+* `zero`, `disabled`: zero-length duration
+
+* `days`, `day`, `d`: days
+
+* `hours`, `hour`, `h`: hours
+
+* `minutes`, `minute`, `min`, `m`: minutes
+
+* `seconds`, `second`, `sec`, `s`: seconds
+
+* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
+
+* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
+
+* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+
++
+Default: 10 seconds
+
+`"sslCipherSuites"`: __array of strings, optional__::
+Array of cipher suite names, used to restrict the cipher suites allowed when negotiating transport layer security for an HTTPS connection.
+
++
+For details about the available cipher suite names, see the documentation for the Java virtual machine (JVM) used by the container where you run OpenIG. For Oracle Java, see the list of link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#ciphersuites[JSSE Cipher Suite Names, window=\_blank].
+
++
+Default: Allow any cipher suite supported by the JVM.
+
+`"sslContextAlgorithm"`: __string, optional__::
+The `SSLContext` algorithm name, as listed in the table of link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SSLContext[SSLContext Algorithms, window=\_blank] for the Java Virtual Machine used by the container where OpenIG runs.
+
++
+Default: `TLS`
+
+`"sslEnabledProtocols"`: __array of strings, optional__::
+Array of protocol names, used to restrict the protocols allowed when negotiating transport layer security for an HTTPS connection.
+
++
+For details about the available protocol names, see the documentation for the Java virtual machine (JVM) used by the container where you run OpenIG. For Oracle Java, see the list of link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#jssenames[Additional JSSE Standard Names, window=\_blank].
+
++
+Default: Allow any protocol supported by the JVM.
+
+`"trustManager"`: __TrustManager reference(s), optional__::
+The trust managers that handle(s) peers' public key certificates.
+
++
+The value of this field can be a single reference, or an array of references.
+
++
+Provide either the name(s) of TrustManager object(s) defined in the heap, or specify the configuration object(s) inline.
+
++
+You can specify either a single TrustManager, as in `"trustManager": "MyTrustManager"`, or an array of KeyManagers, as in `"trustManager": [ "FirstTrustManager", "SecondTrustManager" ]`.
+
++
+If you do not configure a trust manager, then the client uses only the default Java truststore. The default Java truststore depends on the Java environment. For example, `$JAVA_HOME/lib/security/cacerts`.
+
++
+See also xref:misc-conf.adoc#TrustManager[TrustManager(5)].
+
+--
+
+[#d210e3058]
+==== Example
+The following object configures a `ClientHandler` named `Client`, with non-default security settings:
+
+[source, javascript]
+----
+{
+  "name": "Client",
+  "type": "ClientHandler",
+  "config": {
+        "hostnameVerifier": "STRICT",
+        "sslContextAlgorithm": "TLSv1.2",
+        "keyManager": {
+            "type": "KeyManager",
+            "config": {
+                "keystore": {
+                    "type": "KeyStore",
+                    "config": {
+                        "url": "file://${env['HOME']}/keystore.jks",
+                        "password": "${system['keypass']}"
+                    }
+                },
+                "password": "${system['keypass']}"
+            }
+        },
+        "trustManager": {
+            "type": "TrustManager",
+            "config": {
+                "keystore": {
+                    "type": "KeyStore",
+                    "config": {
+                        "url": "file://${env['HOME']}/truststore.jks",
+                        "password": "${system['trustpass']}"
+                    }
+                }
+            }
+        }
+  }
+}
+----
+
+[#d210e3071]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/ClientHandler.html[org.forgerock.openig.handler.ClientHandler, window=\_blank]
+
+'''
+[#DesKeyGenHandler]
+=== DesKeyGenHandler — generate a DES key
+
+[#d210e3089]
+==== Description
+Generates a DES key for use with OpenAM as described in xref:../gateway-guide/chap-password-capture-replay-tutorial.adoc#password-capture-configuration[Configuring Password Capture] in the __Gateway Guide__.
+
+[#d210e3101]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "DesKeyGenHandler"
+}
+----
+
+[#d210e3107]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/DesKeyGenHandler.html[org.forgerock.openig.handler.DesKeyGenHandler, window=\_blank]
+
+'''
+[#DispatchHandler]
+=== DispatchHandler — dispatch to one of a list of handlers
+
+[#d210e3127]
+==== Description
+Dispatches to one of a list of handlers. When a request is handled, each handler's `condition` is evaluated. If a condition expression yields `true`, then the request is dispatched to the associated handler with no further processing.
+
+[#d210e3143]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "DispatchHandler",
+    "config": {
+        "bindings": [
+            {
+                "condition": expression,
+                "handler": Handler reference,
+                "baseURI": string,
+            }, ...
+        ]
+    }
+}
+----
+
+[#d210e3149]
+==== Properties
+--
+
+`"bindings"`: __array of objects, required__::
+A list of bindings of conditions and associated handlers to dispatch to.
+
+`"condition"`: __expression, optional__::
+Condition to evaluate to determine if associated handler should be dispatched to. If omitted, then dispatch is unconditional.
+
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"handler"`: __Handler reference, required__::
+Dispatch to this handler if the associated condition yields `true`.
+
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
++
+See also xref:#handlers-conf[Handlers].
+
+`"baseURI"`: __string, optional__::
+Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host and port are used in the supplied URI.
+
++
+Default: leave URI untouched.
+
+--
+
+[#d210e3208]
+==== Example
+The following sample is from a SAML 2.0 federation configuration. If the incoming URI starts with `/saml`, then OpenIG dispatches to a SamlFederationHandler. If the user name is not set in the session context, then the user has not authenticated with the SAML 2.0 Identity Provider, so OpenIG dispatches to a SPInitiatedSSORedirectHandler to initiate SAML 2.0 SSO from the Service Provider, which is OpenIG. All other requests go through a LoginChain handler:
+
+[source, javascript]
+----
+{
+    "name": "DispatchHandler",
+    "type": "DispatchHandler",
+    "config": {
+        "bindings": [
+            {
+                "condition": "${matches(request.uri.path, '^/saml')}",
+                "handler": "SamlFederationHandler"
+            },
+            {
+                "condition": "${empty session.username}",
+                "handler": "SPInitiatedSSORedirectHandler",
+                "baseURI": "http://www.example.com:8081"
+            },
+            {
+                "handler": "LoginChain",
+                "baseURI": "http://www.example.com:8081"
+            }
+        ]
+    }
+}
+----
+
+[#d210e3219]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/DispatchHandler.html[org.forgerock.openig.handler.DispatchHandler, window=\_blank]
+
+'''
+[#MonitorEndpointHandler]
+=== MonitorEndpointHandler — return basic audit statistics in JSON format
+
+[#d210e3239]
+==== Description
+This handler collates basic audit statistics, returning them in JSON format.
+
+Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+
+You decorate the objects to audit by adding your own audit tags. The handler updates the count of messages in progress, completed, and internal errors for each audit event, initializing the counts at OpenIG startup time. When accessed, it returns the sums organized by object under audit using the tags that you defined.
+
+[#d210e3255]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "MonitorEndpointHandler"
+}
+----
+
+[#d210e3261]
+==== Example
+The following sample route adds a monitor endpoint at `/monitor`:
+
+[source, javascript]
+----
+{
+    "handler": {
+        "type": "MonitorEndpointHandler"
+    },
+    "condition": "${request.method == 'GET'
+                    and request.uri.path == '/monitor'}"
+    "audit": "Monitor route"
+}
+----
+After adding audit tags to a number of other routes, the JSON returned from the monitor endpoint shows statistics since OpenIG started. The following example is formatted for legibility:
+
+[source, javascript]
+----
+{
+    "ForgeRock.com route": {
+        "in progress": 0,
+        "completed": 6,
+        "internal errors": 0
+    },
+    "ForgeRock.org route": {
+        "in progress": 0,
+        "completed": 15,
+        "internal errors": 0
+    },
+    "Monitor route": {
+        "in progress": 1,
+        "completed": 1,
+        "internal errors": 0
+    },
+    "Static login route": {
+        "in progress": 0,
+        "completed": 12,
+        "internal errors": 0
+    },
+    "HTTP Basic route": {
+        "in progress": 0,
+        "completed": 21,
+        "internal errors": 3
+    }
+}
+----
+
+[#d210e3277]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/audit/monitor/MonitorEndpointHandler.html[org.forgerock.openig.audit.monitor.MonitorEndpointHandler, window=\_blank]
+
+'''
+[#Route]
+=== Route — Configuration for handling a specified request
+
+[#Route-description]
+==== Description
+In OpenIG, a route is represented by a separate JSON configuration file and that handles a request, described in xref:object-model-conf.adoc#Request[Request(5)], and context, described in xref:object-model-conf.adoc#Contexts[Contexts(5)], when a specified condition is met.
+
+A top-level Router, as described in xref:#Router[Router(5)], is responsible for reloading the route configuration. Use a Router to call route handlers, rather than calling a route directly as the handler of the top-level configuration. By default the Router rereads the configurations periodically, so that configuration changes to routes apply without restarting OpenIG.
+
+Each separate route has its own Heap of configuration objects. The route's Heap inherits from its parent Heap, which is the global heap for top-level routes, so the route configuration can reference configuration objects specified in the top-level Router configuration file.
+
+For examples of route configurations see xref:../gateway-guide/chap-routing.adoc#chap-routing[Configuring Routes] in the __Gateway Guide__.
+
+[#d210e3321]
+==== Usage
+
+[source, javascript]
+----
+{
+    "handler": Handler reference or inline Handler declaration,
+    "heap": [ configuration object, ... ],
+    "condition": expression,
+    "monitor": boolean expression OR object,
+    "name": string,
+    "session": Session reference
+}
+----
+
+[#d210e3327]
+==== Properties
+--
+
+`"handler"`: __Handler reference, required__::
+For this route, dispatch the request to this handler.
+
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
++
+See also xref:#handlers-conf[Handlers].
+
+`"heap"`: __array of configuration objects, optional__::
+Heap object configuration for objects local to this route.
+
++
+Objects referenced but not defined here are inherited from the parent.
+
++
+You can omit an empty array. If you only have one object in the heap, you can inline it as the handler value.
+
++
+See also xref:required-conf.adoc#heap-objects[Heap Objects(5)].
+
+`"condition"`: __expression, optional__::
+Whether the route accepts to handle the request.
+
++
+Default: If the condition is not set, or is `null`, then this route accepts any request.
+
++
+All paths starting with `/openig` are reserved for administrative use by OpenIG. Expressions such as the following never match externally configured routes: `${matches(request.uri.path, '^/openig/my/path')}`. In effect, such routes are ignored.
+
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"monitor"`: __boolean expression OR object, optional__::
+This property lets you specify whether to maintain statistics about the route, an optionally to specify the percentiles in the distribution for which to record response times.
+
++
+Use a boolean or boolean expression to activate monitoring with the default percentiles configuration. When the boolean expression resolves to `true`, statistics for the route are exposed over REST as described in xref:#crest-monitoring["The REST API for Monitoring"].
+
++
+Default: `false` (with percentiles `0.999`, `0.9999`, and `0.99999`)
++
+[open]
+====
+Use an object instead of a boolean to specify percentiles:
+
+[source, javascript]
+----
+{
+    "monitor": {
+        "enabled": boolean expression OR boolean,
+        "percentiles": array of numbers
+    }
+}
+----
+The configuration object fields include the following:
+
+`"enabled"`: __boolean expression, required__::
+Whether to maintain statistics about the route, as described above.
+
+`"percentiles"`: __array of decimal numbers, optional__::
+The percentiles in the distribution for which to maintain response time statistics. If you specify percentiles, only those percentiles are used. The default percentile settings no longer apply.
+
++
+Each value in the array is a decimal representation of a percentage. For example, `0.999` represents 99.9%.
+
++
+The statistic maintained for a percentile is the response time in milliseconds after which __percentile__ of responses were sent. For example, the statistic for `0.999` corresponds to the response time in milliseconds after which 99.9% of responses were sent. The statistic for `0.5` corresponds to the response time in milliseconds after which half of all responses were sent.
+
++
+Default: `[ 0.999, 0.9999, 0.99999 ]`
+
+====
+
+`"name"`: __string, optional__::
+Name for the route, used by the Router to order the routes.
+
++
+Default: Route configuration file name
+
+`"session"`: __Session reference, optional__::
+Session storage implementation used by this route, such as a JwtSession as described in xref:misc-conf.adoc#JwtSession[JwtSession(5)].
+
++
+Provide either the name of a session storage object defined in the heap, or an inline session storage configuration object.
+
++
+Default: do not change the session storage implementation for `session`.
+
+--
+
+[#crest-monitoring]
+==== The REST API for Monitoring
+When the route has `"monitor": "${true}"`, monitoring statistics are exposed at a registered endpoint. OpenIG logs the paths to registered endpoints when the log level is `INFO` or finer. Look for messages such as the following in the log:
+
+[source]
+----
+Monitoring endpoint available at
+ '/openig/api/system/objects/router-handler/routes/00-monitor/monitoring'
+----
+To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring`.
+
+The monitoring REST API supports only read (HTTP GET). For a detailed introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About ForgeRock Common REST].
+
+In the present implementation, OpenIG does not have mechanisms for resetting or for persisting monitoring statistics. When you set `"monitor": true` on the route, or when you start the OpenIG container, monitoring statistics are collected. When the OpenIG container stops, monitoring statistics are discarded.
+
+A JSON monitoring resource with the default percentiles has the following form. Field values are described in comments:
+
+[source, javascript]
+----
+{
+    "requests": {
+        "total": number,              // Total requests
+        "active": number              // Requests being processed
+    },
+    "responses": {
+        "total": number,              // Total responses
+        "info": number,               // Informational responses (1xx)
+        "success": number,            // Successful responses    (2xx)
+        "redirect": number,           // Redirection responses   (3xx)
+        "clientError": number,        // Client error responses  (4xx)
+        "serverError": number,        // Server error responses  (5xx)
+        "other": number,              // Responses with status code >= 600
+        "errors": number,             // An exception was thrown.
+        "null": number                // Responses not handled by OpenIG
+    },
+    "throughput": {                   // Responses per second
+        "mean": number,               // Mean (average) since monitoring started
+        "lastMinute": number,         // One-minute moving average rate
+        "last5Minutes": number,       // Five-minute moving average rate
+        "last15Minutes": number       // 15-minute moving average rate
+    },
+    "responseTime": {                 // Response times in milliseconds
+        "mean": number,               // Mean (average) response time
+        "median": number,             // Median response time
+        "standardDeviation": number,  // Std. dev. for response time
+        "total": number,              // Cumulative resp. processing time
+        "percentiles": {              // Response times in ms after which:
+            "0.999": number,          // 99.9% of responses were sent
+            "0.9999": number,         // 99.99% of responses were sent
+            "0.99999": number         // 99.999% of responses were sent
+        }
+    }
+}
+----
+
+[TIP]
+====
+When reading percentiles, use map notation. The keys start with a digit, and so are not suitable for use with dot notation, as shown in the following example:
+
+[source, javascript]
+----
+threeNines = responseTime.percentiles['0.999']  // Correct
+threeNines = responseTime.percentiles.0.999     // Wrong: syntax error
+----
+====
+The JSON resource is written from a live object. As a result, field values can appear as inconsistent. For example, the sum of responses and in-flight requests might be different from the count of all requests. Counters can change as the JSON representation of the object is written.
+
+'''
+[#Router]
+=== Router — Route processing to distinct configurations
+
+[#d210e3555]
+==== Description
+A Router is a handler that routes request processing to separate configuration files. Each separate configuration file then defines a Route, as described in xref:#Route[Route(5)].
+
+The Router reloads configuration files for Routes from the specified directory at the specified scan interval.
+
+[#d210e3569]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "defaultHandler": Handler reference,
+        "directory": expression,
+        "scanInterval": integer
+    }
+}
+----
+An alternative value for type is RouterHandler.
+
+[#d210e3577]
+==== Properties
+--
+
+`"defaultHandler"`: __Handler reference, optional__::
+Default handler for this Router.
+
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
+
++
+The router routes the request to the first route whose condition expression is satisfied. If no route condition matches, then the request is routed to the default handler if one is configured.
+
++
+Default: if no default route is set either here or in the route configurations, then OpenIG aborts the request with an internal error.
+
++
+See also xref:#handlers-conf[Handlers].
+
+`"directory"`: __expression, optional__::
+Base directory from which to load configuration files for routes.
+
++
+Default: default base directory for route configuration files. For details, see xref:../gateway-guide/chap-install.adoc#install[Installing OpenIG] in the __Gateway Guide__.
++
+
+[IMPORTANT]
+======
+If you define a new Router in the default base directory, then you must set the directory property to a different directory from the default base directory in order to avoid a circular reference to the new Router.
+======
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"scanInterval"`: __integer, optional__::
+Interval in seconds after which OpenIG scans the specified directory for changes to configuration files.
+
++
+Default: 10 (seconds)
+
++
+To prevent OpenIG from reloading Route configurations after you except at startup, set the scan interval to -1.
+
+--
+
+[#d210e3636]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
+
+'''
+[#SamlFederationHandler]
+=== SamlFederationHandler — play the role of SAML 2.0 Service Provider
+
+[#d210e3655]
+==== Description
+A handler to play the role of SAML 2.0 Service Provider (SP).
+
+[NOTE]
+====
+This handler does not support filtering. Specifically, do not use this as the handler for a Chain, which can include filters.
+
+More generally, do not use this handler when its use depends on something in the response. The response can be handled independently of OpenIG, and can be `null` when control returns to OpenIG. For example, do not use this handler in a `SequenceHandler` where the `postcondition` depends on the response.
+====
+
+[#d210e3679]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "SamlFederationHandler",
+    "config": {
+        "assertionMapping": object,
+        "redirectURI": string,
+        "assertionConsumerEndpoint": string,
+        "authnContext": string,
+        "authnContextDelimiter": string,
+        "logoutURI": string,
+        "sessionIndexMapping": string,
+        "singleLogoutEndpoint": string,
+        "singleLogoutEndpointSoap": string,
+        "SPinitiatedSLOEndpoint": string,
+        "SPinitiatedSSOEndpoint": string,
+        "subjectMapping": string
+    }
+}
+----
+
+[#d210e3685]
+==== Properties
+--
+
+`"assertionMapping"`: __object, required__::
+The assertionMapping defines how to transform attributes from the incoming assertion to attribute value pairs in OpenIG.
+
++
+Each entry in the `assertionMapping` object has the form `localName: incomingName`, where __incomingName__ is used to fetch the value from the incoming assertion, and __localName__ is the name of the attribute set in the session. Avoid using dot characters (`.`) in the __localName__, as the `.` character also serves as a query separator in expressions.
+
++
+The following shows an example of an assertionMapping object:
++
+
+[source, javascript]
+----
+{
+    "username": "mail",
+    "password": "mailPassword"
+}
+----
++
+If the incoming assertion contains the statement:
++
+
+[source]
+----
+mail = george@example.com
+----
++
+
+[source]
+----
+mailPassword = costanza
+----
++
+Then the following values are set in the session:
++
+
+[source]
+----
+username = george@example.com
+----
++
+
+[source]
+----
+password = costanza
+----
++
+For this to work, you must edit the <Attribute name="attributeMap"> element in the SP extended metadata file, `$HOME/.openig/SAML/sp-extended.xml`, so that it matches the assertion mapping configured in the SAML 2.0 Identity Provider (IDP) metadata.
+
++
+When protecting multiple service providers, use unique __localName__ settings. Otherwise different handlers can overwrite each others' data.
+
+`"redirectURI"`: __string, required__::
+Set this to the page that the filter used to HTTP POST a login form recognizes as the login page for the protected application.
+
++
+This is how OpenIG and the Federation component work together to provide SSO. When OpenIG detects the login page of the protected application, it redirects to the Federation component. Once the Federation handler validates the SAML exchanges with the IDP, and sets the required session attributes, it redirects back to the login page of the protected application. This allows the filter used to HTTP POST a login form to finish the job by creating a login form to post to the application based on the credentials retrieved from the session attributes.
+
+`"assertionConsumerEndpoint"`: __string, optional__::
+Default: `fedletapplication` (same as the Fedlet)
+
++
+If you modify this attribute you must change the metadata to match.
+
+`"authnContext"`: __string, optional__::
+Name of the session field to hold the value of the authentication context. Avoid using dot characters (`.`) in the field name, as the `.` character also serves as a query separator in expressions.
+
++
+Use this setting when protecting multiple service providers, as the different configurations must not map their data into the same fields of `session`. Otherwise different handlers can overwrite each others' data.
+
++
+As an example, if you set `"authnContext": "myAuthnContext"`, then OpenIG sets `session.myAuthnContext` to the authentication context specified in the assertion. When the authentication context is password over protected transport, then this results in the session containing `"myAuthnContext": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"`.
+
++
+Default: map to `session.authnContext`
+
+`"authnContextDelimiter"`: __string, optional__::
+The authentication context delimiter used when there are multiple authentication contexts in the assertion.
+
++
+Default: `|`
+
+`"logoutURI"`: __string, optional__::
+Set this to the URI to visit after the user is logged out of the protected application.
+
++
+You only need to set this if the application uses the single logout feature of the Identity Provider.
+
+`"sessionIndexMapping"`: __string, optional__::
+Name of the session field to hold the value of the session index. Avoid using dot characters (`.`) in the field name, as the `.` character also serves as a query separator in expressions.
+
++
+Use this setting when protecting multiple service providers, as the different configurations must not map their data into the same fields of `session`. Otherwise different handlers can overwrite each others' data.
+
++
+As an example, if you set `"sessionIndexMapping": "mySessionIndex"`, then OpenIG sets `session.mySessionIndex` to the session index specified in the assertion. This results in the session containing something like `"mySessionIndex": "s24ccbbffe2bfd761c32d42e1b7a9f60ea618f9801"`.
+
++
+Default: map to `session.sessionIndex`
+
+`"singleLogoutEndpoint"`: __string, optional__::
+Default: `fedletSLORedirect` (same as the Fedlet)
+
++
+If you modify this attribute you must change the metadata to match.
+
+`"singleLogoutEndpointSoap"`: __string, optional__::
+Default: `fedletSloSoap` (same as the Fedlet)
+
++
+If you modify this attribute you must change the metadata to match.
+
+`"SPinitiatedSLOEndpoint"`: __string, optional__::
+Default: `SPInitiatedSLO`
+
++
+If you modify this attribute you must change the metadata to match.
+
+`"SPinitiatedSSOEndpoint"`: __string, optional__::
+Default: `SPInitiatedSSO`
+
++
+If you modify this attribute you must change the metadata to match.
+
+`"subjectMapping"`: __string, optional__::
+Name of the session field to hold the value of the subject name. Avoid using dot characters (`.`) in the field name, as the `.` character also serves as a query separator in expressions.
+
++
+Use this setting when protecting multiple service providers, as the different configurations must not map their data into the same fields of `session`. Otherwise different handlers can overwrite each others' data.
+
++
+As an example, if you set `"subjectMapping": "mySubjectName"`, then OpenIG sets `session.mySubjectName` to the subject name specified in the assertion. If the subject name is an opaque identifier, then this results in the session containing something like `"mySubjectName": "vtOk+APj1s9Rr4yCka6V9pGUuzuL"`.
+
++
+Default: map to `session.subjectName`
+
+--
+
+[#d210e3978]
+==== Example
+The following sample configuration is corresponds to a scenario where OpenIG receives a SAML 2.0 assertion from the IDP, and then logs the user in to the protected application using the username and password from the assertion:
+
+[source, javascript]
+----
+{
+    "name": "SamlFederationHandler",
+    "type": "SamlFederationHandler",
+    "config": {
+        "assertionMapping": {
+            "username": "mail",
+            "password": "mailPassword"
+        },
+        "redirectURI": "/login",
+        "logoutURI": "/logout"
+    }
+}
+----
+
+[#d210e3986]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/saml/SamlFederationHandler.html[org.forgerock.openig.handler.saml.SamlFederationHandler, window=\_blank]
+
+'''
+[#ScriptableHandler]
+=== ScriptableHandler — handle a request by using a script
+
+[#d210e4006]
+==== Description
+Handles a request by using a script.
+
+The script must return either a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank].
+
+[IMPORTANT]
+====
+When you are writing scripts or Java extensions, never use a `Promise` blocking method, such as `get()`, `getOrThrow()`, or `getOrThrowUninterruptibly()`, to obtain the response.
+
+A promise represents the result of an asynchronous operation. Therefore, using a blocking method to wait for the result can cause deadlocks and/or race issues.
+====
+[#d210e4042]
+===== Classes
+The following classes are imported automatically for Groovy scripts:
+
+* `org.forgerock.http.Client`
+
+* `org.forgerock.http.Filter`
+
+* `org.forgerock.http.Handler`
+
+* `org.forgerock.http.filter.throttling.ThrottlingRate`
+
+* `org.forgerock.http.util.Uris`
+
+* `org.forgerock.util.AsyncFunction`
+
+* `org.forgerock.util.Function`
+
+* `org.forgerock.util.promise.NeverThrowsException`
+
+* `org.forgerock.util.promise.Promise`
+
+* `org.forgerock.services.context.Context`
+
+* `org.forgerock.http.protocol.*`
+
+
+[#d210e4115]
+===== Objects
+--
+The script has access to the following global objects:
+
+Any parameters passed as args::
+You can use the configuration to pass parameters to the script by specifying an args object.
+
++
+Take care when naming keys in the args object. Attempts to reuse the name of another global object cause the script to fail and OpenIG to return a response with HTTP status code 500 Internal Server Error.
+
+`attributes`::
+The link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
+
++
+Use `session` for maintaining state between successive requests from the same logical client.
+
+`context`::
+The processing link:../apidocs/index.html?org/forgerock/services/context/Context.html[context, window=\_blank].
+
++
+This context is the leaf of a chain of contexts. It provides access to other Context types, such as SessionContext, AttributesContext, and ClientContext, through the `context.asContext(ContextClass.class)` method.
+
+`request`::
+The HTTP link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
+
+`globals`::
+This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
+
+`http`::
+An embedded client for making outbound HTTP requests, which is an link:../apidocs/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
+
++
+If a `"clientHandler"` is set in the configuration, then that Handler is used. Otherwise, the default ClientHandler configuration is used.
+
++
+For details, see xref:#handlers-conf[Handlers].
+
+`ldap`::
+The link:../apidocs/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
+
++
+Use this client to perform outbound LDAP requests, such as LDAP authentication.
+
+`logger`::
+The link:../apidocs/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
+
+`session`::
+The link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
+
++
+Use `attributes` for transferring transient state between components when processing a single request.
+
+--
+
+
+[#d210e4238]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "ScriptableHandler",
+    "config": {
+        "type": string,
+        "file": expression, // Use either "file"
+        "source": string,   // or "source", but not both.
+        "args": object,
+        "clientHandler": Handler reference
+    }
+}
+----
+
+[#d210e4244]
+==== Properties
+--
+
+`"type"`: __string, required__::
+The Internet media type (formerly MIME type) of the script, `"application/x-groovy"` for Groovy
+
+`"file"`: __expression__::
+Path to the file containing the script; mutually exclusive with `"source"`
+
++
+Relative paths in the file field are relative to the base location for scripts. The base location depends on the configuration. For details, see xref:../gateway-guide/chap-install.adoc#install[Installing OpenIG] in the __Gateway Guide__.
+
++
+The base location for Groovy scripts is on the classpath when the scripts are executed. If therefore some Groovy scripts are not in the default package, but instead have their own package names, they belong in the directory corresponding to their package name. For example, a script in package `com.example.groovy` belongs under `openig-base/scripts/groovy/com/example/groovy/`.
+
+`"source"`: __string__::
+The script as a string; mutually exclusive with `"file"`
+
+`"args"`: __map, optional__::
+Parameters passed from the configuration to the script.
+
++
+The configuration object is a map whose values can be scalars, arrays, objects and so forth, as in the following example.
++
+
+[source, javascript]
+----
+{
+    "args": {
+        "title": "Coffee time",
+        "status": 418,
+        "reason": [
+            "Not Acceptable",
+            "I'm a teapot",
+            "Acceptable"
+        ],
+        "names": {
+            "1": "koffie",
+            "2": "kafe",
+            "3": "cafe",
+            "4": "kafo"
+        }
+    }
+}
+----
++
+The script can then access the args parameters in the same way as other global objects. The following example sets the response status to `I'm a teapot`:
++
+
+[source, java]
+----
+response.status = Status.valueOf(418, reason[1])
+----
++
+For details regarding this status code see RFC 7168, Section 2.3.3 link:https://tools.ietf.org/html/rfc7168#section-2.3.3[418 I'm a Teapot, window=\_blank].
+
++
+Args parameters can reference objects defined in the heap using expressions. For example, the following excerpt shows the heap that defines `SampleFilter`:
++
+
+[source, javascript]
+----
+{
+    "heap": [
+        {
+            "name": "SampleFilter",
+            "type": "SampleFilter",
+            "config": {
+                "name": "X-Greeting",
+                "value": "Hello world"
+            }
+        }
+    ]
+}
+----
++
+To pass `SampleFilter` to the script, the following example uses an expression in the args parameters:
++
+
+[source, javascript]
+----
+{
+    "args": {
+        "filter": "${heap['SampleFilter']}"
+    }
+}
+----
++
+The script can then reference `SampleFilter` as `filter`.
+
++
+For details about the heap, see xref:required-conf.adoc#heap-objects[Heap Objects(5)].
+
+`"clientHandler"`, __ClientHandler reference, optional__::
+A Handler for making outbound HTTP requests.
+
++
+Default: Use the default ClientHandler.
+
++
+For details, see xref:#handlers-conf[Handlers].
+
+--
+
+[#d210e4374]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/ScriptableHandler.html[org.forgerock.openig.handler.ScriptableHandler, window=\_blank]
+
+'''
+[#SequenceHandler]
+=== SequenceHandler — process request through sequence of handlers
+
+[#d210e4394]
+==== Description
+Processes a request through a sequence of handlers. This allows multi-request processing such as retrieving a form, extracting form content (for example, nonce) and submitting in a subsequent request. Each `handler` in the `bindings` is dispatched to in order; the binding `postcondition` determines if the sequence should continue.
+
+[#d210e4413]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "SequenceHandler",
+    "config": {
+        "bindings": [
+            {
+                "handler": Handler reference,
+                "postcondition": expression
+            }
+        ]
+    }
+}
+----
+
+[#d210e4419]
+==== Properties
+--
+
+`"bindings"`: __array of objects, required__::
+A list of bindings of handler and postcondition to determine that sequence continues.
+
+`"handler"`: __Handler reference, required__::
+Dispatch to this handler.
+
++
+Either the name of the handler heap object to dispatch to, or an inline Handler configuration object.
+
++
+See also xref:#handlers-conf[Handlers].
+
+`"postcondition"`: __expression, optional__::
+Evaluated to determine if the sequence continues.
+
++
+Default: unconditional.
+
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+--
+
+[#d210e4465]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/SequenceHandler.html[org.forgerock.openig.handler.SequenceHandler, window=\_blank]
+
+'''
+[#StaticResponseHandler]
+=== StaticResponseHandler — create static response to a request
+
+[#d210e4485]
+==== Description
+Creates a static response to a request.
+
+[#d210e4495]
+==== Usage
+
+[source, javascript]
+----
+{
+     "name": string,
+     "type": "StaticResponseHandler",
+     "config": {
+         "status": number,
+         "reason": string,
+         "version": string,
+         "headers": {
+             name: [ expression, ... ], ...
+         },
+         "entity": expression
+     }
+}
+----
+
+[#d210e4501]
+==== Properties
+--
+
+`"status"`: __number, required__::
+The response status code (for example, 200).
+
+`"reason"`: __string, optional__::
+The response status reason (for example, `"OK"`).
+
+`"version"`: __string, optional__::
+Protocol version. Default: `"HTTP/1.1"`.
+
+`"headers"`: __array of objects, optional__::
+Header fields to set in the response. The `name` specifies the header name, with an associated array of expressions to evaluate as values.
+
+`"entity"`: __expression, optional__::
+The message entity expression to be evaluated and included in the response.
+
++
+Conforms to the `Content-Type` header and sets `Content-Length`.
+
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+--
+
+[#d210e4576]
+==== Example
+
+[source, javascript]
+----
+{
+     "name": "ErrorHandler",
+     "type":"StaticResponseHandler",
+     "config": {
+        "status": 500,
+        "reason": "Error",
+        "entity": "<html>
+                   <h2>Epic #FAIL</h2>
+                   </html>"
+     }
+}
+----
+
+[#d210e4582]
+==== Javadoc
+link:../apidocs/index.html?org/forgerock/openig/handler/StaticResponseHandler.html[org.forgerock.openig.handler.StaticResponseHandler, window=\_blank]
+
+
