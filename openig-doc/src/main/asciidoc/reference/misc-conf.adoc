@@ -178,7 +178,7 @@ The following example shows a client registration for OpenAM. In this example cl
 
 [#d210e14118]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/ClientRegistration.html[org.forgerock.openig.filter.oauth2.client.ClientRegistration, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/oauth2/client/ClientRegistration.html[org.forgerock.openig.filter.oauth2.client.ClientRegistration, window=\_blank]
 
 [#d210e14125]
 ==== See Also
@@ -264,7 +264,7 @@ Default: `openig-jwt-session`
 `"sessionTimeout"` __duration, optional__::
 The amount of time before the cookie session expires.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -333,7 +333,7 @@ The following example defines a JwtSession for storing session information in a 
 
 [#d210e14490]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[org.forgerock.openig.jwt.JwtSessionManager, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[org.forgerock.openig.jwt.JwtSessionManager, window=\_blank]
 
 '''
 [#KeyManager]
@@ -410,7 +410,7 @@ The following example configures a key manager that depends on a KeyStore config
 
 [#d210e14591]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/KeyManagerHeaplet.html[org.forgerock.openig.security.KeyManagerHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/security/KeyManagerHeaplet.html[org.forgerock.openig.security.KeyManagerHeaplet, window=\_blank]
 
 [#d210e14599]
 ==== See Also
@@ -488,7 +488,7 @@ The following example configures a keystore that references a Java Keystore file
 
 [#d210e14710]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/KeyStoreHeaplet.html[org.forgerock.openig.security.KeyStoreHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/security/KeyStoreHeaplet.html[org.forgerock.openig.security.KeyStoreHeaplet, window=\_blank]
 
 [#d210e14718]
 ==== See Also
@@ -631,7 +631,7 @@ The following example shows an issuer configuration for Google:
 
 [#d210e14921]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/Issuer.html[org.forgerock.openig.filter.oauth2.client.Issuer, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/oauth2/client/Issuer.html[org.forgerock.openig.filter.oauth2.client.Issuer, window=\_blank]
 
 '''
 [#ScheduledExecutorService]
@@ -706,7 +706,7 @@ If all jobs finish before the grace period, the executor service stops without w
 +
 When `gracefulStop` is `false`, the grace period is ignored.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -757,7 +757,7 @@ The following example creates a thread pool to execute tasks. When the executor 
 
 [#d210e15205]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/thread/ScheduledExecutorServiceHeaplet.html[org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/thread/ScheduledExecutorServiceHeaplet.html[org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet, window=\_blank]
 
 '''
 [#TemporaryStorage]
@@ -804,7 +804,7 @@ The directory where temporary files are created. If omitted, then the system-dep
 
 [#d210e15288]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.forgerock.openig.io.TemporaryStorage, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.forgerock.openig.io.TemporaryStorage, window=\_blank]
 
 '''
 [#TrustManager]
@@ -873,7 +873,7 @@ The following example configures a trust manager that depends on a KeyStore conf
 
 [#d210e15368]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/TrustManagerHeaplet.html[org.forgerock.openig.security.TrustManagerHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/security/TrustManagerHeaplet.html[org.forgerock.openig.security.TrustManagerHeaplet, window=\_blank]
 
 [#d210e15376]
 ==== See Also
@@ -919,7 +919,7 @@ The following example configures a client handler that blindly trusts server cer
 
 [#d210e15431]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/security/TrustAllManager.html[org.forgerock.openig.security.TrustAllManager, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/security/TrustAllManager.html[org.forgerock.openig.security.TrustAllManager, window=\_blank]
 
 '''
 [#UmaService]
@@ -1089,6 +1089,6 @@ This URI indicates the location on the UMA authorization server where the resour
 ==== See Also
 link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_blank]
 
-link:../apidocs/index.html?org/forgerock/openig/uma/UmaSharingService.html[org.forgerock.openig.uma.UmaSharingService, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/uma/UmaSharingService.html[org.forgerock.openig.uma.UmaSharingService, window=\_blank]
 
 

@@ -31,7 +31,7 @@ This reference covers OpenIG configuration.
 
 This reference is for OpenIG designers, developers, and administrators.
 
-For API specifications, see the appropriate link:../apidocs/index.html[Javadoc, window=\_blank].
+For API specifications, see the appropriate link:{apidocs-url}/index.html[Javadoc, window=\_blank].
 
 
 [#reserved-routes]
@@ -74,7 +74,7 @@ A configuration expression, described in xref:expressions-conf.adoc#Expressions[
 
 [#definition-duration]
 duration::
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 

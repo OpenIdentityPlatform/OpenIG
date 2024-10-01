@@ -570,22 +570,22 @@ If the lookup and authentication are successful, you see the profile page of the
 [#about-custom-extensions]
 === Developing Custom Extensions
 
-OpenIG includes a complete Java link:../apidocs/index.html[application programming interface, window=\_blank] to allow you to customize OpenIG to perform complex server interactions or intensive data transformations that you cannot achieve with scripts or the existing handlers, filters, and expressions described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the __Configuration Reference__.
+OpenIG includes a complete Java link:{apidocs-url}/index.html[application programming interface, window=\_blank] to allow you to customize OpenIG to perform complex server interactions or intensive data transformations that you cannot achieve with scripts or the existing handlers, filters, and expressions described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the __Configuration Reference__.
 
 [#extension-points]
 ==== Key Extension Points
 
-Interface Stability: Evolving (For information, see xref:../reference/appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability] in the __Configuration Reference__.)
+Interface Stability: Evolving (For information, see xref:../reference/appendix-interface-stability.adoc#interface-stability[Product Interface Stability] in the __Configuration Reference__.)
 --
 The following interfaces are available:
 
-link:../apidocs/index.html?org/forgerock/openig/decoration/Decorator.html[Decorator, window=\_blank]::
+link:{apidocs-url}/index.html?org/forgerock/openig/decoration/Decorator.html[Decorator, window=\_blank]::
 A `Decorator` adds new behavior to another object without changing the base type of the object.
 
 +
 When suggesting custom `Decorator` names, know that OpenIG reserves all field names that use only alphanumeric characters. To avoid clashes, use dots or dashes in your field names, such as `my-decorator`.
 
-link:../apidocs/index.html?org/forgerock/openig/el/ExpressionPlugin.html[ExpressionPlugin, window=\_blank]::
+link:{apidocs-url}/index.html?org/forgerock/openig/el/ExpressionPlugin.html[ExpressionPlugin, window=\_blank]::
 An `ExpressionPlugin` adds a node to the `Expression` context tree, alongside `env` (for environment variables), and `system` (for system properties). For example, the expression `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
 
 +
@@ -597,28 +597,28 @@ When you add your own `ExpressionPlugin`, you must make it discoverable within y
 +
 Be sure to provide some documentation for OpenIG administrators on how your plugin extends expressions.
 
-link:../apidocs/index.html?org/forgerock/http/Filter.html[Filter, window=\_blank]::
+link:{apidocs-url}/index.html?org/forgerock/http/Filter.html[Filter, window=\_blank]::
 +
 A `Filter` serves to process a request before handing it off to the next element in the chain, in a similar way to an interceptor programming model.
 
 +
-The `Filter` interface exposes a `filter()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank], a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank], and the link:../apidocs/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank], which is the next filter or handler to dispatch to. The `filter()` method returns a link:../apidocs/index.html?org/forgerock/util/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions.
+The `Filter` interface exposes a `filter()` method, which takes a link:{apidocs-url}/index.html?org/forgerock/http/Context.html[Context, window=\_blank], a link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank], and the link:{apidocs-url}/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank], which is the next filter or handler to dispatch to. The `filter()` method returns a link:{apidocs-url}/index.html?org/forgerock/util/Promise.html[Promise, window=\_blank] that provides access to the link:{apidocs-url}/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions.
 
 +
 A filter can elect not to pass the request to the next filter or handler, and instead handle the request itself. It can achieve this by merely avoiding a call to `next.handle(context, request)`, creating its own response object and returning that in the promise. The filter is also at liberty to replace a response with another of its own. A filter can exist in more than one chain, therefore should make no assumptions or correlations using the chain it is supplied. The only valid use of a chain by a filter is to call its `handle()` method to dispatch the request to the rest of the chain.
 
 +
-OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
+OpenIG also provides the convenience class, link:{apidocs-url}/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
 
-link:../apidocs/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank]::
+link:{apidocs-url}/index.html?org/forgerock/http/Handler.html[Handler, window=\_blank]::
 +
 A `Handler` generates a response for a request.
 
 +
-The `Handler` interface exposes a `handle()` method, which takes a link:../apidocs/index.html?org/forgerock/http/Context.html[Context, window=\_blank], and a link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank]. It processes the request and returns a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise, window=\_blank] that provides access to the link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions. A handler can elect to dispatch the request to another handler or chain.
+The `Handler` interface exposes a `handle()` method, which takes a link:{apidocs-url}/index.html?org/forgerock/http/Context.html[Context, window=\_blank], and a link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[Request, window=\_blank]. It processes the request and returns a link:{apidocs-url}/index.html?org/forgerock/util/promise/Promise.html[Promise, window=\_blank] that provides access to the link:{apidocs-url}/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank] with methods for dealing with both success and failure conditions. A handler can elect to dispatch the request to another handler or chain.
 
 +
-OpenIG also provides the convenience class, link:../apidocs/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
+OpenIG also provides the convenience class, link:{apidocs-url}/index.html?org/forgerock/openig/heap/GenericHeapObject.html[GenericHeapObject, window=\_blank], to help with configuration.
 
 --
 
@@ -785,44 +785,24 @@ The corresponding heap object configuration then looks as follows:
 [#custom-heap-config]
 ==== Configuring the Heap Object for the Customization
 
-Objects are added to the heap and supplied with configuration artifacts at initialization time. To be integrated with the configuration, a class must have an accompanying implementation of the link:../apidocs/index.html/org/forgerock/openig/heap/Heaplet.html[Heaplet, window=\_blank] interface. The easiest and most common way of exposing the heaplet is to extend the link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html[GenericHeaplet, window=\_blank] class in a nested class of the class you want to create and initialize, overriding the heaplet's link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html#create()[create(), window=\_blank] method.
+Objects are added to the heap and supplied with configuration artifacts at initialization time. To be integrated with the configuration, a class must have an accompanying implementation of the link:{apidocs-url}/index.html/org/forgerock/openig/heap/Heaplet.html[Heaplet, window=\_blank] interface. The easiest and most common way of exposing the heaplet is to extend the link:{apidocs-url}/index.html/org/forgerock/openig/heap/GenericHeaplet.html[GenericHeaplet, window=\_blank] class in a nested class of the class you want to create and initialize, overriding the heaplet's link:{apidocs-url}/index.html/org/forgerock/openig/heap/GenericHeaplet.html#create()[create(), window=\_blank] method.
 
-Within the `create()` method, you can access the object's configuration through the link:../apidocs/index.html/org/forgerock/openig/heap/GenericHeaplet.html#config[config, window=\_blank] field.
+Within the `create()` method, you can access the object's configuration through the link:{apidocs-url}/index.html/org/forgerock/openig/heap/GenericHeaplet.html#config[config, window=\_blank] field.
 
 
 [#custom-build]
 ==== Building the Customization
 
-You can use Apache Maven to manage dependencies on OpenIG. The dependencies are found in the ForgeRock Maven repository.
+You can use Apache Maven to manage dependencies on OpenIG. The dependencies are found in the Central Maven repository.
 
-The following listing shows the Maven POM configuration for the ForgeRock Maven repository and the dependency to build the sample filter:
 
 [source, xml]
 ----
-<repositories>
-    <repository>
-      <id>forgerock-staging-repository</id>
-      <name>ForgeRock Release Repository</name>
-      <url>http://maven.forgerock.org/repo/releases</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>forgerock-snapshots-repository</id>
-      <name>ForgeRock Snapshot Repository</name>
-      <url>http://maven.forgerock.org/repo/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
-      <groupId>org.forgerock.openig</groupId>
+      <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-core</artifactId>
-      <version>4.5.0</version>
+      <version>5.3.0</version>
     </dependency>
   </dependencies>
 ----
@@ -854,11 +834,11 @@ For example, if your .jar file is in a project named `sample-filter`, and the de
 [source, console]
 ----
 $ mkdir root && cd root
-    $ jar -xf ~/Downloads/OpenIG-4.5.0.war
+    $ jar -xf ~/Downloads/OpenIG-5.3.0.war
     $ cp ~/Documents/sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar WEB-INF/lib
     $ jar -cf ../custom.war *
 ----
-In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-4.5.0.war`.
+In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-5.3.0.war`.
 
 
 

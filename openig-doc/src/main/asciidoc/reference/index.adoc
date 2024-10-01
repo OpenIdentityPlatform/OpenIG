@@ -26,6 +26,8 @@
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:apidocs-url: https://doc.openidentityplatform.org/openig/apidocs
+
 [abstract]
 Reference documentation for OpenIG. OpenIG provides a high-performance reverse proxy server with specialized session management and credential replay functionality.
 

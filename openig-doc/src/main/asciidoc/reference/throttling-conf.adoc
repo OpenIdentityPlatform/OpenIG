@@ -100,7 +100,7 @@ The number of requests allowed through the filter in the time specified by `"dur
 `"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -178,7 +178,7 @@ The following route defines a throttling rate of 6 requests/10 seconds to reques
 
 [#d210e13170]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank]
 
 '''
 [#MappedThrottlingPolicy]
@@ -249,7 +249,7 @@ The number of requests allowed through the filter in the time specified by `"dur
 `"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -332,7 +332,7 @@ image::images/throttling-mapped.png[]
 
 [#d210e13495]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank]
 
 '''
 [#ScriptableThrottlingPolicy]
@@ -451,7 +451,7 @@ if (request.headers['X-Forwarded-For'].values[0]  == 'accounts.example.com') {
 
 [#d210e13638]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank]
 
 '''
 [#DefaultRateThrottlingPolicy]
@@ -506,7 +506,7 @@ The number of requests allowed through the filter in the time specified by `"dur
 `"duration"`: __duration string, required__::
 A time interval during which the number of requests passing through the filter is counted.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -541,6 +541,6 @@ For an example of how this policy is used, see xref:#example-throttling-scriptab
 
 [#d210e13916]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank]
 
 

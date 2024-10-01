@@ -126,7 +126,7 @@ This is an example of how you would capture credentials and store them in the Op
 
 [#d210e4696]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/AssignmentFilter.html[org.forgerock.openig.filter.AssignmentFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/AssignmentFilter.html[org.forgerock.openig.filter.AssignmentFilter, window=\_blank]
 
 '''
 [#ConditionEnforcementFilter]
@@ -192,7 +192,7 @@ The following example tests whether a request contains a session username. If it
 
 [#d210e4788]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/ConditionEnforcementFilter.html[org.forgerock.openig.filter.ConditionEnforcementFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/ConditionEnforcementFilter.html[org.forgerock.openig.filter.ConditionEnforcementFilter, window=\_blank]
 
 '''
 [#CookieFilter]
@@ -241,7 +241,7 @@ Action to perform for cookies that do not match an action set. Must be one of: `
 
 [#d210e4885]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/CookieFilter.html[org.forgerock.openig.filter.CookieFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/CookieFilter.html[org.forgerock.openig.filter.CookieFilter, window=\_blank]
 
 '''
 [#CryptoHeaderFilter]
@@ -335,7 +335,7 @@ Default: Do not encrypt or decrypt any headers
 
 [#d210e5021]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/CryptoHeaderFilter.html[org.forgerock.openig.filter.CryptoHeaderFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/CryptoHeaderFilter.html[org.forgerock.openig.filter.CryptoHeaderFilter, window=\_blank]
 
 '''
 [#EntityExtractFilter]
@@ -463,7 +463,7 @@ The following example reads the response looking for the OpenAM login page. When
 
 [#d210e5196]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/EntityExtractFilter.html[org.forgerock.openig.filter.EntityExtractFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/EntityExtractFilter.html[org.forgerock.openig.filter.EntityExtractFilter, window=\_blank]
 
 '''
 [#FileAttributesFilter]
@@ -568,7 +568,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e5410]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/FileAttributesFilter.html[org.forgerock.openig.filter.FileAttributesFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/FileAttributesFilter.html[org.forgerock.openig.filter.FileAttributesFilter, window=\_blank]
 
 '''
 [#HeaderFilter]
@@ -663,7 +663,7 @@ Add headers `custom1` and `custom2` to the request:
 
 [#d210e5514]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/HeaderFilter.html[org.forgerock.openig.filter.HeaderFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/HeaderFilter.html[org.forgerock.openig.filter.HeaderFilter, window=\_blank]
 
 '''
 [#HttpBasicAuthFilter]
@@ -749,7 +749,7 @@ Default: `true`
 
 [#d210e5632]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forgerock.openig.filter.HttpBasicAuthFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forgerock.openig.filter.HttpBasicAuthFilter, window=\_blank]
 
 '''
 [#LocationHeaderFilter]
@@ -807,7 +807,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e5710]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/LocationHeaderFilter.html[org.forgerock.openig.filter.LocationHeaderFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/LocationHeaderFilter.html[org.forgerock.openig.filter.LocationHeaderFilter, window=\_blank]
 
 '''
 [#OAuth2ClientFilter]
@@ -1017,7 +1017,7 @@ Duration for which to cache user-info resources.
 +
 OpenIG lazily fetches user info from the OpenID provider. In other words, OpenIG only fetches the information when a downstream Filter or Handler uses the user info. Caching allows OpenIG to avoid repeated calls to OpenID providers when reusing the information over a short period.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -1133,7 +1133,7 @@ Notice that this configuration is for development and testing purposes only, and
 
 [#d210e6327]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/client/OAuth2ClientFilter.html[org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/oauth2/client/OAuth2ClientFilter.html[org.forgerock.openig.filter.oauth2.client.OAuth2ClientFilter, window=\_blank]
 
 [#d210e6334]
 ==== See Also
@@ -1230,7 +1230,7 @@ Duration for which to cache OAuth 2.0 access tokens.
 +
 Caching allows OpenIG to avoid repeated requests for token info when reusing the information over a short period.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -1308,7 +1308,7 @@ The following example configures an OAuth 2.0 protected resource filter that exp
 
 [#d210e6706]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/oauth2/OAuth2ResourceServerFilterHeaplet.html[org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilterHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/oauth2/OAuth2ResourceServerFilterHeaplet.html[org.forgerock.openig.filter.oauth2.OAuth2ResourceServerFilterHeaplet, window=\_blank]
 
 [#d210e6713]
 ==== See Also
@@ -1541,7 +1541,7 @@ For additional examples, see xref:../gateway-guide/chap-gateway-templates.adoc#c
 
 [#d210e7113]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/PasswordReplayFilterHeaplet.html[org.forgerock.openig.filter.PasswordReplayFilterHeaplet, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/PasswordReplayFilterHeaplet.html[org.forgerock.openig.filter.PasswordReplayFilterHeaplet, window=\_blank]
 
 '''
 [#PolicyEnforcementFilter]
@@ -1706,7 +1706,7 @@ This setting prevents OpenIG from having to issue a new request for every policy
 Cached policy decisions remain in the OpenIG cache even after a user logs out of OpenAM and the OpenAM session becomes invalid.
 ======
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -1811,11 +1811,11 @@ The following example requests a policy decision from OpenAM before allowing a r
 
 [#d210e7646]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/openam/PolicyEnforcementFilter.html[org.forgerock.openig.openam.PolicyEnforcementFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/openam/PolicyEnforcementFilter.html[org.forgerock.openig.openam.PolicyEnforcementFilter, window=\_blank]
 
 [#d210e7654]
 ==== See Also
-link:https://backstage.forgerock.com/docs/openam/13.5/dev-guide/#rest-api-authz-policy-decisions[Requesting Policy Decisions in OpenAM, window=\_blank]
+link:https://doc.openidentityplatform.org/openam/dev-guide/chap-client-dev#rest-api-authz-policy-decisions[Requesting Policy Decisions, window=\_blank]
 
 '''
 [#ScriptableFilter]
@@ -1825,7 +1825,7 @@ link:https://backstage.forgerock.com/docs/openam/13.5/dev-guide/#rest-api-authz-
 ==== Description
 Processes requests and responses by using a script.
 
-The script must return either a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank].
+The script must return either a link:{apidocs-url}/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:{apidocs-url}/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank].
 
 [IMPORTANT]
 ====
@@ -1872,25 +1872,25 @@ You can use the configuration to pass parameters to the script by specifying an 
 Take care when naming keys in the args object. If you reuse the name of another global object, cause the script to fail and OpenIG to return a response with HTTP status code 500 Internal Server Error.
 
 `attributes`::
-The link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
+The link:{apidocs-url}/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
 
 +
 Use `session` for maintaining state between successive requests from the same logical client.
 
 `context`::
-The processing link:../apidocs/index.html?org/forgerock/services/context/Context.html[context, window=\_blank].
+The processing link:{apidocs-url}/index.html?org/forgerock/services/context/Context.html[context, window=\_blank].
 
 +
 This context is the leaf of a chain of contexts. It provides access to other Context types, such as SessionContext, AttributesContext, and ClientContext, through the `context.asContext(ContextClass.class)` method.
 
 `request`::
-The HTTP link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
+The HTTP link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
 
 `globals`::
 This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
 
 `http`::
-An embedded client for making outbound HTTP requests, which is an link:../apidocs/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
+An embedded client for making outbound HTTP requests, which is an link:{apidocs-url}/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
 
 +
 If a `"clientHandler"` is set in the configuration, then that Handler is used. Otherwise, the default ClientHandler configuration is used.
@@ -1899,19 +1899,19 @@ If a `"clientHandler"` is set in the configuration, then that Handler is used. O
 For details, see xref:handlers-conf.adoc#handlers-conf[Handlers].
 
 `ldap`::
-The link:../apidocs/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
+The link:{apidocs-url}/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
 
 +
 Use this client to perform outbound LDAP requests, such as LDAP authentication.
 
 `logger`::
-The link:../apidocs/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
+The link:{apidocs-url}/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
 
 `next`::
-The link:../apidocs/index.html?org/forgerock/http/Handler.html[next, window=\_blank] object refers to the next handler in the filter chain.
+The link:{apidocs-url}/index.html?org/forgerock/http/Handler.html[next, window=\_blank] object refers to the next handler in the filter chain.
 
 `session`::
-The link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
+The link:{apidocs-url}/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
 
 +
 Use `attributes` for transferring transient state between components when processing a single request.
@@ -2051,7 +2051,7 @@ For details, see xref:handlers-conf.adoc#handlers-conf[Handlers].
 
 [#d210e8065]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/ScriptableFilter.html[org.forgerock.openig.filter.ScriptableFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/ScriptableFilter.html[org.forgerock.openig.filter.ScriptableFilter, window=\_blank]
 
 '''
 [#SqlAttributesFilter]
@@ -2139,7 +2139,7 @@ Lines are folded for readability in this example. In your JSON, keep the values 
 
 [#d210e8177]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/SqlAttributesFilter.html[org.forgerock.openig.filter.SqlAttributesFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/SqlAttributesFilter.html[org.forgerock.openig.filter.SqlAttributesFilter, window=\_blank]
 
 '''
 [#StaticRequestFilter]
@@ -2235,7 +2235,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e8350]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/StaticRequestFilter.html[org.forgerock.openig.filter.StaticRequestFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/StaticRequestFilter.html[org.forgerock.openig.filter.StaticRequestFilter, window=\_blank]
 
 '''
 [#SwitchFilter]
@@ -2324,7 +2324,7 @@ This example intercepts the response if it is equal to 200 and executes the Logi
 
 [#d210e8466]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/SwitchFilter.html[org.forgerock.openig.filter.SwitchFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/SwitchFilter.html[org.forgerock.openig.filter.SwitchFilter, window=\_blank]
 
 '''
 [#TokenTransformationFilter]
@@ -2462,7 +2462,7 @@ The following example uses the REST STS instance `oidc-to-saml` to request trans
 
 [#d210e8700]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/openam/TokenTransformationFilter.html[org.forgerock.openig.openam.TokenTransformationFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/openam/TokenTransformationFilter.html[org.forgerock.openig.openam.TokenTransformationFilter, window=\_blank]
 
 '''
 [#UmaFilter]
@@ -2515,6 +2515,6 @@ Default: `uma`
 ==== See Also
 link:https://docs.kantarainitiative.org/uma/rec-uma-core.html[User-Managed Access (UMA) Profile of OAuth 2.0, window=\_blank]
 
-link:../apidocs/index.html?org/forgerock/openig/uma/UmaResourceServerFilter.html[org.forgerock.openig.uma.UmaResourceServerFilter, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/uma/UmaResourceServerFilter.html[org.forgerock.openig.uma.UmaResourceServerFilter, window=\_blank]
 
 

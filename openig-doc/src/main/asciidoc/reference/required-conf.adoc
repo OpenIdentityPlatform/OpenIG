@@ -105,7 +105,7 @@ See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)].
 
 [#d210e2165]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/http/GatewayHttpApplication.html[org.forgerock.openig.http.GatewayHttpApplication, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/http/GatewayHttpApplication.html[org.forgerock.openig.http.GatewayHttpApplication, window=\_blank]
 
 '''
 [#heap-objects]

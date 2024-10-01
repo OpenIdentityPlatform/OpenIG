@@ -87,7 +87,7 @@ See also xref:#handlers-conf[Handlers].
 
 [#d210e2464]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/filter/Chain.html[org.forgerock.openig.filter.Chain, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/filter/Chain.html[org.forgerock.openig.filter.Chain, window=\_blank]
 
 '''
 [#ClientHandler]
@@ -135,7 +135,7 @@ Default: 64
 `"connectionTimeout"`: __duration string, optional__::
 Amount of time to wait to establish a connection, expressed as a duration
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -220,7 +220,7 @@ See also xref:misc-conf.adoc#KeyManager[KeyManager(5)].
 `"soTimeout"`: __duration string, optional__::
 Socket timeout, after which stalled connections are destroyed, expressed as a duration
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -336,7 +336,7 @@ The following object configures a `ClientHandler` named `Client`, with non-defau
 
 [#d210e3071]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/ClientHandler.html[org.forgerock.openig.handler.ClientHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/ClientHandler.html[org.forgerock.openig.handler.ClientHandler, window=\_blank]
 
 '''
 [#DesKeyGenHandler]
@@ -359,7 +359,7 @@ Generates a DES key for use with OpenAM as described in xref:../gateway-guide/ch
 
 [#d210e3107]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/DesKeyGenHandler.html[org.forgerock.openig.handler.DesKeyGenHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/DesKeyGenHandler.html[org.forgerock.openig.handler.DesKeyGenHandler, window=\_blank]
 
 '''
 [#DispatchHandler]
@@ -450,7 +450,7 @@ The following sample is from a SAML 2.0 federation configuration. If the incomin
 
 [#d210e3219]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/DispatchHandler.html[org.forgerock.openig.handler.DispatchHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/DispatchHandler.html[org.forgerock.openig.handler.DispatchHandler, window=\_blank]
 
 '''
 [#MonitorEndpointHandler]
@@ -525,7 +525,7 @@ After adding audit tags to a number of other routes, the JSON returned from the 
 
 [#d210e3277]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/audit/monitor/MonitorEndpointHandler.html[org.forgerock.openig.audit.monitor.MonitorEndpointHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/audit/monitor/MonitorEndpointHandler.html[org.forgerock.openig.audit.monitor.MonitorEndpointHandler, window=\_blank]
 
 '''
 [#Route]
@@ -791,7 +791,7 @@ To prevent OpenIG from reloading Route configurations after you except at startu
 
 [#d210e3636]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
 
 '''
 [#SamlFederationHandler]
@@ -996,7 +996,7 @@ The following sample configuration is corresponds to a scenario where OpenIG rec
 
 [#d210e3986]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/saml/SamlFederationHandler.html[org.forgerock.openig.handler.saml.SamlFederationHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/saml/SamlFederationHandler.html[org.forgerock.openig.handler.saml.SamlFederationHandler, window=\_blank]
 
 '''
 [#ScriptableHandler]
@@ -1006,7 +1006,7 @@ link:../apidocs/index.html?org/forgerock/openig/handler/saml/SamlFederationHandl
 ==== Description
 Handles a request by using a script.
 
-The script must return either a link:../apidocs/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank].
+The script must return either a link:{apidocs-url}/index.html?org/forgerock/util/promise/Promise.html[Promise<Response, NeverThrowsException>, window=\_blank] or a link:{apidocs-url}/index.html?org/forgerock/http/protocol/Response.html[Response, window=\_blank].
 
 [IMPORTANT]
 ====
@@ -1053,25 +1053,25 @@ You can use the configuration to pass parameters to the script by specifying an 
 Take care when naming keys in the args object. Attempts to reuse the name of another global object cause the script to fail and OpenIG to return a response with HTTP status code 500 Internal Server Error.
 
 `attributes`::
-The link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
+The link:{apidocs-url}/index.html?org/forgerock/services/context/AttributesContext.html[attributes, window=\_blank] object provides access to a context map of arbitrary attributes, which is a mechanism for transferring transient state between components when processing a single request.
 
 +
 Use `session` for maintaining state between successive requests from the same logical client.
 
 `context`::
-The processing link:../apidocs/index.html?org/forgerock/services/context/Context.html[context, window=\_blank].
+The processing link:{apidocs-url}/index.html?org/forgerock/services/context/Context.html[context, window=\_blank].
 
 +
 This context is the leaf of a chain of contexts. It provides access to other Context types, such as SessionContext, AttributesContext, and ClientContext, through the `context.asContext(ContextClass.class)` method.
 
 `request`::
-The HTTP link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
+The HTTP link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
 
 `globals`::
 This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
 
 `http`::
-An embedded client for making outbound HTTP requests, which is an link:../apidocs/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
+An embedded client for making outbound HTTP requests, which is an link:{apidocs-url}/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
 
 +
 If a `"clientHandler"` is set in the configuration, then that Handler is used. Otherwise, the default ClientHandler configuration is used.
@@ -1080,16 +1080,16 @@ If a `"clientHandler"` is set in the configuration, then that Handler is used. O
 For details, see xref:#handlers-conf[Handlers].
 
 `ldap`::
-The link:../apidocs/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
+The link:{apidocs-url}/index.html?org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_blank] object provides an embedded LDAP client.
 
 +
 Use this client to perform outbound LDAP requests, such as LDAP authentication.
 
 `logger`::
-The link:../apidocs/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
+The link:{apidocs-url}/index.html?org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
 
 `session`::
-The link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
+The link:{apidocs-url}/index.html?org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
 
 +
 Use `attributes` for transferring transient state between components when processing a single request.
@@ -1222,7 +1222,7 @@ For details, see xref:#handlers-conf[Handlers].
 
 [#d210e4374]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/ScriptableHandler.html[org.forgerock.openig.handler.ScriptableHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/ScriptableHandler.html[org.forgerock.openig.handler.ScriptableHandler, window=\_blank]
 
 '''
 [#SequenceHandler]
@@ -1280,7 +1280,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e4465]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/SequenceHandler.html[org.forgerock.openig.handler.SequenceHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/SequenceHandler.html[org.forgerock.openig.handler.SequenceHandler, window=\_blank]
 
 '''
 [#StaticResponseHandler]
@@ -1357,6 +1357,6 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 [#d210e4582]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/openig/handler/StaticResponseHandler.html[org.forgerock.openig.handler.StaticResponseHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/openig/handler/StaticResponseHandler.html[org.forgerock.openig.handler.StaticResponseHandler, window=\_blank]
 
 

@@ -58,7 +58,7 @@ OpenIG runs in the following web application containers:
 * Jetty 8, 9 or 10
 
 
-. link:https://backstage.forgerock.com/downloads[Download, window=\_blank] the OpenIG .war file.
+. link:https://github.com/OpenIdentityPlatform/OpenIG/releases[Download, window=\_blank] the OpenIG.war file.
 
 . Deploy OpenIG in the root context.
 +
@@ -67,7 +67,7 @@ Copy the OpenIG .war file as `root.war` to the `/path/to/jetty/webapps/`:
 
 [source, console]
 ----
-$ cp OpenIG-4.5.0.war /path/to/jetty/webapps/root.war
+$ cp OpenIG-5.3.0.war /path/to/jetty/webapps/root.war
 ----
 +
 Jetty automatically deploys OpenIG in the root context on startup.
@@ -114,12 +114,12 @@ Now that OpenIG is installed, set up a sample application to protect.
 ====
 Follow these steps:
 
-. Download and run the link:https://maven.forgerock.org/repo/private-releases/org/forgerock/openig/openig-doc/4.5.0/openig-doc-4.5.0-jar-with-dependencies.jar[minimal HTTP server .jar, window=\_top] to use as the application to protect:
+. Download and run the link:https://oss.sonatype.org/service/local/repositories/releases/content/org/openidentityplatform/openig/openig-doc/5.3.0/openig-doc-5.3.0-jar-with-dependencies.jar[minimal HTTP server .jar, window=\_top] to use as the application to protect:
 +
 
 [source, console]
 ----
-$ java -jar openig-doc-4.5.0-jar-with-dependencies.jar
+$ java -jar openig-doc-5.3.0-jar-with-dependencies.jar
 Preparing to listen for HTTP on port 8081.
 Preparing to listen for HTTPS on port 8444.
 The server will use a self-signed certificate not known to browsers.
@@ -140,7 +140,7 @@ By default, this server listens for HTTP on port 8081, and for HTTPS on port 844
 
 [source, console]
 ----
-$ java -jar openig-doc-4.5.0-jar-with-dependencies.jar 8888 8889
+$ java -jar openig-doc-5.3.0-jar-with-dependencies.jar 8888 8889
 Preparing to listen for HTTP on port 8888.
 Preparing to listen for HTTPS on port 8889.
 The server will use a self-signed certificate not known to browsers.
