@@ -176,7 +176,7 @@ The following example route uses the audit service:
 
 [#d210e10206]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/audit/AuditService.html[org.forgerock.audit.AuditService, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/audit/AuditService.html[org.forgerock.audit.AuditService, window=\_blank]
 
 '''
 [#CsvAuditEventHandler]
@@ -339,7 +339,7 @@ This password is used for the keystore and for private keys. For details, see xr
 `"signatureInterval"`: __duration, required__::
 The time interval after which to insert a signature in the CSV file. This duration must not be zero, and must not be unlimited.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -435,7 +435,7 @@ The time interval after which to rotate log files. This duration must not be zer
 +
 This has the effect of enabling time-based file rotation.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -476,7 +476,7 @@ The following example schedules rotation six and twelve hours after midnight:
 +
 This has the effect of enabling time-based file rotation.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -511,7 +511,7 @@ The time interval after which to check file rotation and retention policies for 
 +
 Default: 5 seconds
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -631,7 +631,7 @@ The following example configures a CSV audit event handler to write a log file, 
 
 [#d210e11344]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[org.forgerock.audit.handlers.csv.CsvAuditEventHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[org.forgerock.audit.handlers.csv.CsvAuditEventHandler, window=\_blank]
 
 '''
 [#JdbcAuditEventHandler]
@@ -711,7 +711,7 @@ Set this to `"topics": [ "access" ]`.
 The database type name.
 
 +
-Built-in support is provided for `oracle`, `mysql`, and `h2`. Unrecognized database types rely on a link:../apidocs/index.html?org/forgerock/audit/handlers/jdbc/providers/GenericDatabaseStatementProvider.html[GenericDatabaseStatementProvider, window=\_top].
+Built-in support is provided for `oracle`, `mysql`, and `h2`. Unrecognized database types rely on a link:{apidocs-url}/index.html?org/forgerock/audit/handlers/jdbc/providers/GenericDatabaseStatementProvider.html[GenericDatabaseStatementProvider, window=\_top].
 
 `"enabled"`: __boolean, optional__::
 Whether this event handler is active.
@@ -738,7 +738,7 @@ The interval at which to send buffered event messages to the database.
 +
 This interval must be greater than 0 if buffering is enabled.
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 
@@ -936,7 +936,7 @@ Examples including statements to create tables are provided in the JDBC handler 
 
 [#d210e11910]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank]
 
 '''
 [#SyslogAuditEventHandler]
@@ -1204,7 +1204,7 @@ The following example configures a Syslog audit event handler that writes to the
 
 [#d210e12388]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.html[org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.html[org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler, window=\_blank]
 
 '''
 [#ElasticsearchAuditEventHandler]
@@ -1330,7 +1330,7 @@ The interval at which to send buffered event messages to Elasticsearch. If buffe
 +
 Default: 1 second
 +
-A link:../apidocs/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
+A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
 Durations are not case sensitive.
 

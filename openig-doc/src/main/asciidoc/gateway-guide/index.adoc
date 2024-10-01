@@ -26,6 +26,8 @@
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:apidocs-url: https://doc.openidentityplatform.org/openig/apidocs
+
 [abstract]
 Instructions for installing and configuring OpenIG, a high-performance reverse proxy server with specialized session management and credential replay functionality.
 

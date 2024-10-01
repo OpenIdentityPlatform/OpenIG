@@ -373,7 +373,7 @@ Follow these steps to install OpenIG:
 
 . Get OpenIG software.
 +
-Enterprise software releases are available through the ForgeRock link:https://backstage.forgerock.com/[BackStage, window=\_blank] site. Enterprise releases are thoroughly validated builds for ForgeRock customers who run OpenIG in production deployments, and for those who want to try or test with release builds. Make sure you review and agree with the Software License and Subscription Agreement in order to use the software.
+OpenIG releases are available on the link:https://github.com/OpenIdentityPlatform/OpenIG/releases[GitHub, window=\_blank].
 
 . Deploy the OpenIG .war file __to the root context__ of the web application container.
 +

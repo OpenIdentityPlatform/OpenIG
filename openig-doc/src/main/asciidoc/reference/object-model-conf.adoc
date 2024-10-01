@@ -47,7 +47,7 @@ This is never `null`.
 
 [#d210e17202]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/services/context/AttributesContext.html[org.forgerock.services.context.AttributesContext, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/services/context/AttributesContext.html[org.forgerock.services.context.AttributesContext, window=\_blank]
 
 '''
 [#Client]
@@ -103,7 +103,7 @@ The value of the User-Agent HTTP header in the request if any, otherwise `null`
 
 [#d210e17330]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/services/context/ClientContext.html[org.forgerock.services.context.ClientContext, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/services/context/ClientContext.html[org.forgerock.services.context.ClientContext, window=\_blank]
 
 '''
 [#Contexts]
@@ -113,7 +113,7 @@ link:../apidocs/index.html?org/forgerock/services/context/ClientContext.html[org
 ==== Description
 The root object for request context information.
 
-Contexts is a map of available contexts, which implement the link:../apidocs/index.html?org/forgerock/services/context/Context.html[Context, window=\_blank] interface. The contexts map's keys are strings and the values are context objects. A context holds type-safe information useful for processing requests and responses. The `contexts` map is populated dynamically when creating bindings for evaluation of expressions and scripts.
+Contexts is a map of available contexts, which implement the link:{apidocs-url}/index.html?org/forgerock/services/context/Context.html[Context, window=\_blank] interface. The contexts map's keys are strings and the values are context objects. A context holds type-safe information useful for processing requests and responses. The `contexts` map is populated dynamically when creating bindings for evaluation of expressions and scripts.
 --
 All context objects have the following properties:
 
@@ -167,7 +167,7 @@ See also xref:#Session[Session(5)].
 
 [#d210e17457]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/services/context/Context.html[org.forgerock.services.context.Context, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/services/context/Context.html[org.forgerock.services.context.Context, window=\_blank]
 
 '''
 [#Request]
@@ -209,7 +209,7 @@ The message entity body (no accessible properties).
 
 [#d210e17575]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/protocol/Request.html[org.forgerock.http.protocol.Request, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[org.forgerock.http.protocol.Request, window=\_blank]
 
 '''
 [#Response]
@@ -245,7 +245,7 @@ The message entity body (no accessible properties).
 
 [#d210e17662]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/protocol/Response.html[org.forgerock.http.protocol.Response, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/protocol/Response.html[org.forgerock.http.protocol.Response, window=\_blank]
 
 '''
 [#Session]
@@ -268,7 +268,7 @@ Provides access to the HTTP session, which is a map. Session attributes are name
 
 [#d210e17706]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/session/SessionContext.html[org.forgerock.http.session.SessionContext, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/session/SessionContext.html[org.forgerock.http.session.SessionContext, window=\_blank]
 
 '''
 [#Status]
@@ -336,7 +336,7 @@ True if Family.SUCCESSFUL.
 
 [#d210e17875]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/protocol/Status.html[org.forgerock.http.protocol.Status, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/protocol/Status.html[org.forgerock.http.protocol.Status, window=\_blank]
 
 '''
 [#URI]
@@ -393,7 +393,7 @@ Use "rawFragment" to access the raw (encoded) component.
 
 [#d210e18023]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/MutableUri.html[org.forgerock.http.MutableUri, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/MutableUri.html[org.forgerock.http.MutableUri, window=\_blank]
 
 '''
 [#UriRouterContext]
@@ -428,6 +428,6 @@ An unmodifiable Map where the keys and values are strings. The map contains the 
 
 [#d210e18098]
 ==== Javadoc
-link:../apidocs/index.html?org/forgerock/http/routing/UriRouterContext.html[org.forgerock.http.routing.UriRouterContext, window=\_blank]
+link:{apidocs-url}/index.html?org/forgerock/http/routing/UriRouterContext.html[org.forgerock.http.routing.UriRouterContext, window=\_blank]
 
 

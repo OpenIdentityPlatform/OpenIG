@@ -856,9 +856,9 @@ The string resulting from URL encoding the provided userInfo as per RFC 3986.
 
 [#functions-javadoc]
 ==== Javadoc
-Some functions are provided by link:../apidocs/index.html?org/forgerock/openig/el/Functions.html[org.forgerock.openig.el.Functions, window=\_blank].
+Some functions are provided by link:{apidocs-url}/index.html?org/forgerock/openig/el/Functions.html[org.forgerock.openig.el.Functions, window=\_blank].
 
-Other functions are provided by link:../apidocs/index.html?org/forgerock/http/util/Uris.html[org.forgerock.http.util.Uris, window=\_blank].
+Other functions are provided by link:{apidocs-url}/index.html?org/forgerock/http/util/Uris.html[org.forgerock.http.util.Uris, window=\_blank].
 
 '''
 [#Patterns]
