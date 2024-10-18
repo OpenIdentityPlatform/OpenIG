@@ -1080,7 +1080,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>15.1.1-SNAPSHOT</version>
+            <version>15.1.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
