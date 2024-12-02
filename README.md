@@ -5,6 +5,8 @@
 [![Issues](https://img.shields.io/github/issues/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/issues)
 [![Last commit](https://img.shields.io/github/last-commit/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG/commits/master)
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/OpenIdentityPlatform/OpenIG/blob/master/LICENSE.md)
+[![Downloads](https://img.shields.io/github/downloads/OpenIdentityPlatform/OpenIG/total.svg)](https://github.com/OpenIdentityPlatform/OpenIG/releases)
+[![Docker](https://img.shields.io/docker/pulls/openidentityplatform/openig.svg)](https://hub.docker.com/r/openidentityplatform/openig)
 [![Top language](https://img.shields.io/github/languages/top/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG)
 [![Code size in bytes](https://img.shields.io/github/languages/code-size/OpenIdentityPlatform/OpenIG.svg)](https://github.com/OpenIdentityPlatform/OpenIG)
 
