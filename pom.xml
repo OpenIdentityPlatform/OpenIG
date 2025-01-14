@@ -14,7 +14,7 @@
 
   Copyright 2010-2011 ApexIdentity Inc.
   Portions Copyright 2011-2016 ForgeRock AS.
-  Portions Copyright 2018-2024 3A Systems, LLC.
+  Portions Copyright 2018-2025 3A Systems, LLC.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -36,8 +36,8 @@
     <!-- For a release build, update this to https://backstage.forgerock.com/#!/docs/openig/${project.version} -->
     <welcomeDocUrl>https://github.com/OpenIdentityPlatform/OpenIG/wiki</welcomeDocUrl>
     <maven.min.version>3.1.0</maven.min.version>
-	<maven.compiler.target>8</maven.compiler.target>
-    <maven.compiler.source>8</maven.compiler.source>
+	<maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
     
     <!--  ForgeRock build tools and Checkstyle versions (to avoid many checkstyle errors with ForgeRock Parent 2.0.10) -->
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
@@ -1101,7 +1101,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>15.1.2</version>
+            <version>15.1.4-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -1118,8 +1118,8 @@
         </dependency>
         <dependency>
           <groupId>com.sun.mail</groupId>
-          <artifactId>javax.mail</artifactId>
-          <version>1.5.1</version>
+          <artifactId>jakarta.mail</artifactId>
+          <version>2.0.1</version>
       </dependency>
   		<dependency>
   			<groupId>org.apache.zookeeper</groupId>
