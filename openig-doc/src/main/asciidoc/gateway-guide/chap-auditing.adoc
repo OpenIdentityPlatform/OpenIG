@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -23,13 +23,13 @@
 [#chap-auditing]
 == Auditing and Monitoring OpenIG
 
-Routes have a `monitor` boolean attribute that you can use to have OpenIG collect statistics for the route. The statistics are then exposed as a JSON resource that you can access over HTTP. In addition, OpenIG supports the ForgeRock common audit framework. You can add an audit service to a route, and the service can then publish messages to a consumer such as a CSV file, a relational database, or the Syslog facility. In this chapter, you will learn to:
+Routes have a `monitor` boolean attribute that you can use to have OpenIG collect statistics for the route. The statistics are then exposed as a JSON resource that you can access over HTTP. In addition, OpenIG supports the Open Identity Platform common audit framework. You can add an audit service to a route, and the service can then publish messages to a consumer such as a CSV file, a relational database, or the Syslog facility. In this chapter, you will learn to:
 
 * Enable monitoring for a route
 
 * Read monitoring statistics for a route as a JSON resource
 
-* Add an audit service to a route to integrate with the ForgeRock common audit event framework, sometimes referred to as Common Audit
+* Add an audit service to a route to integrate with the Open Identity Platform common audit event framework, sometimes referred to as Common Audit
 
 
 [#monitoring]
@@ -107,7 +107,7 @@ By default, monitoring statistics are accessible from the local host. OpenIG use
 [#audit-event-handlers]
 === Recording Audit Event Messages
 
-The ForgeRock common audit framework is a platform-wide infrastructure to handle audit events by using common audit event handlers. The handlers record events by logging them into files, relational databases, or syslog.
+The Open Identity Platform common audit framework is a platform-wide infrastructure to handle audit events by using common audit event handlers. The handlers record events by logging them into files, relational databases, or syslog.
 OpenIG provides audit event handlers to write messages to the following formats:
 
 * CSV files, with support for retention, rotation, and tamper-evident logs.

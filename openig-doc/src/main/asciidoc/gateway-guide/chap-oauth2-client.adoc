@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -140,7 +140,7 @@ If the profile already exists in the table, then click the link to open the prof
 
 To configure OpenIG as an OpenID Connect 1.0 relying party, add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-openid.json`:
 
-[source, javascript]
+[source, json]
 ----
 {
   "heap": [
@@ -317,7 +317,7 @@ Follow these steps to add a route demonstrating OpenID Connect discovery and dyn
 . Add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/07-discovery.json`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "heap": [

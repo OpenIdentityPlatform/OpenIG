@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -77,7 +77,7 @@ OpenIG should be running in Jetty, configured to access the minimal HTTP server 
 
 Edit `config.json` to make sure that the `CaptureDecorator` also captures the context. After you make the changes, the object declaration appears as follows:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "capture",
@@ -160,7 +160,7 @@ If no access token is present in the request, or token validation does not compl
 
 To configure OpenIG as an OAuth 2.0 resource server, add a new route to the OpenIG configuration by including the following route configuration file as `$HOME/.openig/config/routes/06-rs.json`:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {

@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -44,7 +44,7 @@ The GatewayHttpApplication declares default configurations in the heap for the f
 
 * A ClientHandler named `ClientHandler` for communicating with protected applications. For details, see xref:handlers-conf.adoc#ClientHandler[ClientHandler(5)].
 
-* A ClientHandler named `ForgeRockClientHandler` for sending a ForgeRock Common Audit transaction ID when communicating with protected applications. The default object wraps the `ClientHandler`.
+* A ClientHandler named `ForgeRockClientHandler` for sending a Common Audit transaction ID when communicating with protected applications. The default object wraps the `ClientHandler`.
 
 The GatewayHttpApplication also looks for an object named Session in the heap. If it finds such an object, it uses that object as the default session producer. For example, to store session information in an HTTP cookie on the user-agent, you can define a JwtSession named Session in `config.json`. If you do that, however, stored session information must fit the constraints for storage in a JWT and in a cookie, as described in xref:misc-conf.adoc#JwtSession[JwtSession(5)]. If no such object is found, `session` is based on the Servlet HttpSession that is handled by the container where OpenIG runs.
 
@@ -223,7 +223,7 @@ If a configuration setting is required and the expression returns `null`, an err
 
 In the following example, `"numberOfRequests"` is defined by an expression that recovers the system property `"requestsPerSecond"` and transforms it into an integer. Similarly, `"monitor"` is defined by an expression that recovers the environment variable `"ENABLE_MONITORING"` and transforms it into a boolean:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -235,7 +235,7 @@ In the following example, `"numberOfRequests"` is defined by an expression that 
           "config": {
             "requestGroupingPolicy": "${request.headers['UserId'][0]}",
             "rate": {
-              "numberOfRequests": "${integer(system["requestsPerSecond"])}",
+              "numberOfRequests": "${integer(system['requestsPerSecond'])}",
               "duration": "10 seconds"
             }
           }
@@ -244,13 +244,13 @@ In the following example, `"numberOfRequests"` is defined by an expression that 
       "handler": "ClientHandler"
     }
   },
-  "monitor" : "${boolean(env["ENABLE_MONITORING"])}",
+  "monitor" : "${boolean(env['ENABLE_MONITORING'])}",
   "condition": "${matches(request.uri.path, '^/throttle-simple')}"
 }
 ----
 If `"requestsPerSecond"=150` and `"ENABLE_MONITORING"=false`, after the expressions are evaluated OpenIG views the example route as follows:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {

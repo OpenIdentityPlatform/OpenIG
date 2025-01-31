@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -140,7 +140,7 @@ link:http://json.org[JSON, window=\_blank] string.
 
 
 [#sec-about-crest]
-=== About ForgeRock Common REST
+=== About Common REST
 
 For many REST APIs that are not defined by external standards, ForgeRock products provide common ways to access web resources and collections of resources. This section covers what is common across products. Adapt the examples to your types of resources and to your deployment.
 
@@ -439,7 +439,7 @@ PATCH operations apply to three types of targets:
 
 * *set semantics array*, where the elements are not ordered, and duplicates are not allowed.
 
-ForgeRock PATCH supports several different `operations`. The following sections show each of these operations, along with options for the `field` and `value`:
+Open Identity Platform PATCH supports several different `operations`. The following sections show each of these operations, along with options for the `field` and `value`:
 
 [#crest-patch-add]
 ===== Patch Operation: Add
@@ -460,7 +460,7 @@ An `add` operation has different results on two standard types of arrays:
 
 As an example, start with the following list semantic array resource:
 
-[source, javascript]
+[source, json]
 ----
 {
     "fruits" : [ "orange", "apple" ]
@@ -468,7 +468,7 @@ As an example, start with the following list semantic array resource:
 ----
 The following add operation includes the pineapple to the end of the list of fruits, as indicated by the `-` at the end of the `fruits` array.
 
-[source, javascript]
+[source, json]
 ----
 {
     "operation" : "add",
@@ -493,7 +493,7 @@ The copy operation takes one or more existing values from the source field. It t
 
 The following `copy` operation takes the value from the source named `/hot/potato`, and then runs a `replace` operation on the target value, `/hot/tamale`.
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -511,7 +511,7 @@ If the source and value are configured as arrays, the result depends on whether 
 
 The `increment` operation changes the value or values of the target field by the amount you specify. The value that you include must be one number, and may be positive or negative. The value of the target field must accept numbers. The following `increment` operation adds `1000` to the target value of `/user/payment`.
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -531,7 +531,7 @@ The move operation removes existing values on the source field. It then adds tho
 
 The following `move` operation is equivalent to a `remove` operation on the source named `/hot/potato`, followed by a `replace` operation on the target value, `/hot/tamale`.
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -549,7 +549,7 @@ To apply a `move` operation on an array, you need a compatible single-value, lis
 
 The `remove` operation ensures that the target field no longer contains the value provided. If the remove operation does not include a value, the operation removes the field. The following `remove` deletes the value of the `phoneNumber`, along with the field.
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -564,7 +564,7 @@ A `remove` operation has different results on two standard types of arrays:
 * *List semantic arrays*: A `remove` operation deletes the specified element in the array. For example, the following operation removes the first phone number, based on its array index (zero-based):
 +
 
-[source, javascript]
+[source, json]
 ----
 [
    {
@@ -585,7 +585,7 @@ The `replace` operation removes any existing value(s) of the targeted field, and
 
 The following `replace` operation removes the existing `telephoneNumber` value for the user, and then adds the new value of `+1 408 555 9999`.
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -597,7 +597,7 @@ The following `replace` operation removes the existing `telephoneNumber` value f
 ----
 A PATCH replace operation on a list semantic array works in the same fashion as a PATCH remove operation. The following example demonstrates how the effect of both operations. Start with the following resource:
 
-[source, javascript]
+[source, json]
 ----
 {
     "fruits" : [ "apple", "orange", "kiwi", "lime" ],
@@ -605,7 +605,7 @@ A PATCH replace operation on a list semantic array works in the same fashion as 
 ----
 Apply the following operations on that resource:
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -622,7 +622,7 @@ Apply the following operations on that resource:
 ----
 The PATCH operations are applied sequentially. The `remove` operation removes the first member of that resource, based on its array index, (`fruits/0`), with the following result:
 
-[source, javascript]
+[source, json]
 ----
 [
   {
@@ -632,7 +632,7 @@ The PATCH operations are applied sequentially. The `remove` operation removes th
 ----
 The second PATCH operation, a `replace`, is applied on the second member (`fruits/1`) of the intermediate resource, with the following result:
 
-[source]
+[source, json]
 ----
 [
   {
@@ -647,7 +647,7 @@ The second PATCH operation, a `replace`, is applied on the second member (`fruit
 
 The `transform` operation changes the value of a field based on a script or some other data transformation command. The following `transform` operation takes the value from the field named `/objects`, and applies the `something.js` script as shown:
 
-[source, javascript]
+[source, json]
 ----
 [
   {

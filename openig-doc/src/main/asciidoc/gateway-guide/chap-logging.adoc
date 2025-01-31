@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -42,7 +42,7 @@ When no other logging is configured, all log messages are sent to the default `C
 
 To override the default logging for all heap objects, change the default values for the `ConsoleLogSink` object in `config.json`. The following example from `config.json` writes all log messages to file instead of to console, using a `FileLogSink` named `LogSink`.
 
-[source, javascript]
+[source, json]
 ----
 {
   "name": "LogSink",
@@ -72,7 +72,7 @@ To override the default logging for specific heap objects only, create a `Consol
   }
 }
 ----
-Log messages from third-party dependencies, such as the ForgeRock common audit framework, are managed by SLF4J. Messages with level `INFO` are displayed on the console and written to `$HOME/.openig/logs/route-system.log`.
+Log messages from third-party dependencies, such as the Open Identity Platform common audit framework, are managed by SLF4J. Messages with level `INFO` are displayed on the console and written to `$HOME/.openig/logs/route-system.log`.
 
 The default configuration of SLF4J log messages is defined in OpenIG. Log messages are highlighted with a color related to their logging level. Exception titles and the top line of the stack trace are displayed.
 
