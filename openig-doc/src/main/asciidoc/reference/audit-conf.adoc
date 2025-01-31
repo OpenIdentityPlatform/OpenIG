@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -23,13 +23,13 @@
 [#audit-conf]
 == Audit Framework
 
-OpenIG uses the ForgeRock common audit framework to log system boundary events using an implementation that is common across the ForgeRock platform.
+OpenIG uses the Open Identity Platform common audit framework to log system boundary events using an implementation that is common across the ForgeRock platform.
 [#AuditService]
 === AuditService — enable common audit service for a route
 
 [#d210e10012]
 ==== Description
-This object serves to configure the audit service for a route. The audit service uses the ForgeRock common audit event framework.
+This object serves to configure the audit service for a route. The audit service uses the Open Identity Platform common audit event framework.
 
 The route is decorated with an `auditService` field whose value references the configuration, either inline or from the heap.
 
@@ -142,7 +142,7 @@ OpenIG supports the following audit event handlers:
 ==== Example
 The following example configures an audit service to log access event messages in a comma-separated variable file, named `/path/to/audit/logs/access.csv`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "AuditService",
@@ -166,7 +166,7 @@ The following example configures an audit service to log access event messages i
 ----
 The following example route uses the audit service:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": "ClientHandler",
@@ -469,7 +469,7 @@ The durations, counting from midnight, after which to rotate files.
 The following example schedules rotation six and twelve hours after midnight:
 +
 
-[source, javascript]
+[source, json]
 ----
 "rotationTimes": [ "6 hours", "12 hours" ]
 ----
@@ -612,7 +612,7 @@ For instructions on recording audit events in a CSV file, see xref:../gateway-gu
 
 The following example configures a CSV audit event handler to write a log file, `/path/to/audit/logs/access.csv`, that is signed every 10 seconds to make it tamper-evident:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "csv",
@@ -881,7 +881,7 @@ Audit event fields use JSON pointer notation, and are taken from the JSON schema
 ==== Example
 The following example configures a JDBC audit event handler using a local MySQL database, writing to a table named `auditaccess`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "class": "org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler",
@@ -1178,7 +1178,7 @@ Debug-level messages.
 ==== Example
 The following example configures a Syslog audit event handler that writes to the system log daemon on `syslogd.example.com`, port `6514` over TCP with a timeout of 30 seconds. The facility is the first one for local use, and response status is mapped to Syslog informational messages:
 
-[source, javascript]
+[source, json]
 ----
 {
     "class": "org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler",
@@ -1222,7 +1222,7 @@ A special client handler called `ElasticsearchClientHandler` can be defined to s
 
 To define an `ElasticsearchClientHandler`, create the following object in the heap for the Elasticsearch audit event handler
 
-[source, javascript]
+[source, json]
 ----
 {
   "name": "ElasticsearchClientHandler",
@@ -1388,7 +1388,7 @@ For instructions on recording audit events in Elasticsearch, see xref:../gateway
 
 The following example configures an Elasticsearch audit event handler:
 
-[source, javascript]
+[source, json]
 ----
 {
   "class" : "org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandler",

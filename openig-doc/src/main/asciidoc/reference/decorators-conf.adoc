@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -27,7 +27,7 @@ Decorators are objects that decorate other heap objects, adding the new behavior
 
 To decorate other objects individually, use a local decoration by adding the decorator's name value as a top-level field of the object. For example, suppose a capture decorator named capture is defined in the global configuration, `config.json`. The decorator is configured to capture the entity but not the context:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "capture",
@@ -40,7 +40,7 @@ To decorate other objects individually, use a local decoration by adding the dec
 ----
 The following ClientHandler configuration would then capture requests including the entity before they are forwarded to the server:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "ClientHandler",
@@ -59,7 +59,7 @@ To decorate the handler for a route, add the decorator as a top-level field of t
 ----
 The decoration as a top-level field also does not decorate heap objects. To decorate all applicable objects defined within a Route's heap, configure globalDecorators as a top-level field of the Route. The globalDecorators field takes a map of the decorations to apply. For example, the following route has audit and capture decorations that apply to the Chain, HeaderFilter, and StaticResponseHandler. In other words, the decorations apply to all objects in this route's heap:
 
-[source, javascript]
+[source, json]
 ----
 {
     "globalDecorators": {
@@ -110,7 +110,7 @@ Take care when defining decorator names not to use names that unintentionally cl
 
 Decorations can apply more than once. For example, if you set a decoration both on a Route and also on an object defined within the route, then OpenIG can apply the decoration twice. The following Route results in the request being captured twice:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -128,7 +128,7 @@ OpenIG applies decorations in this order.
 
 . Route decorations (those decorating a route's handler)
 
-Interface Stability: Evolving (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+Interface Stability: Evolving (For details, see xref:appendix-interface-stability.adoc#interface-stability[Open Identity Platform Product Interface Stability].)
 [#AuditDecorator]
 === AuditDecorator — trigger notification of audit events for Filters and Handlers
 
@@ -136,7 +136,7 @@ Interface Stability: Evolving (For details, see xref:appendix-interface-stabilit
 ==== Description
 Triggers notification of audit events for applicable Filters and Handlers.
 
-Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[Open Identity Platform Product Interface Stability].)
 
 OpenIG first notifies an audit system sink. The audit system sink takes responsibility for forwarding notifications to registered audit event listeners. The listeners take responsibility for dealing with the audit events. What a listener does is implementation specific, but it could for example publish the event to an endpoint or to a central system, log the event in a file, or raise an alert.
 --
@@ -219,7 +219,7 @@ To activate the audit decoration without setting any user-defined tags, set audi
 ==== Examples
 The following example triggers an audit event on a default route:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": "ClientHandler",
@@ -228,7 +228,7 @@ The following example triggers an audit event on a default route:
 ----
 The following example triggers an audit event only on a particular object:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "My Serious Error Handler",
@@ -307,7 +307,7 @@ OpenIG ignores this setting if the value is not a string.
 ==== Examples
 Add a custom decorator to the heap named myBaseUri:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "myBaseUri",
@@ -316,7 +316,7 @@ Add a custom decorator to the heap named myBaseUri:
 ----
 Set a Router's base URI to `\https://www.example.com:8443`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "Router",
@@ -443,7 +443,7 @@ Only applies to Filters
 ==== Examples
 Decorator configured to log the entity:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "capture",
@@ -455,7 +455,7 @@ Decorator configured to log the entity:
 ----
 Decorator configured not to log the entity:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "capture",
@@ -464,7 +464,7 @@ Decorator configured not to log the entity:
 ----
 Decorator configured to log the context in JSON format, excluding the request and the response:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "capture",
@@ -476,7 +476,7 @@ Decorator configured to log the context in JSON format, excluding the request an
 ----
 To capture requests and responses with the entity before sending the request and before returning the response, do so as in the following example:
 
-[source, javascript]
+[source, json]
 ----
 {
     "heap": [
@@ -501,7 +501,7 @@ To capture requests and responses with the entity before sending the request and
 ----
 To capture all transformed requests and responses as they leave filters, decorate the Route as in the following example. This Route uses the default CaptureDecorator:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": {
@@ -550,7 +550,7 @@ To capture all transformed requests and responses as they leave filters, decorat
 ----
 To capture the context as JSON, excluding the request and response, before sending the request and before returning the response, do so as in the following example:
 
-[source, javascript]
+[source, json]
 ----
 {
     "heap": [
@@ -645,7 +645,7 @@ To deactivate the TimerDecorator temporarily, set the value to `false`.
 ==== Examples
 To record times spent within the client handler, and elapsed time for operations traversing the client handler, use a configuration such as the following:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": {
@@ -668,7 +668,7 @@ When you decorate a Filter with a TimerDecorator, OpenIG can record two timer me
 
 To record times spent within all Filters and the handler, decorate the Route as in the following example:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -762,7 +762,7 @@ Elapsed time (within the object): 81 ms
 ----
 You can then deactivate the timer by setting the values to `false`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "timer": false

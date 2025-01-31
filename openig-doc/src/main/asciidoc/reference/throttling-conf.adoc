@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -151,7 +151,7 @@ The following links provide examples of how the throttling policies are implemen
 
 The following route defines a throttling rate of 6 requests/10 seconds to requests. For information about how to set up and test this example, see xref:../gateway-guide/chap-throttling.adoc#throttling-simple[ Configuring a Simple Throttling Filter ] in the __Gateway Guide__.
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -289,7 +289,7 @@ The throttling rate is assigned according to the evaluation of `throttlingRateMa
 [#figure-throttling-mapped]
 image::images/throttling-mapped.png[]
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -395,7 +395,7 @@ The script can store the mapping for the throttling rate in memory, and can use 
 [#figure-throttling-scriptable]
 image::images/throttling-scriptable.png[]
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
