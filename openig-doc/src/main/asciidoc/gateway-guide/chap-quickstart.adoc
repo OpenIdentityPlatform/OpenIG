@@ -18,6 +18,7 @@
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:openig-version: 5.3.1
 
 
 [#chap-quickstart]
@@ -65,9 +66,9 @@ OpenIG runs in the following web application containers:
 Copy the OpenIG .war file as `root.war` to the `/path/to/jetty/webapps/`:
 +
 
-[source, console]
+[source, console, subs="attributes"]
 ----
-$ cp OpenIG-5.3.0.war /path/to/jetty/webapps/root.war
+$ cp OpenIG-{openig-version}.war /path/to/jetty/webapps/root.war
 ----
 +
 Jetty automatically deploys OpenIG in the root context on startup.
@@ -114,12 +115,12 @@ Now that OpenIG is installed, set up a sample application to protect.
 ====
 Follow these steps:
 
-. Download and run the link:https://oss.sonatype.org/service/local/repositories/releases/content/org/openidentityplatform/openig/openig-doc/5.3.0/openig-doc-5.3.0-jar-with-dependencies.jar[minimal HTTP server .jar, window=\_top] to use as the application to protect:
+. Download and run the link:https://oss.sonatype.org/service/local/repositories/releases/content/org/openidentityplatform/openig/openig-doc/{openig-version}/openig-doc-{openig-version}-jar-with-dependencies.jar[minimal HTTP server .jar, window=\_top] to use as the application to protect:
 +
 
-[source, console]
+[source, console, subs="attributes"]
 ----
-$ java -jar openig-doc-5.3.0-jar-with-dependencies.jar
+$ java -jar openig-doc-{openig-version}-jar-with-dependencies.jar
 Preparing to listen for HTTP on port 8081.
 Preparing to listen for HTTPS on port 8444.
 The server will use a self-signed certificate not known to browsers.
@@ -138,9 +139,9 @@ Press Ctrl+C to stop the server.
 By default, this server listens for HTTP on port 8081, and for HTTPS on port 8444. If one or both of those ports are not free, specify other ports:
 +
 
-[source, console]
+[source, console, subs="attributes"]
 ----
-$ java -jar openig-doc-5.3.0-jar-with-dependencies.jar 8888 8889
+$ java -jar openig-doc-{openig-version}-jar-with-dependencies.jar 8888 8889
 Preparing to listen for HTTP on port 8888.
 Preparing to listen for HTTPS on port 8889.
 The server will use a self-signed certificate not known to browsers.
@@ -178,7 +179,7 @@ Follow these steps to configure OpenIG to proxy traffic to the sample applicatio
 Add the following base configuration file as `$HOME/.openig/config/config.json`. By default, OpenIG looks for `config.json` in the `$HOME/.openig/config` directory:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -225,7 +226,7 @@ If you adapt this base configuration for production use, make sure to adjust the
 . Add the following default route configuration file as `$HOME/.openig/config/routes/99-default.json`. By default, the Router defined in the base configuration file looks for routes in the `$HOME/.openig/config/routes` directory:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": "ClientHandler"
@@ -317,7 +318,7 @@ Now change the OpenIG configuration to log you in automatically with hard-coded 
 Add the following route configuration file as `$HOME/.openig/config/routes/01-static.json`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {

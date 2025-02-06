@@ -18,6 +18,7 @@
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:openig-version: 5.3.1
 
 
 [#chap-uma]
@@ -166,7 +167,7 @@ This tutorial uses `api.example.com` as the domain. Add `api.example.com` as an 
 ----
 Edit `config.json` to comment the baseURI decoration in the top-level handler for OpenIG configuration. After you make the changes, the handler declaration appears as follows:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": {
@@ -409,7 +410,7 @@ This section covers configuring OpenIG as an UMA resource server.
 . Add a new route to the OpenIG configuration, by including the following route configuration file as `$HOME/.openig/config/routes/00-uma.json`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "heap": [
@@ -484,7 +485,7 @@ The `UmaService` also provides a REST API to manage sharing of resource sets.
 The CORS filter handles pre-flight (HTTP OPTIONS) requests, and responses for all HTTP operations. The logic for the filter is provided through a script. Add the script to your configuration by including the following Groovy script file as `$HOME/.openig/scripts/groovy/CorsFilter.groovy`:
 +
 
-[source, java]
+[source, groovy]
 ----
 import org.forgerock.http.protocol.Response
 import org.forgerock.http.protocol.Status
@@ -558,7 +559,7 @@ You can reuse the CORS filter for this purpose.
 Add the following declaration to the heap array in `config.json`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "ApiProtectionFilter",
@@ -588,10 +589,10 @@ Follow these steps to run the demonstration:
 The settings match if you are using the defaults described in this chapter. If not, unpack UMA sample client files from the minimal HTTP server described in xref:chap-quickstart.adoc#quickstart-sample-app[Install an Application to Protect] to a web server document location for your web server:
 +
 
-[source, console]
+[source, console, subs="normal"]
 ----
 $ cd /path/to/web/server/files/
-$ jar -xvf /path/to/openig-doc-5.3.0-jar-with-dependencies.jar uma
+$ jar -xvf /path/to/openig-doc-{openig-version}-jar-with-dependencies.jar uma
   created: uma/
  inflated: uma/alice.html
  inflated: uma/bob.html
