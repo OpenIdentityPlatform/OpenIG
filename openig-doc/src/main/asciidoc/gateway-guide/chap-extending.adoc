@@ -18,6 +18,8 @@
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:openig-version: 5.3.1
+
 
 
 [#chap-extending]
@@ -796,13 +798,13 @@ Within the `create()` method, you can access the object's configuration through 
 You can use Apache Maven to manage dependencies on OpenIG. The dependencies are found in the Central Maven repository.
 
 
-[source, xml]
+[source, xml, subs="normal"]
 ----
   <dependencies>
     <dependency>
       <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-core</artifactId>
-      <version>5.3.0</version>
+      <version>{openig-version}</version>
     </dependency>
   </dependencies>
 ----
@@ -831,14 +833,14 @@ After building your customizations into a .jar file, you can include them in the
 
 For example, if your .jar file is in a project named `sample-filter`, and the development version is `1.0.0-SNAPSHOT`, you might include the file as in the following example:
 
-[source, console]
+[source, console, subs="attributes"]
 ----
 $ mkdir root && cd root
-    $ jar -xf ~/Downloads/OpenIG-5.3.0.war
+    $ jar -xf ~/Downloads/OpenIG-{openig-version}.war
     $ cp ~/Documents/sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar WEB-INF/lib
     $ jar -cf ../custom.war *
 ----
-In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-5.3.0.war`.
+In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-{openig-version}.war`.
 
 
 

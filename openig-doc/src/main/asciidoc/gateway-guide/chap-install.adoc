@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -55,7 +55,6 @@ For details, see xref:#configure-network[Preparing the Network].
 * Download, deploy, and configure OpenIG.
 +
 For details, see xref:#install[Installing OpenIG].
-
 
 [#configure-container]
 === Configuring Deployment Containers
@@ -437,7 +436,6 @@ C:>set OPENIG_BASE=c:\path\to\openig
 ----
 $ java -Dopenig.base=/path/to/openig -jar start.jar
 ----
-
 +
 If you have not yet prepared configuration files, then start with the configuration described in xref:chap-quickstart.adoc#quickstart-config[Configure OpenIG].
 +
@@ -555,7 +553,7 @@ $ keytool \
 ----
 You could then configure the following KeyStore for OpenIG that holds the trusted certificate. Notice that the url field takes an expression that evaluates to a URL, starting with a scheme such as `\file://`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyKeyStore",
@@ -568,7 +566,7 @@ You could then configure the following KeyStore for OpenIG that holds the truste
 ----
 The TrustManager handles the certificates in the KeyStore when deciding whether to trust the server certificate. The TrustManager references your KeyStore:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyTrustManager",
@@ -605,7 +603,7 @@ In that case, generate a key pair for OpenIG, and have the certificate signed by
 --
 The following `ClientHandler` configuration references `MyTrustManager` and sets strict host name verification:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "ClientHandler",
@@ -649,7 +647,7 @@ $ keytool \
 . Add a KeyStore to your configuration that references the keystore file:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyKeyStore",
@@ -666,7 +664,7 @@ For details, see xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the _
 . Add a JwtSession to your configuration that references your KeyStore:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyJwtSession",
@@ -683,7 +681,7 @@ For details, see xref:../reference/misc-conf.adoc#KeyStore[KeyStore(5)] in the _
 . Specify your JwtSession object in the top-level configuration, or in the route configuration:
 +
 
-[source, javascript]
+[source, json]
 ----
 "session": "MyJwtSession"
 ----
