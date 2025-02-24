@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2025 3A Systems LLC.
  */
 
 package org.forgerock.openig.filter.oauth2;
@@ -128,12 +129,19 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
                                     .as(requiredHeapObject(heap, Handler.class));
 
         TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
-        AccessTokenResolver resolver = new OpenAmAccessTokenResolver(httpHandler,
-                                                                     time,
-                                                                     config.get("tokenInfoEndpoint")
-                                                                           .as(evaluatedWithHeapProperties())
-                                                                           .required()
-                                                                           .asString());
+
+        AccessTokenResolver resolver;
+        if(config.isDefined("tokenInfoEndpoint")) {
+            resolver = new OpenAmAccessTokenResolver(httpHandler,
+                    time,
+                    config.get("tokenInfoEndpoint")
+                            .as(evaluatedWithHeapProperties())
+                            .required()
+                            .asString());
+        } else {
+            resolver = config.get("accessTokenResolver").required()
+                    .as(requiredHeapObject(heap, AccessTokenResolver.class));
+        }
 
         // Build the cache
         Duration expiration = config.get("cacheExpiration")
