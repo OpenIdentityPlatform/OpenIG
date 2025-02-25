@@ -17,8 +17,6 @@ package org.forgerock.openig.filter.oauth2;
 
 import static org.forgerock.openig.el.Bindings.bindings;
 
-import javax.script.ScriptException;
-
 import org.forgerock.http.oauth2.AccessTokenException;
 import org.forgerock.http.oauth2.AccessTokenInfo;
 import org.forgerock.http.oauth2.AccessTokenResolver;
@@ -27,7 +25,6 @@ import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
 import org.forgerock.openig.script.Script;
 import org.forgerock.services.context.Context;
-import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -37,14 +34,15 @@ import org.forgerock.util.promise.Promise;
 public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<AccessTokenInfo>
         implements AccessTokenResolver {
 
+    String tokenInfoEndpoint;
+
     @Override
     public Promise<AccessTokenInfo, AccessTokenException> resolve(Context context, String token) {
-        return runScript(bindings(context).bind("token", token), context, AccessTokenInfo.class)
-                .thenCatch(new Function<ScriptException, AccessTokenInfo, AccessTokenException>() {
-                    @Override
-                    public AccessTokenInfo apply(ScriptException e) throws AccessTokenException {
-                        throw new AccessTokenException("Error while resolving the access token", e);
-                    }
+        return runScript(
+                bindings(context).bind("token", token).bind("tokenInfoEndpoint", this.tokenInfoEndpoint),
+                context, AccessTokenInfo.class)
+                .thenCatch(e -> {
+                    throw new AccessTokenException("Error while resolving the access token", e);
                 });
     }
 
@@ -60,5 +58,8 @@ public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<
 
     ScriptableAccessTokenResolver(final Script compiledScript, final Heap heap, final String name) {
         super(compiledScript, heap, name);
+    }
+    void setTokenInfoEndpoint(String tokenInfoEndpoint) {
+        this.tokenInfoEndpoint = tokenInfoEndpoint;
     }
 }

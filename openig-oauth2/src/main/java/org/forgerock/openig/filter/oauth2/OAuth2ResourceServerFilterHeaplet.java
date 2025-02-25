@@ -131,16 +131,22 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
         TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
         AccessTokenResolver resolver;
-        if(config.isDefined("tokenInfoEndpoint")) {
+        if(config.isDefined("accessTokenResolver")) {
+            resolver = config.get("accessTokenResolver").required()
+                    .as(requiredHeapObject(heap, AccessTokenResolver.class));
+            if(resolver instanceof ScriptableAccessTokenResolver) {
+                ((ScriptableAccessTokenResolver)resolver)
+                        .setTokenInfoEndpoint(config.get("tokenInfoEndpoint")
+                                .as(evaluatedWithHeapProperties())
+                                .asString());
+            }
+        } else {
             resolver = new OpenAmAccessTokenResolver(httpHandler,
                     time,
                     config.get("tokenInfoEndpoint")
                             .as(evaluatedWithHeapProperties())
                             .required()
                             .asString());
-        } else {
-            resolver = config.get("accessTokenResolver").required()
-                    .as(requiredHeapObject(heap, AccessTokenResolver.class));
         }
 
         // Build the cache
