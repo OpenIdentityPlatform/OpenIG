@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -1187,6 +1187,7 @@ If the scopes for the access token do not match the specified required scopes, t
   "name": string,
   "type": "OAuth2ResourceServerFilter",
   "config": {
+    "accessTokenResolver": AccessTokenResolver reference,
     "providerHandler": Handler reference,
     "scopes": [ expression, ... ],
     "tokenInfoEndpoint": URL string,
@@ -1202,6 +1203,22 @@ An alternative value for type is OAuth2RSFilter.
 [#d210e6434]
 ==== Properties
 --
+
+`"accessTokenResolver"`: __reference, optional__::
+Resolves an access token against an Authorization Server. Currently, supports the link:{apidocs-url}/index.html?org/forgerock/openig/filter/oauth2/ScriptableAccessTokenResolver.html[`ScriptableAccessTokenResolver`, window=\_blank] to customize the default access token resolution algorithm. The example below utilizes the `token.groovy` script to resolve an access token.
++
+[source, json]
+----
+{
+  "accessTokenResolver": {
+    "type": "ScriptableAccessTokenResolver",
+    "config": {
+      "type": "application/x-groovy",
+      "file": "token.groovy"
+    }
+  }
+}
+----
 
 `"providerHandler"`: __Handler reference, optional__::
 Invoke this HTTP client handler to send token info requests.
@@ -1231,13 +1248,13 @@ Duration for which to cache OAuth 2.0 access tokens.
 Caching allows OpenIG to avoid repeated requests for token info when reusing the information over a short period.
 +
 A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
++
 Durations are not case sensitive.
-
++
 Negative durations are not supported.
-
++
 The following units can be used in durations:
-
++
 * `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
 
 * `zero`, `disabled`: zero-length duration
