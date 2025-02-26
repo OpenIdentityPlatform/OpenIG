@@ -12,24 +12,48 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2025 3A Systems LLC.
  */
 
 package org.forgerock.openig.filter.oauth2;
 
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-
+import org.forgerock.http.Handler;
+import org.forgerock.http.oauth2.AccessTokenInfo;
+import org.forgerock.http.oauth2.OAuth2Context;
+import org.forgerock.http.oauth2.ResourceServerFilter;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.ResponseException;
+import org.forgerock.json.JsonValue;
+import org.forgerock.openig.config.Environment;
+import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.filter.oauth2.client.HeapUtilsTest;
+import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Keys;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
+import org.forgerock.util.time.TimeService;
 import org.testng.annotations.Test;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.script.Script.GROOVY_MIME_TYPE;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("javadoc")
 public class OAuth2ResourceServerFilterHeapletTest {
@@ -38,6 +62,7 @@ public class OAuth2ResourceServerFilterHeapletTest {
      * Re-used token-id.
      */
     public static final String TOKEN_ID = "1fc0e143-f248-4e50-9c13-1d710360cec9";
+
 
     @Test
     public void shouldEvaluateScopeExpressions() throws Exception {
@@ -57,6 +82,69 @@ public class OAuth2ResourceServerFilterHeapletTest {
         final OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess resourceAccess =
                 new OAuth2ResourceServerFilterHeaplet.OpenIGResourceAccess(getScopes("${bad.attribute}"));
         resourceAccess.getRequiredScopes(newContextChain(), buildAuthorizedRequest());
+    }
+
+    @Test
+    public void testFilterWithScriptableAccessTokenResolver() throws Exception {
+        final String TEST_TOKEN = UUID.randomUUID().toString();
+
+        HeapImpl heap = HeapUtilsTest.buildDefaultHeap();
+
+        heap.put(Keys.ENVIRONMENT_HEAP_KEY, getEnvironment());
+        heap.put(Keys.CLIENT_HANDLER_HEAP_KEY, mock(Handler.class));
+        heap.put(Keys.TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
+
+        JsonValue config = json(object());
+        config.put("providerHandler", "ClientHandler");
+        List<String> scopes = new ArrayList<>();
+        config.put("scopes", scopes);
+        config.put("cacheExpiration", "0 minutes");
+        config.put("requireHttps", false);
+        config.put("tokenInfoEndpoint", "http://openam.example.org:8080/openam/oauth2/tokeninfo");
+
+        Map<String, Object> accessTokenResolver = new HashMap<>();
+        accessTokenResolver.put("type", "ScriptableAccessTokenResolver");
+        Map<String, Object> accessTokenResolverConfig = new HashMap<>();
+        accessTokenResolverConfig.put("type", GROOVY_MIME_TYPE);
+        accessTokenResolverConfig.put("file", "AccessTokenResolver.groovy");
+        accessTokenResolver.put("config", accessTokenResolverConfig);
+        config.put("accessTokenResolver", accessTokenResolver);
+
+        ResourceServerFilter filter = (ResourceServerFilter) new OAuth2ResourceServerFilterHeaplet().create(Name.of("this"), config, heap);
+
+        Handler testHandler = (context, request) -> {
+            assertThat(context).isInstanceOf(OAuth2Context.class);
+            AccessTokenInfo accessToken = ((OAuth2Context) context).getAccessToken();
+            assertThat(accessToken.getToken()).isEqualTo(TEST_TOKEN);
+            assertThat(accessToken.getInfo().get("name")).isEqualTo("John");
+            return null;
+        };
+
+        Request testRequest = new Request();
+        testRequest.getHeaders().add("Authorization", "Bearer " + TEST_TOKEN);
+        Context ctx = new RootContext();
+        filter.filter(ctx, testRequest, testHandler);
+    }
+
+    private Environment getEnvironment() throws Exception {
+        return new DefaultEnvironment(new File(getTestBaseDirectory()));
+    }
+
+    private String getTestBaseDirectory() throws Exception {
+        // relative path to our-self
+        String name = resource(getClass());
+        // find the complete URL pointing to our path
+        URL resource = getClass().getClassLoader().getResource(name);
+
+        // Strip out the 'file' scheme
+        String path = new File(resource.toURI()).getPath();
+
+        // Strip out the resource path to actually get the base directory
+        return path.substring(0, path.length() - name.length());
+    }
+
+    private static String resource(final Class<?> type) {
+        return type.getName().replace('.', '/').concat(".class");
     }
 
     private static Context newContextChain() {
