@@ -20,6 +20,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import org.forgerock.http.oauth2.AccessTokenException;
 import org.forgerock.http.oauth2.AccessTokenInfo;
 import org.forgerock.http.oauth2.AccessTokenResolver;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.script.AbstractScriptableHeapObject;
@@ -34,12 +35,12 @@ import org.forgerock.util.promise.Promise;
 public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<AccessTokenInfo>
         implements AccessTokenResolver {
 
-    String tokenInfoEndpoint;
+    JsonValue config;
 
     @Override
     public Promise<AccessTokenInfo, AccessTokenException> resolve(Context context, String token) {
         return runScript(
-                bindings(context).bind("token", token).bind("tokenInfoEndpoint", this.tokenInfoEndpoint),
+                bindings(context).bind("token", token).bind("config", this.config),
                 context, AccessTokenInfo.class)
                 .thenCatch(e -> {
                     throw new AccessTokenException("Error while resolving the access token", e);
@@ -59,7 +60,7 @@ public class ScriptableAccessTokenResolver extends AbstractScriptableHeapObject<
     ScriptableAccessTokenResolver(final Script compiledScript, final Heap heap, final String name) {
         super(compiledScript, heap, name);
     }
-    void setTokenInfoEndpoint(String tokenInfoEndpoint) {
-        this.tokenInfoEndpoint = tokenInfoEndpoint;
+    void setConfig(JsonValue config) {
+        this.config = config;
     }
 }

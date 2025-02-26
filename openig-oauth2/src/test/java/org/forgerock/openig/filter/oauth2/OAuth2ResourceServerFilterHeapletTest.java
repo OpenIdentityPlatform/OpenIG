@@ -100,6 +100,7 @@ public class OAuth2ResourceServerFilterHeapletTest {
         config.put("scopes", scopes);
         config.put("cacheExpiration", "0 minutes");
         config.put("requireHttps", false);
+        config.put("tokenInfoEndpoint", "http://openam.example.org:8080/openam/oauth2/tokeninfo");
 
         Map<String, Object> accessTokenResolver = new HashMap<>();
         accessTokenResolver.put("type", "ScriptableAccessTokenResolver");

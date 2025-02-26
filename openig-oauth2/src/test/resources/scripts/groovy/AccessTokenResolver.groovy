@@ -20,6 +20,8 @@ import org.forgerock.http.oauth2.AccessTokenInfo
 import org.forgerock.json.JsonValue
 import static org.forgerock.json.JsonValue.*
 
+logger.info("" + config.tokenInfoEndpoint)
+
 def rawJson = new JsonValue(object(
         field("name", "John"),
         field("lasname", "Doe"))
