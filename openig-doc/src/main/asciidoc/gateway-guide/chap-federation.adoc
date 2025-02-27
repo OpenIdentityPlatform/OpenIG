@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -93,16 +93,17 @@ a|xref:#prepare-network[Preparing the Network]
 a|Configure OpenAM As an IDP.
 a|xref:#set-up-openam[ Setting Up OpenAM for This Tutorial ]
 
- xref:#hosted-id[ Setting Up a Hosted Identity Provider ]
+xref:#hosted-id[ Setting Up a Hosted Identity Provider ]
 
- xref:#fedlet[ Setting up a Fedlet ]
+xref:#fedlet[ Setting up a Fedlet ]
 
 a|Configuring OpenIG as a SP.
 a|xref:#copy-conf-files[ Retrieve the Fedlet Configuration Files ]
 
- xref:#route-credential-injection[ Adding a Route for Credential Injection ]
+xref:#route-credential-injection[ Adding a Route for Credential Injection ]
 
- xref:#route-saml-fed[ Adding a Route for SAML Federation ]
+xref:#route-saml-fed[ Adding a Route for SAML Federation ]
+
 |===
 
 [#d2528e3373]

@@ -74,32 +74,8 @@ A configuration expression, described in xref:expressions-conf.adoc#Expressions[
 
 [#definition-duration]
 duration::
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
-
++
+include::../partials/sec-duration-description.adoc[]
 
 [#definition-expression]
 expression::

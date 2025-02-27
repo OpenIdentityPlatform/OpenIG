@@ -263,32 +263,9 @@ Default: `openig-jwt-session`
 
 `"sessionTimeout"` __duration, optional__::
 The amount of time before the cookie session expires.
+
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 30 minutes
@@ -706,31 +683,7 @@ If all jobs finish before the grace period, the executor service stops without w
 +
 When `gracefulStop` is `false`, the grace period is ignored.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 10 seconds
