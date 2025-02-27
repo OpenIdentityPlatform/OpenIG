@@ -339,32 +339,7 @@ This password is used for the keystore and for private keys. For details, see xr
 `"signatureInterval"`: __duration, required__::
 The time interval after which to insert a signature in the CSV file. This duration must not be zero, and must not be unlimited.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
-
+include::../partials/sec-duration-description.adoc[]
 
 ====
 
@@ -431,35 +406,10 @@ Default: `-yyyy.MM.dd-HH.mm.ss`, where __yyyy__ characters are replaced with the
 
 `"rotationInterval"`: __duration, optional__::
 The time interval after which to rotate log files. This duration must not be zero.
-
 +
 This has the effect of enabling time-based file rotation.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 
 `"rotationTimes"`: __array of durations, optional__::
@@ -476,67 +426,17 @@ The following example schedules rotation six and twelve hours after midnight:
 +
 This has the effect of enabling time-based file rotation.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 
 ====
 
 `"rotationRetentionCheckInterval"`: __duration, optional__::
 The time interval after which to check file rotation and retention policies for updates.
-
 +
 Default: 5 seconds
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
-
+include::../partials/sec-duration-description.adoc[]
 
 --
 
@@ -738,31 +638,7 @@ The interval at which to send buffered event messages to the database.
 +
 This interval must be greater than 0 if buffering is enabled.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 
 `"autoFlush"`: __boolean, optional__::
@@ -1330,31 +1206,7 @@ The interval at which to send buffered event messages to Elasticsearch. If buffe
 +
 Default: 1 second
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 
 `"maxBatchedEvents"`: __number, optional__::

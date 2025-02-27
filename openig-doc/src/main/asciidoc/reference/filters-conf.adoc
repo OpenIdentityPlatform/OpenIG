@@ -1017,31 +1017,8 @@ Duration for which to cache user-info resources.
 +
 OpenIG lazily fetches user info from the OpenID provider. In other words, OpenIG only fetches the information when a downstream Filter or Handler uses the user info. Caching allows OpenIG to avoid repeated calls to OpenID providers when reusing the information over a short period.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
 
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 20 seconds
@@ -1247,31 +1224,7 @@ Duration for which to cache OAuth 2.0 access tokens.
 +
 Caching allows OpenIG to avoid repeated requests for token info when reusing the information over a short period.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-+
-Durations are not case sensitive.
-+
-Negative durations are not supported.
-+
-The following units can be used in durations:
-+
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 1 minute
@@ -1723,32 +1676,7 @@ This setting prevents OpenIG from having to issue a new request for every policy
 Cached policy decisions remain in the OpenIG cache even after a user logs out of OpenAM and the OpenAM session becomes invalid.
 ======
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
-
+include::../partials/sec-duration-description.adoc[]
 +
 Default: 1 minute
 
