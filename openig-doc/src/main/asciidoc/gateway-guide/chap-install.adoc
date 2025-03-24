@@ -62,9 +62,9 @@ For details, see xref:#install[Installing OpenIG].
 This section provides installation and configuration tips that you need to run OpenIG in supported containers.
 OpenIG runs in the following web application containers:
 
-* Apache Tomcat 7 or 8
+* Apache Tomcat 8 or 9
 
-* Jetty 8 (8.1.13 or later) or 9
+* Jetty 8 (8.1.13 or later), 9 or 10
 
 For further information on advanced configuration for a particular container, see the container documentation.
 
