@@ -18,6 +18,7 @@ package org.forgerock.openig.decoration.global;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.forgerock.json.JsonValue.*;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 import org.forgerock.json.JsonValue;
@@ -50,7 +51,7 @@ public class GlobalDecoratorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(context.getHeap()).thenReturn(heap);
-        when(decorator.accepts(any(Class.class))).thenReturn(true);
+        when(decorator.accepts(nullable(Class.class))).thenReturn(true);
     }
 
     @Test
@@ -115,7 +116,7 @@ public class GlobalDecoratorTest {
         when(heap.get("deco-1", Decorator.class)).thenReturn(decorator);
         when(heap.get("deco-2", Decorator.class)).thenReturn(decorator);
         // deco-1 will not accept the given type (the incompatible one)
-        when(decorator.accepts(any(Class.class))).thenReturn(false, true);
+        when(decorator.accepts(nullable(Class.class))).thenReturn(false, true);
 
         JsonValue decorations = json(object(field("deco-1", "value-1"),
                                             field("deco-2", "value-2")));

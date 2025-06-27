@@ -18,7 +18,8 @@ package org.forgerock.openig.jwt.dirty;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,7 +66,7 @@ public class DirtyCollectionTest {
     public void shouldNotNotifyListenerWhenRemoveAllIsCalledWithNoActualChanges() throws Exception {
         collection.removeAll(Arrays.asList("four"));
 
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
         assertThat(collection).containsOnly("one", "two", "three");
     }
 
@@ -89,7 +90,7 @@ public class DirtyCollectionTest {
     public void shouldNotNotifyListenerWhenRetainAllIsCalledWithNoChanges() throws Exception {
         collection.retainAll(Arrays.asList("one", "two", "three"));
 
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
         assertThat(collection).containsOnly("one", "two", "three");
     }
 

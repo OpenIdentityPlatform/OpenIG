@@ -24,9 +24,9 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.forgerock.http.Handler;
@@ -111,7 +111,7 @@ public class ConditionEnforcementFilterTest {
         final ConditionEnforcementFilter filter = new ConditionEnforcementFilter(Expression.valueOf("${true}",
                                                                                                     Boolean.class));
         filter.filter(context, null, next);
-        verify(next).handle(any(Context.class), any(Request.class));
+        verify(next).handle(any(Context.class), any());
     }
 
     @DataProvider
@@ -134,7 +134,7 @@ public class ConditionEnforcementFilterTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(FORBIDDEN);
         assertThat(response.getCause()).isNull();
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
     }
 
     @Test(dataProvider = "conditionsEvaluatingToFalse")
@@ -147,7 +147,7 @@ public class ConditionEnforcementFilterTest {
         // When
         filter.filter(context, null, next);
         // Then
-        verify(failureHandler).handle(any(Context.class), any(Request.class));
+        verify(failureHandler).handle(any(Context.class), any());
     }
 
     private HeapImpl buildDefaultHeap() throws Exception {

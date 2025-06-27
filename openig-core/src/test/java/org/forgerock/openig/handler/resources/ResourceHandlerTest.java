@@ -25,7 +25,7 @@ import static org.forgerock.http.protocol.Status.METHOD_NOT_ALLOWED;
 import static org.forgerock.http.protocol.Status.NOT_FOUND;
 import static org.forgerock.http.protocol.Status.OK;
 import static org.forgerock.openig.handler.resources.ResourceHandler.NOT_MODIFIED;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -80,7 +80,7 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldAcceptGetMethod() throws Exception {
-        when(resourceSet.find(anyString())).thenReturn(resource);
+        when(resourceSet.find(nullable(String.class))).thenReturn(resource);
         when(resource.getType()).thenReturn("text/html");
 
         ResourceHandler handler = new ResourceHandler(singletonList(resourceSet));
@@ -114,7 +114,7 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldNotDefineContentTypeWhenResourceIsMissingExtension() throws Exception {
-        when(resourceSet.find(anyString())).thenReturn(resource);
+        when(resourceSet.find(nullable(String.class))).thenReturn(resource);
 
         ResourceHandler handler = new ResourceHandler(singletonList(resourceSet));
         UriRouterContext context = new UriRouterContext(new RootContext(),
@@ -130,7 +130,7 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldServeNotModifiedResources() throws Exception {
-        when(resourceSet.find(anyString())).thenReturn(resource);
+        when(resourceSet.find(nullable(String.class))).thenReturn(resource);
         when(resource.getLastModified()).thenReturn(0L);
 
         ResourceHandler handler = new ResourceHandler(singletonList(resourceSet));
@@ -148,7 +148,7 @@ public class ResourceHandlerTest {
 
     @Test
     public void shouldServeModifiedResources() throws Exception {
-        when(resourceSet.find(anyString())).thenReturn(resource);
+        when(resourceSet.find(nullable(String.class))).thenReturn(resource);
         when(resource.hasChangedSince(0L)).thenReturn(true);
 
         ResourceHandler handler = new ResourceHandler(singletonList(resourceSet));

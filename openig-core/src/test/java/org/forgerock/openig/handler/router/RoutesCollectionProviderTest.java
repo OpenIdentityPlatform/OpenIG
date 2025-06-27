@@ -20,10 +20,10 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.json.resource.QueryResponse.NO_COUNT;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.json.JsonPointer;
@@ -73,7 +73,7 @@ public class RoutesCollectionProviderTest {
         } catch (ResourceException e) {
             assertThat(e).isInstanceOf(NotSupportedException.class);
         }
-        verifyZeroInteractions(queryResourceHandler);
+        verifyNoMoreInteractions(queryResourceHandler);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class RoutesCollectionProviderTest {
         } catch (ResourceException e) {
             assertThat(e).isInstanceOf(NotSupportedException.class);
         }
-        verifyZeroInteractions(queryResourceHandler);
+        verifyNoMoreInteractions(queryResourceHandler);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RoutesCollectionProviderTest {
         } catch (ResourceException e) {
             assertThat(e).isInstanceOf(NotSupportedException.class);
         }
-        verifyZeroInteractions(queryResourceHandler);
+        verifyNoMoreInteractions(queryResourceHandler);
     }
 
     @Test
@@ -120,6 +120,6 @@ public class RoutesCollectionProviderTest {
         QueryResponse response = provider.queryCollection(null, request, queryResourceHandler).get();
 
         assertThat(response.getTotalPagedResults()).isEqualTo(NO_COUNT);
-        verify(queryResourceHandler, times(2)).handleResource(any(ResourceResponse.class));
+        verify(queryResourceHandler, times(2)).handleResource(nullable(ResourceResponse.class));
     }
 }

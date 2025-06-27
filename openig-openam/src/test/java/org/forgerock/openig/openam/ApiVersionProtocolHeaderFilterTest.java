@@ -20,10 +20,11 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.forgerock.http.protocol.Status.INTERNAL_SERVER_ERROR;
 import static org.forgerock.http.routing.Version.version;
 import static org.forgerock.json.resource.http.HttpUtils.PROTOCOL_VERSION_1;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
@@ -73,7 +74,7 @@ public class ApiVersionProtocolHeaderFilterTest {
                 .filter(null, request, next)
                 .get();
         // then
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
         assertThat(response.getCause()).isInstanceOf(MalformedHeaderException.class);
     }
@@ -91,7 +92,7 @@ public class ApiVersionProtocolHeaderFilterTest {
         new ApiVersionProtocolHeaderFilter(protocolVersion).filter(null, request, next);
 
         // then
-        verify(next).handle(any(Context.class), eq(request));
+        verify(next).handle(nullable(Context.class), eq(request));
         assertThat(request.getUri().asURI()).isEqualTo(RESOURCE_URI);
         final AcceptApiVersionHeader header = request.getHeaders().get(AcceptApiVersionHeader.class);
         assertThat(header.getProtocolVersion()).isEqualTo(protocolVersion);
