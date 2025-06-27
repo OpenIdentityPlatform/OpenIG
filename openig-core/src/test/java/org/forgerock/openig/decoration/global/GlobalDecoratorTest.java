@@ -90,7 +90,7 @@ public class GlobalDecoratorTest {
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
-        verify(decorator, times(2)).decorate(anyObject(), captor.capture(), eq(context));
+        verify(decorator, times(2)).decorate(any(), captor.capture(), eq(context));
         // Verify that the JSonValues are the one we're expecting
         assertThat(captor.getAllValues().get(0).asString()).isEqualTo("value-1");
         assertThat(captor.getAllValues().get(1).asString()).isEqualTo("value-2");
@@ -106,7 +106,7 @@ public class GlobalDecoratorTest {
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
-        verify(decorator).decorate(anyObject(), captor.capture(), eq(context));
+        verify(decorator).decorate(any(), captor.capture(), eq(context));
         // Verify that the JSonValues are the one we're expecting
         assertThat(captor.getAllValues().get(0).asString()).isEqualTo("value-2");
     }
@@ -124,7 +124,7 @@ public class GlobalDecoratorTest {
         Object delegate = new Object();
         globalDecorator.decorate(delegate, null, context);
 
-        verify(decorator).decorate(anyObject(), captor.capture(), eq(context));
+        verify(decorator).decorate(any(), captor.capture(), eq(context));
         // Verify that the JSonValues are the one we're expecting
         assertThat(captor.getAllValues().get(0).asString()).isEqualTo("value-2");
     }
