@@ -18,7 +18,8 @@ package org.forgerock.openig.decoration.helper;
 
 import static org.forgerock.json.JsonValue.*;
 import static org.forgerock.openig.decoration.helper.LazyReference.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.Heap;

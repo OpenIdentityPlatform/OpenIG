@@ -27,11 +27,11 @@ import static org.forgerock.http.protocol.Status.UNAUTHORIZED;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -168,7 +168,7 @@ public class HeadlessAuthenticationFilterTest {
         final Response finalResponse = headlessAuthenticationFilter.filter(context, request, next).get();
 
         // Then
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
         verify(authenticate).handle(same(context), any(Request.class));
         assertThat(request.getHeaders().containsKey(DEFAULT_HEADER_NAME)).isFalse();
         assertThat(finalResponse.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);

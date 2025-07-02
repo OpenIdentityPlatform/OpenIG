@@ -21,7 +21,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.anyCollection;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -132,7 +132,7 @@ public class MdcExecutorServiceDelegateTest {
     @SuppressWarnings("unchecked")
     public void shouldSubmitCallable() throws Exception {
         doReturn(future).when(delegate())
-                        .submit(any(Callable.class));
+                        .submit(nullable(Callable.class));
 
         assertThat(executorService().submit(callable)).isSameAs(future);
 
@@ -143,7 +143,7 @@ public class MdcExecutorServiceDelegateTest {
     @Test
     public void shouldSubmitRunnableAndT() throws Exception {
         doReturn(future).when(delegate())
-                        .submit(any(Runnable.class), eq("Hello"));
+                        .submit(nullable(Runnable.class), eq("Hello"));
 
         assertThat(executorService().submit(runnable, "Hello")).isSameAs(future);
 
@@ -154,7 +154,7 @@ public class MdcExecutorServiceDelegateTest {
     @Test
     public void shouldSubmitRunnable() throws Exception {
         doReturn(future).when(delegate())
-                        .submit(any(Runnable.class));
+                        .submit(nullable(Runnable.class));
 
         assertThat(executorService().submit(runnable)).isSameAs(future);
 

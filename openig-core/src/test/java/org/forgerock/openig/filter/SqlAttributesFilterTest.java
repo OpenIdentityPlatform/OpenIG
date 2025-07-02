@@ -18,7 +18,7 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -76,7 +76,7 @@ public class SqlAttributesFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(terminalHandler.handle(nullable(Context.class), nullable(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
     }
 

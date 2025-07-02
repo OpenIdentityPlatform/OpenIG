@@ -19,7 +19,7 @@ package org.forgerock.openig.handler.router;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;

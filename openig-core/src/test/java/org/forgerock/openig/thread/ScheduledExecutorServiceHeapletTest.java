@@ -21,7 +21,7 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.*;
@@ -32,7 +32,6 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.Heaplet;
 import org.forgerock.openig.heap.Name;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -102,7 +101,7 @@ public class ScheduledExecutorServiceHeapletTest {
         service = Mockito.spy(service);
 
         Mockito.doAnswer(i -> {
-            Runnable runnable = i.getArgumentAt(0, Runnable.class);
+            Runnable runnable = i.getArgument(0);
             return scheduledExecutorService.schedule(runnable, 100, TimeUnit.MILLISECONDS);
         }).when(service).submit(any(Runnable.class));
 

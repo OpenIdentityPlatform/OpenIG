@@ -16,10 +16,10 @@
 
 package org.forgerock.openig.filter;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
@@ -61,11 +61,11 @@ public class SwitchFilterTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(terminalHandler.handle(any(Context.class), any()))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
-        when(handler1.handle(any(Context.class), any(Request.class)))
+        when(handler1.handle(any(Context.class), any()))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
-        when(handler2.handle(any(Context.class), any(Request.class)))
+        when(handler2.handle(any(Context.class), any()))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
         when(handler3.handle(any(Context.class), any(Request.class)))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.OK)));
@@ -81,7 +81,7 @@ public class SwitchFilterTest {
         filter.filter(context, null, terminalHandler);
 
         // Filter's handler should not be called because the stream has been diverted
-        verifyZeroInteractions(terminalHandler);
+        verifyNoMoreInteractions(terminalHandler);
         verify(handler1).handle(context, null);
     }
 
@@ -106,7 +106,7 @@ public class SwitchFilterTest {
 
         // Reset the terminalHandler as we want another result here.
         Mockito.reset(terminalHandler);
-        when(terminalHandler.handle(any(Context.class), any(Request.class)))
+        when(terminalHandler.handle(any(Context.class), any()))
                 .thenReturn(Promises.<Response, NeverThrowsException>newResultPromise(new Response(Status.TEAPOT)));
 
         filter.filter(context, null, terminalHandler);
@@ -131,8 +131,8 @@ public class SwitchFilterTest {
         // As the request condition is fulfilled, the handler plugged onto
         // the response should not be called
         verify(handler1).handle(context, null);
-        verifyZeroInteractions(terminalHandler);
-        verifyZeroInteractions(handler2);
+        verifyNoMoreInteractions(terminalHandler);
+        verifyNoMoreInteractions(handler2);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class SwitchFilterTest {
 
         // Ensure that only the first handler with true condition gets invoked
         // Other cases in the chain will never be tested
-        verifyZeroInteractions(handler1, handler3, handler4);
+        verifyNoMoreInteractions(handler1, handler3, handler4);
         verify(handler2).handle(context, null);
     }
 }

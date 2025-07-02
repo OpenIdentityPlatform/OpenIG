@@ -15,10 +15,10 @@
  */
 package org.forgerock.openig.jwt;
 
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.nio.charset.StandardCharsets;
@@ -59,6 +59,6 @@ public class JwtSessionManagerTest {
     @Test
     public void shouldNotSaveSession() throws Exception {
         manager.save(session, null);
-        verifyZeroInteractions(session);
+        verifyNoMoreInteractions(session);
     }
 }
