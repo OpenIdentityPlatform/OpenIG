@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions copyright 2025 3A Systems LLC.
  */
 
 require.config({
@@ -23,7 +24,7 @@ require.config({
     },
     baseUrl: "../www",
     paths: {
-        jquery: "libs/jquery-2.1.1-min",
+        jquery: "libs/jquery-3.7.1-min",
         doTimeout: "libs/jquery.ba-dotimeout-1.0-min",
         lodash: "libs/lodash-3.10.1-min",
         sinon: "libs/sinon-1.15.4"
