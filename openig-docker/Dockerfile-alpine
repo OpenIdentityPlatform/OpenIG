@@ -18,6 +18,10 @@ RUN apk add --update --no-cache --virtual curl builddeps unzip bash && apk upgra
  && adduser -S -u 1001 -G root $OPENIG_USER \
  && install -d -o $OPENIG_USER $OPENIG_BASE \
  && chown -R $OPENIG_USER $CATALINA_HOME \
+ && chgrp -R 0 $CATALINA_HOME \
+ && chmod -R g=u $CATALINA_HOME \
+ && chgrp -R 0 $OPENIG_BASE \
+ && chmod -R g=u $OPENIG_BASE \
  && apk del unzip && rm -rf /var/cache/apk/* \
  && sed -i '/<\/Host>/i \ \ \ \ <Valve className=\"org.apache.catalina.valves.RemoteIpValve\" httpServerPort=\"8080\" httpsServerPort=\"443\" />' $CATALINA_HOME/conf/server.xml
 
