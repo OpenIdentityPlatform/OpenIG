@@ -19,6 +19,10 @@ RUN apt-get update && apt-get install -y curl unzip \
     && useradd -m -r -u 1001 -g root $OPENIG_USER \
     && install -d -o $OPENIG_USER $OPENIG_BASE \
     && chown -R $OPENIG_USER:root $CATALINA_HOME \
+    && chgrp -R 0 $CATALINA_HOME \
+    && chmod -R g=u $CATALINA_HOME \
+    && chgrp -R 0 $OPENIG_BASE \
+    && chmod -R g=u $OPENIG_BASE \
     && apt-get remove -y --purge unzip && rm -rf /var/lib/apt/lists/* \
     && sed -i '/<\/Host>/i \ \ \ \ <Valve className=\"org.apache.catalina.valves.RemoteIpValve\" httpServerPort=\"8080\" httpsServerPort=\"443\" />' $CATALINA_HOME/conf/server.xml
 
