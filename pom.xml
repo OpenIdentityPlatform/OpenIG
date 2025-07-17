@@ -875,6 +875,7 @@
 			<configuration>
 			    <publishingServerId>ossrh</publishingServerId>
 			    <autoPublish>true</autoPublish>
+			    <waitMaxTime>5400</waitMaxTime>	
 			</configuration>
 	    </plugin>
     </plugins>
@@ -1082,7 +1083,7 @@
 		<dependency>
             <groupId>org.openidentityplatform.openam</groupId>
             <artifactId>openam</artifactId>
-            <version>15.1.7-SNAPSHOT</version>
+            <version>15.2.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
