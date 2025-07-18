@@ -20,7 +20,7 @@
   <parent>
     <artifactId>openig-project</artifactId>
     <groupId>org.openidentityplatform.openig</groupId>
-    <version>5.3.3-SNAPSHOT</version>
+    <version>5.4.0</version>
   </parent>
 
   <artifactId>openig-doc</artifactId>
