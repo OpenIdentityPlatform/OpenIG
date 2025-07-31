@@ -17,8 +17,8 @@
 package org.forgerock.openig.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
@@ -101,6 +101,6 @@ public class SequenceHandlerTest {
         Request request = new Request();
         Promise<Response, NeverThrowsException> result = sequence.handle(context, request);
         assertThat(result.get()).isSameAs(response1);
-        verifyZeroInteractions(handler2);
+        verifyNoMoreInteractions(handler2);
     }
 }

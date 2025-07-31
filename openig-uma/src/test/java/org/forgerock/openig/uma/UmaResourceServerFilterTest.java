@@ -24,11 +24,13 @@ import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.mockito.Mockito.any;
+import static org.mockito.AdditionalMatchers.and;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -43,9 +45,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.services.context.Context;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -101,7 +101,7 @@ public class UmaResourceServerFilterTest {
         Response response = filter.filter(null, request, terminal).get();
 
         assertThatTicketIsReturnedWithStatusForbidden(response);
-        verifyZeroInteractions(terminal);
+        verifyNoMoreInteractions(terminal);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class UmaResourceServerFilterTest {
         Response response = filter.filter(null, request, terminal).get();
 
         assertThatTicketIsReturnedWithStatusForbidden(response);
-        verifyZeroInteractions(terminal);
+        verifyNoMoreInteractions(terminal);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class UmaResourceServerFilterTest {
         assertThat(response.getStatus()).isEqualTo(Status.FORBIDDEN);
         assertThat(response.getHeaders().getFirst("Warning"))
                 .isEqualTo("199 - \"UMA Authorization Server Unreachable\"");
-        verifyZeroInteractions(terminal);
+        verifyNoMoreInteractions(terminal);
     }
 
     private static Object inactiveToken() {
@@ -163,7 +163,7 @@ public class UmaResourceServerFilterTest {
 
         assertThatTicketIsReturnedWithStatusForbidden(response);
         assertThat(response.getHeaders().getFirst("WWW-Authenticate")).contains("insufficient_scope");
-        verifyZeroInteractions(terminal);
+        verifyNoMoreInteractions(terminal);
     }
 
     private void assertThatTicketIsReturnedWithStatusForbidden(final Response response) {
@@ -182,7 +182,7 @@ public class UmaResourceServerFilterTest {
     private void mockTokenIntrospection(final Response response) throws URISyntaxException {
         URI introspectionUri = new URI("http://as.example.com/oauth2/introspect");
         when(service.getIntrospectionEndpoint()).thenReturn(introspectionUri);
-        when(handler.handle(any(Context.class), argThat(hasUri(introspectionUri))))
+        when(handler.handle(nullable(Context.class), argThat(hasUri(introspectionUri))))
                 .thenReturn(Response.newResponsePromise(response));
     }
 
@@ -194,42 +194,24 @@ public class UmaResourceServerFilterTest {
     private void mockTicketCreation(Response response) throws URISyntaxException {
         URI ticketUri = new URI("http://as.example.com/uma/permission_request");
         when(service.getTicketEndpoint()).thenReturn(ticketUri);
-        when(handler.handle(any(Context.class), argThat(allOf(hasUri(ticketUri), hasToken(PAT)))))
+        when(handler.handle(nullable(Context.class), and(argThat(hasUri(ticketUri)), argThat(hasToken(PAT)))))
                 .thenReturn(Response.newResponsePromise(response));
     }
 
-    private static Matcher<Request> hasToken(final String token) {
-        return new BaseMatcher<Request>() {
+    private static ArgumentMatcher<Request> hasToken(final String token) {
+        return new ArgumentMatcher<Request>() {
             @Override
-            public boolean matches(final Object o) {
-                if (o instanceof Request) {
-                    Request request = (Request) o;
-                    return format("Bearer %s", token).equals(request.getHeaders().getFirst("Authorization"));
-                }
-                return false;
-            }
-
-            @Override
-            public void describeTo(final Description description) {
-                description.appendText(token);
+            public boolean matches(final Request request) {
+                return format("Bearer %s", token).equals(request.getHeaders().getFirst("Authorization"));
             }
         };
     }
 
-    private static Matcher<Request> hasUri(final URI uri) {
-        return new BaseMatcher<Request>() {
+    private static ArgumentMatcher<Request> hasUri(final URI uri) {
+        return new ArgumentMatcher<Request>() {
             @Override
-            public boolean matches(final Object o) {
-                if (o instanceof Request) {
-                    Request request = (Request) o;
-                    return uri.equals(request.getUri().asURI());
-                }
-                return false;
-            }
-
-            @Override
-            public void describeTo(final Description description) {
-                description.appendText(uri.toString());
+            public boolean matches(final Request request) {
+                return request != null && uri.equals(request.getUri().asURI());
             }
         };
     }
@@ -239,5 +221,4 @@ public class UmaResourceServerFilterTest {
                            field("user_access_policy_uri",
                                  "https://openam.example.com:8443/openam/XUI/?realm=/#uma/share/" + RS_ID)));
     }
-
 }

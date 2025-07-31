@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -73,7 +73,7 @@ See also xref:#handlers-conf[Handlers].
 [#d210e2458]
 ==== Example
 
-[source, javascript]
+[source, json]
 ----
 {
      "name": "LoginChain",
@@ -135,31 +135,7 @@ Default: 64
 `"connectionTimeout"`: __duration string, optional__::
 Amount of time to wait to establish a connection, expressed as a duration
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 10 seconds
@@ -220,31 +196,7 @@ See also xref:misc-conf.adoc#KeyManager[KeyManager(5)].
 `"soTimeout"`: __duration string, optional__::
 Socket timeout, after which stalled connections are destroyed, expressed as a duration
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 10 seconds
@@ -297,7 +249,7 @@ See also xref:misc-conf.adoc#TrustManager[TrustManager(5)].
 ==== Example
 The following object configures a `ClientHandler` named `Client`, with non-default security settings:
 
-[source, javascript]
+[source, json]
 ----
 {
   "name": "Client",
@@ -423,7 +375,7 @@ Default: leave URI untouched.
 ==== Example
 The following sample is from a SAML 2.0 federation configuration. If the incoming URI starts with `/saml`, then OpenIG dispatches to a SamlFederationHandler. If the user name is not set in the session context, then the user has not authenticated with the SAML 2.0 Identity Provider, so OpenIG dispatches to a SPInitiatedSSORedirectHandler to initiate SAML 2.0 SSO from the Service Provider, which is OpenIG. All other requests go through a LoginChain handler:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "DispatchHandler",
@@ -460,7 +412,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/handler/DispatchHandler.html[
 ==== Description
 This handler collates basic audit statistics, returning them in JSON format.
 
-Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[ForgeRock Product Interface Stability].)
+Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[Open Identity Platform Product Interface Stability].)
 
 You decorate the objects to audit by adding your own audit tags. The handler updates the count of messages in progress, completed, and internal errors for each audit event, initializing the counts at OpenIG startup time. When accessed, it returns the sums organized by object under audit using the tags that you defined.
 
@@ -479,7 +431,7 @@ You decorate the objects to audit by adding your own audit tags. The handler upd
 ==== Example
 The following sample route adds a monitor endpoint at `/monitor`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "handler": {
@@ -492,7 +444,7 @@ The following sample route adds a monitor endpoint at `/monitor`:
 ----
 After adding audit tags to a number of other routes, the JSON returned from the monitor endpoint shows statistics since OpenIG started. The following example is formatted for legibility:
 
-[source, javascript]
+[source, json]
 ----
 {
     "ForgeRock.com route": {
@@ -662,7 +614,7 @@ Monitoring endpoint available at
 ----
 To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring`.
 
-The monitoring REST API supports only read (HTTP GET). For a detailed introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About ForgeRock Common REST].
+The monitoring REST API supports only read (HTTP GET). For a detailed introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About Common REST].
 
 In the present implementation, OpenIG does not have mechanisms for resetting or for persisting monitoring statistics. When you set `"monitor": true` on the route, or when you start the OpenIG container, monitoring statistics are collected. When the OpenIG container stops, monitoring statistics are discarded.
 
@@ -847,7 +799,7 @@ Each entry in the `assertionMapping` object has the form `localName: incomingNam
 The following shows an example of an assertionMapping object:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "username": "mail",
@@ -978,7 +930,7 @@ Default: map to `session.subjectName`
 ==== Example
 The following sample configuration is corresponds to a scenario where OpenIG receives a SAML 2.0 assertion from the IDP, and then logs the user in to the protected application using the username and password from the assertion:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "SamlFederationHandler",
@@ -1141,7 +1093,7 @@ Parameters passed from the configuration to the script.
 The configuration object is a map whose values can be scalars, arrays, objects and so forth, as in the following example.
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "args": {
@@ -1176,7 +1128,7 @@ For details regarding this status code see RFC 7168, Section 2.3.3 link:https://
 Args parameters can reference objects defined in the heap using expressions. For example, the following excerpt shows the heap that defines `SampleFilter`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "heap": [
@@ -1340,7 +1292,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 [#d210e4576]
 ==== Example
 
-[source, javascript]
+[source, json]
 ----
 {
      "name": "ErrorHandler",

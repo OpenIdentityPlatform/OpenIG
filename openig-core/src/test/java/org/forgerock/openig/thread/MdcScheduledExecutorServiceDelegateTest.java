@@ -17,7 +17,7 @@
 package org.forgerock.openig.thread;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
@@ -82,7 +82,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
     @Test
     public void shouldScheduleWithRunnableLongTimeUnit() throws Exception {
         doReturn(scheduledFuture).when(delegate())
-                                 .schedule(any(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
+                                 .schedule(nullable(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
 
         assertThat(executorService().schedule(runnable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
@@ -94,7 +94,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
     @SuppressWarnings("unchecked")
     public void shouldScheduleWithCallableLongTimeUnit() throws Exception {
         doReturn(scheduledFuture).when(delegate())
-                                 .schedule(any(Callable.class), eq(1L), eq(TimeUnit.SECONDS));
+                                 .schedule(nullable(Callable.class), eq(1L), eq(TimeUnit.SECONDS));
 
         assertThat(executorService().schedule(callable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
@@ -105,7 +105,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
     @Test
     public void shouldScheduleAtFixedRateWithRunnableLongTimeUnit() throws Exception {
         doReturn(scheduledFuture).when(delegate())
-                                 .scheduleAtFixedRate(any(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
+                                 .scheduleAtFixedRate(nullable(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
 
         assertThat(executorService().scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
@@ -116,7 +116,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
     @Test
     public void shouldScheduleWithFixedDelayWithRunnableLongTimeUnit() throws Exception {
         doReturn(scheduledFuture).when(delegate())
-                                 .scheduleWithFixedDelay(any(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
+                                 .scheduleWithFixedDelay(nullable(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
 
         assertThat(executorService().scheduleWithFixedDelay(runnable, 1, 2, TimeUnit.SECONDS))
                 .isSameAs(scheduledFuture);

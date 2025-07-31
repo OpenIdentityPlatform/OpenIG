@@ -12,19 +12,19 @@
   information: "Portions copyright [year] [name of copyright owner]".
 
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 [appendix]
 [#appendix-interface-stability]
 == Release Levels and Interface Stability
 
-This appendix includes ForgeRock definitions for product release levels and interface stability.
+This appendix includes definitions for product release levels and interface stability.
 
 [#release-levels]
-=== ForgeRock Product Release Levels
+=== Product Release Levels
 
-ForgeRock defines Major, Minor, and Maintenance product release levels. The release level is reflected in the version number. The release level tells you what sort of compatibility changes to expect.
+Open Identity Platform Community defines Major, Minor, and Maintenance product release levels. The release level is reflected in the version number. The release level tells you what sort of compatibility changes to expect.
 
 [#table-release-levels]
 .Table A.1. Release Level Definitions

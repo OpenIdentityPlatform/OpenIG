@@ -12,12 +12,14 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
 :example-caption!:
 :table-caption!:
+:openig-version: 5.3.1
+
 
 
 [#chap-extending]
@@ -47,7 +49,7 @@ Scriptable filters and handlers are added to the configuration in the same way a
 
 The following example defines a `ScriptableFilter`, written in the Groovy language, and stored in a file named `$HOME/.openig/scripts/groovy/SimpleFormLogin.groovy` (`%appdata%\OpenIG\scripts\groovy\SimpleFormLogin.groovy` on Windows):
 
-[source, java]
+[source, json]
 ----
 {
      "name": "SimpleFormLogin",
@@ -76,7 +78,7 @@ In order to route requests, especially when the conditions are complicated, you 
 
 The following script demonstrates a simple dispatch handler:
 
-[source, java]
+[source, groovy]
 ----
 /*
  * This simplistic dispatcher matches the path part of the HTTP request.
@@ -124,7 +126,7 @@ To try this handler, save the script as `$HOME/.openig/scripts/groovy/DispatchHa
 
 Next, add the following route to your configuration as `$HOME/.openig/config/routes/98-dispatch.json` (`%appdata%\OpenIG\config\routes\98-dispatch.json` on Windows):
 
-[source, javascript]
+[source, json]
 ----
 {
   "heap": [
@@ -191,7 +193,7 @@ HTTP Basic authentication calls for the user agent such as a browser to send a u
 
 The following script, for use in a `ScriptableFilter`, adds an `Authorization` header based on a username and password combination:
 
-[source, java]
+[source, groovy]
 ----
 /*
  * Perform basic authentication with the user name and password
@@ -238,7 +240,7 @@ To try this filter, save the script as `$HOME/.openig/scripts/groovy/BasicAuthFi
 
 Next, add the following route to your configuration as `$HOME/.openig/config/routes/09-basic.json` (`%appdata%\OpenIG\config\routes\09-basic.json` on Windows):
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -291,7 +293,7 @@ Many organizations use an LDAP directory service to store user profiles includin
 
 The following script, for use in a `ScriptableFilter`, performs simple authentication against an LDAP server based on request form fields `username` and `password`:
 
-[source, java]
+[source, groovy]
 ----
 import org.forgerock.opendj.ldap.*
 
@@ -374,7 +376,7 @@ For the list of methods to specify which type of objects to return, see the Open
 ====
 To try the LDAP authentication script, follow these steps:
 
-. Install an LDAP directory server such as ForgeRock Directory Services or OpenDJ directory server.
+. Install an LDAP directory server such as OpenDJ directory server.
 +
 Either import some sample users who can authenticate over LDAP, or generate sample users at installation time.
 
@@ -385,7 +387,7 @@ If the directory server installation does not match the assumptions made in the 
 . Add the following route to your configuration as `$HOME/.openig/config/routes/10-ldap.json` (`%appdata%\OpenIG\config\routes\10-ldap.json` on Windows):
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -436,7 +438,7 @@ You can use a `ScriptableFilter` to look up information in a relational database
 
 The following filter looks up user credentials in a database given the user's email address, which is found in the form data of the request. The script then sets the credentials in headers, making sure the scheme is HTTPS to protect the request when it leaves OpenIG:
 
-[source, java]
+[source, groovy]
 ----
 /*
  * Look up user credentials in a relational database
@@ -458,7 +460,7 @@ next.handle(context, request)
 ----
 The previous script demonstrates a `ScriptableFilter` that uses a `SqlClient` class defined in another script. The following code listing shows the `SqlClient` class:
 
-[source, java]
+[source, groovy]
 ----
 import groovy.sql.Sql
 
@@ -522,7 +524,7 @@ When everything in that tutorial works, you know that OpenIG can connect to the 
 . Add the following route to your configuration as `$HOME/.openig/config/routes/11-db.json` (`%appdata%\OpenIG\config\routes\11-db.json` on Windows):
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -769,7 +771,7 @@ org.forgerock.openig.doc.SampleClassAliasResolver
 ----
 The corresponding heap object configuration then looks as follows:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "SampleFilter",
@@ -796,13 +798,13 @@ Within the `create()` method, you can access the object's configuration through 
 You can use Apache Maven to manage dependencies on OpenIG. The dependencies are found in the Central Maven repository.
 
 
-[source, xml]
+[source, xml, subs="normal"]
 ----
   <dependencies>
     <dependency>
       <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-core</artifactId>
-      <version>5.3.0</version>
+      <version>{openig-version}</version>
     </dependency>
   </dependencies>
 ----
@@ -831,14 +833,14 @@ After building your customizations into a .jar file, you can include them in the
 
 For example, if your .jar file is in a project named `sample-filter`, and the development version is `1.0.0-SNAPSHOT`, you might include the file as in the following example:
 
-[source, console]
+[source, console, subs="attributes"]
 ----
 $ mkdir root && cd root
-    $ jar -xf ~/Downloads/OpenIG-5.3.0.war
+    $ jar -xf ~/Downloads/OpenIG-{openig-version}.war
     $ cp ~/Documents/sample-filter/target/sample-filter-1.0.0-SNAPSHOT.jar WEB-INF/lib
     $ jar -cf ../custom.war *
 ----
-In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-5.3.0.war`.
+In this example, the resulting `custom.war` contains the custom sample filter. You can deploy the custom .war file as you would deploy `OpenIG-{openig-version}.war`.
 
 
 

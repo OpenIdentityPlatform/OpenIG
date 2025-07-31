@@ -18,7 +18,7 @@ package org.forgerock.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.http.protocol.Response.newResponsePromise;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
 import org.forgerock.http.Handler;
@@ -53,7 +53,7 @@ public class MdcRouteIdFilterTest {
     public void testDownstreamHandlerHasTheMessageDiagnosisContextCorrectlySet() throws Exception {
         MdcRouteIdFilter filter = new MdcRouteIdFilter(ROUTE_NAME);
 
-        when(handler.handle(any(Context.class), any(Request.class)))
+        when(handler.handle(nullable(Context.class), nullable(Request.class)))
                 .then(new Answer<Promise<Response, NeverThrowsException>>() {
                     @Override
                     public Promise<Response, NeverThrowsException> answer(InvocationOnMock invocation) {

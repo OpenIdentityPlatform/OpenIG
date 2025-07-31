@@ -18,7 +18,8 @@ package org.forgerock.openig.jwt.dirty;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.List;

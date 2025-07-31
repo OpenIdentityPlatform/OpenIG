@@ -41,14 +41,15 @@ import static org.forgerock.openig.openam.PolicyEnforcementFilter.CachePolicyDec
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.asFunction;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.util.time.Duration.duration;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -278,7 +279,7 @@ public class PolicyEnforcementFilterTest {
         PolicyDecisionContext decisionContext = contextCaptor.getValue().asContext(PolicyDecisionContext.class);
         assertThatAttributesAreInPolicyDecisionContext(decisionContext);
         assertThatAdvicesAreInPolicyDecisionContext(decisionContext);
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
     }
 
     @Test
@@ -303,7 +304,7 @@ public class PolicyEnforcementFilterTest {
         assertThat(decisionContext.getAttributes()).isEmpty();
         assertThat(decisionContext.getAdvices()).isEmpty();
 
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
     }
 
     @Test
@@ -425,7 +426,7 @@ public class PolicyEnforcementFilterTest {
                           resourceRequest,
                           next).get();
             // Then
-            verify(requestHandler).handleAction(any(PolicyDecisionContext.class), any(ActionRequest.class));
+            verify(requestHandler).handleAction(any(AttributesContext.class), any(ActionRequest.class));
             verify(next).handle(any(PolicyDecisionContext.class), same(resourceRequest));
             verify(executorService).schedule(captor.capture(), anyLong(), any(TimeUnit.class));
 
@@ -478,8 +479,8 @@ public class PolicyEnforcementFilterTest {
                           next).get();
             // Then
             verify(requestHandler).handleAction(any(Context.class), any(ActionRequest.class));
-            verifyZeroInteractions(next);
-            verifyZeroInteractions(executorService);
+            verifyNoMoreInteractions(next);
+            verifyNoMoreInteractions(executorService);
         }
     }
 

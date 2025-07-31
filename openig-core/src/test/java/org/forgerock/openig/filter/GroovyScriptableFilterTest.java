@@ -34,7 +34,7 @@ import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.util.Options.defaultOptions;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,10 +44,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import javax.naming.InitialContext;
 import javax.script.ScriptException;
 
@@ -61,11 +59,6 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.http.session.SessionContext;
 import org.forgerock.json.JsonValue;
-import org.forgerock.opendj.ldap.Connections;
-import org.forgerock.opendj.ldap.LDAPClientContext;
-import org.forgerock.opendj.ldap.LDAPListener;
-import org.forgerock.opendj.ldap.MemoryBackend;
-import org.forgerock.opendj.ldif.LDIFEntryReader;
 import org.forgerock.openig.config.Environment;
 import org.forgerock.openig.config.env.DefaultEnvironment;
 import org.forgerock.openig.filter.ScriptableFilter.Heaplet;
@@ -144,7 +137,7 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         Response response = filter.filter(new RootContext(), new Request(), handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
-        verifyZeroInteractions(handler);
+        verifyNoMoreInteractions(handler);
     }
 
     @DataProvider
@@ -175,7 +168,7 @@ public class GroovyScriptableFilterTest {
         final Handler handler = mock(Handler.class);
         Response response = filter.filter(new RootContext(), null, handler).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
-        verifyZeroInteractions(handler);
+        verifyNoMoreInteractions(handler);
     }
 
     @Test
@@ -253,7 +246,7 @@ public class GroovyScriptableFilterTest {
 
         final Handler handler = mock(Handler.class);
         Response response = filter.filter(new RootContext(), new Request(), handler).get();
-        verifyZeroInteractions(handler);
+        verifyNoMoreInteractions(handler);
         assertThat(response.getStatus()).isEqualTo(Status.OK);
     }
 

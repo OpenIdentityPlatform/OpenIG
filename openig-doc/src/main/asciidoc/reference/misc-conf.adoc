@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -156,7 +156,7 @@ Default: `true`
 ==== Example
 The following example shows a client registration for OpenAM. In this example client credentials are replaced with `**********`. In the actual configuration either include the credentials and protect the configuration file or obtain the credentials from the environment in a safe manner:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "OpenIDConnectRelyingParty",
@@ -263,32 +263,9 @@ Default: `openig-jwt-session`
 
 `"sessionTimeout"` __duration, optional__::
 The amount of time before the cookie session expires.
+
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 30 minutes
@@ -311,7 +288,7 @@ If this attribute is not specified, random data is generated as the key, and the
 ==== Example
 The following example defines a JwtSession for storing session information in a JWT token cookie named `OpenIG`. The JWT is encrypted with a private key that is recovered using the alias `private-key`, and stored in the keystore. The password is both the password for the keystore and also the private key:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "JwtSession",
@@ -390,7 +367,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 ==== Example
 The following example configures a key manager that depends on a KeyStore configuration. The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password`. This configuration uses the default certificate algorithm:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyKeyManager",
@@ -474,7 +451,7 @@ Default: the default for the platform, such as `JKS`.
 ==== Example
 The following example configures a keystore that references a Java Keystore file, `$HOME/keystore.jks`. The keystore takes a password supplied as a Java system property when starting the container where OpenIG runs, as in `-Dkeypass=password`. As the keystore file uses the default format, no type is specified:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyKeyStore",
@@ -596,7 +573,7 @@ Supported domains patterns match host names with optional port numbers. Do not s
 ==== Examples
 The following example shows an OpenAM issuer configuration for OpenAM. OpenAM exposes a well-known endpoint for the provider configuration, but this example demonstrates use of the other fields:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "openam",
@@ -616,7 +593,7 @@ The following example shows an OpenAM issuer configuration for OpenAM. OpenAM ex
 ----
 The following example shows an issuer configuration for Google:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "google",
@@ -706,31 +683,7 @@ If all jobs finish before the grace period, the executor service stops without w
 +
 When `gracefulStop` is `false`, the grace period is ignored.
 +
-A link:{apidocs-url}/index.html?org/forgerock/openig/util/Duration.html[duration, window=\_blank] is a lapse of time expressed in English, such as `23 hours 59 minutes and 59 seconds`.
-
-Durations are not case sensitive.
-
-Negative durations are not supported.
-
-The following units can be used in durations:
-
-* `indefinite`, `infinity`, `undefined`, `unlimited`: unlimited duration
-
-* `zero`, `disabled`: zero-length duration
-
-* `days`, `day`, `d`: days
-
-* `hours`, `hour`, `h`: hours
-
-* `minutes`, `minute`, `min`, `m`: minutes
-
-* `seconds`, `second`, `sec`, `s`: seconds
-
-* `milliseconds`, `millisecond`, `millisec`, `millis`, `milli`, `ms`: milliseconds
-
-* `microseconds`, `microsecond`, `microsec`, `micros`, `micro`, `us`: microseconds
-
-* `nanoseconds`, `nanosecond`, `nanosec`, `nanos`, `nano`, `ns`: nanoseconds
+include::../partials/sec-duration-description.adoc[]
 
 +
 Default: 10 seconds
@@ -741,7 +694,7 @@ Default: 10 seconds
 ==== Example
 The following example creates a thread pool to execute tasks. When the executor service is instructed to stop, it blocks the submission of new jobs, and waits for up to 10 seconds for submitted and running jobs to complete before it stops. If any jobs are still submitted or running after 10 seconds, the executor service stops anyway and prints a message.
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "ExecutorService",
@@ -854,7 +807,7 @@ Default: the default for the platform, such as `SunX509`.
 ==== Example
 The following example configures a trust manager that depends on a KeyStore configuration. This configuration uses the default certificate algorithm:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "MyTrustManager",
@@ -904,7 +857,7 @@ The TrustAllManager is not safe for production use. Use a properly configured xr
 ==== Example
 The following example configures a client handler that blindly trusts server certificates when OpenIG connects to servers over HTTPS:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "BlindTrustClientHandler",
@@ -1041,7 +994,7 @@ UMA Share endpoint available at
 ----
 To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-uma/objects/umaservice/share`.
 
-The UMA REST API supports create (POST only), read, delete, and query (`_queryFilter=true` only). For an introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About ForgeRock Common REST].
+The UMA REST API supports create (POST only), read, delete, and query (`_queryFilter=true` only). For an introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About Common REST].
 
 In the present implementation, OpenIG does not have a mechanism for persisting shares. When the OpenIG container stops, the shares are discarded.
 --

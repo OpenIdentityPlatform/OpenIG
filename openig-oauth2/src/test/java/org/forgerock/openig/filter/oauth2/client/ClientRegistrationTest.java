@@ -25,8 +25,8 @@ import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.ISSUER_U
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.TOKEN_ENDPOINT;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.USER_INFO_ENDPOINT;
 import static org.forgerock.openig.filter.oauth2.client.OAuth2TestUtils.buildIssuerWithoutWellKnownEndpoint;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

@@ -22,9 +22,9 @@ import static org.forgerock.http.util.Uris.urlEncodeQueryParameterNameOrValue;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.net.URI;
 
@@ -84,7 +84,7 @@ public class AuthLevelConditionAdviceFilterTest {
                           "realm=" + urlEncodeQueryParameterNameOrValue(MY_REALM),
                           "authIndexType=composite_advice",
                           "authIndexValue=" + urlEncodeQueryParameterNameOrValue(expectedQueryParameterAdvice));
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
     }
 
     private static Context contextWithPolicyDecisionAdvices(boolean withAdvice) {

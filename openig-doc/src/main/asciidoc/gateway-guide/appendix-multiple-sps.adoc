@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2025 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -47,9 +47,9 @@ a|xref:#prepare-network-multi[Preparing the Network]
 a|Prepare the configuration for two OpenIG service providers.
 a|xref:#prepare-cot-multi[Configuring the Circle of Trust]
 
- xref:#prepare-saml-conf1-multi[Configuring the Service Provider for Application One]
+xref:#prepare-saml-conf1-multi[Configuring the Service Provider for Application One]
 
- xref:#prepare-saml-conf2-multi[Configuring the Service Provider for Application Two]
+xref:#prepare-saml-conf2-multi[Configuring the Service Provider for Application Two]
 
 a|Import the service provider configurations into OpenAM.
 a|xref:#multisp-create-saml-entities[Importing Service Provider Configurations Into OpenAM]
@@ -57,9 +57,9 @@ a|xref:#multisp-create-saml-entities[Importing Service Provider Configurations I
 a|Add OpenIG routes.
 a|xref:#multisp-conf[Preparing the Base Configuration File]
 
- xref:#multisp-conf-sp1[Preparing Routes for Application One]
+xref:#multisp-conf-sp1[Preparing Routes for Application One]
 
- xref:#multisp-conf-sp2[Preparing Routes for Application Two]
+xref:#multisp-conf-sp2[Preparing Routes for Application Two]
 |===
 
 

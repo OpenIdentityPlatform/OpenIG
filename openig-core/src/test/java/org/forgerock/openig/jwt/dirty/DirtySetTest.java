@@ -53,7 +53,7 @@ public class DirtySetTest {
     public void shouldNotNotifyListenerWhenRemoveIsCalledWithNoActualChanges() throws Exception {
         dirtySet.remove("four");
 
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
         assertThat(dirtySet).containsOnly("one", "two", "three");
     }
 
@@ -69,7 +69,7 @@ public class DirtySetTest {
     public void shouldNotNotifyListenerWhenRemoveAllIsCalledWithNoActualChanges() throws Exception {
         dirtySet.removeAll(Arrays.asList("four"));
 
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
         assertThat(dirtySet).containsOnly("one", "two", "three");
     }
 
@@ -93,7 +93,7 @@ public class DirtySetTest {
     public void shouldNotNotifyListenerWhenRetainAllIsCalledWithNoChanges() throws Exception {
         dirtySet.retainAll(Arrays.asList("one", "two", "three"));
 
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
         assertThat(dirtySet).containsOnly("one", "two", "three");
     }
 }

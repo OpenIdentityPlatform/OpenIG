@@ -17,12 +17,12 @@
 package org.forgerock.http.filter;
 
 import static org.forgerock.util.promise.Promises.newResultPromise;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -65,7 +65,7 @@ public class ConditionalFilterTest {
     @Test
     public void shouldSkipTheDelegatedFilter() throws Exception {
         new ConditionalFilter(delegate, false).filter(context, request, next);
-        verifyZeroInteractions(delegate);
+        verifyNoMoreInteractions(delegate);
         verify(next).handle(eq(context), eq(request));
     }
 
@@ -79,7 +79,7 @@ public class ConditionalFilterTest {
         // First time the function evaluates to false
         filter.filter(context, request, next);
 
-        verifyZeroInteractions(delegate);
+        verifyNoMoreInteractions(delegate);
         verify(next).handle(eq(context), eq(request));
 
         // Second time the function evaluates to true
@@ -87,7 +87,7 @@ public class ConditionalFilterTest {
         filter.filter(context, request, next);
 
         verify(delegate).filter(eq(context), eq(request), eq(next));
-        verifyZeroInteractions(next);
+        verifyNoMoreInteractions(next);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class ConditionalFilterTest {
 
         filter.filter(context, request, next);
 
-        verifyZeroInteractions(delegate);
+        verifyNoMoreInteractions(delegate);
         verify(next).handle(eq(context), eq(request));
     }
 }
