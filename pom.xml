@@ -44,7 +44,11 @@
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
     <checkstyleVersion>5.5</checkstyleVersion>
 	<ant.contrib.version>1.0b3</ant.contrib.version>
-	<java.surefire.options>-server</java.surefire.options>
+	  <java.surefire.options>
+		  -server
+		  --add-opens java.base/java.lang=ALL-UNNAMED
+		  --add-opens java.base/java.io=ALL-UNNAMED
+	  </java.surefire.options>
   </properties>
 
   <organization>
@@ -893,8 +897,10 @@
 			<version>3.13.0</version>
 			<configuration>
 				<fork>true</fork>
+				<release>${maven.compiler.target}</release>
 				<compilerArgs>
 					<arg>-XDignore.symbol.file</arg>
+					<arg>-Xlint:unchecked</arg>
 				</compilerArgs>
 			</configuration>
 		</plugin>
@@ -1039,43 +1045,7 @@
             </plugins>
         </build>
     </profile>
-	  <profile>
-		  <id>set-compiler-release</id>
-		  <activation>
-			  <jdk>[9,)</jdk>
-		  </activation>
-		  <build>
-			  <pluginManagement>
-				  <plugins>
-					  <plugin>
-						  <groupId>org.apache.maven.plugins</groupId>
-						  <artifactId>maven-compiler-plugin</artifactId>
-						  <configuration>
-							  <fork>true</fork>
-							  <release>8</release>
-							  <compilerArgs>
-								  <arg>-XDignore.symbol.file</arg>
-								  <arg>-Xlint:unchecked</arg>
-							  </compilerArgs>
-						  </configuration>
-					  </plugin>
-				  </plugins>
-			  </pluginManagement>
-		  </build>
-	  </profile>
-    <profile>
-	  <id>jdk11.options</id>
-	  <activation>
-		  <jdk>[11,)</jdk>
-	  </activation>
-	  <properties>
-		  <java.surefire.options>
-			  -server
-			  --add-opens java.base/java.lang=ALL-UNNAMED
-			  --add-opens java.base/java.io=ALL-UNNAMED
-		  </java.surefire.options>
-	  </properties>
-	</profile>
+
   </profiles>	
   <!-- Force dependencies version for consistent use all over the project's modules -->
   <dependencyManagement>
