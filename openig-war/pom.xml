@@ -30,6 +30,7 @@
   <properties>
     <!-- If the binary-licensing profile is activated, we need the ForgeRock license there -->
     <forgerock.license.output.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/legal-notices</forgerock.license.output.dir>
+    <maven.cargo.containerId>tomcat10x</maven.cargo.containerId>
   </properties>
 
   <dependencies>
@@ -170,6 +171,7 @@
 		<plugin>
 			<groupId>org.codehaus.cargo</groupId>
 			<artifactId>cargo-maven3-plugin</artifactId>
+            <version>1.10.20</version>
 			<extensions>true</extensions>
 			<executions>
 				<execution>
@@ -207,7 +209,7 @@
 					</manifest>
 				</archive>
 				<container>
-					<containerId>tomcat10x</containerId>
+                    <containerId>${maven.cargo.containerId}</containerId>
 					<type>embedded</type>
 					<!-- 	                    <zipUrlInstaller><url>https://repo.maven.apache.org/maven2/org/apache/tomcat/tomcat/8.5.50/tomcat-8.5.50.zip</url></zipUrlInstaller> -->
 					<systemProperties>
@@ -239,4 +241,15 @@
 		</plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+        <id>jdk17.options</id>
+        <activation>
+            <jdk>[17,)</jdk>
+        </activation>
+        <properties>
+            <maven.cargo.containerId>tomcat11x</maven.cargo.containerId>
+        </properties>
+    </profile>
+  </profiles>
 </project>
