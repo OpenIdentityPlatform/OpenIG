@@ -13,6 +13,7 @@
  *
  * Copyright 2016 ForgeRock AS.
  * Portions copyright 2022 Open Identity Platform Community
+ * Portions copyright 2022-2025 3A Systems LLC.
  */
 
 package org.forgerock.openig.web;
@@ -30,10 +31,10 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Set;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
 
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
 import org.forgerock.http.servlet.HttpFrameworkServlet;

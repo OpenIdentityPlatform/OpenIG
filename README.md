@@ -40,7 +40,7 @@ This project is licensed under the [Common Development and Distribution License 
 * [OpenIG WAR](https://github.com/OpenIdentityPlatform/OpenIG/releases) (All OS)
 * [OpenIG Docker](https://hub.docker.com/r/openidentityplatform/openig/) (All OS)
 
-Java 1.8+ required
+Java 11 or later required
 
 ## How-to build
 For windows use:

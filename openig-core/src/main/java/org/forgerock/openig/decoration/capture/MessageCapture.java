@@ -166,8 +166,8 @@ public class MessageCapture {
         if (context.containsContext(AttributesContext.class)) {
             AttributesContext attributesContext = context.asContext(AttributesContext.class);
             Map<String, Object> map = new LinkedHashMap<>(attributesContext.getAttributes());
-            map.remove("javax.servlet.http.HttpServletRequest");
-            map.remove("javax.servlet.http.HttpServletResponse");
+            map.remove("jakarta.servlet.http.HttpServletRequest");
+            map.remove("jakarta.servlet.http.HttpServletResponse");
             writer.println(prettyPrint(toJson(map)));
         }
     }
