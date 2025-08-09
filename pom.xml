@@ -881,6 +881,10 @@
 			    <publishingServerId>ossrh</publishingServerId>
 			    <autoPublish>true</autoPublish>
 			    <waitMaxTime>5400</waitMaxTime>
+				<excludeArtifacts>
+					<excludeArtifact>jaxrpc-impl</excludeArtifact>
+					<excludeArtifact>jaxrpc-spi</excludeArtifact>
+				</excludeArtifacts>
 			</configuration>
 	    </plugin>
     </plugins>
