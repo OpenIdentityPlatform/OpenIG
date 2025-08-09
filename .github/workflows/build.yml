@@ -76,13 +76,13 @@ jobs:
           driver-opts: network=host
       - name: Prepare Dockerfile
         shell: bash
-        run: sed -i -E '/^#COPY openig-war\//s/^#//' ./openig-docker/Dockerfile
+        run: sed -i -E '/^#COPY openig-war\//s/^#//' ./openig-docker/target/Dockerfile
       - name: Build image
         uses: docker/build-push-action@v5
         continue-on-error: true
         with:
           context: .
-          file: ./openig-docker/Dockerfile
+          file: ./openig-docker/target/Dockerfile
           build-args: |
             VERSION=${{ env.release_version }}
           platforms: linux/amd64, linux/arm64, linux/ppc64le, linux/s390x
