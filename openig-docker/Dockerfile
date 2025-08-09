@@ -17,7 +17,7 @@ RUN rm -fr $CATALINA_HOME/webapps/*
 
 RUN apt-get update && apt-get install -y curl unzip \
     && if [ -z "$VERSION" ] ; then VERSION="$(curl -i -o - --silent https://api.github.com/repos/OpenIdentityPlatform/OpenIG/releases/latest | grep -m1 "\"name\"" | cut -d\" -f4)"; fi \
-    && if [ ! -f "$CATALINA_HOME/webapps/$OPENAM_PATH.war" ]; curl -L https://github.com/OpenIdentityPlatform/OpenIG/releases/download/$VERSION/OpenIG-$VERSION.war --output $CATALINA_HOME/webapps/ROOT.war; fi \
+    && if [ ! -f "$CATALINA_HOME/webapps/$OPENAM_PATH.war" ]; then curl -L https://github.com/OpenIdentityPlatform/OpenIG/releases/download/$VERSION/OpenIG-$VERSION.war --output $CATALINA_HOME/webapps/ROOT.war; fi \
     && useradd -m -r -u 1001 -g root $OPENIG_USER \
     && install -d -o $OPENIG_USER $OPENIG_BASE \
     && chown -R $OPENIG_USER:root $CATALINA_HOME \
