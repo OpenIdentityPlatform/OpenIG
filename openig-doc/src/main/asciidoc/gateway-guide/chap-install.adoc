@@ -62,9 +62,9 @@ For details, see xref:#install[Installing OpenIG].
 This section provides installation and configuration tips that you need to run OpenIG in supported containers.
 OpenIG runs in the following web application containers:
 
-* Apache Tomcat 8 or 9
+* Apache Tomcat 10 or 11
 
-* Jetty 8 (8.1.13 or later), 9 or 10
+* Jetty 11 or 12
 
 For further information on advanced configuration for a particular container, see the container documentation.
 
@@ -503,7 +503,7 @@ Tomcat can help with session stickiness, and a Tomcat cluster can handle session
 +
 In the HowTo, you configure the `jvmRoute` attribute in the Tomcat server configuration, `/path/to/tomcat/conf/server.xml`, to identify the server. The connector can use this identifier to achieve session stickiness.
 
-* A Tomcat link:http://tomcat.apache.org/tomcat-7.0-doc/config/cluster.html[cluster, window=\_blank] configuration can handle session replication. When setting up a cluster configuration, the link:http://tomcat.apache.org/tomcat-7.0-doc/config/cluster-manager.html[ClusterManager, window=\_blank] defines the session replication implementation.
+* A Tomcat link:https://tomcat.apache.org/tomcat-10.1-doc/config/cluster.html[cluster, window=\_blank] configuration can handle session replication. When setting up a cluster configuration, the link:http://tomcat.apache.org/tomcat-7.0-doc/config/cluster-manager.html[ClusterManager, window=\_blank] defines the session replication implementation.
 
 Jetty has provisions for session stickiness, and also for session replication through clustering:
 

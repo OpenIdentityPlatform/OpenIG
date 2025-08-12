@@ -1,4 +1,4 @@
-FROM tomcat:9-jre21
+FROM tomcat:11-jre21
 
 LABEL org.opencontainers.image.authors="Open Identity Platform Community"
 
@@ -11,11 +11,13 @@ ENV PATH=$CATALINA_HOME/bin:$PATH
 ENV MEMORY="-server"
 ENV CATALINA_OPTS="$MEMORY"
 
+RUN rm -fr $CATALINA_HOME/webapps/*
+
+#COPY openig-war/target/OpenIG-*.war $CATALINA_HOME/webapps/ROOT.war
 
 RUN apt-get update && apt-get install -y curl unzip \
-    && rm -fr $CATALINA_HOME/webapps/* \
     && if [ -z "$VERSION" ] ; then VERSION="$(curl -i -o - --silent https://api.github.com/repos/OpenIdentityPlatform/OpenIG/releases/latest | grep -m1 "\"name\"" | cut -d\" -f4)"; fi \
-    && curl -L https://github.com/OpenIdentityPlatform/OpenIG/releases/download/$VERSION/OpenIG-$VERSION.war --output $CATALINA_HOME/webapps/ROOT.war  \
+    && if [ ! -f "$CATALINA_HOME/webapps/ROOT.war" ]; then curl -L https://github.com/OpenIdentityPlatform/OpenIG/releases/download/$VERSION/OpenIG-$VERSION.war --output $CATALINA_HOME/webapps/ROOT.war; fi \
     && useradd -m -r -u 1001 -g root $OPENIG_USER \
     && install -d -o $OPENIG_USER $OPENIG_BASE \
     && chown -R $OPENIG_USER:root $CATALINA_HOME \

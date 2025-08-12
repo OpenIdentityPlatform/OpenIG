@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2015 ForgeRock AS.
+ * Portions copyright 2025 3A Systems LLC.
  */
 
 package org.forgerock.openig.handler.saml;
@@ -23,7 +24,7 @@ import static org.assertj.core.util.Arrays.array;
 import java.net.URI;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.forgerock.http.protocol.Request;
 import org.mockito.Mock;
