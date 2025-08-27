@@ -71,21 +71,21 @@ The next step is then to go to [http://localhost:8080](http://localhost:8080) wh
 ## Contributing
 Please, make [Pull request](https://github.com/OpenIdentityPlatform/OpenIG/pulls)
 
-<a href="https://github.com/OpenIdentityPlatform/OpenIG/graphs/contributors">
+<a href="https://opencollective.com/OpenIG/tiers" target="_blank">
   <!--img src="https://contributors-img.web.app/image?repo=OpenIdentityPlatform/OpenIG" /-->
-  <img src="https://opencollective.com/OpenIG/contributors.svg?width=890&button=false" />
+  <img src="https://opencollective.com/OpenIG/contributors.svg?width=890&button=true" />
 </a>
 
 ## Backers
-Thank you to all our backers! 🙏 [Become a backer](https://opencollective.com/OpenIG#backer)
+Thank you to all our backers! [Become a backer 🙏](https://opencollective.com/OpenIG/tiers)
 
-<a href="https://opencollective.com/OpenIG#backers" target="_blank">
+<a href="https://opencollective.com/OpenIG/tiers" target="_blank">
  <img src="https://opencollective.com/OpenIG/backers.svg?width=890">
 </a>
 
 ## Sponsors
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor](https://opencollective.com/OpenIG#sponsor)
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor ❤️](https://opencollective.com/OpenIG/tiers)
 
-<a href="https://opencollective.com/OpenIG/sponsor/0/website" target="_blank">
- <img src="https://opencollective.com/OpenIG/sponsor/0/avatar.svg">
+<a href="https://opencollective.com/OpenIG/tiers" target="_blank">
+ <img src="https://opencollective.com/OpenIG/sponsors.svg?width=890">
 </a>
