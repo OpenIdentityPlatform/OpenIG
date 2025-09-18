@@ -54,9 +54,9 @@ To perform initial installation, follow these steps:
 +
 OpenIG runs in the following web application containers:
 
-* Apache Tomcat 8 or 9
+* Apache Tomcat 10 or 11
 
-* Jetty 8, 9 or 10
+* Jetty 11 or 12
 
 
 . link:https://github.com/OpenIdentityPlatform/OpenIG/releases[Download, window=\_blank] the OpenIG.war file.

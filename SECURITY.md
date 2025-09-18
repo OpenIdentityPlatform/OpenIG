@@ -5,15 +5,12 @@
 Use this section to tell people about which versions of your project are
 currently being supported with security updates.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
+| Version | Java Versions Support | EE         | Supported                                                                                                                                  |
+|---------|-----------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.x     | 11 and later          | Jakarta EE | :white_check_mark: Community support, [approved vendor support](https://github.com/OpenIdentityPlatform/.github/wiki/Approved-Vendor-List) |
+| 5.1.x   | 8 and later           | Java EE    | :white_check_mark: [Approved vendor support](https://github.com/OpenIdentityPlatform/.github/wiki/Approved-Vendor-List)                    |
+| 5.0.x   | 8 and later           | Java EE    | :x:                                                                                                                                        |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
-
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Please draft [security advisory](https://github.com/OpenIdentityPlatform/OpenIG/security/advisories/new)
