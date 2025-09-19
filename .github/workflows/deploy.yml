@@ -3,7 +3,7 @@ name: Package/Deploy
 on:
   workflow_dispatch:
   workflow_run:
-    branches: [ 'master','release/6.0.0-SNAPSHOT' ]
+    branches: [ 'sustaining/5.4.x','master' ]
     workflows: ["Build","Release"]
     types: [completed]
 jobs:
