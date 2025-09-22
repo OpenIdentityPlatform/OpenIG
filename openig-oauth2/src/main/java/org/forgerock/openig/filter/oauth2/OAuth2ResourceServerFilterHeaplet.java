@@ -25,6 +25,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 
 import java.util.HashSet;
@@ -130,13 +131,14 @@ public class OAuth2ResourceServerFilterHeaplet extends GenericHeaplet {
 
         TimeService time = heap.get(TIME_SERVICE_HEAP_KEY, TimeService.class);
 
-        AccessTokenResolver resolver = config.get("accessTokenResolver").defaultTo(
-                new OpenAmAccessTokenResolver(httpHandler, time,
-                        config.get("tokenInfoEndpoint")
-                                .as(evaluatedWithHeapProperties())
-                                .required().asString()))
-                .as(requiredHeapObject(heap, AccessTokenResolver.class));
-
+        AccessTokenResolver resolver = config.get("accessTokenResolver")
+                .as(optionalHeapObject(heap, AccessTokenResolver.class));
+        if(resolver == null) {
+            resolver = new OpenAmAccessTokenResolver(httpHandler, time,
+                    config.get("tokenInfoEndpoint")
+                            .as(evaluatedWithHeapProperties())
+                            .required().asString());
+        }
 
         if(resolver instanceof ScriptableAccessTokenResolver) {
             ((ScriptableAccessTokenResolver) resolver)
