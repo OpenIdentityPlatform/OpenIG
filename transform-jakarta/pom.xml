@@ -35,45 +35,49 @@
       </modules>
     <properties>
         <transformer.artifact.groupId>${project.groupId}</transformer.artifact.groupId>
+        <transformer.artifact.version>${project.version}</transformer.artifact.version>
     </properties>
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack</id>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>${transformer.artifact.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${transformer.artifact.version}</version>
+                                        <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.eclipse.transformer</groupId>
                     <artifactId>transformer-maven-plugin</artifactId>
                     <version>0.5.0</version>
-                    <extensions>true</extensions>
+                    <configuration>
+                        <rules>
+                            <jakartaDefaults>true</jakartaDefaults>
+                        </rules>
+                    </configuration>
                     <executions>
                         <execution>
-                            <id>default-jar</id>
+                            <id>default-transform</id>
                             <goals>
-                                <goal>jar</goal>
+                                <goal>transform</goal>
                             </goals>
-                            <configuration>
-                                <artifact>
-                                    <groupId>${transformer.artifact.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </artifact>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>transform-jakarta</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <jakartaDefaults>true</jakartaDefaults>
-                                </rules>
-                                <artifact>
-                                    <groupId>${transformer.artifact.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </artifact>
-                                <classifier/>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
