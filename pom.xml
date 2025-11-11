@@ -1073,10 +1073,6 @@
             <version>4.11.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-          <groupId>com.sun.mail</groupId>
-          <artifactId>jakarta.mail</artifactId>
-      </dependency>
   		<dependency>
   			<groupId>org.apache.zookeeper</groupId>
   			<artifactId>zookeeper</artifactId>
