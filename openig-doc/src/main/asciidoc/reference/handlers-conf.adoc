@@ -211,7 +211,7 @@ For details about the available cipher suite names, see the documentation for th
 Default: Allow any cipher suite supported by the JVM.
 
 `"sslContextAlgorithm"`: __string, optional__::
-The `SSLContext` algorithm name, as listed in the table of link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SSLContext[SSLContext Algorithms, window=\_blank] for the Java Virtual Machine used by the container where OpenIG runs.
+The `SSLContext` algorithm name, as listed in the table of link:https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#sslcontext-algorithms[SSLContext Algorithms, window=\_blank] for the Java Virtual Machine used by the container where OpenIG runs.
 
 +
 Default: `TLS`
@@ -1020,7 +1020,7 @@ This context is the leaf of a chain of contexts. It provides access to other Con
 The HTTP link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
 
 `globals`::
-This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
+This object is a link:https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
 
 `http`::
 An embedded client for making outbound HTTP requests, which is an link:{apidocs-url}/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].

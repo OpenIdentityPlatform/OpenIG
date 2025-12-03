@@ -39,7 +39,7 @@ This chapter allows you to quickly see how OpenIG works, and provides hands-on e
 
 Make sure you have a supported Java Development Kit installed.
 
-This release of OpenIG requires Java Development Kit 8, 11, 17 or 21 LTS version. Open Identity Platform Community recommends the most recent update to ensure you have the latest security fixes.
+This release of OpenIG requires Java Development Kit 11, 17, 21 or 25 LTS version. Open Identity Platform Community recommends the most recent update to ensure you have the latest security fixes.
 
 
 [#quickstart-install]

@@ -1832,7 +1832,7 @@ This context is the leaf of a chain of contexts. It provides access to other Con
 The HTTP link:{apidocs-url}/index.html?org/forgerock/http/protocol/Request.html[request, window=\_blank].
 
 `globals`::
-This object is a link:http://groovy.codehaus.org/groovy-jdk/index.html?java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
+This object is a link:https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/Map.html[Map, window=\_blank] that holds variables that persist across successive invocations.
 
 `http`::
 An embedded client for making outbound HTTP requests, which is an link:{apidocs-url}/index.html?org/forgerock/http/Client.html[org.forgerock.http.Client, window=\_blank].
