@@ -318,7 +318,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/jwt/JwtSessionManager.html[or
 
 [#d210e14510]
 ==== Description
-This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/KeyManager.html[KeyManager, window=\_blank], which manages the keys used to authenticate an SSLSocket to a peer. The configuration references the keystore that actually holds the keys.
+This represents the configuration for a Java Secure Socket Extension link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/KeyManager.html[KeyManager, window=\_blank], which manages the keys used to authenticate an SSLSocket to a peer. The configuration references the keystore that actually holds the keys.
 
 [#d210e14523]
 ==== Usage
@@ -391,7 +391,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/security/KeyManagerHeaplet.ht
 
 [#d210e14599]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyStore[KeyStore(5)], xref:#TrustManager[TrustManager(5)]
+link:https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html[JSSE Reference Guide, window=\_blank], xref:#KeyStore[KeyStore(5)], xref:#TrustManager[TrustManager(5)]
 
 '''
 [#KeyStore]
@@ -399,7 +399,7 @@ link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERef
 
 [#d210e14624]
 ==== Description
-This represents the configuration for a Java link:http://docs.oracle.com/javase/7/docs/api/index.html?java/security/KeyStore.html[KeyStore, window=\_blank], which stores cryptographic private keys and public key certificates.
+This represents the configuration for a Java link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/security/KeyStore.html[KeyStore, window=\_blank], which stores cryptographic private keys and public key certificates.
 
 [#d210e14637]
 ==== Usage
@@ -469,7 +469,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/security/KeyStoreHeaplet.html
 
 [#d210e14718]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#TrustManager[TrustManager(5)]
+link:https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#TrustManager[TrustManager(5)]
 
 '''
 [#Issuer]
@@ -565,7 +565,7 @@ In summary when the OpenID Provider is not known in advance, it might be possibl
 To use this shortcut, OpenIG extracts the domain from the user input, and looks for an issuer whose supported domains list contains a match.
 
 +
-Supported domains patterns match host names with optional port numbers. Do not specify a URI scheme such as HTTP. OpenIG adds the scheme. For instance, `*.example.com` matches any host in the `example.com` domain. You can specify the port number as well as in `host.example.com:8443`. Patterns must be valid regular expression patterns according to the rules for the Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class.
+Supported domains patterns match host names with optional port numbers. Do not specify a URI scheme such as HTTP. OpenIG adds the scheme. For instance, `*.example.com` matches any host in the `example.com` domain. You can specify the port number as well as in `host.example.com:8443`. Patterns must be valid regular expression patterns according to the rules for the Java link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[Pattern, window=\_blank] class.
 
 --
 
@@ -765,7 +765,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/io/TemporaryStorage.html[org.
 
 [#d210e15306]
 ==== Description
-This represents the configuration for a Java Secure Socket Extension link:http://docs.oracle.com/javase/7/docs/api/index.html?javax/net/ssl/TrustManager.html[TrustManager, window=\_blank], which manages the trust material (typically X.509 public key certificates) used to decide whether to accept the credentials presented by a peer. The configuration references the keystore that actually holds the trust material.
+This represents the configuration for a Java Secure Socket Extension link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/TrustManager.html[TrustManager, window=\_blank], which manages the trust material (typically X.509 public key certificates) used to decide whether to accept the credentials presented by a peer. The configuration references the keystore that actually holds the trust material.
 
 [#d210e15319]
 ==== Usage
@@ -830,7 +830,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/security/TrustManagerHeaplet.
 
 [#d210e15376]
 ==== See Also
-link:http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#KeyStore[KeyStore(5)]
+link:https://docs.oracle.com/en/java/javase/11/security/java-secure-socket-extension-jsse-reference-guide.html[JSSE Reference Guide, window=\_blank], xref:#KeyManager[KeyManager(5)], xref:#KeyStore[KeyStore(5)]
 
 '''
 [#TrustAllManager]

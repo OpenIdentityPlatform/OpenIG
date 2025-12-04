@@ -42,7 +42,7 @@ In this chapter, you will learn to:
 +
 Make sure you have a supported Java Development Kit installed.
 +
-This release of OpenIG requires Java Development Kit 8, 11, 17 or 21 LTS version. Open Identity Platform Community recommends the most recent update to ensure you have the latest security fixes.
+This release of OpenIG requires Java Development Kit 11, 17, 21 or 25 LTS version. Open Identity Platform Community recommends the most recent update to ensure you have the latest security fixes.
 
 * Prepare a deployment container.
 +
@@ -98,7 +98,7 @@ The Java Secure Socket Extension (JSSE), part of the Java environment, provides 
 ==== Configuring Apache Tomcat For OpenIG
 
 This section describes essential Tomcat configuration that you need in order to run OpenIG.
-Download and install a supported version of Tomcat from link:http://tomcat.apache.org/[http://tomcat.apache.org/, window=\_blank].
+Download and install a supported version of Tomcat from link:https://tomcat.apache.org/[https://tomcat.apache.org/, window=\_blank].
 
 Configure Tomcat to use the same protocol as the application you are protecting with OpenIG. If the protected application is on a remote system, configure Tomcat to use the same port as well. If your application listens on both an HTTP and an HTTPS port, then you must configure Tomcat to do so, too.
 
@@ -499,7 +499,7 @@ If some data attached to a context must be stored on the server side, then you h
 How you configure session stickiness and session replication depends on your load balancer and on your container.
 Tomcat can help with session stickiness, and a Tomcat cluster can handle session replication:
 
-* If you choose to use the link:http://tomcat.apache.org/connectors-doc/[Tomcat connector, window=\_blank] (mod_jk) on your web server to perform load balancing, then see the link:http://tomcat.apache.org/connectors-doc/common_howto/loadbalancers.html[LoadBalancer HowTo, window=\_blank] for details.
+* If you choose to use the link:https://tomcat.apache.org/connectors-doc/[Tomcat connector, window=\_blank] (mod_jk) on your web server to perform load balancing, then see the link:http://tomcat.apache.org/connectors-doc/common_howto/loadbalancers.html[LoadBalancer HowTo, window=\_blank] for details.
 +
 In the HowTo, you configure the `jvmRoute` attribute in the Tomcat server configuration, `/path/to/tomcat/conf/server.xml`, to identify the server. The connector can use this identifier to achieve session stickiness.
 

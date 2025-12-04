@@ -356,7 +356,7 @@ the string containing the joined strings.
 ----
 keyMatch(map, pattern)
 ----
-Returns the first key found in a map that matches the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank], or `null` if no such match is found.
+Returns the first key found in a map that matches the specified link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[regular expression pattern, window=\_blank], or `null` if no such match is found.
 .Parameters
 --
 
@@ -405,7 +405,7 @@ the length of the object, or 0 if length could not be determined.
 ----
 matchingGroups(string, pattern)
 ----
-Returns an array of matching groups for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] applied to the specified string, or `null` if no such match is found. The first element of the array is the entire match, and each subsequent element correlates to any capture group specified within the regular expression.
+Returns an array of matching groups for the specified link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[regular expression pattern, window=\_blank] applied to the specified string, or `null` if no such match is found. The first element of the array is the entire match, and each subsequent element correlates to any capture group specified within the regular expression.
 .Parameters
 --
 
@@ -431,7 +431,7 @@ an array of matching groups, or `null` if no such match is found.
 ----
 matches(string, pattern)
 ----
-Returns `true` if the string contains a match for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
+Returns `true` if the string contains a match for the specified link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
 .Parameters
 --
 
@@ -509,7 +509,7 @@ The key/value map of properties or `null` on error.
 ----
 split(string, pattern)
 ----
-Splits the specified string into an array of substrings around matches for the specified link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
+Splits the specified string into an array of substrings around matches for the specified link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[regular expression pattern, window=\_blank].
 .Parameters
 --
 
@@ -866,15 +866,15 @@ Other functions are provided by link:{apidocs-url}/index.html?org/forgerock/http
 
 [#d210e17106]
 ==== Description
-Patterns in configuration parameters and expressions use the standard Java regular expression link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class. For more information on regular expressions, see Oracle's link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[tutorial on Regular Expressions, window=\_blank].
+Patterns in configuration parameters and expressions use the standard Java regular expression link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[Pattern, window=\_blank] class. For more information on regular expressions, see Oracle's link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[tutorial on Regular Expressions, window=\_blank].
 
 [#d210e17122]
 ==== Pattern Templates
-A regular expression pattern template expresses a transformation to be applied for a matching regular expression pattern. It may contain references to link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#cg[capturing groups, window=\_blank] within the match result. Each occurrence of `$g` (where __g__ is an integer value) is substituted by the indexed capturing group in a match result. Capturing group zero `"$0"` denotes the entire pattern match. A dollar sign or numeral literal immediately following a capture group reference can be included as a literal in the template by preceding it with a backslash ( `\` ). Backslash itself must be also escaped in this manner.
+A regular expression pattern template expresses a transformation to be applied for a matching regular expression pattern. It may contain references to link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html#cg[capturing groups, window=\_blank] within the match result. Each occurrence of `$g` (where __g__ is an integer value) is substituted by the indexed capturing group in a match result. Capturing group zero `"$0"` denotes the entire pattern match. A dollar sign or numeral literal immediately following a capture group reference can be included as a literal in the template by preceding it with a backslash ( `\` ). Backslash itself must be also escaped in this manner.
 
 [#d210e17142]
 ==== See Also
-Java link:http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html[Pattern, window=\_blank] class
+Java link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html[Pattern, window=\_blank] class
 
 link:http://docs.oracle.com/javase/tutorial/essential/regex/index.html[Regular Expressions tutorial, window=\_blank]
 

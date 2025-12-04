@@ -413,7 +413,7 @@ This is one of the contexts described in xref:#Contexts[Contexts(5)].
 The portion of the request URI that matched the URI template.
 
 `"originalUri"`: URI::
-The original target link:https://docs.oracle.com/javase/7/docs/api/index.html?java/net/URI.html[URI, window=\_blank] for the request, as received by the web container.
+The original target link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/URI.html[URI, window=\_blank] for the request, as received by the web container.
 
 +
 The value of this field is read-only.

@@ -396,7 +396,7 @@ The prefix to add to a log file on rotation.
 This has an effect when time-based file rotation is enabled.
 
 `"rotationFileSuffix"`: __string, optional__::
-The suffix to add to a log file on rotation, possibly expressed in link:http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html[SimpleDateFormat, window=\_blank].
+The suffix to add to a log file on rotation, possibly expressed in link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/text/SimpleDateFormat.html[SimpleDateFormat, window=\_blank].
 
 +
 This has an effect when time-based file rotation is enabled.
@@ -648,7 +648,7 @@ Whether the events are automatically flushed after being written.
 Default: true.
 
 `"maxBatchedEvents"`: __number, optional__::
-The maximum number of event messages batched into a link:http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html[PreparedStatement, window=\_blank].
+The maximum number of event messages batched into a link:https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/PreparedStatement.html[PreparedStatement, window=\_blank].
 
 +
 Default: 100.
