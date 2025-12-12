@@ -150,6 +150,10 @@
 	    <version>3.9.1</version>
 	</dependency>
     <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>json-resource-http</artifactId>
     </dependency>
