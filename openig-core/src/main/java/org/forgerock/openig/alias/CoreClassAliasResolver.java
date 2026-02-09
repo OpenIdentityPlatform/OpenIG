@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2021-2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.alias;
