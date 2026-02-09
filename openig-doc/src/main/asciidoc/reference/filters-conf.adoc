@@ -810,6 +810,100 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 link:{apidocs-url}/index.html?org/forgerock/openig/filter/LocationHeaderFilter.html[org.forgerock.openig.filter.LocationHeaderFilter, window=\_blank]
 
 '''
+[#MCPServerFeaturesFilter]
+=== MCPServerFeaturesFilter — restrict access to MCP server features.
+
+[#MCPServerFeaturesFilter-description]
+An MCPServerFeaturesFilter enforces allow/deny policies for MCP (https://modelcontextprotocol.io/specification/2025-11-25[Model Context Protocol, target="_blank"]):
+features exchanged as JSON-RPC payloads with an MCP server. It inspects both
+incoming requests and outgoing responses and removes or rejects features
+according to the configured rules.
+
+==== Usage
+
+[source, json]
+----
+{
+     "type": "MCPFeaturesFilter",
+     "config": {
+         "allow": {
+             "tools": [tools names list],
+             "prompts": [prompts names list],
+             "resources": [resources URIs list],
+             "resources/templates": [resources templates URIs list]
+         },
+         "deny": {
+             "tools": [tools names list],
+             "prompts": [prompts names list],
+             "resources": [resources URIs list],
+             "resources/templates": [resources templates URIs list]
+         }
+     }
+}
+----
+
+==== Properties
+
+`"allow"`: __allowed MCP server features, optional__::
+This object represents allowed MCP server features:
++
+[open]
+====
+
+`"tools"`: __array of strings, optional__::
+A list of allowed MCP server tool names
+`"prompts"`: __array of strings, optional__::
+A list of allowed MCP server prompt names
+`"resources"`: __array of strings, optional__::
+A list of allowed MCP server resource URIs
+`"resources/templates"` :__array of strings, optional__::
+A list of allowed MCP server resources template URIs
+====
++
+Default: Empty object.
+
+`"deny"`: __denied MCP server features, optional__::
+This object represents denied MCP server features:
++
+[open]
+====
+
+`"tools"`: __array of strings, optional__::
+A list of denied MCP server tool names
+`"prompts"`: __array of strings, optional__::
+A list of denied MCP server prompt names
+`"resources"`: __array of strings, optional__::
+A list of denied MCP server resource URIs
+`"resources/templates"` :__array of strings, optional__::
+A list of denied MCP server resource templates URIs
+====
++
+Default: Empty object.
+
+
+==== Example
+
+[source, json]
+----
+{
+     "type": "MCPFeaturesFilter",
+     "config": {
+         "allow": {
+             "tools": ["get_weather"],
+             "prompts": ["code_review"]
+         },
+         "deny": {
+             "resources": ["file:///project/src/main.rs"]
+         }
+     }
+}
+----
+
+==== Javadoc
+link:{apidocs-url}/index.html?org/openidentityplatform/openig/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.filter.MCPServerFeaturesFilter, window=\_blank]
+
+
+'''
 [#OAuth2ClientFilter]
 === OAuth2ClientFilter — Authenticate an end user with OAuth 2.0 delegated authorization
 

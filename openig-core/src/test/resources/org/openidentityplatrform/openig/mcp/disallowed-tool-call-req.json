@@ -1,0 +1,12 @@
+{
+  "method": "tools/call",
+  "params": {
+    "name": "set_current_time_service",
+    "arguments": {
+      "timeStr": "2026-02-05T11:30:30.048135Z"
+    },
+    "_meta": {
+      "progressToken": 2
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "method": "tools/call",
+  "params": {
+    "name": "current_time_service",
+    "arguments": {},
+    "_meta": {
+      "progressToken": 0
+    }
+  }
+}
