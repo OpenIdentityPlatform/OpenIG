@@ -1,0 +1,49 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "current_time_service",
+        "title": "current_time_service",
+        "description": "Returns current time in ISO 8601 format",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        },
+        "annotations": {
+          "title": "",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "name": "set_current_time_service",
+        "title": "set_current_time_service",
+        "description": "Sets the current time in ISO 8601 format",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "timeStr": {
+              "type": "string",
+              "description": "new server time"
+            }
+          },
+          "required": [
+            "timeStr"
+          ]
+        },
+        "annotations": {
+          "title": "",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      }
+    ]
+  }
+}

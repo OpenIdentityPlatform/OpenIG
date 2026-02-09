@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "2026-02-05T11:30:30.048135Z"
+      }
+    ],
+    "isError": false
+  }
+}
