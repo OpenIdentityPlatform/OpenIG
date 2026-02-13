@@ -61,7 +61,7 @@ import static org.forgerock.json.JsonValue.object;
  *   <li>Denied features are always blocked, regardless of allow list</li>
  * </ul>
  *
- * <pre>
+ * <pre>{@code
  * {
  *     "type": "MCPFeaturesFilter",
  *     "config": {
@@ -74,6 +74,7 @@ import static org.forgerock.json.JsonValue.object;
  *             "resources/templates": ["file:///{path}"]
  *         }
  *     }
+ * }
  * }
  * </pre>
  */

@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.openam;
@@ -38,13 +39,11 @@ import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.CachePolicyDecisionFilter.createKeyCache;
-import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.asFunction;
 import static org.forgerock.openig.openam.PolicyEnforcementFilter.Heaplet.normalizeToJsonEndpoint;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -79,7 +78,6 @@ import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
-import org.forgerock.util.Function;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.time.TimeService;
 import org.mockito.ArgumentCaptor;
@@ -605,45 +603,7 @@ public class PolicyEnforcementFilterTest {
         assertThat(resources.get("application").asString()).isNotEmpty();
     }
 
-    @SuppressWarnings("rawtypes")
-    @Test
-    public void shouldReturnNullWhenJsonValueInputIsNull() throws Exception {
-        Function<Bindings, Map<String, List>, ExpressionException> function =
-                asFunction(json(null), List.class, bindings());
-        assertThat(function).isNull();
-    }
 
-    @DataProvider
-    public static Object[][] asFunctionProvider() {
-        //@Checkstyle:off
-        return new Object[][]{
-                {
-                    json("${foo}"),
-                    object(field("bar", array(1, 2, 3)))
-                },
-                {
-                    json(object(field("quix", "${foo['bar']}"))),
-                    object(field("quix", array(1, 2, 3)))
-                },
-                {
-                    // keys with null values will be dropped
-                    json(object(field("foo", null), field("bar", array("quix")))),
-                    object(field("bar", array("quix")))
-                }
-        };
-        //@Checkstyle:on
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Test(dataProvider = "asFunctionProvider")
-    public void shouldEvaluateToMap(JsonValue input, Map<String, Object> expectedOutput) throws Exception {
-        Bindings bindings = bindings().bind("foo", object(field("bar", array(1, 2, 3))));
-
-        Function<Bindings, Map<String, List>, ExpressionException> function =
-                asFunction(input, List.class, bindings());
-
-        assertThat(function.apply(bindings)).isEqualTo(expectedOutput);
-    }
 
     private static void assertResourcesContainResourceURIAndSsoToken(final JsonValue resources) {
         assertResourcesContainResourceURIAndSubjects(resources, "ssoToken");

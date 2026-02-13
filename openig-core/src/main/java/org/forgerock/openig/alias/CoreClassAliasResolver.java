@@ -66,6 +66,7 @@ import org.openidentityplatform.openig.filter.MCPServerFeaturesFilter;
 import org.openidentityplatform.openig.mq.EmbeddedKafka;
 import org.openidentityplatform.openig.mq.MQ_IBM;
 import org.openidentityplatform.openig.mq.MQ_Kafka;
+import org.openidentityplatform.openig.secrets.SystemAndEnvSecretStore;
 
 /**
  * Register all the aliases supported by the {@literal openig-core} module.
@@ -121,7 +122,12 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("MQ_Kafka", MQ_Kafka.class);
         ALIASES.put("MQ_IBM", MQ_IBM.class);
         ALIASES.put("ICAP", ICAPFilter.class);
+
+        //AI features
         ALIASES.put("MCPServerFeaturesFilter", MCPServerFeaturesFilter.class);
+
+        //Secrets
+        ALIASES.put("SystemAndEnvSecretStore", SystemAndEnvSecretStore.class);
     }
 
     @Override

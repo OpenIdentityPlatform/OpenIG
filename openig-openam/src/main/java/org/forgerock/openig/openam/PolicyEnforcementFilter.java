@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.openam;
@@ -36,7 +37,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.heap.Keys.FORGEROCK_CLIENT_HANDLER_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.SCHEDULED_EXECUTOR_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
-import static org.forgerock.openig.util.JsonValues.evaluated;
+import static org.forgerock.openig.util.JsonValues.asFunction;
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
 import static org.forgerock.openig.util.JsonValues.requiredHeapObject;
 import static org.forgerock.openig.util.JsonValues.slashEnded;
@@ -59,9 +60,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Responses;
-import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
-import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.ActionResponse;
 import org.forgerock.json.resource.FilterChain;
@@ -77,7 +76,6 @@ import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.handler.Handlers;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
-import org.forgerock.openig.util.JsonValues;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.AsyncFunction;
 import org.forgerock.util.Function;
@@ -623,55 +621,6 @@ public class PolicyEnforcementFilter implements Filter {
         private Function<Bindings, Map<String, List<Object>>, ExpressionException> environment(Bindings heapBindings) {
             // Double cast to satisfy compiler error due to type erasure
             return asFunction(config.get("environment"), (Class<List<Object>>) (Class) List.class, heapBindings);
-        }
-
-        @VisibleForTesting
-        static <T> Function<Bindings, Map<String, T>, ExpressionException>
-        asFunction(final JsonValue node, final Class<T> expectedType, final Bindings initialBindings) {
-            if (node.isNull()) {
-                return null;
-            } else if (node.isString()) {
-                return new Function<Bindings, Map<String, T>, ExpressionException>() {
-
-                    @SuppressWarnings("unchecked")
-                    @Override
-                    public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return node.as(JsonValues.expression(Map.class, initialBindings)).eval(bindings);
-                    }
-                };
-            } else if (node.isMap()) {
-                return new Function<Bindings, Map<String, T>, ExpressionException>() {
-                    // Avoid 'environment' entry's value to be null (cause an error in AM)
-                    Function<JsonValue, JsonValue, JsonException> filterNullMapValues =
-                            new Function<JsonValue, JsonValue, JsonException>() {
-
-                                @Override
-                                public JsonValue apply(JsonValue value) {
-                                    if (!value.isMap()) {
-                                        return value;
-                                    }
-
-                                    Map<String, Object> object = object();
-                                    for (String key : value.keys()) {
-                                        JsonValue entry = value.get(key);
-                                        if (entry.isNotNull()) {
-                                            object.put(key, entry.getObject());
-                                        }
-                                    }
-                                    return new JsonValue(object, value.getPointer());
-                                }
-                            };
-
-                    @Override
-                    public Map<String, T> apply(Bindings bindings) throws ExpressionException {
-                        return node.as(evaluated(bindings))
-                                   .as(filterNullMapValues) // see OPENIG-1402 and AME-12483
-                                   .asMap(expectedType);
-                    }
-                };
-            } else {
-                throw new JsonValueException(node, "Expecting a String or a Map");
-            }
         }
 
         @VisibleForTesting
