@@ -62,6 +62,7 @@ import org.forgerock.openig.security.TrustAllManager;
 import org.forgerock.openig.security.TrustManagerHeaplet;
 import org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet;
 import org.openidentityplatform.openig.filter.ICAPFilter;
+import org.openidentityplatform.openig.filter.JwtBuilderFilter;
 import org.openidentityplatform.openig.filter.MCPServerFeaturesFilter;
 import org.openidentityplatform.openig.mq.EmbeddedKafka;
 import org.openidentityplatform.openig.mq.MQ_IBM;
@@ -94,6 +95,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("FileAttributesFilter", FileAttributesFilter.class);
         ALIASES.put("HeaderFilter", HeaderFilter.class);
         ALIASES.put("HttpBasicAuthFilter", HttpBasicAuthFilter.class);
+        ALIASES.put("JwtBuilderFilter", JwtBuilderFilter.class);
         ALIASES.put("JwtSessionFactory", JwtSessionManager.class);
         ALIASES.put("JwtSession", JwtSessionManager.class);
         ALIASES.put("KeyManager", KeyManagerHeaplet.class);
