@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.util;
@@ -19,13 +20,16 @@ package org.forgerock.openig.util;
 import static java.util.Collections.unmodifiableList;
 import static org.forgerock.http.util.Json.readJsonLenient;
 import static org.forgerock.http.util.Loader.loadList;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.util.StringUtil.trailingSlash;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
+import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.alias.ClassAliasResolver;
@@ -447,6 +451,43 @@ public final class JsonValues {
     public static JsonValue readJson(URL resource) throws IOException {
         try (InputStream in = resource.openStream()) {
             return new JsonValue(readJsonLenient(in));
+        }
+    }
+
+    public static <T> Function<Bindings, Map<String, T>, ExpressionException>
+        asFunction(final JsonValue node, final Class<T> expectedType, final Bindings initialBindings) {
+        if (node.isNull()) {
+            return null;
+        } else if (node.isString()) {
+            return bindings -> node.as(JsonValues.expression(Map.class, initialBindings)).eval(bindings);
+        } else if (node.isMap()) {
+            return new Function<>() {
+                // Avoid 'environment' entry's value to be null (cause an error in AM)
+                Function<JsonValue, JsonValue, JsonException> filterNullMapValues =
+                        value -> {
+                            if (!value.isMap()) {
+                                return value;
+                            }
+
+                            Map<String, Object> object = object();
+                            for (String key : value.keys()) {
+                                JsonValue entry = value.get(key);
+                                if (entry.isNotNull()) {
+                                    object.put(key, entry.getObject());
+                                }
+                            }
+                            return new JsonValue(object, value.getPointer());
+                        };
+
+                @Override
+                public Map<String, T> apply(Bindings bindings) {
+                    return node.as(evaluated(bindings))
+                            .as(filterNullMapValues) // see OPENIG-1402 and AME-12483
+                            .asMap(expectedType);
+                }
+            };
+        } else {
+            throw new JsonValueException(node, "Expecting a String or a Map");
         }
     }
 }

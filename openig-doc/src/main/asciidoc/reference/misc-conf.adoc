@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -711,6 +711,52 @@ The following example creates a thread pool to execute tasks. When the executor 
 [#d210e15205]
 ==== Javadoc
 link:{apidocs-url}/index.html?org/forgerock/openig/thread/ScheduledExecutorServiceHeaplet.html[org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet, window=\_blank]
+
+'''
+[#SystemAndEnvSecretStore]
+=== SystemAndEnvSecretStore — retrieve secrets from system properties and environment variables
+
+==== Usage
+
+[source, json]
+----
+{
+    "type": "SystemAndEnvSecretStore",
+    "config": {
+      "format": string or expression<string>
+    }
+}
+----
+
+==== Properties
+
+
+`"format"`: __string, optional__::
+[open]
+====
+Format in which the secret is stored. Use one of the following values:
+
+* BASE64: Base64-encoded
+* PLAIN: Plain text
+
+Default: BASE64
+====
+
+==== Example
+
+[source, json]
+----
+{
+    "type": "SystemAndEnvSecretStore",
+    "config": {
+      "format": "BASE64"
+    }
+}
+----
+
+==== Javadoc
+link:{apidocs-url}/org/openidentityplatform/openig/secrets/SystemAndEnvSecretStore.html[org.openidentityplatform.openig.secrets.SystemAndEnvSecretStore, window=\_blank]
+
 
 '''
 [#TemporaryStorage]
