@@ -72,6 +72,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.openidentityplatform.openig</groupId>
+      <artifactId>openig-ai</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.openidentityplatform.commons.audit</groupId>
       <artifactId>handler-csv</artifactId>
       <scope>runtime</scope>

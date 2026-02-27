@@ -25,6 +25,7 @@
     </parent>
 
     <artifactId>openig-ai</artifactId>
+    <name>OpenIG AI Gateway Module</name>
     <dependencies>
         <dependency>
             <groupId>org.openidentityplatform.openig</groupId>
