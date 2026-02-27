@@ -14,7 +14,7 @@
  * Copyright 2026 3A Systems LLC.
  */
 
-package org.openidentityplatform.openig.filter;
+package org.openidentityplatform.openig.ai.filter;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
@@ -269,7 +269,7 @@ public class MCPServerFeaturesFilter implements Filter {
     public static class Heaplet extends GenericHeaplet {
 
         @Override
-        public Object create() throws HeapException {
+        public Object create() {
             MCPServerFeaturesFilter filter = new MCPServerFeaturesFilter();
             JsonValue evaluatedConfig = config.as(evaluatedWithHeapProperties());
             JsonValue allowConfig = evaluatedConfig.get("allow");

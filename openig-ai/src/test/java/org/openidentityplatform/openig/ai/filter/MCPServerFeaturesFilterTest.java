@@ -14,22 +14,25 @@
  * Copyright 2026 3A Systems LLC.
  */
 
-package org.openidentityplatform.openig.filter;
+package org.openidentityplatform.openig.ai.filter;
 
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.http.routing.Router;
 import org.forgerock.json.JsonValue;
+import org.forgerock.openig.decoration.baseuri.BaseUriDecorator;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.openig.heap.HeapImpl;
-import org.forgerock.openig.heap.HeapUtilsTest;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.openig.http.EndpointRegistry;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.forgerock.util.promise.Promises;
+import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
@@ -41,10 +44,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.openig.heap.Keys.BASEURI_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.ENDPOINT_REGISTRY_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
+import static org.forgerock.openig.heap.Keys.TIME_SERVICE_HEAP_KEY;
 import static org.forgerock.openig.util.JsonValues.readJson;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertTrue;
@@ -60,11 +68,17 @@ public class MCPServerFeaturesFilterTest {
     private AutoCloseable closeable;
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
 
         closeable = MockitoAnnotations.openMocks(this);
 
-        heap = HeapUtilsTest.buildDefaultHeap();
+
+        heap = new HeapImpl(Name.of("default"));
+        heap.put(TEMPORARY_STORAGE_HEAP_KEY, newTemporaryStorage());
+        heap.put(BASEURI_HEAP_KEY, new BaseUriDecorator(BASEURI_HEAP_KEY));
+        heap.put(ENDPOINT_REGISTRY_HEAP_KEY, new EndpointRegistry(new Router(), "/"));
+        heap.put(TIME_SERVICE_HEAP_KEY, TimeService.SYSTEM);
+
 
         config = json(object());
         config.put("allow", object(

@@ -900,7 +900,7 @@ Default: Empty object.
 ----
 
 ==== Javadoc
-link:{apidocs-url}/index.html?org/openidentityplatform/openig/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.filter.MCPServerFeaturesFilter, window=\_blank]
+link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.ai.filter.MCPServerFeaturesFilter, window=\_blank]
 
 
 '''
