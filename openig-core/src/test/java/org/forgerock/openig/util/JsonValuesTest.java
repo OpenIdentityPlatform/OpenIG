@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.util;
@@ -22,6 +23,8 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.listOf;
+import static org.forgerock.openig.el.Bindings.bindings;
+import static org.forgerock.openig.util.JsonValues.asFunction;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -39,10 +42,9 @@ import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Bindings;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import org.forgerock.util.Function;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
@@ -52,6 +54,9 @@ import org.slf4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("javadoc")
 public class JsonValuesTest {
@@ -274,5 +279,45 @@ public class JsonValuesTest {
                 return value.equals(json.getObject());
             }
         };
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test(dataProvider = "asFunctionProvider")
+    public void shouldEvaluateToMap(JsonValue input, Map<String, Object> expectedOutput) throws Exception {
+        Bindings bindings = bindings().bind("foo", object(field("bar", array(1, 2, 3))));
+
+        Function<Bindings, Map<String, List>, ExpressionException> function =
+                asFunction(input, List.class, bindings());
+
+        assertThat(function.apply(bindings)).isEqualTo(expectedOutput);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void shouldReturnNullWhenJsonValueInputIsNull() throws Exception {
+        Function<Bindings, Map<String, List>, ExpressionException> function =
+                asFunction(json(null), List.class, bindings());
+        assertThat(function).isNull();
+    }
+
+    @DataProvider
+    public static Object[][] asFunctionProvider() {
+        //@Checkstyle:off
+        return new Object[][]{
+                {
+                        json("${foo}"),
+                        object(field("bar", array(1, 2, 3)))
+                },
+                {
+                        json(object(field("quix", "${foo['bar']}"))),
+                        object(field("quix", array(1, 2, 3)))
+                },
+                {
+                        // keys with null values will be dropped
+                        json(object(field("foo", null), field("bar", array("quix")))),
+                        object(field("bar", array("quix")))
+                }
+        };
+        //@Checkstyle:on
     }
 }
