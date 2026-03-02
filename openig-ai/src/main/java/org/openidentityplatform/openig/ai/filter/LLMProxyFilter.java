@@ -46,10 +46,10 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 
 /**
- * Identity-aware LLM proxy filter for OpenIG.
+ * Identity-aware LLM proxy filter.
  *
  * <ol>
- *   <li><strong>Provider normalisation</strong> – rewrites the upstream URI and injects the
+ *   <li><strong>Provider normalization</strong> – rewrites the upstream URI and injects the
  *       correct authentication header for the configured {@link LLMProvider}.</li>
  *   <li><strong>Identity extraction</strong> – reads the caller's identity from a configurable
  *       request attribute (populated upstream by, e.g., {@code OAuth2ResourceServerFilter}).</li>
@@ -73,10 +73,10 @@ import static org.forgerock.openig.el.Bindings.bindings;
  *     "sub"               : "${attributes.sub}",          // optional, expression, default "anonymous"
  *     "rateLimitEnabled"  : true,                         // optional, default true
  *     "rate": {
- *       "numberOfTokens"  : 10000,    // tokens per window (burst capacity)
- *       "duration"        : "1 minute"
- *     },
- *     "cleaningInterval"  : "5 minutes"  // optional, bucket eviction period
+ *       "numberOfTokens"    : 10000,    // tokens per window (burst capacity)
+ *       "duration"          : "1 minute"
+ *       "cleaningInterval"  : "5 minutes"  // optional, bucket eviction period
+ *     }
  *   }
  * }
  * }</pre>
@@ -99,6 +99,8 @@ public class LLMProxyFilter implements Filter {
     static final long   DEFAULT_RATE_LIMIT_NUMBER_OF_TOKENS = 10_000L;
     static final String DEFAULT_RATE_LIMIT_DURATION     = "1 minute";
     static final String DEFAULT_CLEANING_INTERVAL       = "5 minutes";
+
+    static final long CHARS_PER_TOKEN = 4L;
 
     private final LLMProvider provider;
     private final String baseUrl;
@@ -176,21 +178,21 @@ public class LLMProxyFilter implements Filter {
             }
             JsonValue messages = jsonEntity.get("messages");
             if (messages.isNull() || !messages.isList()) {
-                return Math.max(1L, body.length / 4L);
+                return Math.max(1L, body.length / CHARS_PER_TOKEN);
             }
             long charCount = 0;
-            for (JsonValue msg : messages.asList(JsonValue.class)) {
-                JsonValue content = msg.get("content");
+            for (Object msg : messages.asList()) {
+                JsonValue content = json(msg).get("content");
                 if (content.isString()) {
                     charCount += content.asString().length();
                 } else if (content.isList()) {
-                    for (JsonValue block : content.asList(JsonValue.class)) {
-                        JsonValue text = block.get("text");
+                    for (Object block : content.asList()) {
+                        JsonValue text = json(block).get("text");
                         if (text.isString()) charCount += text.asString().length();
                     }
                 }
             }
-            return Math.max(1L, charCount / 4L);
+            return Math.max(1L, charCount / CHARS_PER_TOKEN);
         } catch (Exception e) {
             logger.debug("LLMProxyFilter: token cost estimation failed — using 500", e);
             return 500L;
@@ -216,11 +218,10 @@ public class LLMProxyFilter implements Filter {
 
         // URI rewrite
         URI original = request.getUri().asURI();
-        String path = original.getRawPath();
         String query = original.getRawQuery();
 
         try {
-            String newUriStr = baseUrl + (path != null ? path : "")
+            String newUriStr = baseUrl
                     + (query != null ? "?" + query : "");
             request.setUri(new URI(newUriStr));
         } catch (URISyntaxException e) {
@@ -290,13 +291,15 @@ public class LLMProxyFilter implements Filter {
 
                 Duration duration = Duration.duration(DEFAULT_RATE_LIMIT_DURATION);
 
+                Duration cleaningInterval = Duration.duration(DEFAULT_CLEANING_INTERVAL);
+
                 if (rate != null && !rate.isNull()) {
                     numberOfTokens = rate.get("numberOfTokens")
                             .defaultTo(DEFAULT_RATE_LIMIT_NUMBER_OF_TOKENS).asLong();
                     duration = rate.get("duration").defaultTo(DEFAULT_RATE_LIMIT_DURATION).as(duration());
-                }
 
-                Duration cleaningInterval = config.get("cleaningInterval").defaultTo(DEFAULT_CLEANING_INTERVAL).as(duration());
+                    cleaningInterval = rate.get("cleaningInterval").defaultTo(DEFAULT_CLEANING_INTERVAL).as(duration());
+                }
 
                 try {
                     rateLimiter = new TokenRateLimiter(numberOfTokens, duration,
@@ -306,7 +309,7 @@ public class LLMProxyFilter implements Filter {
                 }
             }
 
-            return new LLMProxyFilter(provider, apiKey, baseUrl, sub, rateLimitEnabled, rateLimiter);
+            return new LLMProxyFilter(provider, baseUrl, apiKey, sub, rateLimitEnabled, rateLimiter);
         }
     }
 }
