@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -569,6 +569,118 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 [#d210e5410]
 ==== Javadoc
 link:{apidocs-url}/index.html?org/forgerock/openig/filter/FileAttributesFilter.html[org.forgerock.openig.filter.FileAttributesFilter, window=\_blank]
+
+'''
+[#JwtBuilderFilter]
+=== JwtBuilderFilter — remove and add headers
+
+Creates a JSON Web Token (JWT) with runtime data and puts the JWT into the link:{apidocs-url}/org/openidentityplatform/openig/filter/JwtBuilderContext.java[JwtBuilderContext, window=\_blank]
+
+Configure JwtBuilderFilter create a signed JWT or a signed then encrypted JWT.
+
+To retrieve secrets from environment or system properties, the xref:misc-conf.adoc#SystemAndEnvSecretStore[SystemAndEnvSecretStore] object should be declared in a heap.
+
+==== Usage
+
+[source, json]
+----
+{
+  "name": string,
+  "type": "JwtBuilderFilter",
+  "config": {
+    "template": map or runtime expression<map>,
+    "signature": {
+      "secretId": configuration expression<string>,
+      "algorithm": configuration expression<string>
+    },
+    "encryption": {
+      "secretId": configuration expression<string>,
+      "algorithm": configuration expression<string>,
+      "method": configuration expression<string>
+    }
+  }
+}
+----
+
+==== Properties
+
+`"template"`: __map or runtime expression<map>, required__::
++
+[open]
+====
+A map of one or more data pairs with the format `Map<String, Object>`, where:
+
+* The key is the name of a data field
+
+* The value is a data object, or a runtime expression that evaluates to a data object
+====
+
+
+`"signature"`: object, optional::
++
+[open]
+====
+A JWT signature to allow the authenticity of the claims/data to be validated. A signed JWT can be encrypted.
+
+The encryption settings take precedence over this property.
+
+`"secretId"`: configuration expression<string>, required if signature is used::
+The secret ID of the key to sign the JWT.
+
+`"algorithm"`: configuration expression<string>, optional::
++
+The algorithm to sign the JWT.
++
+Default: RS256
+====
+
+`"encryption"`: object, optional::
++
+[open]
+====
+Configuration to encrypt the JWT.
+
+This property takes precedence over the signature settings.
+
+`"secretId"`: string, optional::
++
+The secret ID of the key used to encrypt the JWT.
+
+
+`"algorithm"`: configuration expression<string>, required::
+The algorithm used to encrypt the JWT.
+
+`"method"`: configuration expression<enumeration>, required::
+The method used to encrypt the JWT.
+====
+
+==== Example
+
+[source, json]
+----
+{
+  "type": "JwtBuilderFilter",
+  "config": {
+    "template": {
+      "sub": "${request.headers['X-User-ID'][0]}",
+      "exp": "${now.plusSeconds(20).epochSeconds}",
+      "iss": "my-issuer"
+    },
+    "signature": {
+      "algorithm": "RS256",
+      "secretId": "jwt.signing.key"
+    },
+    "encryption": {
+      "algorithm": "RSA-OAEP",
+      "method": "A128GCM",
+      "secretId": "jwt.encryption.key"
+    }
+  }
+}
+----
+
+==== Javadoc
+link:{apidocs-url}/org/openidentityplatform/openig/filter/JwtBuilderFilter.html[org.openidentityplatform.openig.filter.JwtBuilderFilter, window=\_blank]
 
 '''
 [#HeaderFilter]
