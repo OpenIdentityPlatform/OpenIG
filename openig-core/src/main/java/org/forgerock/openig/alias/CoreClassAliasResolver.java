@@ -63,7 +63,6 @@ import org.forgerock.openig.security.TrustManagerHeaplet;
 import org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet;
 import org.openidentityplatform.openig.filter.ICAPFilter;
 import org.openidentityplatform.openig.filter.JwtBuilderFilter;
-import org.openidentityplatform.openig.filter.MCPServerFeaturesFilter;
 import org.openidentityplatform.openig.mq.EmbeddedKafka;
 import org.openidentityplatform.openig.mq.MQ_IBM;
 import org.openidentityplatform.openig.mq.MQ_Kafka;
@@ -124,9 +123,6 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("MQ_Kafka", MQ_Kafka.class);
         ALIASES.put("MQ_IBM", MQ_IBM.class);
         ALIASES.put("ICAP", ICAPFilter.class);
-
-        //AI features
-        ALIASES.put("MCPServerFeaturesFilter", MCPServerFeaturesFilter.class);
 
         //Secrets
         ALIASES.put("SystemAndEnvSecretStore", SystemAndEnvSecretStore.class);

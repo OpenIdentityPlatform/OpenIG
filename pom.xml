@@ -148,6 +148,7 @@
     <module>openig-openam</module>
     <module>openig-ui</module>
     <module>openig-docker</module>
+    <module>openig-ai</module>
   </modules>
 
   <build>

@@ -864,6 +864,108 @@ Default: `true`
 link:{apidocs-url}/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forgerock.openig.filter.HttpBasicAuthFilter, window=\_blank]
 
 '''
+[#LLMProxyFilter]
+=== LLMProxyFilter — controls token usage per user
+
+==== Description
+
+* Provider normalization – rewrites the upstream URI and injects the
+correct authentication header for the configured provider.
+* Token-based rate limiting – estimates the prompt-token cost of each
+request and enforces per-identity limits.
+Returns `429 Too Many Requests` with an exact `Retry-After` header when the bucket is exhausted.
+
+==== Usage
+
+[source, javascript]
+----
+{
+    "type": "LLMProxyFilter",
+    "config": {
+        "provider"          : string, expression, required,
+        "baseUrl"           : string, expression, optional,
+        "apiKey"            : string, expression, required,
+        "sub"               : string, optional, expression, default "anonymous"
+        "rateLimitEnabled"  : boolean, optional, default true
+        "rate": {
+            "numberOfTokens"  : optional, expression, number,
+            "duration"        : duration,
+            "cleaningInterval"  : duration, expression, optional
+        }
+    }
+}
+----
+
+==== Properties
+
+`"provider"`: __expression, required__::
+LLM Provider, allowed values are: `OPENAI`, `ANTHROPIC`, `MISTRAL`, `AZURE_OPENAI`,
+`OPENAI_COMPATIBLE`.
+
+`"baseUrl"`: __expression, optional__::
+Custom URL for an LLM provider.
+
+`"apiKey"`: __expression, required__::
+API-key for an LLM provider, if using Ollama, set any non-empty value.
+
+`"sub"`: __expression, optional__::
+Identity subject to restrict token usage.
++
+Default `anonymous`.
+
+`"rateLimitEnabled"`: __expression, optional__::
+Enables token usage control.
++
+Default: true
+
+`"rate"`: __object, optional__::
+[open]
+====
+Rate limit settings:
+
+`"numberOfTokens"`: __number, optional::
+Amount of tokens per time window.
++
+Default: 10000
+
+`"duration"`: __expression, optional::
+Token usage duration (time window).
++
+Default: 1 minute
+
+`"cleaningInterval"`: __expression, optional::
+Token bucket eviction period
++
+Default: 5 minutes
+====
+
+==== Example
+
+[source, json]
+----
+{
+  "name": "OllamaProxy",
+  "type": "LLMProxyFilter",
+  "config": {
+    "provider"          : "OPENAI_COMPATIBLE",
+    "baseUrl"           : "http://ollama.local:11434/v1/chat/completions",
+    "apiKey"            : "test-api-key",
+    "sub"               : "${attributes.sub}",
+    "rateLimitEnabled"  : true,
+    "rate": {
+      "numberOfTokens"  : 10000,
+      "duration"        : "1 minute",
+      "cleaningInterval"  : "5 minutes"
+    }
+   }
+}
+----
+
+==== Javadoc
+link:{apidocs-url}/index.html/org/openidentityplatform/openig/ai/filter/LLMProxyFilter.java.html[org.openidentityplatform.openig.ai.filter.LLMProxyFilter, window=\_blank]
+
+
+'''
 [#LocationHeaderFilter]
 === LocationHeaderFilter — rewrites Location headers
 
@@ -1012,7 +1114,7 @@ Default: Empty object.
 ----
 
 ==== Javadoc
-link:{apidocs-url}/index.html?org/openidentityplatform/openig/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.filter.MCPServerFeaturesFilter, window=\_blank]
+link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.ai.filter.MCPServerFeaturesFilter, window=\_blank]
 
 
 '''
