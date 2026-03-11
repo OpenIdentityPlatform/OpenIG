@@ -74,7 +74,7 @@ import static org.forgerock.json.JsonValue.object;
  * <h2>Route JSON configuration</h2>
  * <pre>{@code
  * {
- *   "type": "PromptGuardFilter",
+ *   "type": "LLMPromptGuardFilter",
  *   "config": {
  *      "action":                       "BLOCK",
  *      "patternFile":                  "injection-patterns.json",
@@ -90,7 +90,7 @@ import static org.forgerock.json.JsonValue.object;
  * }
  * }</pre>
  */
-public class PromptGuardFilter implements Filter {
+public class LLMPromptGuardFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MCPServerFeaturesFilter.class);
 
@@ -100,7 +100,7 @@ public class PromptGuardFilter implements Filter {
 
     private final Action  action;
 
-    public PromptGuardFilter(InjectionDetector detector, Action action) {
+    public LLMPromptGuardFilter(InjectionDetector detector, Action action) {
         this.detector = detector;
         this.action = action;
     }
@@ -214,7 +214,7 @@ public class PromptGuardFilter implements Filter {
                 chain.add(typoDetector);
             }
             InjectionDetector composite = new CompositeDetector(chain);
-            return new PromptGuardFilter(composite, action);
+            return new LLMPromptGuardFilter(composite, action);
         }
 
 
