@@ -864,6 +864,178 @@ Default: `true`
 link:{apidocs-url}/index.html?org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forgerock.openig.filter.HttpBasicAuthFilter, window=\_blank]
 
 '''
+
+[#LLMPromptGuardFilter]
+=== LLMPromptGuardFilter — detect and block prompt-injection attacks
+Intercepts outgoing LLM API requests and scans every prompt for prompt-injection
+attacks before the request reaches the downstream model.
+Implements mitigations for
+https://owasp.org/www-project-top-10-for-large-language-model-applications/[OWASP LLM Top 10 (2025), window=_blank]
+risks LLM01 (Prompt Injection) and LLM07 (System Prompt Leakage).
+
+Detection runs as a short-circuiting chain: the first layer that flags a prompt
+stops evaluation and applies the configured action.
+Layers run in this fixed order:
+
+cols="1,3,1", options="header"]
+|===
+|Layer |Detector |Typical latency
+
+|1
+|*RegexDetector* — deterministic pattern matching against `patternFile`.
+Applies Unicode NFD normalisation, strips invisible characters (zero-width
+spaces, RTL overrides U+202A–202E), and performs Base64 decode-then-scan.
+Covers override instructions, roleplay bypass, prompt exfiltration, delimiter
+injection, and encoding obfuscation.
+|< 1 ms
+
+|2
+|*TypoglycemiaDetector* — catches injection keywords whose interior letters
+have been transposed to evade exact matching
+(e.g. `jialbrek` for `jailbreak`).
+Uses a fingerprint gate followed by unrestricted Damerau-Levenshtein distance.
+Controlled by `typoglycemiaEnabled`, `typoglycemiaMaxEditDist`,
+`typoglycemiaMinWordLen`, and `typoglycemiaExtraKeywords`.
+|< 1 ms
+|===
+
+When injection is detected the filter applies one of three configurable actions:
+
+* `BLOCK` — returns an HTTP error response (default 400). The request never reaches the LLM.
+* `LOG_ONLY` — logs an audit event only
+
+==== Usage
+
+[source, json]
+----
+{
+  "name": string,
+  "type": "LLMPromptGuardFilter",
+  "config": {
+    "action":                        string,
+    "patternFile":                   string,
+    "typoglycemiaEnabled":           boolean,
+    "typoglycemiaMaxEditDist":       integer,
+    "typoglycemiaMinWordLen":        integer,
+    "typoglycemiaKeywords":          string,
+    "blockResponse": {
+      "status":                      integer,
+      "body":                        string
+    }
+  }
+}
+----
+
+==== Properties
+
+--
+
+`"enabled"`: __boolean, optional__::
+When `false`, the filter passes all requests through without scanning.
+Useful for disabling the filter on a route without removing it from the chain.
++
+Default: `true`
+
+`"action"`: __string, optional__::
+Action to take when a prompt injection is detected.
++
+Must be one of:
++
+`BLOCK`;;
+Return the response defined by `blockResponse`. The request does not reach
+the LLM.
+`LOG_ONLY`;;
+Emit a structured audit event only. No headers are modified and the request
+is not blocked.
++
+Default: `"BLOCK"`
+
+`"patternFile"`: __string, optional__::
+Path to the JSON file that defines the regex injection
+patterns used by layer 1 (RegexDetector).
++
+The file must be a JSON array of objects, each with a `"reason"` string and
+a `"regex"` string:
++
+[source, json]
+----
+[
+  { "reason": "override_instruction", "regex": "(?i)ignore\\s+all\\s+previous\\s+instructions" },
+  { "reason": "prompt_exfiltration",  "regex": "(?i)repeat\\s+your\\s+system\\s+(prompt|instructions)" }
+]
+----
++
+If the file is absent from the classpath, the built-in default pattern set
+is used automatically.
+
+`"typoglycemiaEnabled"`: __boolean, optional__::
+Enables layer 2 (TypoglycemiaDetector), which detects injection keywords
+with transposed interior letters.
++
+Default: `true`
+
+`"typoglycemiaMaxEditDist"`: __integer, optional__::
+Maximum unrestricted Damerau-Levenshtein distance between a word in the
+prompt and a known injection keyword for the word to be flagged.
+Only used when `typoglycemiaEnabled` is `true`.
++
+Default: `3`
+
+`"typoglycemiaMinWordLen"`: __integer, optional__::
+Minimum word length considered by the typoglycemia detector.
+Words shorter than this value are never compared against the keyword list.
+Only used when `typoglycemiaEnabled` is `true`.
++
+Default: `4`
+
+`"typoglycemiaKeywords"`: __strings, optional__::
+Path to a JSON file that defines the regex keywords to add to the typoglycemia detector's list.
+Only used when `typoglycemiaEnabled` is `true`.
+
+`"blockResponse"`: __object, optional__::
+Defines the HTTP response returned to the client when `action` is `BLOCK`.
++
+[open]
+====
+`"status"`: __integer, optional__::
+HTTP status code of the block response.
++
+Default: `400`
+
+`"body"`: __string, optional__::
+Response body of the block response.
++
+Default: `{"error":"prompt_injection_detected"}`
+====
+
+--
+
+==== Example
+[source, json]
+----
+{
+  "name": "PromptGuard",
+  "type": "LLMPromptGuardFilter",
+  "config": {
+    "action":                        "BLOCK",
+    "typoglycemiaEnabled":           true,
+    "typoglycemiaMaxEditDist":       3,
+    "typoglycemiaMinWordLen":        4,
+    "blockResponse": {
+      "status": 400,
+      "body":   "{\"error\":\"prompt_injection_detected\"}"
+    }
+  }
+}
+----
+
+==== Javadoc
+link:{apidocs-url}/org/openidentityplatform/openig/filter/llm/LLMPromptGuardFilter.html[org.openidentityplatform.openig.filter.llm.LLMPromptGuardFilter, window=_blank]
+
+
+'''
+
+
 [#LLMProxyFilter]
 === LLMProxyFilter — controls token usage per user
 
@@ -2071,6 +2243,7 @@ link:{apidocs-url}/index.html?org/forgerock/openig/openam/PolicyEnforcementFilte
 link:https://doc.openidentityplatform.org/openam/dev-guide/chap-client-dev#rest-api-authz-policy-decisions[Requesting Policy Decisions, window=\_blank]
 
 '''
+
 [#ScriptableFilter]
 === ScriptableFilter — process requests and responses by using a script
 
