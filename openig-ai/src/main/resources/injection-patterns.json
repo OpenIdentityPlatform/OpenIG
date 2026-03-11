@@ -1,0 +1,78 @@
+[
+  {
+    "reason": "override_instruction",
+    "regex": "(?i)ignore\\s+(all\\s+)?(previous|prior|above|earlier|your)\\s+(instructions?|prompts?|directives?|rules?)"
+  },
+  {
+    "reason": "override_instruction",
+    "regex": "(?i)disregard\\s+(your\\s+)?(system\\s+prompt|instructions?|guidelines?|rules?)"
+  },
+  {
+    "reason": "override_instruction",
+    "regex": "(?i)forget\\s+(everything|all)\\s+(you\\s+)?(were|have\\s+been)\\s+(told|given|instructed|trained)"
+  },
+  {
+    "reason": "override_instruction",
+    "regex": "(?i)(you\\s+must\\s+now|from\\s+now\\s+on)\\s+(ignore|disregard|override)"
+  },
+  {
+    "reason": "override_instruction",
+    "regex": "(?i)new\\s+(prime\\s+)?directive[:\\s]"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)\\bact\\s+as\\s+(if\\s+you\\s+(are|were)\\s+(an?\\s+)?|a\\s+)?\\b(DAN|evil|unrestricted|jailbreak)"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)\\bpretend\\s+(you\\s+)?(have\\s+no|don[''']t\\s+have\\s+any)\\s+(restrictions?|limits?|guidelines?|filters?)"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)\\byou\\s+are\\s+now\\s+(in\\s+)?developer\\s+mode"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)\\bdo\\s+anything\\s+now\\b"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)\\bjailbreak\\b"
+  },
+  {
+    "reason": "roleplay_bypass",
+    "regex": "(?i)enable\\s+(unrestricted|god|sudo|admin|developer)\\s+mode"
+  },
+  {
+    "reason": "prompt_exfiltration",
+    "regex": "(?i)(print|show|display|output|reveal|tell\\s+me|share|leak|expose)(\\s+\\w+){0,2}\\s+(your\\s+)?(system\\s+prompt|system\\s+message|initial\\s+instructions?|hidden\\s+instructions?)"
+  },
+  {
+    "reason": "prompt_exfiltration",
+    "regex": "(?i)what\\s+(are|were)\\s+your\\s+(original\\s+)?(instructions?|directives?|rules?|guidelines?)"
+  },
+  {
+    "reason": "prompt_exfiltration",
+    "regex": "(?i)repeat\\s+(everything|all)\\s+(above|before|prior)"
+  },
+  {
+    "reason": "prompt_exfiltration",
+    "regex": "(?i)translate\\s+(the\\s+)?(above|previous|prior)\\s+(text|instructions?|prompt)\\s+to"
+  },
+  {
+    "reason": "encoding_obfuscation",
+    "regex": "(?i)\\bROT[0-9]{1,2}\\b"
+  },
+  {
+    "reason": "encoding_obfuscation",
+    "regex": "(?i)(hex|hexadecimal|octal)\\s+(encoded?|representation)"
+  },
+  {
+    "reason": "delimiter_injection",
+    "regex": "(?i)(---|###|\\[INST\\]|\\[/INST\\]|<\\|im_start\\|>|<\\|im_end\\|>|<\\|system\\|>|<<SYS>>|<</SYS>>)"
+  },
+  {
+    "reason": "token_manipulation",
+    "regex": "(?i)(</?(s|system|human|assistant|user|instruction)>|\\{\\{\\s*(system|user|assistant)\\s*\\}\\})"
+  }
+]

@@ -19,6 +19,7 @@ package org.openidentityplatform.openig.ai;
 import org.forgerock.openig.alias.ClassAliasResolver;
 import org.openidentityplatform.openig.ai.filter.LLMProxyFilter;
 import org.openidentityplatform.openig.ai.filter.MCPServerFeaturesFilter;
+import org.openidentityplatform.openig.ai.filter.PromptGuardFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class AiClassAliasResolver implements ClassAliasResolver {
     static {
         ALIASES.put("LLMProxyFilter", LLMProxyFilter.class);
         ALIASES.put("MCPServerFeaturesFilter", MCPServerFeaturesFilter.class);
+        ALIASES.put("PromptGuardFilter", PromptGuardFilter.class);
     }
 
     @Override

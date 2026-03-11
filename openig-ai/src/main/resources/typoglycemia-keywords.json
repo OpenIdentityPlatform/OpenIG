@@ -1,0 +1,22 @@
+[
+  "ignore", "ignored", "ignoring",
+  "disregard", "disregarded",
+  "forget", "override", "overriding",
+  "instructions", "instruction",
+  "directives", "directive",
+  "guidelines", "guideline",
+  "restrictions", "restriction",
+  "constraints", "constraint",
+  "previous", "prior",
+  "system",
+  "jailbreak", "jailbreaking",
+  "unrestricted",
+  "pretend", "roleplay",
+  "developer",
+  "reveal", "expose", "disclose", "exfiltrate",
+  "extract", "output", "print",
+  "confidential", "secret", "hidden",
+  "prompt",
+  "bypass", "circumvent", "evade", "escape",
+  "unlock", "enable", "activate"
+]
