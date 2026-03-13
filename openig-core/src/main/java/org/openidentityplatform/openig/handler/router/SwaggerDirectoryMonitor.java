@@ -11,24 +11,28 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2014 ForgeRock AS.
- * Portions copyright 2026 3A Systems LLC.
+ * Copyright 2026 3A Systems LLC.
  */
 
-package org.forgerock.openig.handler.router;
+package org.openidentityplatform.openig.handler.router;
 
-/**
- * Notification interface used to react to directory monitoring events.
- *
- * @since 2.2
- */
-public interface FileChangeListener {
+import org.forgerock.openig.handler.router.AbstractDirectoryMonitor;
 
-    /**
-     * Notify that changes has been detected in the monitored directory.
-     *
-     * @param changes
-     *         Content of the change set
-     */
-    void onChanges(FileChangeSet changes);
+import java.io.File;
+import java.io.FileFilter;
+import java.util.HashMap;
+
+public class SwaggerDirectoryMonitor extends AbstractDirectoryMonitor {
+
+    public SwaggerDirectoryMonitor(File routes) {
+        super(routes, new HashMap<>());
+    }
+
+    @Override
+    protected FileFilter getFileFilter() {
+        return path -> path.isFile() &&
+                (path.getName().endsWith(".json")
+                                || path.getName().endsWith(".yaml")
+                                || path.getName().endsWith("*.yml"));
+    }
 }

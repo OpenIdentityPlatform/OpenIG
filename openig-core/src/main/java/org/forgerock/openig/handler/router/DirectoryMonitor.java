@@ -12,12 +12,15 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC
  */
 
 package org.forgerock.openig.handler.router;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static java.util.Arrays.asList;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.forgerock.http.util.Json;
+import org.forgerock.json.JsonValue;
+import org.forgerock.util.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -25,21 +28,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-import org.forgerock.http.util.Json;
-import org.forgerock.json.JsonValue;
-import org.forgerock.util.annotations.VisibleForTesting;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 
 /**
  * A {@link DirectoryMonitor} monitors a given directory. It watches the direct content (changes inside
@@ -56,26 +48,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @see FileChangeListener
  * @since 2.2
  */
-class DirectoryMonitor {
+public class DirectoryMonitor extends AbstractDirectoryMonitor {
 
     private static final ObjectMapper MAPPER;
     static {
         MAPPER = new ObjectMapper().registerModules(new Json.JsonValueModule());
         MAPPER.configure(INDENT_OUTPUT, true);
     }
-
-    /**
-     * Monitored directory.
-     */
-    private final File directory;
-
-    /**
-     * Snapshot of the directory content. It maps the {@link File} to its {@linkplain File#lastModified() last modified}
-     * value. It represents the currently "managed" files.
-     */
-    private final Map<File, Long> snapshot;
-
-    private Lock lock = new ReentrantLock();
 
     /**
      * Builds a new monitor watching for changes in the given {@literal directory} that will notify the given listener.
@@ -85,7 +64,7 @@ class DirectoryMonitor {
      *         a non-{@literal null} directory (it may or may not exists) to monitor
      */
     public DirectoryMonitor(final File directory) {
-        this(directory, new HashMap<File, Long>());
+        super(directory, new HashMap<>());
     }
 
     /**
@@ -97,29 +76,10 @@ class DirectoryMonitor {
      *         initial state of the snapshot
      */
     public DirectoryMonitor(final File directory, final Map<File, Long> snapshot) {
-        this.directory = directory;
-        this.snapshot = snapshot;
+        super(directory, snapshot);
     }
 
-    /**
-     * Monitor the directory and notify the listener.
-     * @param listener the listener to notify about the changes
-     */
-    public void monitor(FileChangeListener listener) {
-        if (lock.tryLock()) {
-            try {
-                FileChangeSet fileChangeSet = createFileChangeSet();
-                if (fileChangeSet.isEmpty()) {
-                    // If there is no change to propagate, simply return
-                    return;
-                }
-                // Invoke listeners
-                listener.onChanges(fileChangeSet);
-            } finally {
-                lock.unlock();
-            }
-        }
-    }
+
 
     /**
      * Returns a snapshot of the changes compared to the previous scan.
@@ -127,65 +87,18 @@ class DirectoryMonitor {
      */
     @VisibleForTesting
     FileChangeSet createFileChangeSet() {
-        // Take a snapshot of the current directory
-        List<File> latest = Collections.emptyList();
-        if (directory.isDirectory()) {
-            latest = new ArrayList<>(asList(directory.listFiles(jsonFiles())));
-        }
-
-        // Detect added files
-        // (in latest but not in known)
-        Set<File> added = new HashSet<>();
-        for (File candidate : new ArrayList<>(latest)) {
-            if (!snapshot.containsKey(candidate)) {
-                added.add(candidate);
-                latest.remove(candidate);
-            }
-        }
-
-        // Detect removed files
-        // (in known but not in latest)
-        Set<File> removed = new HashSet<>();
-        for (File candidate : new ArrayList<>(snapshot.keySet())) {
-            if (!latest.contains(candidate)) {
-                removed.add(candidate);
-                snapshot.remove(candidate);
-            }
-        }
-
-        // Detect modified files
-        // Now, latest and known list should have the same Files inside
-        Set<File> modified = new HashSet<>();
-        for (File candidate : latest) {
-            long lastModified = snapshot.get(candidate);
-            if (lastModified < candidate.lastModified()) {
-                // File has changed since last check
-                modified.add(candidate);
-                snapshot.put(candidate, candidate.lastModified());
-            }
-        }
-
-        // Append the added files to the known list for next processing step
-        for (File file : added) {
-            // Store their last modified value
-            snapshot.put(file, file.lastModified());
-        }
-
-        return new FileChangeSet(directory, added, modified, removed);
+        return super.createFileChangeSet();
     }
+
 
     /**
      * Factory method to be used as a fluent {@link FileFilter} declaration.
      *
      * @return a filter for {@literal .json} files
      */
-    private static FileFilter jsonFiles() {
-        return new FileFilter() {
-            @Override
-            public boolean accept(final File path) {
-                return path.isFile() && path.getName().endsWith(".json");
-            }
-        };
+    @Override
+    protected FileFilter getFileFilter() {
+        return path -> path.isFile() && path.getName().endsWith(".json");
     }
 
     void store(String routeId, JsonValue routeConfig) throws IOException {

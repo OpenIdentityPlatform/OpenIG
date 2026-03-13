@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.handler.router;
@@ -26,7 +27,7 @@ import java.util.Set;
  *
  * @since 2.2
  */
-class FileChangeSet {
+public class FileChangeSet {
 
     /**
      * Scanned directory.

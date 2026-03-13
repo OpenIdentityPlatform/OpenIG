@@ -63,6 +63,7 @@ import org.forgerock.openig.security.TrustManagerHeaplet;
 import org.forgerock.openig.thread.ScheduledExecutorServiceHeaplet;
 import org.openidentityplatform.openig.filter.ICAPFilter;
 import org.openidentityplatform.openig.filter.JwtBuilderFilter;
+import org.openidentityplatform.openig.handler.router.SwaggerRouter;
 import org.openidentityplatform.openig.mq.EmbeddedKafka;
 import org.openidentityplatform.openig.mq.MQ_IBM;
 import org.openidentityplatform.openig.mq.MQ_Kafka;
@@ -112,6 +113,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("SqlAttributesFilter", SqlAttributesFilter.class);
         ALIASES.put("StaticRequestFilter", StaticRequestFilter.class);
         ALIASES.put("StaticResponseHandler", StaticResponseHandler.class);
+        ALIASES.put("SwaggerRouter", SwaggerRouter.class);
         ALIASES.put("SwitchFilter", SwitchFilter.class);
         ALIASES.put("TemporaryStorage", TemporaryStorageHeaplet.class);
         ALIASES.put("ThrottlingFilter", ThrottlingFilterHeaplet.class);
