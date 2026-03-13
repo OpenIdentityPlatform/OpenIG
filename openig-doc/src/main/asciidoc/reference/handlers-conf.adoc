@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -1312,3 +1312,138 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 link:{apidocs-url}/index.html?org/forgerock/openig/handler/StaticResponseHandler.html[org.forgerock.openig.handler.StaticResponseHandler, window=\_blank]
 
 
+[#SwaggerRouter]
+=== SwaggerRouter — validate requests and responses against OpenAPI specifications
+
+[#swagger-router-description]
+==== Description
+
+A `SwaggerRouter` is a handler that validates incoming HTTP requests and outgoing upstream
+responses against one or more OpenAPI (Swagger) specification files loaded from a monitored
+directory.
+
+On each incoming request, every loaded specification is evaluated in turn:
+
+* If the request matches a specification without errors, it is forwarded to the configured
+upstream handler. The upstream response is then validated against the same specification.
+A response that does not conform to the specification is replaced with
+`502 Bad Gateway`.
+
+* If the request matches a path and method defined in a specification but violates that
+specification's constraints (for example, a missing required field, a wrong type, or a
+disallowed value), OpenIG returns `400 Bad Request` without forwarding the request.
+
+* If no loaded specification recognises the request's path or HTTP method, the next
+specification is tried. When all specifications have been exhausted without a match,
+OpenIG returns `404 Not Found`.
+
+Specification files are loaded from a directory that is monitored for changes. Files can be
+added, removed, or modified at runtime without restarting the gateway. The directory is
+rescanned at a configurable interval (default: 10 seconds).
+
+[#swagger-router-usage]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "SwaggerRouter",
+    "config": {
+        "handler":      Handler reference,
+        "directory":    expression,
+        "scanInterval": duration string
+    }
+}
+----
+
+[#swagger-router-properties]
+==== Properties
+--
+
+`"handler"`: __Handler reference, required__::
+The upstream handler to which spec-compliant requests are forwarded.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler
+configuration object.
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"directory"`: __expression, optional__::
+Path to the directory from which OpenAPI specification files (`.yaml` or `.json`) are loaded.
++
+All files present in the directory are loaded as independent validators. A request is matched
+against each validator in turn; the first validator that accepts the request without a
+path-or-method error is used for full validation and dispatch.
++
+Default: `config/swagger` under the OpenIG configuration directory.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"scanInterval"`: __duration string, optional__::
+How often OpenIG rescans the directory for added, modified, or removed specification files,
+expressed as a duration.
++
+include::../partials/sec-duration-description.adoc[]
++
+Set to `0` to perform a single scan at startup and disable periodic rescanning thereafter.
++
+Default: `10 seconds`
+
+--
+
+[#swagger-router-hot-reload]
+==== Hot Reload of Specification Files
+
+The `SwaggerRouter` monitors its configured directory at the interval set by `scanInterval`.
+Changes take effect on the next scan without requiring a restart.
+
+If a specification file cannot be parsed, the error is logged and the file is skipped; all
+other files in the directory continue to serve requests normally.
+
+[#swagger-router-example]
+==== Example
+
+The following object configures a `SwaggerRouter` that loads OpenAPI specifications from
+`/config/swagger`, forwards matching requests to `ClientHandler`, and rescans the directory
+every 2 seconds:
+
+[source, json]
+----
+{
+    "name": "SwaggerRouter",
+    "type": "SwaggerRouter",
+    "config": {
+        "handler": "ClientHandler",
+        "directory": "/config/swagger",
+        "scanInterval": "2 seconds"
+    }
+}
+----
+
+[#swagger-router-errors]
+==== Error Responses
+
+`400 Bad Request`::
+The incoming request was matched to a known path and method in one of the loaded
+specifications, but its body, headers, or query parameters did not satisfy the
+specification's constraints (for example, a required field was absent, a value was of the
+wrong type, or an enum value was not allowed).
++
+The request is rejected without contacting the upstream handler.
+
+`404 Not Found`::
+No loaded specification recognised the request's path or HTTP method. This response is also
+returned when the `directory` is empty or no specification files have been loaded yet.
+
+`500 Internal Server Error`::
+An unexpected I/O error occurred while reading the request body or the upstream response
+body during validation.
+
+`502 Bad Gateway`::
+The upstream handler returned a response whose body, headers, or status code do not conform
+to the matched specification.
+
+[#swagger-router-javadoc]
+==== Javadoc
+link:{apidocs-url}/org/openidentityplatform/openig/handler/router/SwaggerRouter.html[org.openidentityplatform.openig.handler.router.SwaggerRouter, window=\_blank]

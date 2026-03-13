@@ -376,7 +376,7 @@
 							<version>1.0</version>
 							<packaging>js</packaging>
 							<downloadUrl>
-								http://www.eyecon.ro/bootstrap-tabdrop/js/bootstrap-tabdrop.js
+								https://raw.githubusercontent.com/jmschabdach/bootstrap-tabdrop/master/js/bootstrap-tabdrop.js
 							</downloadUrl>
 						</artifactItem>
 						<artifactItem>
