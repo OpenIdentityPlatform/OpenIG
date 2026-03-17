@@ -14,7 +14,7 @@
 
   Copyright 2010-2011 ApexIdentity Inc.
   Portions Copyright 2011-2016 ForgeRock AS.
-  Portions copyright 2025 3A Systems LLC.
+  Portions copyright 2025-2026 3A Systems LLC.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -31,6 +31,7 @@
     <!-- If the binary-licensing profile is activated, we need the ForgeRock license there -->
     <forgerock.license.output.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/legal-notices</forgerock.license.output.dir>
     <maven.cargo.containerId>tomcat10x</maven.cargo.containerId>
+    <test.config.path>${basedir}/target/config</test.config.path>
   </properties>
 
   <dependencies>
@@ -117,6 +118,24 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
+      <dependency>
+          <groupId>io.rest-assured</groupId>
+          <artifactId>rest-assured</artifactId>
+          <version>5.5.7</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.wiremock</groupId>
+          <artifactId>wiremock</artifactId>
+          <version>3.13.2</version>
+          <scope>test</scope>
+      </dependency>
+    <dependency>
       <groupId>org.openidentityplatform.openig</groupId>
       <artifactId>openig-ui</artifactId>
       <version>${project.version}</version>
@@ -173,6 +192,25 @@
           </webResources>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+          <systemProperties>
+            <test.config.path>${test.config.path}</test.config.path>
+          </systemProperties>
+          </configuration>
+          <executions>
+            <execution>
+               <goals>
+                 <goal>integration-test</goal>
+               </goals>
+               <phase>integration-test</phase>
+               <id>integration-test</id>
+            </execution>
+          </executions>
+        </plugin>
 		<plugin>
 			<groupId>org.codehaus.cargo</groupId>
 			<artifactId>cargo-maven3-plugin</artifactId>
@@ -224,6 +262,7 @@
 						<com.iplanet.services.debug.directory />
 						<com.sun.services.debug.mergeall>on</com.sun.services.debug.mergeall>
 						<org.forgerock.openam.slf4j.enableTraceInMessage>true</org.forgerock.openam.slf4j.enableTraceInMessage>
+                        <openig.base>${basedir}/target/config</openig.base>
 					</systemProperties>
 				</container>
 				<deployables>

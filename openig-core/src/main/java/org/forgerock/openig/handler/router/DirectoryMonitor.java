@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC
  */
 
 package org.forgerock.openig.handler.router;
@@ -85,7 +86,7 @@ class DirectoryMonitor {
      *         a non-{@literal null} directory (it may or may not exists) to monitor
      */
     public DirectoryMonitor(final File directory) {
-        this(directory, new HashMap<File, Long>());
+        this(directory, new HashMap<>());
     }
 
     /**
@@ -177,15 +178,14 @@ class DirectoryMonitor {
     /**
      * Factory method to be used as a fluent {@link FileFilter} declaration.
      *
-     * @return a filter for {@literal .json} files
+     * @return a filter for {@literal .json and .yaml} files
      */
     private static FileFilter jsonFiles() {
-        return new FileFilter() {
-            @Override
-            public boolean accept(final File path) {
-                return path.isFile() && path.getName().endsWith(".json");
-            }
-        };
+        return path -> path.isFile() && (
+                path.getName().endsWith(".json")
+                        || path.getName().endsWith(".yaml")
+                        || path.getName().endsWith(".yml")
+        );
     }
 
     void store(String routeId, JsonValue routeConfig) throws IOException {

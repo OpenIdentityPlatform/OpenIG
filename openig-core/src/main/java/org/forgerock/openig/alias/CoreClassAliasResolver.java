@@ -36,6 +36,7 @@ import org.forgerock.openig.filter.FileAttributesFilter;
 import org.forgerock.openig.filter.HeaderFilter;
 import org.forgerock.openig.filter.HttpBasicAuthFilter;
 import org.forgerock.openig.filter.LocationHeaderFilter;
+import org.forgerock.openig.filter.OpenApiValidationFilter;
 import org.forgerock.openig.filter.PasswordReplayFilterHeaplet;
 import org.forgerock.openig.filter.ScriptableFilter;
 import org.forgerock.openig.filter.SqlAttributesFilter;
@@ -101,6 +102,7 @@ public class CoreClassAliasResolver implements ClassAliasResolver {
         ALIASES.put("KeyStore", KeyStoreHeaplet.class);
         ALIASES.put("LocationHeaderFilter", LocationHeaderFilter.class);
         ALIASES.put("MappedThrottlingPolicy", MappedThrottlingPolicyHeaplet.class);
+        ALIASES.put("OpenApiValidationFilter", OpenApiValidationFilter.class);
         ALIASES.put("PasswordReplayFilter", PasswordReplayFilterHeaplet.class);
         ALIASES.put("Router", RouterHandler.class);
         ALIASES.put("RouterHandler", RouterHandler.class);

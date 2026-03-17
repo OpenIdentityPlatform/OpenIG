@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC
  */
 
 package org.forgerock.openig.handler.router;
@@ -38,8 +39,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +50,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -112,6 +116,18 @@ public class RouterHandler implements FileChangeListener, Handler {
      */
     private final DirectoryMonitor directoryMonitor;
 
+
+    /** Detects and parses OpenAPI spec files from the routes directory. */
+    private final OpenApiSpecLoader openApiSpecLoader;
+
+    /** Converts a parsed {@link OpenAPI} model into an OpenIG route {@link JsonValue}. */
+    private final OpenApiRouteBuilder openApiRouteBuilder;
+
+    /**
+     * Maps each OpenAPI spec {@link File} to the route ID that was generated for it.
+     */
+    private final Map<File, String> openApiRouteIds = new ConcurrentHashMap<>();
+
     /**
      * Keep track of managed routes.
      */
@@ -144,11 +160,19 @@ public class RouterHandler implements FileChangeListener, Handler {
      * @param directoryMonitor the directory monitor
      */
     public RouterHandler(final RouteBuilder builder, final DirectoryMonitor directoryMonitor) {
+        this(builder, directoryMonitor, new OpenApiSpecLoader(), new OpenApiRouteBuilder());
+    }
+
+    protected RouterHandler(final RouteBuilder builder, final DirectoryMonitor directoryMonitor,
+                            final OpenApiSpecLoader openApiSpecLoader, OpenApiRouteBuilder openApiRouteBuilder) {
         this.builder = builder;
         this.directoryMonitor = directoryMonitor;
         ReadWriteLock lock = new ReentrantReadWriteLock();
         this.read = lock.readLock();
         this.write = lock.writeLock();
+
+        this.openApiSpecLoader = openApiSpecLoader;
+        this.openApiRouteBuilder = openApiRouteBuilder;
     }
 
     /**
@@ -392,6 +416,41 @@ public class RouterHandler implements FileChangeListener, Handler {
     }
 
     private void onAddedFile(File file) {
+        if(openApiSpecLoader.isOpenApiFile(file)) {
+            loadOpenApiSpec(file);
+        } else {
+            loadRouteFile(file);
+        }
+    }
+
+    /**
+     * Synthesises and loads a route from an OpenAPI spec file.
+     * If a route was previously loaded from the same spec file (e.g. on a hot-reload),
+     * the old route is unloaded first.
+     */
+    private void loadOpenApiSpec(final File specFile) {
+        logger.info("Loading OpenAPI spec file: {}", specFile.getName());
+        final Optional<OpenAPI> specOpt = openApiSpecLoader.tryLoad(specFile);
+        if (specOpt.isEmpty()) {
+            logger.warn("Skipping OpenAPI spec {} – could not be parsed", specFile.getName());
+            return;
+        }
+
+        final JsonValue routeJson = openApiRouteBuilder.buildRouteJson(specOpt.get(), specFile);
+        final String routeId   = routeJson.get("name").asString();
+        final String routeName = routeId;
+
+        try {
+            load(routeId, routeName, routeJson);
+            openApiRouteIds.put(specFile, routeId);
+            logger.info("OpenAPI route '{}' loaded successfully from {}", routeId, specFile.getName());
+        } catch (Exception e) {
+            logger.error("Failed to load route for OpenAPI spec {}: {}",
+                    specFile.getName(), e.getMessage(), e);
+        }
+    }
+
+    private void loadRouteFile(File file) {
         try {
             JsonValue routeConfig = readJson(file.toURI().toURL());
             String routeId = routeId(file);
@@ -406,9 +465,16 @@ public class RouterHandler implements FileChangeListener, Handler {
 
     private void onRemovedFile(File file) {
         try {
-            unload(routeId(file));
+            final String routeId;
+            if (openApiRouteIds.containsKey(file)) {
+                routeId = openApiRouteIds.remove(file);
+                logger.info("OpenAPI spec removed: {}; unloading route '{}'", file.getName(), routeId);
+            } else {
+                routeId = routeId(file);
+                logger.info("Route file removed: {}; unloading route '{}'", file.getName(), routeId);
+            }
+            unload(routeId);
         } catch (RouterHandlerException e) {
-            // No route with id routeId was found. Just ignore.
             logger.warn("The file '{}' has not been loaded yet, removal ignored.", file, e);
         }
     }

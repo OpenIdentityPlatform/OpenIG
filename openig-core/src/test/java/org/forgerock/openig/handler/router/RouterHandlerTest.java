@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems LLC
  */
 
 package org.forgerock.openig.handler.router;
@@ -28,6 +29,7 @@ import static org.forgerock.openig.http.RunMode.PRODUCTION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -36,11 +38,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import org.assertj.core.api.iterable.Extractor;
 import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
@@ -79,6 +85,15 @@ public class RouterHandlerTest {
 
     @Mock
     private Logger logger;
+
+    @Mock
+    private OpenApiSpecLoader mockSpecLoader;
+
+    @Mock
+    private OpenApiRouteBuilder mockOpenApiRouteBuilder;
+
+    @Mock
+    private RouteBuilder mockRouteBuilder;
 
     private File routes;
 
@@ -295,6 +310,80 @@ public class RouterHandlerTest {
         verifyNoMoreInteractions(scheduledExecutorService);
     }
 
+    // OpenAPI tests
+
+    @Test
+    public void onChanges_deploysRoute_whenOpenApiSpecFileIsAdded() throws Exception {
+        final File tmpDir = mock(File.class);
+        final File specFile = mock(File.class);
+        final OpenAPI fakeSpec = new OpenAPI();
+        final JsonValue routeJson = buildFakeRouteJson("petstore");
+        final Route mockRoute     = mockRoute("petstore");
+
+        when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
+        when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile)).thenReturn(routeJson);
+        when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
+
+        RouterHandler handler = new RouterHandler(
+                mockRouteBuilder,
+                new DirectoryMonitor(routes),
+                mockSpecLoader,
+                mockOpenApiRouteBuilder);
+        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(specFile), Set.of(), Set.of());
+        handler.onChanges(fileChangeSet);
+
+        verify(mockSpecLoader).tryLoad(specFile);
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile);
+        verify(mockRouteBuilder).build(any(), any(), any());
+    }
+
+    @Test
+    public void onChanges_doesNotDeployRoute_whenSpecFileFails() throws Exception {
+        final File tmpDir = mock(File.class);
+        final File brokenSpecFile = mock(File.class);
+
+        when(mockSpecLoader.isOpenApiFile(brokenSpecFile)).thenReturn(true);
+        when(mockSpecLoader.tryLoad(brokenSpecFile)).thenReturn(Optional.empty());
+
+        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(brokenSpecFile), Set.of(), Set.of());
+        RouterHandler handler = new RouterHandler(
+                mockRouteBuilder,
+                new DirectoryMonitor(routes),
+                mockSpecLoader,
+                mockOpenApiRouteBuilder);
+        handler.onChanges(fileChangeSet);
+
+        verify(mockRouteBuilder, never()).build(any(), any(), any());
+    }
+
+    @Test
+    public void stop_destroysAllRoutes() throws Exception {
+        final File tmpDir = mock(File.class);
+        final File specFile = mock(File.class);
+        final OpenAPI fakeSpec  = new OpenAPI();
+        final JsonValue routeJson = buildFakeRouteJson("petstore");
+        final Route mockRoute     = mockRoute("petstore");
+
+        DirectoryMonitor directoryMonitor = new DirectoryMonitor(routes);
+
+        when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
+        when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile)).thenReturn(routeJson);
+        when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
+        RouterHandler handler = new RouterHandler(
+                mockRouteBuilder,
+                directoryMonitor,
+                mockSpecLoader,
+                mockOpenApiRouteBuilder);
+
+        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(specFile), Set.of(), Set.of());
+        handler.onChanges(fileChangeSet);
+        handler.stop();
+
+        verify(mockRoute).destroy();
+    }
+
     private void assertStatusOnUri(Handler router, String uri, Status expected)
             throws URISyntaxException, ExecutionException, InterruptedException {
         Request ping = new Request().setMethod("GET");
@@ -323,5 +412,23 @@ public class RouterHandlerTest {
     private static File endpointsDirectory() throws IOException {
         return getRelativeDirectory(RouteBuilderTest.class, "endpoints");
     }
+
+    private static JsonValue buildFakeRouteJson(final String name) {
+        return JsonValue.json(JsonValue.object(
+                JsonValue.field("name", name),
+                JsonValue.field("handler", JsonValue.object(
+                        JsonValue.field("type", "Chain"),
+                        JsonValue.field("config", JsonValue.object(
+                                JsonValue.field("filters", List.of()),
+                                JsonValue.field("handler", "ClientHandler")))))));
+    }
+
+    private static Route mockRoute(final String id) {
+        final Route r = mock(Route.class);
+        when(r.getId()).thenReturn(id);
+        when(r.accept(any(), any())).thenReturn(false);
+        return r;
+    }
+
 
 }
