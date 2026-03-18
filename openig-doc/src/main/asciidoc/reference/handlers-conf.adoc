@@ -680,6 +680,33 @@ A Router is a handler that routes request processing to separate configuration f
 
 The Router reloads configuration files for Routes from the specified directory at the specified scan interval.
 
+*OpenAPI spec auto-loading*
+
+In addition to regular route JSON files, the Router automatically detects
+OpenAPI specification files (Swagger 2.x or OpenAPI 3.x) placed in the same
+routes directory. Supported file extensions are `.json`, `.yaml`, and `.yml`.
+A file is recognised as an OpenAPI spec when its root document contains an
+`openapi` or `swagger` key.
+
+When such a file is detected, the Router:
+
+. Parses the specification using the Swagger Parser library.
+. Synthesises a complete route configuration whose condition matches every
+  `(path, HTTP method)` pair declared in the spec.
+  Path parameter placeholders such as `{userId}` are converted to the regex
+  `[^/]+` so they match any non-slash path segment.
+. Wires an `OpenApiValidationFilter` into the route chain to validate all
+  inbound requests and outbound responses against the spec.
+. Sets the `baseURI` to `servers[0].url` when the spec declares a server URL.
+. Hot-reloads the route whenever the spec file changes on disk.
+. Undeploys the route when the spec file is removed.
+
+Normal `.json` route configuration files that do not contain an `openapi` or
+`swagger` root key continue to be processed as before.
+
+For details about the validation filter that is added to synthesised routes, see
+xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter(5)].
+
 [#d210e3569]
 ==== Usage
 
@@ -691,11 +718,14 @@ The Router reloads configuration files for Routes from the specified directory a
     "config": {
         "defaultHandler": Handler reference,
         "directory": expression,
-        "scanInterval": integer
+        "scanInterval": integer,
+        "openApiValidation": {
+            "failOnResponseViolation": boolean
+        }
     }
 }
 ----
-An alternative value for type is RouterHandler.
+An alternative value for type is `RouterHandler`.
 
 [#d210e3577]
 ==== Properties
@@ -739,11 +769,41 @@ Default: 10 (seconds)
 +
 To prevent OpenIG from reloading Route configurations after you except at startup, set the scan interval to -1.
 
+`"openApiValidation"`: __object, optional__::
+Controls the automatic detection of OpenAPI specification files and the
+behaviour of the `OpenApiValidationFilter` instances that are synthesised for
+each detected spec.
++
+[open]
+====
+`"enabled"`: __boolean, optional__::
+Whether to enable automatic detection and loading of OpenAPI specification
+files from the routes directory.
++
+When set to `false`, the Router ignores `.yaml`, `.yml`, and spec-like `.json`
+files and only processes regular route JSON configurations.
++
+Default: `true`.
+
+`"failOnResponseViolation"`: __boolean, optional__::
+Passed to every `OpenApiValidationFilter` instance that is created automatically
+from a detected spec file.
++
+* `true` — a response that does not conform to the spec causes the filter to
+  return a `502 Bad Gateway` error to the client.
+* `false` — a response violation is logged at `WARN` level and the original
+  response is passed through unchanged.
+This setting applies only to auto-generated routes. Routes that declare an
+`OpenApiValidationFilter` manually in their heap control this flag themselves.
+
++
+Default: `false`.
+
 --
 
 [#d210e3636]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
+link:{apidocs-url}org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
 
 '''
 [#SamlFederationHandler]

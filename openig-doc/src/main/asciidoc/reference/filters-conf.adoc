@@ -1595,6 +1595,123 @@ link:http://tools.ietf.org/html/rfc6749[The OAuth 2.0 Authorization Framework, w
 link:http://tools.ietf.org/html/rfc6750[OAuth 2.0 Bearer Token Usage, window=\_blank]
 
 '''
+
+[#OpenApiValidationFilter]
+=== OpenApiValidationFilter — validate requests and responses against an OpenAPI specification
+
+[#OpenApiValidationFilter-description]
+==== Description
+
+Validates inbound HTTP requests and outbound HTTP responses against an
+https://spec.openapis.org/oas/latest.html[OpenAPI, window=_blank]
+specification (Swagger 2.x or OpenAPI 3.x)
+
+*Request validation*
+
+Before forwarding a request to the next filter or handler in the chain,
+the filter validates the request's path, HTTP method, query parameters, headers,
+and body against the specification. If validation fails, the filter returns a
+`400 Bad Request` response immediately. The downstream handler is not called.
+The response body is `text/plain` and contains one validation message per line.
+
+*Response validation*
+
+After the downstream handler returns a response, the filter validates the response
+status code, headers, and body against the specification. Behaviour on failure is
+controlled by the `failOnResponseViolation` configuration property:
+
+* `true` — the filter returns a `502 Bad Gateway` response containing the
+validation messages.
+* `false` (default) — the violation is logged at `WARN` level and the original
+response is passed through unchanged.
+
+*Auto-loading from the routes directory*
+
+In addition to being declared manually in a route heap, this filter is used
+automatically when a `RouterHandler` detects an OpenAPI spec file
+(`.yaml`, `.yml`, or `.json`) in the routes directory.
+See xref:handlers-conf.adoc#Router[Router(5)] for details.
+
+==== Usage
+
+[source, json]
+----
+{
+    "name": string,
+    "type": "OpenApiValidationFilter",
+    "config": {
+        "spec": expression, string
+        "failOnResponseViolation": expression, boolean
+    }
+}
+----
+
+==== Properties
+--
+
+`"spec"`: __expression, string, required__::
+The OpenAPI specification contents.
+Both JSON and YAML formats are supported.
+The specification may describe a Swagger 2.x (`swagger: "2.0"`) or an
+OpenAPI 3.x (`openapi: "3.x.y"`) API.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"failOnResponseViolation"`: __boolean, optional__::
+Controls the behaviour when response validation fails.
++
+* `true` — return a `502 Bad Gateway` error response.
+* `false` — log a warning at `WARN` level and pass the original response through.
++
+Default: `false`.
+--
+
+==== Example
+
+The following route validates all requests to `/api` against a local
+OpenAPI specification and forwards them to the upstream service.
+Response violations are logged as warnings but do not block the response.
+
+[source, json]
+----
+{
+    "name": "api-route",
+    "condition": "${matches(request.uri.path, '^/api(/.*)?$')}",
+    "heap": [
+        {
+            "name": "ApiValidator",
+            "type": "OpenApiValidationFilter",
+            "config": {
+                "spec": "${read('/opt/openig/config/routes/api.yaml')}",
+                "failOnResponseViolation": false
+            }
+        }
+    ],
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [ "ApiValidator" ],
+            "handler": "ClientHandler"
+        }
+    },
+    "baseURI": "https://api.example.com"
+}
+----
+==== Javadoc
+link:{apidocs-url}/org/forgerock/openig/filter/OpenApiValidationFilter.html[org.forgerock.openig.filter.OpenApiValidationFilter, window=\_blank]
+
+==== See Also
+
+xref:handlers-conf.adoc#Router[Router(5)]
+
+xref:expressions-conf.adoc#Expressions[Expressions(5)]
+
+https://spec.openapis.org/oas/latest.html[OpenAPI Specification, window=_blank]
+
+https://swagger.io/specification/v2/[Swagger 2.0 Specification, window=_blank]
+
+'''
+
 [#PasswordReplayFilter]
 === PasswordReplayFilter — replay credentials with a single filter
 

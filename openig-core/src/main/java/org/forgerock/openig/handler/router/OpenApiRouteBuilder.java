@@ -67,22 +67,27 @@ public class OpenApiRouteBuilder {
      * @param spec     the parsed OpenAPI model
      * @param specFile the original spec file on disk (used for the validator config and as a
      *                 fallback route name)
+     * @param failOnResponseViolation if {@code true}, the generated
+     *                                {@code OpenApiValidationFilter} will return
+     *                                {@code 502 Bad Gateway} when a response violates the spec;
+     *                                if {@code false} (default), violations are only logged
      * @return a {@link JsonValue} that can be passed directly to the {@code RouterHandler}'s
      *         internal route-loading mechanism
      */
 
-    public JsonValue buildRouteJson(final OpenAPI spec, final File specFile) {
+    public JsonValue buildRouteJson(final OpenAPI spec, final File specFile, boolean failOnResponseViolation) {
         final String routeName = deriveRouteName(spec, specFile);
         final String condition = buildConditionExpression(spec);
         final String baseUri   = extractBaseUri(spec);
 
-        logger.info("Building OpenAPI route '{}' from spec file '{}' (condition: {}, baseUri: {})",
-                routeName, specFile.getName(), condition, baseUri != null ? baseUri : "<none>");
+        logger.info("Building OpenAPI route '{}' from spec file '{}' (condition: {}, baseUri: {}, failOnResponseViolation: {})",
+                routeName, specFile.getName(), condition, baseUri != null ? baseUri : "<none>", failOnResponseViolation);
+
 
         // ----- heap: one OpenApiValidationFilter entry -----
         final Map<String, Object> validatorConfig = new LinkedHashMap<>();
         validatorConfig.put("spec", "${read('" + specFile.getAbsolutePath() + "')}");
-        validatorConfig.put("failOnResponseViolation", false);
+        validatorConfig.put("failOnResponseViolation", failOnResponseViolation);
 
         final Map<String, Object> validatorHeapObject = new LinkedHashMap<>();
         validatorHeapObject.put("name", VALIDATOR_HEAP_NAME);
@@ -108,8 +113,6 @@ public class OpenApiRouteBuilder {
 
         // Apply baseURI decorator when the spec declares a server URL
         if (baseUri != null) {
-            final Map<String, Object> decoratorMap = new LinkedHashMap<>();
-            decoratorMap.put("baseURI", baseUri);
             routeMap.put("baseURI", baseUri);
         }
 

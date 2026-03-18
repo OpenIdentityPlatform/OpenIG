@@ -19,6 +19,7 @@ package org.forgerock.openig.handler.router;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.json.JsonValueFunctions.file;
 import static org.forgerock.json.resource.Resources.newHandler;
@@ -86,6 +87,10 @@ import org.slf4j.LoggerFactory;
  *       "directory": "/tmp/routes",
  *       "defaultHandler": "404NotFound",
  *       "scanInterval": 2 or "2 seconds"
+ *       "openApiValidation": {
+ *           "enabled": true,
+ *           "failOnResponseViolation": false
+ *       }
  *     }
  *   }
  *   }
@@ -99,6 +104,9 @@ import org.slf4j.LoggerFactory;
  *     synchronously.</li>
  * </ul>
  * In both cases, the default value is 10 seconds.
+ * <br/>
+ * <p>In addition to regular route JSON files, this handler now also recognises OpenAPI spec files
+ * ({@code .json}, {@code .yaml}, {@code .yml}) dropped into the same routes directory.
  *
  * @since 2.2
  */
@@ -122,6 +130,8 @@ public class RouterHandler implements FileChangeListener, Handler {
 
     /** Converts a parsed {@link OpenAPI} model into an OpenIG route {@link JsonValue}. */
     private final OpenApiRouteBuilder openApiRouteBuilder;
+
+    private final OpenApiValidationSettings openApiValidationSettings;
 
     /**
      * Maps each OpenAPI spec {@link File} to the route ID that was generated for it.
@@ -160,11 +170,12 @@ public class RouterHandler implements FileChangeListener, Handler {
      * @param directoryMonitor the directory monitor
      */
     public RouterHandler(final RouteBuilder builder, final DirectoryMonitor directoryMonitor) {
-        this(builder, directoryMonitor, new OpenApiSpecLoader(), new OpenApiRouteBuilder());
+        this(builder, directoryMonitor, new OpenApiSpecLoader(), new OpenApiRouteBuilder(), new OpenApiValidationSettings());
     }
 
     protected RouterHandler(final RouteBuilder builder, final DirectoryMonitor directoryMonitor,
-                            final OpenApiSpecLoader openApiSpecLoader, OpenApiRouteBuilder openApiRouteBuilder) {
+                            final OpenApiSpecLoader openApiSpecLoader, OpenApiRouteBuilder openApiRouteBuilder,
+                            final OpenApiValidationSettings openApiValidationSettings) {
         this.builder = builder;
         this.directoryMonitor = directoryMonitor;
         ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -173,6 +184,7 @@ public class RouterHandler implements FileChangeListener, Handler {
 
         this.openApiSpecLoader = openApiSpecLoader;
         this.openApiRouteBuilder = openApiRouteBuilder;
+        this.openApiValidationSettings = openApiValidationSettings;
     }
 
     /**
@@ -329,12 +341,7 @@ public class RouterHandler implements FileChangeListener, Handler {
                 logger.info("Unloaded the route with id '{}'", routeId);
             }
 
-            Iterator<Route> iterator = sorted.iterator();
-            while (iterator.hasNext()) {
-                if (removedRoute == iterator.next()) {
-                    iterator.remove();
-                }
-            }
+            sorted.removeIf(route -> removedRoute == route);
             return removedRoute.getConfig();
         } finally {
             write.unlock();
@@ -416,7 +423,7 @@ public class RouterHandler implements FileChangeListener, Handler {
     }
 
     private void onAddedFile(File file) {
-        if(openApiSpecLoader.isOpenApiFile(file)) {
+        if(openApiValidationSettings.enabled && openApiSpecLoader.isOpenApiFile(file)) {
             loadOpenApiSpec(file);
         } else {
             loadRouteFile(file);
@@ -436,12 +443,12 @@ public class RouterHandler implements FileChangeListener, Handler {
             return;
         }
 
-        final JsonValue routeJson = openApiRouteBuilder.buildRouteJson(specOpt.get(), specFile);
+        final JsonValue routeJson = openApiRouteBuilder.buildRouteJson(
+                specOpt.get(), specFile, openApiValidationSettings.failOnResponseViolation);
         final String routeId   = routeJson.get("name").asString();
-        final String routeName = routeId;
 
         try {
-            load(routeId, routeName, routeJson);
+            load(routeId, routeId, routeJson);
             openApiRouteIds.put(specFile, routeId);
             logger.info("OpenAPI route '{}' loaded successfully from {}", routeId, specFile.getName());
         } catch (Exception e) {
@@ -513,10 +520,21 @@ public class RouterHandler implements FileChangeListener, Handler {
             this.scanInterval = scanInterval();
 
             EndpointRegistry registry = endpointRegistry();
-            RouterHandler handler = new RouterHandler(new RouteBuilder((HeapImpl) heap,
-                                                                       qualified,
-                                                                       registry),
-                                                      directoryMonitor);
+
+            final JsonValue oaConfig = config.get("openApiValidation").defaultTo(object());
+            final boolean openApiEnabled = oaConfig.get("enabled").defaultTo(true).asBoolean();
+            final boolean failOnResponseViolation = oaConfig.get("failOnResponseViolation")
+                    .defaultTo(false).asBoolean();
+            final OpenApiValidationSettings openApiValidationSettings =
+                    new OpenApiValidationSettings(openApiEnabled, failOnResponseViolation);
+
+            final RouteBuilder routeBuilder = new RouteBuilder((HeapImpl) heap, qualified, registry);
+
+            final OpenApiSpecLoader openApiSpecLoader = openApiEnabled ? new OpenApiSpecLoader() : new DisabledOpenApiSpecLoader();
+
+            RouterHandler handler = new RouterHandler(routeBuilder, directoryMonitor, openApiSpecLoader,
+                    new OpenApiRouteBuilder(), openApiValidationSettings);
+
             handler.setDefaultHandler(config.get("defaultHandler").as(optionalHeapObject(heap, Handler.class)));
 
             RunMode mode = heap.get(RUNMODE_HEAP_KEY, RunMode.class);
@@ -528,6 +546,9 @@ public class RouterHandler implements FileChangeListener, Handler {
                                                                                     "frapi:openig:router-handler")));
                 logger.info("Routes endpoint available at '{}'", registration.getPath());
             }
+
+
+
             return handler;
         }
 
@@ -557,14 +578,11 @@ public class RouterHandler implements FileChangeListener, Handler {
 
         @Override
         public void start() throws HeapException {
-            Runnable command = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        directoryMonitor.monitor((RouterHandler) object);
-                    } catch (Exception e) {
-                        logger.error("An error occurred while scanning the directory", e);
-                    }
+            Runnable command = () -> {
+                try {
+                    directoryMonitor.monitor((RouterHandler) object);
+                } catch (Exception e) {
+                    logger.error("An error occurred while scanning the directory", e);
                 }
             };
 
@@ -597,4 +615,39 @@ public class RouterHandler implements FileChangeListener, Handler {
             super.destroy();
         }
     }
+
+    public static final class OpenApiValidationSettings {
+
+        public final boolean enabled;
+
+        public final boolean failOnResponseViolation;
+
+
+        public OpenApiValidationSettings(final boolean enabled,
+                                         final boolean failOnResponseViolation) {
+            this.enabled                 = enabled;
+            this.failOnResponseViolation = failOnResponseViolation;
+        }
+
+        public OpenApiValidationSettings() {
+            this(true, false);
+        }
+    }
+
+    /**
+     * A no-op {@link OpenApiSpecLoader} that never matches any file.
+     * Used when OpenAPI validation is disabled in the heaplet config.
+     */
+    private static class DisabledOpenApiSpecLoader extends OpenApiSpecLoader {
+        @Override
+        public boolean isOpenApiFile(final File file) {
+            return false;
+        }
+
+        @Override
+        public Optional<OpenAPI> tryLoad(final File file) {
+            return Optional.empty();
+        }
+    }
+
 }

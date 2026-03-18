@@ -27,6 +27,7 @@ import static org.forgerock.openig.heap.HeapUtilsTest.buildDefaultHeap;
 import static org.forgerock.openig.http.RunMode.EVALUATION;
 import static org.forgerock.openig.http.RunMode.PRODUCTION;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,7 +73,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@SuppressWarnings("javadoc")
 public class RouterHandlerTest {
 
     private HeapImpl heap;
@@ -314,7 +314,6 @@ public class RouterHandlerTest {
 
     @Test
     public void onChanges_deploysRoute_whenOpenApiSpecFileIsAdded() throws Exception {
-        final File tmpDir = mock(File.class);
         final File specFile = mock(File.class);
         final OpenAPI fakeSpec = new OpenAPI();
         final JsonValue routeJson = buildFakeRouteJson("petstore");
@@ -322,66 +321,166 @@ public class RouterHandlerTest {
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile)).thenReturn(routeJson);
+        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean())).thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
 
-        RouterHandler handler = new RouterHandler(
-                mockRouteBuilder,
-                new DirectoryMonitor(routes),
-                mockSpecLoader,
-                mockOpenApiRouteBuilder);
-        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(specFile), Set.of(), Set.of());
-        handler.onChanges(fileChangeSet);
+        RouterHandler handler = newHandler();
+        handler.onChanges(addedChangeSet(specFile));
 
         verify(mockSpecLoader).tryLoad(specFile);
-        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile);
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false);
         verify(mockRouteBuilder).build(any(), any(), any());
     }
 
     @Test
     public void onChanges_doesNotDeployRoute_whenSpecFileFails() throws Exception {
-        final File tmpDir = mock(File.class);
+
         final File brokenSpecFile = mock(File.class);
 
         when(mockSpecLoader.isOpenApiFile(brokenSpecFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(brokenSpecFile)).thenReturn(Optional.empty());
 
-        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(brokenSpecFile), Set.of(), Set.of());
-        RouterHandler handler = new RouterHandler(
-                mockRouteBuilder,
-                new DirectoryMonitor(routes),
-                mockSpecLoader,
-                mockOpenApiRouteBuilder);
-        handler.onChanges(fileChangeSet);
+        RouterHandler handler = newHandler();
+        handler.onChanges(addedChangeSet(brokenSpecFile));
 
         verify(mockRouteBuilder, never()).build(any(), any(), any());
     }
 
     @Test
     public void stop_destroysAllRoutes() throws Exception {
-        final File tmpDir = mock(File.class);
         final File specFile = mock(File.class);
         final OpenAPI fakeSpec  = new OpenAPI();
         final JsonValue routeJson = buildFakeRouteJson("petstore");
-        final Route mockRoute     = mockRoute("petstore");
-
-        DirectoryMonitor directoryMonitor = new DirectoryMonitor(routes);
+        final Route mockRoute = mockRoute("petstore");
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile)).thenReturn(routeJson);
+        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean())).thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
-        RouterHandler handler = new RouterHandler(
-                mockRouteBuilder,
-                directoryMonitor,
-                mockSpecLoader,
-                mockOpenApiRouteBuilder);
 
-        FileChangeSet fileChangeSet = new FileChangeSet(tmpDir,  Set.of(specFile), Set.of(), Set.of());
-        handler.onChanges(fileChangeSet);
+        RouterHandler handler = newHandler();
+
+        handler.onChanges(addedChangeSet(specFile));
         handler.stop();
 
         verify(mockRoute).destroy();
+    }
+
+    @Test
+    public void onChanges_ignoresOpenApiSpecFile_whenEnabledIsFalse() throws Exception {
+
+        RouterHandler handler = handlerWith(new RouterHandler.OpenApiValidationSettings(false, false));
+
+        final File specFile = mock(File.class);
+
+        // Even if the loader would recognise the file, the handler must skip it
+        when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
+
+        handler.onChanges(addedChangeSet(specFile));
+
+        // Neither the loader nor the route builder should have been consulted
+        verify(mockSpecLoader, never()).tryLoad(any());
+        verify(mockOpenApiRouteBuilder, never()).buildRouteJson(any(), any(), any(Boolean.class));
+        verify(mockRouteBuilder, never()).build(any(), any(), any());
+    }
+
+    @Test
+    public void buildRouteJson_isCalledWithFalse_whenFailOnResponseViolationIsFalse()
+            throws Exception {
+        final RouterHandler strictHandler = handlerWith(
+                new RouterHandler.OpenApiValidationSettings(true, false));
+        final File specFile       = mock(File.class);
+        final OpenAPI fakeSpec    = new OpenAPI();
+        final JsonValue routeJson = buildFakeRouteJson("api");
+        final Route mockRoute     = mockRoute("api");
+
+        when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
+        when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, false))
+                .thenReturn(routeJson);
+        when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
+
+
+        strictHandler.onChanges(addedChangeSet(specFile));
+
+        // Must be called with failOnResponseViolation=false
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false);
+    }
+
+    @Test
+    public void buildRouteJson_isCalledWithTrue_whenFailOnResponseViolationIsTrue()
+            throws Exception {
+        final RouterHandler strictHandler = handlerWith(
+                new RouterHandler.OpenApiValidationSettings(true, true));
+        final File specFile       = mock(File.class);
+        final OpenAPI fakeSpec    = new OpenAPI();
+        final JsonValue routeJson = buildFakeRouteJson("api");
+        final Route mockRoute     = mockRoute("api");
+
+        when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
+        when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, true))
+                .thenReturn(routeJson);
+        when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
+
+        strictHandler.onChanges(addedChangeSet(specFile));
+
+        // Must be called with failOnResponseViolation=true
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, true);
+    }
+
+    @Test
+    public void openApiValidationSettings_failOnResponseViolation_defaultsToFalse() {
+        final RouterHandler.OpenApiValidationSettings settings =
+                new RouterHandler.OpenApiValidationSettings();
+        assertThat(settings.failOnResponseViolation).isFalse();
+    }
+
+    @Test
+    public void generatedRouteJson_containsFalse_whenFailOnResponseViolationIsFalse()
+            throws Exception {
+        // End-to-end: use the real OpenApiRouteBuilder to check the JSON it produces
+        final OpenApiRouteBuilder realBuilder = new OpenApiRouteBuilder();
+        final File specFile = mock(File.class);
+        // Minimal parsed spec with one path
+        final io.swagger.v3.oas.models.OpenAPI spec = new io.swagger.v3.oas.models.OpenAPI();
+        spec.setInfo(new io.swagger.v3.oas.models.info.Info().title("Test").version("1"));
+        spec.setPaths(new io.swagger.v3.oas.models.Paths());
+
+        final JsonValue routeJson = realBuilder.buildRouteJson(spec, specFile, false);
+
+        final java.util.List<Object> heap = routeJson.get("heap").asList();
+        final java.util.Map<?, ?> validatorEntry = heap.stream()
+                .filter(o -> o instanceof java.util.Map)
+                .map(o -> (java.util.Map<?, ?>) o)
+                .filter(m -> "OpenApiValidationFilter".equals(m.get("type")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No OpenApiValidationFilter in heap"));
+
+        final java.util.Map<?, ?> cfg = (java.util.Map<?, ?>) validatorEntry.get("config");
+        assertThat(cfg.get("failOnResponseViolation")).isEqualTo(false);
+    }
+
+    @Test
+    public void generatedRouteJson_containsTrue_whenFailOnResponseViolationIsTrue()
+            throws Exception {
+        final OpenApiRouteBuilder realBuilder = new OpenApiRouteBuilder();
+        final File specFile = mock(File.class);
+        final io.swagger.v3.oas.models.OpenAPI spec = new io.swagger.v3.oas.models.OpenAPI();
+        spec.setInfo(new io.swagger.v3.oas.models.info.Info().title("Test").version("1"));
+        spec.setPaths(new io.swagger.v3.oas.models.Paths());
+
+        final JsonValue routeJson = realBuilder.buildRouteJson(spec, specFile, true);
+
+        final java.util.Map<?, ?> validatorEntry = routeJson.get("heap").asList().stream()
+                .filter(o -> o instanceof java.util.Map)
+                .map(o -> (java.util.Map<?, ?>) o)
+                .filter(m -> "OpenApiValidationFilter".equals(m.get("type")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No OpenApiValidationFilter in heap"));
+
+        final java.util.Map<?, ?> cfg = (java.util.Map<?, ?>) validatorEntry.get("config");
+        assertThat(cfg.get("failOnResponseViolation")).isEqualTo(true);
     }
 
     private void assertStatusOnUri(Handler router, String uri, Status expected)
@@ -430,5 +529,19 @@ public class RouterHandlerTest {
         return r;
     }
 
+    private RouterHandler handlerWith(RouterHandler.OpenApiValidationSettings openApiValidationSettings) {
+        return new RouterHandler(
+                mockRouteBuilder,
+                new DirectoryMonitor(routes),
+                mockSpecLoader,
+                mockOpenApiRouteBuilder, openApiValidationSettings);
+    }
+    private RouterHandler newHandler() {
+        return handlerWith(new RouterHandler.OpenApiValidationSettings());
+    }
+
+    private FileChangeSet addedChangeSet(File route) {
+        return new FileChangeSet(mock(File.class),  Set.of(route), Set.of(), Set.of());
+    }
 
 }

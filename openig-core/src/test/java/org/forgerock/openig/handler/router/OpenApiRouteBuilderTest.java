@@ -288,7 +288,6 @@ public class OpenApiRouteBuilderTest {
     }
 
 
-
     private File writeYaml(final String name, final String content) throws IOException {
         final File file = new File(tempDir, name);
         Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
@@ -298,7 +297,7 @@ public class OpenApiRouteBuilderTest {
     private JsonValue build(final File specFile) {
         final Optional<OpenAPI> api = specLoader.tryLoad(specFile);
         assertThat(api.isPresent()).as("Expected spec file to parse successfully: " + specFile).isTrue();
-        return routeBuilder.buildRouteJson(api.get(), specFile);
+        return routeBuilder.buildRouteJson(api.get(), specFile, true);
     }
 
     private static String specWithPaths(final String... paths) {
