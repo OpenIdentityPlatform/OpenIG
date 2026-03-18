@@ -43,22 +43,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
+
 /**
  * Validates HTTP requests and responses against an
  * OpenAPI (Swagger 2.x / OpenAPI 3.x) specification
  *
  * <h2>Request validation</h2>
- * <p>If the request fails validation the filter returns a {@code 400 Bad Request} response
- * immediately, without forwarding the request downstream.  The response body is a plain-text
- * list of validation messages.
+ * <p>If the request fails validation the filter stops processing and delegates to
+ * {@code requestValidationErrorHandler} instead of forwarding the request downstream.
+ * The default {@code requestValidationErrorHandler} returns {@code 400 Bad Request}.</p>
  *
  * <h2>Response validation</h2>
  * <p>After the downstream handler returns a response, the filter validates it against the spec.
- * Behaviour on failure is controlled by the {@code failOnResponseViolation} configuration flag:
+ * Behaviour depends on {@code failOnResponseViolation}:
  * <ul>
- *   <li>{@code true} – return a {@code 502 Bad Gateway} with the validation messages.</li>
- *   <li>{@code false} (default) – log a warning and pass the response through unchanged.</li>
+ *   <li>{@code true} – delegate to {@code responseValidationErrorHandler}.  The default returns
+ *       {@code 503 Service Unavailable}</li>
+ *   <li>{@code false} (default) – log a warning and pass the original response through.</li>
  * </ul>
+ * </p>
  *
  * <h2>Heap configuration</h2>
  * <pre>{@code
@@ -67,7 +71,9 @@ import java.util.stream.Collectors;
  *   "type": "OpenApiValidationFilter",
  *   "config": {
  *     "specFile": "/path/to/openapi.yaml",
- *     "failOnResponseViolation": false
+ *     "failOnResponseViolation": false,
+ *     "requestValidationErrorHandler": "403BadRequest",
+ *     "responseValidationErrorHandler": "503ServiceUnavailable"
  *   }
  * }
  * }</pre>
@@ -80,20 +86,37 @@ public class OpenApiValidationFilter implements Filter {
 
     private final boolean failOnResponseViolation;
 
+    private final Handler requestValidationErrorHandler;
+
+    private final Handler responseValidationErrorHandler;
+
     /**
      * Creates a filter backed by a pre-built {@link OpenApiInteractionValidator}.
      *
      * @param spec                    The OpenAPI / Swagger specification to use in the validator
      * @param failOnResponseViolation if {@code true}, a response validation failure results in
-     *                               a {@code 502} error; if {@code false}, it is only logged
+     *                               a {@code 503} error; if {@code false}, it is only logged
+     * @param requestValidationErrorHandler       handler invoked on request validation failure
+     * @param responseValidationErrorHandler       handler invoked on response validation failure when
+     *                                {@code failOnResponseViolation} is {@code true}
      */
-    private OpenApiValidationFilter(String spec, boolean failOnResponseViolation) {
-        this(OpenApiInteractionValidator.createForInlineApiSpecification(spec).build(), failOnResponseViolation);
+    private OpenApiValidationFilter(String spec, boolean failOnResponseViolation,
+                                    Handler requestValidationErrorHandler, Handler responseValidationErrorHandler) {
+        this(OpenApiInteractionValidator.createForInlineApiSpecification(spec).build(), failOnResponseViolation,
+                requestValidationErrorHandler, responseValidationErrorHandler);
     }
 
     OpenApiValidationFilter(OpenApiInteractionValidator validator, boolean failOnResponseViolation) {
+        this(validator, failOnResponseViolation,
+                defaultRequestValidationErrorHandler(), defaultResponseValidationErrorHandler());
+    }
+
+    OpenApiValidationFilter(OpenApiInteractionValidator validator, boolean failOnResponseViolation,
+                            Handler requestValidationErrorHandler, Handler responseValidationErrorHandler) {
         this.validator = validator;
         this.failOnResponseViolation = failOnResponseViolation;
+        this.requestValidationErrorHandler = requestValidationErrorHandler;
+        this.responseValidationErrorHandler = responseValidationErrorHandler;
     }
 
     @Override
@@ -111,8 +134,7 @@ public class OpenApiValidationFilter implements Filter {
         if (requestReport.hasErrors()) {
             logger.info("Request validation failed for {} {}: {}",
                     request.getMethod(), request.getUri(), requestReport);
-            return Promises.newResultPromise(
-                    buildErrorResponse(Status.BAD_REQUEST, "Request validation failed:\n" + requestReport));
+            return requestValidationErrorHandler.handle(context, request);
         }
 
         return next.handle(context, request).then(response -> {
@@ -129,7 +151,7 @@ public class OpenApiValidationFilter implements Filter {
             if(responseValidationReport.hasErrors()) {
                 logger.warn("upstream response does not match specification: {}", responseValidationReport);
                 if(failOnResponseViolation) {
-                    return buildErrorResponse (Status.BAD_GATEWAY, "Response validation failed:\n" + responseValidationReport);
+                    return responseValidationErrorHandler.handle(context, request).getOrThrowUninterruptibly();
                 }
             }
             return response;
@@ -185,6 +207,16 @@ public class OpenApiValidationFilter implements Filter {
         return builder.build();
     }
 
+    public static Handler defaultRequestValidationErrorHandler() {
+        return (context, request) ->
+                Promises.newResultPromise(buildErrorResponse(Status.BAD_REQUEST, "Request validation failed"));
+    }
+
+    public static Handler defaultResponseValidationErrorHandler() {
+        return (context, request) ->
+                Promises.newResultPromise(buildErrorResponse(Status.SERVICE_UNAVAILABLE, "Response validation failed"));
+    }
+
     public static class Heaplet extends GenericHeaplet {
 
         @Override
@@ -196,7 +228,16 @@ public class OpenApiValidationFilter implements Filter {
             final boolean failOnResponseViolation =
                     evaluatedConfig.get("failOnResponseViolation").defaultTo(false).asBoolean();
 
-            return new OpenApiValidationFilter(openApiSpec, failOnResponseViolation);
+            Handler requestValidationErrorHandler = evaluatedConfig.get("requestValidationErrorHandler")
+                    .as(optionalHeapObject(heap, Handler.class));
+            requestValidationErrorHandler = requestValidationErrorHandler == null ? defaultRequestValidationErrorHandler() : requestValidationErrorHandler;
+
+            Handler responseValidationErrorHandler = evaluatedConfig.get("responseValidationErrorHandler")
+                    .as(optionalHeapObject(heap, Handler.class));
+            responseValidationErrorHandler = responseValidationErrorHandler == null ? defaultResponseValidationErrorHandler() : responseValidationErrorHandler;
+
+            return new OpenApiValidationFilter(openApiSpec, failOnResponseViolation,
+                    requestValidationErrorHandler, responseValidationErrorHandler);
 
         }
     }

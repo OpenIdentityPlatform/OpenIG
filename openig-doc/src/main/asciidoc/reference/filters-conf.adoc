@@ -1610,9 +1610,9 @@ specification (Swagger 2.x or OpenAPI 3.x)
 
 Before forwarding a request to the next filter or handler in the chain,
 the filter validates the request's path, HTTP method, query parameters, headers,
-and body against the specification. If validation fails, the filter returns a
-`400 Bad Request` response immediately. The downstream handler is not called.
-The response body is `text/plain` and contains one validation message per line.
+and body against the specification. If validation fails, the filter stops processing
+and delegates to `requestValidationErrorHandler` instead of calling the downstream
+handler. The default `requestValidationErrorHandler` returns `400 Bad Request`.
 
 *Response validation*
 
@@ -1620,10 +1620,10 @@ After the downstream handler returns a response, the filter validates the respon
 status code, headers, and body against the specification. Behaviour on failure is
 controlled by the `failOnResponseViolation` configuration property:
 
-* `true` — the filter returns a `502 Bad Gateway` response containing the
-validation messages.
-* `false` (default) — the violation is logged at `WARN` level and the original
-response is passed through unchanged.
+* `true` — delegate to `responseValidationErrorHandler`. The default handler
+returns `503 Service Unavailable`.
+* `false` (default) — log a warning at `WARN` level and pass the original
+response through unchanged.
 
 *Auto-loading from the routes directory*
 
@@ -1640,8 +1640,10 @@ See xref:handlers-conf.adoc#Router[Router(5)] for details.
     "name": string,
     "type": "OpenApiValidationFilter",
     "config": {
-        "spec": expression, string
-        "failOnResponseViolation": expression, boolean
+        "spec": expression, string,
+        "failOnResponseViolation": expression, boolean,
+        "requestValidationErrorHandler": Handler reference,
+        "responseValidationErrorHandler": Handler reference
     }
 }
 ----
@@ -1664,6 +1666,29 @@ Controls the behaviour when response validation fails.
 * `false` — log a warning at `WARN` level and pass the original response through.
 +
 Default: `false`.
+
+`"requestValidationErrorHandler"`: __Handler reference or inline, optional__::
+Handler invoked when request validation fails.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler
+configuration object.
++
+Default: a built-in handler equivalent to the following declaration, which returns
+`400 Bad Request`
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers].
+
+`"responseValidationErrorHandler"`: __Handler reference or inline, optional__::
+Handler invoked when response validation fails and `failOnResponseViolation` is `true`.
++
+Provide either the name of a Handler object defined in the heap, or an inline Handler
+configuration object.
++
+Default: a built-in handler equivalent to the following declaration, which returns
+`503 Service Unavailable`
++
+See also xref:handlers-conf.adoc#handlers-conf[Handlers].
+
 --
 
 ==== Example
@@ -1683,7 +1708,23 @@ Response violations are logged as warnings but do not block the response.
             "type": "OpenApiValidationFilter",
             "config": {
                 "spec": "${read('/opt/openig/config/routes/api.yaml')}",
-                "failOnResponseViolation": false
+                "failOnResponseViolation": false,
+                "requestValidationErrorHandler": {
+                    "type": "StaticResponseHandler",
+                    "config": {
+                        "status": 400,
+                        "headers": { "Content-Type": ["application/json"] },
+                        "entity": "{\"error\": \"request_validation_failed\"}"
+                    }
+                },
+                "responseValidationErrorHandler": {
+                    "type": "StaticResponseHandler",
+                    "config": {
+                        "status": 503,
+                        "headers": { "Content-Type": ["application/json"] },
+                        "entity": "{\"error\": \"response_validation_failed\"}"
+                    }
+                }
             }
         }
     ],

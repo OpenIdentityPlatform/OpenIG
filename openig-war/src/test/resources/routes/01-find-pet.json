@@ -8,7 +8,15 @@
       "type": "OpenApiValidationFilter",
       "config": {
         "spec": "${read('$$SWAGGER_FILE$$')}",
-        "failOnResponseViolation": false
+        "failOnResponseViolation": false,
+        "requestValidationErrorHandler": {
+          "type": "StaticResponseHandler",
+          "config": {
+            "status": 400,
+            "headers": { "Content-Type": ["application/json"] },
+            "entity": "{\"error\": \"request_validation_failed\"}"
+          }
+        }
       }
     }
   ],

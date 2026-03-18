@@ -32,7 +32,6 @@ import org.forgerock.util.promise.Promises;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,7 +85,6 @@ public class OpenApiValidationFilterTest {
 
         assertThat(response.getStatus()).isEqualTo(Status.BAD_REQUEST);
         assertThat(response.getEntity().getString()).contains("Request validation failed");
-        assertThat(response.getEntity().getString()).contains("Request body is required");
 
         verify(mockNextHandler, never()).handle(any(), any());
     }
@@ -111,7 +109,7 @@ public class OpenApiValidationFilterTest {
     }
 
     @Test
-    public void filter_returns502_whenResponseValidationFailsAndFlagIsTrue() throws Exception {
+    public void filter_returns503_whenResponseValidationFailsAndFlagIsTrue() throws Exception {
         when(mockValidator.validateRequest(any())).thenReturn(ValidationReport.empty());
         when(mockValidator.validateResponse(any(), any(), any()))
                 .thenReturn(singleErrorReport("Response schema mismatch"));
@@ -125,9 +123,8 @@ public class OpenApiValidationFilterTest {
         final Response response = filter.filter(rootContext, buildGetRequest("http://localhost/pets"),
                 mockNextHandler).get();
 
-        assertThat(response.getStatus()).isEqualTo(Status.BAD_GATEWAY);
+        assertThat(response.getStatus()).isEqualTo(Status.SERVICE_UNAVAILABLE);
         assertThat(response.getEntity().getString()).contains("Response validation failed");
-        assertThat(response.getEntity().getString()).contains("Response schema mismatch");
     }
 
     @Test
