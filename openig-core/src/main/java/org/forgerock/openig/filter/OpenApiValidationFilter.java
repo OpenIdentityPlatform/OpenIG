@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
@@ -126,7 +127,7 @@ public class OpenApiValidationFilter implements Filter {
         try {
             validatorRequest = validatorRequestOf(request);
         } catch (IOException e) {
-            logger.error("exception while reading the request");
+            logger.error("exception while reading the request", e);
             return Promises.newResultPromise(new Response(Status.INTERNAL_SERVER_ERROR));
         }
 
@@ -142,7 +143,7 @@ public class OpenApiValidationFilter implements Filter {
             try {
                 validatorResponse = validatorResponseOf(response);
             } catch (IOException e) {
-                logger.error("exception while reading the response");
+                logger.error("exception while reading the response", e);
                 return new Response(Status.INTERNAL_SERVER_ERROR);
             }
 
@@ -151,7 +152,12 @@ public class OpenApiValidationFilter implements Filter {
             if(responseValidationReport.hasErrors()) {
                 logger.warn("upstream response does not match specification: {}", responseValidationReport);
                 if(failOnResponseViolation) {
-                    return responseValidationErrorHandler.handle(context, request).getOrThrowUninterruptibly();
+                    try {
+                        return responseValidationErrorHandler.handle(context, request).get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.error("exception while handling the response", e);
+                        return new Response(Status.INTERNAL_SERVER_ERROR);
+                    }
                 }
             }
             return response;
