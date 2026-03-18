@@ -74,10 +74,10 @@ public class IT_SwaggerRoute {
     @Test
     public void testSwaggerRoute() throws IOException {
         String testConfigPath = getTestConfigPath();
-        Path destination = Path.of(testConfigPath.concat("/config/routes/petstore.yaml"));
+        Path destination = Path.of(testConfigPath, "config", "routes", "petstore.yaml");
 
         try(InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("routes/petstore.yaml")) {
-            assert inputStream != null;
+            Objects.requireNonNull(inputStream, "routes/petstore.yaml resource missing");
             Files.createDirectories(destination.getParent());
             Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
         }
@@ -90,8 +90,7 @@ public class IT_SwaggerRoute {
         String openApiSpec = this.getClass().getClassLoader().getResource("routes/petstore.yaml").getPath();
         String routeContents = IOUtils.resourceToString("routes/01-find-pet.json", StandardCharsets.UTF_8, this.getClass().getClassLoader())
                 .replace("$$SWAGGER_FILE$$", openApiSpec);
-
-        Path destination = Path.of(testConfigPath.concat("/config/routes/01-find-pet.json"));
+        Path destination = Path.of(testConfigPath, "config", "routes", "01-find-pet.json");
         Files.createDirectories(destination.getParent());
         Files.writeString(destination, routeContents);
 
@@ -99,16 +98,18 @@ public class IT_SwaggerRoute {
     }
 
     private void testPetRoute(String routeId, Path destination) throws IOException {
-        await().pollInterval(3, SECONDS)
-                .atMost(15, SECONDS).until(() -> routeAvailable(routeId));
+        try {
+            await().pollInterval(3, SECONDS)
+                    .atMost(15, SECONDS).until(() -> routeAvailable(routeId));
 
-        RestAssured
-                .given().when().get("/v2/pet/findByStatus?status=available")
-                .then()
-                .statusCode(200)
-                .body("[0].id", Matchers.equalTo(1));
-
-        Files.delete(destination);
+            RestAssured
+                    .given().when().get("/v2/pet/findByStatus?status=available")
+                    .then()
+                    .statusCode(200)
+                    .body("[0].id", Matchers.equalTo(1));
+        } finally {
+            Files.delete(destination);
+        }
 
         await().pollInterval(3, SECONDS)
                 .atMost(15, SECONDS).until(() -> !routeAvailable(routeId));
