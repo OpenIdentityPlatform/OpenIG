@@ -14,7 +14,7 @@
           "config": {
             "status": 400,
             "headers": { "Content-Type": ["application/json"] },
-            "entity": "{\"error\": \"request_validation_failed\"}"
+            "entity": "{\"error\": \"request_validation_failed: ${attributes.openApiValidationReport}\"}"
           }
         }
       }

@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -245,6 +245,30 @@ The string to encode into Base64.
 
 string::
 The base64-encoded string.
+
+--
+
+[#functions-escapeJson]
+==== escapeJson
+
+[source]
+----
+escapeJson(string)
+----
+Returns a JSON escaped string, applying JSON string escaping rules to the provided value.
+Useful when embedding dynamic values inside a JSON structure within an expression.
+.Parameters
+--
+
+string::
+The string to escape, which may be `null`.
+
+--
+.Returns
+--
+
+string::
+The JSON escaped string, or `null` if the input was `null`.
 
 --
 

@@ -30,6 +30,7 @@ import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
@@ -80,6 +81,12 @@ import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
  * }</pre>
  */
 public class OpenApiValidationFilter implements Filter {
+
+    /**
+     * Key under which the {@link ValidationReport} is stored in the
+     * {@link AttributesContext} before delegating to an error handler.
+     */
+    public static final String ATTR_OPENAPI_VALIDATION_REPORT = "openApiValidationReport";
 
     private static final Logger logger = LoggerFactory.getLogger(OpenApiValidationFilter.class);
 
@@ -133,9 +140,10 @@ public class OpenApiValidationFilter implements Filter {
 
         final ValidationReport requestReport = validator.validateRequest(validatorRequest);
         if (requestReport.hasErrors()) {
+
             logger.info("Request validation failed for {} {}: {}",
                     request.getMethod(), request.getUri(), requestReport);
-            return requestValidationErrorHandler.handle(context, request);
+            return requestValidationErrorHandler.handle(injectReportToContext(context, requestReport), request);
         }
 
         return next.handle(context, request).then(response -> {
@@ -153,7 +161,9 @@ public class OpenApiValidationFilter implements Filter {
                 logger.warn("upstream response does not match specification: {}", responseValidationReport);
                 if(failOnResponseViolation) {
                     try {
-                        return responseValidationErrorHandler.handle(context, request).get();
+                        return responseValidationErrorHandler.handle(
+                                injectReportToContext(context, responseValidationReport), request)
+                                .get();
                     } catch (InterruptedException | ExecutionException e) {
                         logger.error("exception while handling the response", e);
                         return new Response(Status.INTERNAL_SERVER_ERROR);
@@ -162,6 +172,15 @@ public class OpenApiValidationFilter implements Filter {
             }
             return response;
         });
+    }
+
+    private static Context injectReportToContext(final Context parent, final ValidationReport report) {
+        Context context = parent;
+        if(!parent.containsContext(AttributesContext.class)) {
+            context = new AttributesContext(parent);
+        }
+        context.asContext(AttributesContext.class).getAttributes().put(ATTR_OPENAPI_VALIDATION_REPORT, report.getMessages());
+        return context;
     }
 
     private static Response buildErrorResponse(final Status status, final String body) {
@@ -215,12 +234,16 @@ public class OpenApiValidationFilter implements Filter {
 
     public static Handler defaultRequestValidationErrorHandler() {
         return (context, request) ->
-                Promises.newResultPromise(buildErrorResponse(Status.BAD_REQUEST, "Request validation failed"));
+                Promises.newResultPromise(buildErrorResponse(Status.BAD_REQUEST,
+                        "Request validation failed: " + context.asContext(AttributesContext.class)
+                                .getAttributes().get(ATTR_OPENAPI_VALIDATION_REPORT).toString()));
     }
 
     public static Handler defaultResponseValidationErrorHandler() {
         return (context, request) ->
-                Promises.newResultPromise(buildErrorResponse(Status.SERVICE_UNAVAILABLE, "Response validation failed"));
+                Promises.newResultPromise(buildErrorResponse(Status.SERVICE_UNAVAILABLE,
+                        "Response validation failed: " + context.asContext(AttributesContext.class)
+                                .getAttributes().get(ATTR_OPENAPI_VALIDATION_REPORT).toString()));
     }
 
     public static class Heaplet extends GenericHeaplet {
@@ -234,11 +257,11 @@ public class OpenApiValidationFilter implements Filter {
             final boolean failOnResponseViolation =
                     evaluatedConfig.get("failOnResponseViolation").defaultTo(false).asBoolean();
 
-            Handler requestValidationErrorHandler = evaluatedConfig.get("requestValidationErrorHandler")
+            Handler requestValidationErrorHandler = config.get("requestValidationErrorHandler")
                     .as(optionalHeapObject(heap, Handler.class));
             requestValidationErrorHandler = requestValidationErrorHandler == null ? defaultRequestValidationErrorHandler() : requestValidationErrorHandler;
 
-            Handler responseValidationErrorHandler = evaluatedConfig.get("responseValidationErrorHandler")
+            Handler responseValidationErrorHandler = config.get("responseValidationErrorHandler")
                     .as(optionalHeapObject(heap, Handler.class));
             responseValidationErrorHandler = responseValidationErrorHandler == null ? defaultResponseValidationErrorHandler() : responseValidationErrorHandler;
 

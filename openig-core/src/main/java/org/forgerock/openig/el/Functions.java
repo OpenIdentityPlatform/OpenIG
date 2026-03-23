@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.el;
@@ -33,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.forgerock.http.util.Uris;
 import org.forgerock.openig.util.StringUtil;
 import org.forgerock.util.encode.Base64;
@@ -439,6 +441,16 @@ public final class Functions {
             logger.error("Malformed URL", e);
             return null;
         }
+    }
+
+    /**
+     * Escapes the characters in a {@code String} using JSON string rules.
+     *
+     * @param value the string to escape, may be null
+     * @return a JSON escaped string
+     */
+    public static String escapeJson(String value) {
+        return StringEscapeUtils.escapeJson(value);
     }
 
 }

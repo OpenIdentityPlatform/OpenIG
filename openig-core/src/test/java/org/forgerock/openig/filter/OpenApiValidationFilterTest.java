@@ -85,6 +85,7 @@ public class OpenApiValidationFilterTest {
 
         assertThat(response.getStatus()).isEqualTo(Status.BAD_REQUEST);
         assertThat(response.getEntity().getString()).contains("Request validation failed");
+        assertThat(response.getEntity().getString()).contains("Request body is required");
 
         verify(mockNextHandler, never()).handle(any(), any());
     }
@@ -125,6 +126,7 @@ public class OpenApiValidationFilterTest {
 
         assertThat(response.getStatus()).isEqualTo(Status.SERVICE_UNAVAILABLE);
         assertThat(response.getEntity().getString()).contains("Response validation failed");
+        assertThat(response.getEntity().getString()).contains("Response schema mismatch");
     }
 
     @Test

@@ -1625,6 +1625,11 @@ returns `503 Service Unavailable`.
 * `false` (default) — log a warning at `WARN` level and pass the original
 response through unchanged.
 
+*Validation report in the context*
+
+Before delegating to either error handler, the filter places validation report
+object into `AttributesContext` under the key `openApiValidationReport`.
+
 *Auto-loading from the routes directory*
 
 In addition to being declared manually in a route heap, this filter is used
@@ -1714,7 +1719,7 @@ Response violations are logged as warnings but do not block the response.
                     "config": {
                         "status": 400,
                         "headers": { "Content-Type": ["application/json"] },
-                        "entity": "{\"error\": \"request_validation_failed\"}"
+                        "entity": "{\"error\": \"request_validation_failed: ${escapeJson(toString(attributes.openApiValidationReport))}\"}"
                     }
                 },
                 "responseValidationErrorHandler": {
@@ -1722,7 +1727,7 @@ Response violations are logged as warnings but do not block the response.
                     "config": {
                         "status": 503,
                         "headers": { "Content-Type": ["application/json"] },
-                        "entity": "{\"error\": \"response_validation_failed\"}"
+                        "entity": "{\"error\": \"response_validation_failed: ${escapeJson(toString(attributes.openApiValidationReport))}\"}"
                     }
                 }
             }
