@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -149,7 +150,7 @@ public class ClientRegistrationFilterTest {
         verify(handler).handle(eq(context), captor.capture());
         Request request = captor.getValue();
         assertThat(request.getMethod()).isEqualTo("POST");
-        assertThat(request.getEntity().toString()).containsSequence("redirect_uris", "contact", "scopes");
+        assertThat(request.getEntity().toString()).contains("redirect_uris", "contact", "scopes");
     }
 
     @Test(expectedExceptions = RegistrationException.class)
