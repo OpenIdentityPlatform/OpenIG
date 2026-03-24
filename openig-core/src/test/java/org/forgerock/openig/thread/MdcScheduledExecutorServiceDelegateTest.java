@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions copyright 2026 3A Systems,LLC
  */
 
 package org.forgerock.openig.thread;
@@ -84,7 +85,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
         doReturn(scheduledFuture).when(delegate())
                                  .schedule(nullable(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
 
-        assertThat(executorService().schedule(runnable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+        assertThat((Object)executorService().schedule(runnable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
         verify(delegate()).schedule(runnableCapture.capture(), eq(1L), eq(TimeUnit.SECONDS));
         assertThatCapturedRunnableIsMdcAware();
@@ -96,7 +97,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
         doReturn(scheduledFuture).when(delegate())
                                  .schedule(nullable(Callable.class), eq(1L), eq(TimeUnit.SECONDS));
 
-        assertThat(executorService().schedule(callable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+        assertThat((Object)executorService().schedule(callable, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
         verify(delegate()).schedule(callableCapture.capture(), eq(1L), eq(TimeUnit.SECONDS));
         assertThatCaptureCallableIsMdcAware();
@@ -107,7 +108,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
         doReturn(scheduledFuture).when(delegate())
                                  .scheduleAtFixedRate(nullable(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
 
-        assertThat(executorService().scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+        assertThat((Object)executorService().scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
 
         verify(delegate()).scheduleAtFixedRate(runnableCapture.capture(), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
         assertThatCapturedRunnableIsMdcAware();
@@ -118,7 +119,7 @@ public class MdcScheduledExecutorServiceDelegateTest extends MdcExecutorServiceD
         doReturn(scheduledFuture).when(delegate())
                                  .scheduleWithFixedDelay(nullable(Runnable.class), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
 
-        assertThat(executorService().scheduleWithFixedDelay(runnable, 1, 2, TimeUnit.SECONDS))
+        assertThat((Object)executorService().scheduleWithFixedDelay(runnable, 1, 2, TimeUnit.SECONDS))
                 .isSameAs(scheduledFuture);
 
         verify(delegate()).scheduleWithFixedDelay(runnableCapture.capture(), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
