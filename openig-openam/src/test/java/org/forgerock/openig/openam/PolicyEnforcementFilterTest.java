@@ -393,7 +393,7 @@ public class PolicyEnforcementFilterTest {
     public static void shouldSucceedToCreateBaseUri(final String realm) throws Exception {
         assertThat(normalizeToJsonEndpoint(new URI("http://www.example.com:8090/openam/"), realm).toASCIIString())
             .endsWith("/")
-            .containsSequence("http://www.example.com:8090/openam/json/",
+            .contains("http://www.example.com:8090/openam/json/",
                               realm != null ? realm.trim() : "");
     }
 
