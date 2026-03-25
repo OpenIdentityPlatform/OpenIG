@@ -176,7 +176,7 @@ The following example route uses the audit service:
 
 [#d210e10206]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/audit/AuditService.html[org.forgerock.audit.AuditService, window=\_blank]
+link:{apidocs-url}/org/forgerock/audit/AuditService.html[org.forgerock.audit.AuditService, window=\_blank]
 
 '''
 [#CsvAuditEventHandler]
@@ -531,7 +531,7 @@ The following example configures a CSV audit event handler to write a log file, 
 
 [#d210e11344]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[org.forgerock.audit.handlers.csv.CsvAuditEventHandler, window=\_blank]
+link:{apidocs-url}/org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[org.forgerock.audit.handlers.csv.CsvAuditEventHandler, window=\_blank]
 
 '''
 [#JdbcAuditEventHandler]
@@ -611,7 +611,7 @@ Set this to `"topics": [ "access" ]`.
 The database type name.
 
 +
-Built-in support is provided for `oracle`, `mysql`, and `h2`. Unrecognized database types rely on a link:{apidocs-url}/index.html?org/forgerock/audit/handlers/jdbc/providers/GenericDatabaseStatementProvider.html[GenericDatabaseStatementProvider, window=\_top].
+Built-in support is provided for `oracle`, `mysql`, and `h2`. Unrecognized database types rely on a link:{apidocs-url}/org/forgerock/audit/handlers/jdbc/providers/GenericDatabaseStatementProvider.html[GenericDatabaseStatementProvider, window=\_top].
 
 `"enabled"`: __boolean, optional__::
 Whether this event handler is active.
@@ -812,7 +812,7 @@ Examples including statements to create tables are provided in the JDBC handler 
 
 [#d210e11910]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank]
+link:{apidocs-url}/org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank]
 
 '''
 [#SyslogAuditEventHandler]
@@ -1080,7 +1080,7 @@ The following example configures a Syslog audit event handler that writes to the
 
 [#d210e12388]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.html[org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler, window=\_blank]
+link:{apidocs-url}/org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.html[org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler, window=\_blank]
 
 '''
 [#ElasticsearchAuditEventHandler]

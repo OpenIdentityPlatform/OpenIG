@@ -154,7 +154,7 @@ The following route defines a throttling rate of 6 requests/10 seconds to reques
 
 [#d210e13170]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/filter/throttling/ThrottlingFilterHeaplet.html[org.forgerock.openig.filter.throttling.ThrottlingFilterHeaplet, window=\_blank]
 
 '''
 [#MappedThrottlingPolicy]
@@ -283,7 +283,7 @@ image::images/throttling-mapped.png[]
 
 [#d210e13495]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/filter/throttling/MappedThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.MappedThrottlingPolicyHeaplet, window=\_blank]
 
 '''
 [#ScriptableThrottlingPolicy]
@@ -402,7 +402,7 @@ if (request.headers['X-Forwarded-For'].values[0]  == 'accounts.example.com') {
 
 [#d210e13638]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/filter/throttling/ScriptableThrottlingPolicy.Heaplet.html[org.forgerock.openig.filter.throttling.ScriptableThrottlingPolicy.Heaplet, window=\_blank]
 
 '''
 [#DefaultRateThrottlingPolicy]
@@ -467,6 +467,6 @@ For an example of how this policy is used, see xref:#example-throttling-scriptab
 
 [#d210e13916]
 ==== Javadoc
-link:{apidocs-url}/index.html?org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/filter/throttling/DefaultRateThrottlingPolicyHeaplet.html[org.forgerock.openig.filter.throttling.DefaultRateThrottlingPolicyHeaplet, window=\_blank]
 
 
