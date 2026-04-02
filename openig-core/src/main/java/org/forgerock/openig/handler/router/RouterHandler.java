@@ -88,7 +88,8 @@ import org.slf4j.LoggerFactory;
  *       "scanInterval": 2 or "2 seconds"
  *       "openApiValidation": {
  *           "enabled": true,
- *           "failOnResponseViolation": false
+ *           "failOnResponseViolation": false,
+ *           "mockMode": false
  *       }
  *     }
  *   }
@@ -106,6 +107,10 @@ import org.slf4j.LoggerFactory;
  * <br/>
  * <p>In addition to regular route JSON files, this handler now also recognises OpenAPI spec files
  * ({@code .json}, {@code .yaml}, {@code .yml}) dropped into the same routes directory.
+ * When {@code openApiValidation.mockMode} is {@code true}, auto-generated routes use an
+ * {@link org.forgerock.openig.handler.OpenApiMockResponseHandler} instead of a
+ * {@code ClientHandler}, so requests are served with generated mock data instead of being
+ * forwarded upstream.
  *
  * @since 2.2
  */
@@ -443,7 +448,8 @@ public class RouterHandler implements FileChangeListener, Handler {
         }
 
         final JsonValue routeJson = openApiRouteBuilder.buildRouteJson(
-                specOpt.get(), specFile, openApiValidationSettings.failOnResponseViolation);
+                specOpt.get(), specFile, openApiValidationSettings.failOnResponseViolation,
+                openApiValidationSettings.mockMode);
         final String routeId   = routeJson.get("name").asString();
 
         try {
@@ -524,8 +530,9 @@ public class RouterHandler implements FileChangeListener, Handler {
             final boolean openApiEnabled = oaConfig.get("enabled").defaultTo(true).asBoolean();
             final boolean failOnResponseViolation = oaConfig.get("failOnResponseViolation")
                     .defaultTo(false).asBoolean();
+            final boolean mockMode = oaConfig.get("mockMode").defaultTo(false).asBoolean();
             final OpenApiValidationSettings openApiValidationSettings =
-                    new OpenApiValidationSettings(openApiEnabled, failOnResponseViolation);
+                    new OpenApiValidationSettings(openApiEnabled, failOnResponseViolation, mockMode);
 
             final RouteBuilder routeBuilder = new RouteBuilder((HeapImpl) heap, qualified, registry);
 
@@ -621,15 +628,24 @@ public class RouterHandler implements FileChangeListener, Handler {
 
         public final boolean failOnResponseViolation;
 
+        public final boolean mockMode;
+
 
         public OpenApiValidationSettings(final boolean enabled,
                                          final boolean failOnResponseViolation) {
+            this(enabled, failOnResponseViolation, false);
+        }
+
+        public OpenApiValidationSettings(final boolean enabled,
+                                         final boolean failOnResponseViolation,
+                                         final boolean mockMode) {
             this.enabled                 = enabled;
             this.failOnResponseViolation = failOnResponseViolation;
+            this.mockMode                = mockMode;
         }
 
         public OpenApiValidationSettings() {
-            this(true, false);
+            this(true, false, false);
         }
     }
 
