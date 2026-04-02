@@ -128,6 +128,7 @@ public class MockDataGenerator {
             case "uri-reference":
                 return "/api/resource/" + FAKER.number().numberBetween(1, 9999);
             case "uuid":
+            case "guid":
                 return UUID.randomUUID().toString();
             case "ipv4":
                 return FAKER.internet().ipV4Address();
