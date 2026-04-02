@@ -720,7 +720,7 @@ xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter(5)].
         "directory": expression,
         "scanInterval": integer,
         "openApiValidation": {
-            "enabled": boolean
+            "enabled": boolean,
             "failOnResponseViolation": boolean,
             "mockMode": boolean
         }
