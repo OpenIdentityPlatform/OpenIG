@@ -166,6 +166,11 @@
       <artifactId>swagger-request-validator-core</artifactId>
       <version>2.46.0</version>
     </dependency>
+    <dependency>
+      <groupId>net.datafaker</groupId>
+      <artifactId>datafaker</artifactId>
+      <version>1.9.0</version>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>

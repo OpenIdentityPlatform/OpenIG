@@ -128,45 +128,64 @@ public class MockDataGeneratorTest {
     }
 
     // -----------------------------------------------------------------------
-    // Field-name dictionary
+    // Field-name heuristics (Datafaker-backed)
     // -----------------------------------------------------------------------
 
     @DataProvider(name = "fieldNameCases")
     public static Object[][] fieldNameCases() {
         return new Object[][] {
-                {"firstName",  String.class,  "John"},
-                {"lastName",   String.class,  "Doe"},
-                {"username",   String.class,  "johndoe"},
-                {"email",      String.class,  "john.doe@example.com"},
-                {"phone",      String.class,  "+1-555-123-4567"},
-                {"city",       String.class,  "Springfield"},
-                {"country",    String.class,  "United States"},
-                {"company",    String.class,  "Acme Corporation"},
-                {"role",       String.class,  "admin"},
-                {"description",String.class,  "Sample description text."},
-                {"title",      String.class,  "Sample Title"},
-                {"url",        String.class,  "https://www.example.com"},
+                {"firstName"},
+                {"lastName"},
+                {"username"},
+                {"email"},
+                {"phone"},
+                {"city"},
+                {"country"},
+                {"company"},
+                {"role"},
+                {"description"},
+                {"title"},
+                {"url"},
         };
     }
 
     @Test(dataProvider = "fieldNameCases")
-    public void generate_usesFieldNameDictionary(
-            final String fieldName, final Class<?> expectedType, final Object expectedValue) {
+    public void generate_usesFieldNameHeuristics_returnsNonEmptyString(final String fieldName) {
         final Schema<String> schema = new Schema<>();
         schema.setType("string");
         final Object value = MockDataGenerator.generate(fieldName, schema);
-        assertThat(value).isInstanceOf(expectedType);
-        assertThat(value).isEqualTo(expectedValue);
+        assertThat(value).isInstanceOf(String.class);
+        assertThat((String) value).isNotEmpty();
+    }
+
+    @Test
+    public void generate_email_containsAtSign() {
+        final Schema<String> schema = new Schema<>();
+        schema.setType("string");
+        final Object value = MockDataGenerator.generate("email", schema);
+        assertThat(value).isInstanceOf(String.class);
+        assertThat((String) value).contains("@");
+    }
+
+    @Test
+    public void generate_url_startsWithHttp() {
+        final Schema<String> schema = new Schema<>();
+        schema.setType("string");
+        final Object value = MockDataGenerator.generate("url", schema);
+        assertThat(value).isInstanceOf(String.class);
+        assertThat((String) value).matches("https?://.*");
     }
 
     @Test
     public void generate_normalisesFieldNameForLookup() {
         final Schema<String> schema = new Schema<>();
         schema.setType("string");
-        // "first_name" should normalise to "firstname" which maps to "John"
-        assertThat(MockDataGenerator.generate("first_name", schema)).isEqualTo("John");
-        assertThat(MockDataGenerator.generate("first-name", schema)).isEqualTo("John");
-        assertThat(MockDataGenerator.generate("FIRSTNAME",  schema)).isEqualTo("John");
+        // "first_name" / "first-name" / "FIRSTNAME" should all normalise to "firstname"
+        // and each should return a non-empty string (Datafaker-backed)
+        assertThat(MockDataGenerator.generate("first_name", schema)).isInstanceOf(String.class);
+        assertThat((String) MockDataGenerator.generate("first_name", schema)).isNotEmpty();
+        assertThat(MockDataGenerator.generate("first-name", schema)).isInstanceOf(String.class);
+        assertThat(MockDataGenerator.generate("FIRSTNAME",  schema)).isInstanceOf(String.class);
     }
 
     // -----------------------------------------------------------------------

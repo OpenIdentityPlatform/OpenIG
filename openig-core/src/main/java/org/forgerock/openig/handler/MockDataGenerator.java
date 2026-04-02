@@ -17,10 +17,14 @@
 package org.forgerock.openig.handler;
 
 import io.swagger.v3.oas.models.media.Schema;
+import net.datafaker.Faker;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Generates realistic mock values for OpenAPI schema properties.
@@ -28,11 +32,12 @@ import java.util.Random;
  * <p>Values are chosen using the following priority order:
  * <ol>
  *   <li>Schema {@code format} (date, date-time, email, uri, uuid, ipv4, hostname, byte, password, …)</li>
- *   <li>Field-name dictionary (case-insensitive, separator-agnostic lookup)</li>
+ *   <li>Field-name heuristic powered by <a href="https://github.com/datafaker-net/datafaker">Datafaker</a>
+ *       (case-insensitive, separator-agnostic lookup)</li>
  *   <li>Schema {@code type} fallback (generic string / integer / number / boolean)</li>
  * </ol>
  *
- * <p>The generator uses a seeded {@link Random} so results are deterministic and
+ * <p>The generator uses a seeded {@link Faker} so results are deterministic and
  * reproducible across test runs.
  *
  * <p>Numeric and string constraints ({@code minimum}, {@code maximum},
@@ -40,173 +45,25 @@ import java.util.Random;
  */
 public class MockDataGenerator {
 
-    /** Seeded random for deterministic output. */
+    /** Seeded random shared by the Faker instance and numeric generators for deterministic output. */
     private static final Random RNG = new Random(42L);
 
-    /** Normalised-name → realistic value dictionary. */
-    private static final Map<String, Object> FIELD_DICTIONARY = new HashMap<>();
+    /** Datafaker instance backed by the same seed. */
+    private static final Faker FAKER = new Faker(Locale.ENGLISH, RNG);
 
-    static {
-        // Personal
-        FIELD_DICTIONARY.put("firstname",  "John");
-        FIELD_DICTIONARY.put("lastname",   "Doe");
-        FIELD_DICTIONARY.put("fullname",   "John Doe");
-        FIELD_DICTIONARY.put("name",       "John Doe");
-        FIELD_DICTIONARY.put("username",   "johndoe");
-        FIELD_DICTIONARY.put("login",      "johndoe");
-        FIELD_DICTIONARY.put("displayname","John Doe");
+    // Boolean heuristic sets (normalised names)
+    private static final java.util.Set<String> BOOL_TRUE_NAMES = new java.util.HashSet<>(
+            java.util.Arrays.asList(
+                    "enabled", "active", "verified", "confirmed", "approved",
+                    "published", "available", "visible", "ispublic", "success",
+                    "valid", "required", "locked"
+            ));
 
-        // Contact
-        FIELD_DICTIONARY.put("email",      "john.doe@example.com");
-        FIELD_DICTIONARY.put("mail",       "john.doe@example.com");
-        FIELD_DICTIONARY.put("phone",      "+1-555-123-4567");
-        FIELD_DICTIONARY.put("phonenumber","+1-555-123-4567");
-        FIELD_DICTIONARY.put("mobile",     "+1-555-123-4567");
-        FIELD_DICTIONARY.put("fax",        "+1-555-123-4568");
-
-        // Address
-        FIELD_DICTIONARY.put("address",    "123 Main St");
-        FIELD_DICTIONARY.put("street",     "123 Main St");
-        FIELD_DICTIONARY.put("city",       "Springfield");
-        FIELD_DICTIONARY.put("state",      "Illinois");
-        FIELD_DICTIONARY.put("country",    "United States");
-        FIELD_DICTIONARY.put("zip",        "62701");
-        FIELD_DICTIONARY.put("zipcode",    "62701");
-        FIELD_DICTIONARY.put("postalcode", "62701");
-
-        // Internet
-        FIELD_DICTIONARY.put("url",        "https://www.example.com");
-        FIELD_DICTIONARY.put("website",    "https://www.example.com");
-        FIELD_DICTIONARY.put("homepage",   "https://www.example.com");
-        FIELD_DICTIONARY.put("avatar",     "https://www.example.com/images/avatar.jpg");
-        FIELD_DICTIONARY.put("photo",      "https://www.example.com/images/photo.jpg");
-        FIELD_DICTIONARY.put("picture",    "https://www.example.com/images/photo.jpg");
-        FIELD_DICTIONARY.put("image",      "https://www.example.com/images/photo.jpg");
-        FIELD_DICTIONARY.put("thumbnail",  "https://www.example.com/images/thumb.jpg");
-        FIELD_DICTIONARY.put("gravatar",   "https://www.gravatar.com/avatar/00000000000000000000000000000000");
-
-        // Text / content
-        FIELD_DICTIONARY.put("description","Sample description text.");
-        FIELD_DICTIONARY.put("summary",    "Sample summary.");
-        FIELD_DICTIONARY.put("content",    "Sample content.");
-        FIELD_DICTIONARY.put("body",       "Sample body content.");
-        FIELD_DICTIONARY.put("message",    "Sample message.");
-        FIELD_DICTIONARY.put("title",      "Sample Title");
-        FIELD_DICTIONARY.put("subject",    "Sample Subject");
-        FIELD_DICTIONARY.put("label",      "Sample Label");
-        FIELD_DICTIONARY.put("note",       "Sample note.");
-        FIELD_DICTIONARY.put("comment",    "Sample comment.");
-        FIELD_DICTIONARY.put("text",       "Sample text.");
-        FIELD_DICTIONARY.put("slug",       "sample-slug");
-        FIELD_DICTIONARY.put("tag",        "sample-tag");
-        FIELD_DICTIONARY.put("tags",       "sample-tag");
-        FIELD_DICTIONARY.put("category",   "General");
-        FIELD_DICTIONARY.put("type",       "default");
-        FIELD_DICTIONARY.put("status",     "active");
-        FIELD_DICTIONARY.put("format",     "json");
-        FIELD_DICTIONARY.put("locale",     "en-US");
-        FIELD_DICTIONARY.put("language",   "en");
-        FIELD_DICTIONARY.put("timezone",   "UTC");
-        FIELD_DICTIONARY.put("currency",   "USD");
-
-        // Business
-        FIELD_DICTIONARY.put("company",    "Acme Corporation");
-        FIELD_DICTIONARY.put("organisation","Acme Corporation");
-        FIELD_DICTIONARY.put("organization","Acme Corporation");
-        FIELD_DICTIONARY.put("department", "Engineering");
-        FIELD_DICTIONARY.put("role",       "admin");
-        FIELD_DICTIONARY.put("permission", "read");
-        FIELD_DICTIONARY.put("scope",      "openid profile");
-        FIELD_DICTIONARY.put("group",      "users");
-        FIELD_DICTIONARY.put("team",       "dev-team");
-        FIELD_DICTIONARY.put("project",    "My Project");
-        FIELD_DICTIONARY.put("version",    "1.0.0");
-        FIELD_DICTIONARY.put("code",       "SAMPLE-CODE");
-        FIELD_DICTIONARY.put("reference",  "REF-1001");
-        FIELD_DICTIONARY.put("key",        "sample-key");
-        FIELD_DICTIONARY.put("value",      "sample-value");
-
-        // Auth
-        FIELD_DICTIONARY.put("token",      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U");
-        FIELD_DICTIONARY.put("accesstoken","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U");
-        FIELD_DICTIONARY.put("refreshtoken","dGhpcyBpcyBhIG1vY2sgcmVmcmVzaCB0b2tlbg==");
-        FIELD_DICTIONARY.put("password",   "P@ssw0rd123!");
-        FIELD_DICTIONARY.put("secret",     "s3cr3t-v4lu3");
-        FIELD_DICTIONARY.put("apikey",     "sk-mock-api-key-1234567890abcdef");
-        FIELD_DICTIONARY.put("hash",       "5f4dcc3b5aa765d61d8327deb882cf99");
-        FIELD_DICTIONARY.put("salt",       "random-salt-value");
-
-        // Numbers (stored as Number so callers can down-cast)
-        FIELD_DICTIONARY.put("id",         1001);
-        FIELD_DICTIONARY.put("uid",        1001);
-        FIELD_DICTIONARY.put("userid",     1001);
-        FIELD_DICTIONARY.put("accountid",  1001);
-        FIELD_DICTIONARY.put("age",        30);
-        FIELD_DICTIONARY.put("year",       2024);
-        FIELD_DICTIONARY.put("month",      6);
-        FIELD_DICTIONARY.put("day",        15);
-        FIELD_DICTIONARY.put("hour",       12);
-        FIELD_DICTIONARY.put("minute",     30);
-        FIELD_DICTIONARY.put("second",     0);
-        FIELD_DICTIONARY.put("count",      10);
-        FIELD_DICTIONARY.put("total",      100);
-        FIELD_DICTIONARY.put("quantity",   5);
-        FIELD_DICTIONARY.put("amount",     99.99);
-        FIELD_DICTIONARY.put("price",      29.99);
-        FIELD_DICTIONARY.put("cost",       19.99);
-        FIELD_DICTIONARY.put("discount",   5.0);
-        FIELD_DICTIONARY.put("tax",        7.5);
-        FIELD_DICTIONARY.put("rating",     4.5);
-        FIELD_DICTIONARY.put("score",      85);
-        FIELD_DICTIONARY.put("rank",       1);
-        FIELD_DICTIONARY.put("index",      0);
-        FIELD_DICTIONARY.put("size",       10);
-        FIELD_DICTIONARY.put("length",     100);
-        FIELD_DICTIONARY.put("width",      800);
-        FIELD_DICTIONARY.put("height",     600);
-        FIELD_DICTIONARY.put("weight",     70.5);
-        FIELD_DICTIONARY.put("limit",      20);
-        FIELD_DICTIONARY.put("offset",     0);
-        FIELD_DICTIONARY.put("page",       1);
-        FIELD_DICTIONARY.put("pagesize",   20);
-        FIELD_DICTIONARY.put("maxresults", 100);
-        FIELD_DICTIONARY.put("duration",   3600);
-        FIELD_DICTIONARY.put("timeout",    30);
-        FIELD_DICTIONARY.put("retries",    3);
-        FIELD_DICTIONARY.put("priority",   1);
-        FIELD_DICTIONARY.put("order",      1);
-        FIELD_DICTIONARY.put("sort",       1);
-        FIELD_DICTIONARY.put("port",       8080);
-        FIELD_DICTIONARY.put("latitude",   37.7749);
-        FIELD_DICTIONARY.put("longitude",  -122.4194);
-
-        // Booleans (true group)
-        FIELD_DICTIONARY.put("enabled",    true);
-        FIELD_DICTIONARY.put("active",     true);
-        FIELD_DICTIONARY.put("verified",   true);
-        FIELD_DICTIONARY.put("confirmed",  true);
-        FIELD_DICTIONARY.put("approved",   true);
-        FIELD_DICTIONARY.put("published",  true);
-        FIELD_DICTIONARY.put("available",  true);
-        FIELD_DICTIONARY.put("visible",    true);
-        FIELD_DICTIONARY.put("public",     true);
-        FIELD_DICTIONARY.put("success",    true);
-        FIELD_DICTIONARY.put("valid",      true);
-        FIELD_DICTIONARY.put("required",   true);
-        FIELD_DICTIONARY.put("locked",     false);
-
-        // Booleans (false group)
-        FIELD_DICTIONARY.put("deleted",    false);
-        FIELD_DICTIONARY.put("archived",   false);
-        FIELD_DICTIONARY.put("banned",     false);
-        FIELD_DICTIONARY.put("blocked",    false);
-        FIELD_DICTIONARY.put("disabled",   false);
-        FIELD_DICTIONARY.put("hidden",     false);
-        FIELD_DICTIONARY.put("private",    false);
-        FIELD_DICTIONARY.put("deprecated", false);
-        FIELD_DICTIONARY.put("failed",     false);
-        FIELD_DICTIONARY.put("error",      false);
-    }
+    private static final java.util.Set<String> BOOL_FALSE_NAMES = new java.util.HashSet<>(
+            java.util.Arrays.asList(
+                    "deleted", "archived", "banned", "blocked", "disabled",
+                    "hidden", "isprivate", "deprecated", "failed", "error"
+            ));
 
     private MockDataGenerator() {
         // utility class
@@ -230,18 +87,17 @@ public class MockDataGenerator {
 
         // 1. Format-based generation
         if (format != null) {
-            Object formatValue = generateByFormat(format, schema);
+            final Object formatValue = generateByFormat(format, schema);
             if (formatValue != null) {
                 return formatValue;
             }
         }
 
-        // 2. Field-name-based (dictionary lookup)
+        // 2. Field-name-based (Datafaker)
         if (fieldName != null) {
-            final String key = normalise(fieldName);
-            Object dictValue = FIELD_DICTIONARY.get(key);
-            if (dictValue != null) {
-                return coerce(dictValue, type, schema);
+            final Object fakerValue = generateByFieldName(fieldName, type, schema);
+            if (fakerValue != null) {
+                return fakerValue;
             }
         }
 
@@ -257,56 +113,208 @@ public class MockDataGenerator {
     private static Object generateByFormat(final String format, final Schema<?> schema) {
         switch (format.toLowerCase()) {
             case "date":
-                return "2024-06-15";
+                return LocalDate.now().minusDays(RNG.nextInt(365))
+                        .format(DateTimeFormatter.ISO_LOCAL_DATE);
             case "date-time":
-                return "2024-06-15T12:00:00Z";
+                return LocalDateTime.now().minusDays(RNG.nextInt(365))
+                        .format(DateTimeFormatter.ISO_DATE_TIME) + "Z";
             case "time":
                 return "12:00:00";
             case "email":
-                return "john.doe@example.com";
+                return FAKER.internet().emailAddress();
             case "uri":
             case "url":
-                return "https://www.example.com";
+                return "https://" + FAKER.internet().domainName();
             case "uri-reference":
-                return "/api/resource/1001";
+                return "/api/resource/" + FAKER.number().numberBetween(1, 9999);
             case "uuid":
-                return "550e8400-e29b-41d4-a716-446655440000";
+                return UUID.randomUUID().toString();
             case "ipv4":
-                return "192.168.1.1";
+                return FAKER.internet().ipV4Address();
             case "ipv6":
-                return "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+                return FAKER.internet().ipV6Address();
             case "hostname":
-                return "api.example.com";
+                return FAKER.internet().domainName();
             case "byte":
-                return "SGVsbG8gV29ybGQ=";
+                return java.util.Base64.getEncoder().encodeToString(
+                        FAKER.lorem().word().getBytes(java.nio.charset.StandardCharsets.UTF_8));
             case "binary":
                 return "binary-data";
             case "password":
-                return "P@ssw0rd123!";
+                return FAKER.internet().password(8, 16, true, true, true);
             case "int32":
-                return generateInt(schema, 1001);
+                return generateInt(schema, FAKER.number().numberBetween(1, 10000));
             case "int64":
-                return generateLong(schema, 1001L);
+                return generateLong(schema, FAKER.number().numberBetween(1L, 100000L));
             case "float":
             case "double":
-                return generateDouble(schema, 29.99);
+                return generateDouble(schema, FAKER.number().randomDouble(2, 1, 10000));
             default:
                 return null;
         }
     }
 
     /**
-     * Generates a value based on schema type when no format or dictionary match was found.
+     * Attempts to generate a value using Datafaker based on the normalised field name.
+     *
+     * @return a value, or {@code null} if no heuristic matches the field name
+     */
+    @SuppressWarnings("squid:S3776")
+    private static Object generateByFieldName(final String fieldName,
+                                               final String type,
+                                               final Schema<?> schema) {
+        final String key = normalise(fieldName);
+
+        // --- Strings ---
+        // Personal
+        if (key.equals("firstname")) return coerce(FAKER.name().firstName(), type, schema);
+        if (key.equals("lastname"))  return coerce(FAKER.name().lastName(),  type, schema);
+        if (key.equals("fullname") || key.equals("displayname"))
+            return coerce(FAKER.name().fullName(), type, schema);
+        if (key.equals("name"))      return coerce(FAKER.name().fullName(), type, schema);
+        if (key.equals("username") || key.equals("login"))
+            return coerce(FAKER.name().username(), type, schema);
+
+        // Contact
+        if (key.equals("email") || key.equals("mail"))
+            return coerce(FAKER.internet().emailAddress(), type, schema);
+        if (key.equals("phone") || key.equals("phonenumber") || key.equals("mobile"))
+            return coerce(FAKER.phoneNumber().phoneNumber(), type, schema);
+        if (key.equals("fax"))
+            return coerce(FAKER.phoneNumber().phoneNumber(), type, schema);
+
+        // Address
+        if (key.equals("address") || key.equals("street"))
+            return coerce(FAKER.address().streetAddress(), type, schema);
+        if (key.equals("city"))
+            return coerce(FAKER.address().city(), type, schema);
+        if (key.equals("state"))
+            return coerce(FAKER.address().state(), type, schema);
+        if (key.equals("country"))
+            return coerce(FAKER.address().country(), type, schema);
+        if (key.equals("zip") || key.equals("zipcode") || key.equals("postalcode"))
+            return coerce(FAKER.address().zipCode(), type, schema);
+
+        // Internet
+        if (key.equals("url") || key.equals("website") || key.equals("homepage"))
+            return coerce("https://" + FAKER.internet().domainName(), type, schema);
+        if (key.equals("avatar") || key.equals("photo") || key.equals("picture")
+                || key.equals("image") || key.equals("thumbnail"))
+            return coerce("https://" + FAKER.internet().domainName() + "/images/"
+                    + FAKER.internet().slug() + ".jpg", type, schema);
+        if (key.equals("gravatar"))
+            return coerce("https://www.gravatar.com/avatar/" + FAKER.hashing().md5(), type, schema);
+
+        // Text / content
+        if (key.equals("description") || key.equals("summary") || key.equals("content")
+                || key.equals("body") || key.equals("note") || key.equals("comment")
+                || key.equals("text"))
+            return coerce(FAKER.lorem().sentence(8), type, schema);
+        if (key.equals("message"))
+            return coerce(FAKER.lorem().sentence(4), type, schema);
+        if (key.equals("title") || key.equals("subject"))
+            return coerce(FAKER.book().title(), type, schema);
+        if (key.equals("label"))
+            return coerce(FAKER.lorem().word(), type, schema);
+        if (key.equals("slug"))
+            return coerce(FAKER.internet().slug(), type, schema);
+        if (key.equals("tag") || key.equals("tags"))
+            return coerce(FAKER.lorem().word(), type, schema);
+        if (key.equals("category"))
+            return coerce(FAKER.book().genre(), type, schema);
+        if (key.equals("locale") || key.equals("language"))
+            return coerce("en-US", type, schema);
+        if (key.equals("timezone"))
+            return coerce(FAKER.address().timeZone(), type, schema);
+        if (key.equals("currency"))
+            return coerce(FAKER.currency().code(), type, schema);
+
+        // Business
+        if (key.equals("company") || key.equals("organisation") || key.equals("organization"))
+            return coerce(FAKER.company().name(), type, schema);
+        if (key.equals("department"))
+            return coerce(FAKER.commerce().department(), type, schema);
+        if (key.equals("role"))
+            return coerce(FAKER.job().title(), type, schema);
+        if (key.equals("team"))
+            return coerce(FAKER.team().name(), type, schema);
+        if (key.equals("project"))
+            return coerce(FAKER.app().name(), type, schema);
+        if (key.equals("version"))
+            return coerce(FAKER.app().version(), type, schema);
+        if (key.equals("code") || key.equals("reference"))
+            return coerce(FAKER.code().isbnGs1(), type, schema);
+
+        // Auth
+        if (key.equals("password"))
+            return coerce(FAKER.internet().password(8, 16, true, true, true), type, schema);
+        if (key.equals("token") || key.equals("accesstoken"))
+            return coerce(FAKER.hashing().sha256(), type, schema);
+        if (key.equals("refreshtoken"))
+            return coerce(FAKER.hashing().sha256(), type, schema);
+        if (key.equals("apikey"))
+            return coerce("sk-" + FAKER.hashing().sha256().substring(0, 24), type, schema);
+        if (key.equals("secret"))
+            return coerce(FAKER.hashing().sha256().substring(0, 16), type, schema);
+        if (key.equals("hash"))
+            return coerce(FAKER.hashing().md5(), type, schema);
+        if (key.equals("salt"))
+            return coerce(FAKER.hashing().sha256().substring(0, 8), type, schema);
+
+        // --- Numbers ---
+        if (key.equals("id") || key.equals("uid") || key.equals("userid") || key.equals("accountid"))
+            return coerce(FAKER.number().numberBetween(1001, 99999), type, schema);
+        if (key.equals("age"))
+            return coerce(FAKER.number().numberBetween(18, 80), type, schema);
+        if (key.equals("year"))
+            return coerce(FAKER.number().numberBetween(2000, 2024), type, schema);
+        if (key.equals("month"))
+            return coerce(FAKER.number().numberBetween(1, 12), type, schema);
+        if (key.equals("day"))
+            return coerce(FAKER.number().numberBetween(1, 28), type, schema);
+        if (key.equals("hour"))
+            return coerce(FAKER.number().numberBetween(0, 23), type, schema);
+        if (key.equals("minute") || key.equals("second"))
+            return coerce(FAKER.number().numberBetween(0, 59), type, schema);
+        if (key.equals("count") || key.equals("total"))
+            return coerce(FAKER.number().numberBetween(1, 200), type, schema);
+        if (key.equals("quantity") || key.equals("size"))
+            return coerce(FAKER.number().numberBetween(1, 50), type, schema);
+        if (key.equals("amount") || key.equals("price") || key.equals("cost"))
+            return coerce(FAKER.number().randomDouble(2, 1, 9999), type, schema);
+        if (key.equals("discount") || key.equals("tax"))
+            return coerce(FAKER.number().randomDouble(2, 0, 50), type, schema);
+        if (key.equals("rating"))
+            return coerce(FAKER.number().randomDouble(1, 1, 5), type, schema);
+        if (key.equals("score") || key.equals("rank"))
+            return coerce(FAKER.number().numberBetween(1, 100), type, schema);
+        if (key.equals("port"))
+            return coerce(FAKER.number().numberBetween(1024, 65535), type, schema);
+        if (key.equals("latitude"))
+            return coerce(Double.parseDouble(FAKER.address().latitude().replace(",", ".")), type, schema);
+        if (key.equals("longitude"))
+            return coerce(Double.parseDouble(FAKER.address().longitude().replace(",", ".")), type, schema);
+
+        // --- Booleans ---
+        if ("boolean".equals(type)) {
+            return generateBoolean(fieldName);
+        }
+
+        return null;
+    }
+
+    /**
+     * Generates a value based on schema type when no format or field-name match was found.
      */
     private static Object generateByType(final String fieldName, final String type, final Schema<?> schema) {
         if (type == null) {
-            return fieldName != null ? fieldName + "-value" : "value";
+            return fieldName != null ? FAKER.lorem().word() : "value";
         }
         switch (type.toLowerCase()) {
             case "integer":
-                return generateInt(schema, 1001);
+                return generateInt(schema, FAKER.number().numberBetween(1, 10000));
             case "number":
-                return generateDouble(schema, 29.99);
+                return generateDouble(schema, FAKER.number().randomDouble(2, 1, 10000));
             case "boolean":
                 return generateBoolean(fieldName);
             case "string":
@@ -314,7 +322,7 @@ public class MockDataGenerator {
             case "array":
             case "object":
             default:
-                return fieldName != null ? fieldName + "-value" : "value";
+                return fieldName != null ? FAKER.lorem().word() : "value";
         }
     }
 
@@ -329,12 +337,15 @@ public class MockDataGenerator {
             return true;
         }
         final String key = normalise(fieldName);
-        final Object dictValue = FIELD_DICTIONARY.get(key);
-        if (dictValue instanceof Boolean) {
-            return (Boolean) dictValue;
+        if (BOOL_FALSE_NAMES.contains(key)) {
+            return false;
         }
-        // Heuristics for names not in dictionary
-        if (key.startsWith("is") || key.startsWith("has") || key.startsWith("can") || key.startsWith("should")) {
+        if (BOOL_TRUE_NAMES.contains(key)) {
+            return true;
+        }
+        // Heuristics for names not in the sets
+        if (key.startsWith("is") || key.startsWith("has") || key.startsWith("can")
+                || key.startsWith("should")) {
             return true;
         }
         if (key.contains("delete") || key.contains("archive") || key.contains("disable")
@@ -348,18 +359,18 @@ public class MockDataGenerator {
      * Generates a mock string value, respecting {@code minLength} / {@code maxLength} constraints.
      */
     private static String generateString(final String fieldName, final Schema<?> schema) {
-        String base = fieldName != null ? fieldName + "-value" : "sample-value";
+        String base = fieldName != null ? FAKER.lorem().word() : FAKER.lorem().word();
         // Respect minLength
-        Integer minLength = schema.getMinLength();
+        final Integer minLength = schema.getMinLength();
         if (minLength != null && base.length() < minLength) {
-            StringBuilder sb = new StringBuilder(base);
+            final StringBuilder sb = new StringBuilder(base);
             while (sb.length() < minLength) {
-                sb.append("-x");
+                sb.append(FAKER.lorem().characters(1));
             }
             base = sb.toString();
         }
         // Respect maxLength
-        Integer maxLength = schema.getMaxLength();
+        final Integer maxLength = schema.getMaxLength();
         if (maxLength != null && base.length() > maxLength) {
             base = base.substring(0, maxLength);
         }
@@ -421,7 +432,7 @@ public class MockDataGenerator {
     }
 
     /**
-     * Coerces a dictionary value to the expected schema type where possible.
+     * Coerces a Datafaker-generated value to the expected schema type where possible.
      */
     private static Object coerce(final Object value, final String type, final Schema<?> schema) {
         if (type == null) {
@@ -432,12 +443,12 @@ public class MockDataGenerator {
                 if (value instanceof Number) {
                     return ((Number) value).intValue();
                 }
-                return generateInt(schema, 1001);
+                return generateInt(schema, FAKER.number().numberBetween(1, 10000));
             case "number":
                 if (value instanceof Number) {
                     return ((Number) value).doubleValue();
                 }
-                return generateDouble(schema, 29.99);
+                return generateDouble(schema, FAKER.number().randomDouble(2, 1, 10000));
             case "boolean":
                 if (value instanceof Boolean) {
                     return value;
@@ -456,7 +467,7 @@ public class MockDataGenerator {
     /**
      * Normalises a field name by lower-casing it and removing all non-alphanumeric characters
      * (e.g. underscores, hyphens, dots) so that {@code first_name}, {@code firstName},
-     * and {@code first-name} all map to the same dictionary key.
+     * and {@code first-name} all map to the same lookup key.
      */
     static String normalise(final String name) {
         if (name == null) {
