@@ -56,7 +56,7 @@ public class IT_SwaggerRoute {
         wireMockServer.start();
         WireMock.configureFor("localhost", wireMockServer.port());
 
-        stubFor(get(urlPathEqualTo("/v2/pet/findByStatus"))
+        stubFor(get(urlPathEqualTo("/v2.1/pet/findByStatus"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -103,7 +103,7 @@ public class IT_SwaggerRoute {
                     .atMost(15, SECONDS).until(() -> routeAvailable(routeId));
 
             RestAssured
-                    .given().when().get("/v2/pet/findByStatus?status=available")
+                    .given().when().get("/v2.1/pet/findByStatus?status=available")
                     .then()
                     .statusCode(200)
                     .body("[0].id", Matchers.equalTo(1));
@@ -115,7 +115,7 @@ public class IT_SwaggerRoute {
                 .atMost(15, SECONDS).until(() -> !routeAvailable(routeId));
 
         RestAssured
-                .given().when().get("/v2/pet/findByStatus?status=available")
+                .given().when().get("/v2.1/pet/findByStatus?status=available")
                 .then()
                 .statusCode(404);
     }

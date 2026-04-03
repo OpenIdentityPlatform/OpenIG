@@ -56,8 +56,8 @@ public class OpenApiRouteBuilderTest {
                 { "/pets",                     "^/pets$"                        },
                 { "/pets/{id}",                "^/pets/[^/]+$"                  },
                 { "/pets/{petId}/photos",      "^/pets/[^/]+/photos$"           },
-                { "/v1/{org}/{repo}/releases", "^/v1/[^/]+/[^/]+/releases$"    },
-                { "/a.b/{x}",                  "^/a\\.b/[^/]+$"                 },
+                { "/v1/{org}/{repo}/releases", "^/v1/[^/]+/[^/]+/releases$"     },
+                { "/a.b/{x}",                  "^/a\\\\.b/[^/]+$"               },
                 { "/items/{id+}",              "^/items/[^/]+$"                 },
                 { "/users",                    "^/users$"                       },
         };

@@ -18,6 +18,7 @@ package org.forgerock.openig.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -29,6 +30,7 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.forgerock.http.Handler;
@@ -45,11 +47,12 @@ import org.forgerock.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * A {@link Handler} that generates valid mock HTTP responses with realistic test data
@@ -96,6 +99,9 @@ public class OpenApiMockResponseHandler implements Handler {
     private static final Logger logger = LoggerFactory.getLogger(OpenApiMockResponseHandler.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    static {
+        MAPPER.registerModule(new JavaTimeModule());
+    }
 
     private final OpenAPI openAPI;
 
@@ -145,8 +151,12 @@ public class OpenApiMockResponseHandler implements Handler {
         // Find matching path template
         PathItem matchedPathItem  = null;
         String   matchedTemplate  = null;
+        final String basePath = getBasePath(openAPI);
         for (Map.Entry<String, PathItem> entry : openAPI.getPaths().entrySet()) {
-            if (pathMatches(entry.getKey(), requestPath)) {
+            final String entryPath = basePath.isEmpty()
+                    ? entry.getKey()
+                    : basePath.concat(entry.getKey());
+            if (pathMatches(entryPath, requestPath)) {
                 matchedPathItem  = entry.getValue();
                 matchedTemplate  = entry.getKey();
                 break;
@@ -272,6 +282,29 @@ public class OpenApiMockResponseHandler implements Handler {
             mediaType = content.values().iterator().next();
         }
         return mediaType == null ? null : mediaType.getSchema();
+    }
+
+    private static String getBasePath(OpenAPI spec) {
+        if (spec.getServers() == null || spec.getServers().isEmpty()) {
+            return "";
+        }
+        final Server server = spec.getServers().get(0);
+        if (server.getUrl() == null || server.getUrl().isBlank()
+                || server.getUrl().equals("/")) {
+            return "";
+        }
+        // Remove trailing slash
+        String url = server.getUrl().trim();
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+
+        try {
+            return new URI(url).getPath();
+        } catch (URISyntaxException e) {
+            logger.warn("error parsing base URI: {}", e.toString());
+            return "";
+        }
     }
 
     // -----------------------------------------------------------------------

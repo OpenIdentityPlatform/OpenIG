@@ -241,7 +241,7 @@ public class OpenApiRouteBuilder {
      *
      * <p>Transformation rules (applied in order):
      * <ol>
-     *   <li>Literal {@code .} → {@code \.} (escape regex metachar)</li>
+     *   <li>Literal {@code .} → {@code \\.} (escape regex metachar)</li>
      *   <li>Literal {@code +} → {@code \+} (escape regex metachar)</li>
      *   <li>{@code {paramName}} → {@code [^/]+} (path parameter → non-slash segment)</li>
      *   <li>Prepend {@code ^}, append {@code $} (full-path anchor)</li>
@@ -251,7 +251,7 @@ public class OpenApiRouteBuilder {
      * <ul>
      *   <li>{@code /pets}           → {@code ^/pets$}</li>
      *   <li>{@code /pets/{id}}      → {@code ^/pets/[^/]+$}</li>
-     *   <li>{@code /a.b/{x}/c}     → {@code ^/a\.b/[^/]+/c$}</li>
+     *   <li>{@code /a.b/{x}/c}     → {@code ^/a\\.b/[^/]+/c$}</li>
      *   <li>{@code /v1/{org}/{repo}/releases} → {@code ^/v1/[^/]+/[^/]+/releases$}</li>
      * </ul>
      *
@@ -264,7 +264,7 @@ public class OpenApiRouteBuilder {
         }
         String regex = openApiPath;
         // 1. Escape literal regex metacharacters that can appear in paths
-        regex = regex.replace(".", "\\.");
+        regex = regex.replace(".", "\\\\.");
         regex = regex.replace("+", "\\+");
         // 2. Replace every {paramName} placeholder with a non-slash segment matcher
         regex = regex.replaceAll("\\{[^/{}]+}", "[^/]+");
