@@ -321,14 +321,14 @@ public class RouterHandlerTest {
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean())).thenReturn(routeJson);
+        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean(), anyBoolean())).thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
 
         RouterHandler handler = newHandler();
         handler.onChanges(addedChangeSet(specFile));
 
         verify(mockSpecLoader).tryLoad(specFile);
-        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false);
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false, false);
         verify(mockRouteBuilder).build(any(), any(), any());
     }
 
@@ -355,7 +355,7 @@ public class RouterHandlerTest {
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean())).thenReturn(routeJson);
+        when(mockOpenApiRouteBuilder.buildRouteJson(eq(fakeSpec), eq(specFile), anyBoolean(), anyBoolean())).thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
 
         RouterHandler handler = newHandler();
@@ -380,7 +380,7 @@ public class RouterHandlerTest {
 
         // Neither the loader nor the route builder should have been consulted
         verify(mockSpecLoader, never()).tryLoad(any());
-        verify(mockOpenApiRouteBuilder, never()).buildRouteJson(any(), any(), any(Boolean.class));
+        verify(mockOpenApiRouteBuilder, never()).buildRouteJson(any(), any(), any(Boolean.class), any(Boolean.class));
         verify(mockRouteBuilder, never()).build(any(), any(), any());
     }
 
@@ -396,7 +396,7 @@ public class RouterHandlerTest {
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, false))
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, false, false))
                 .thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
 
@@ -404,7 +404,7 @@ public class RouterHandlerTest {
         strictHandler.onChanges(addedChangeSet(specFile));
 
         // Must be called with failOnResponseViolation=false
-        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false);
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, false, false);
     }
 
     @Test
@@ -419,14 +419,14 @@ public class RouterHandlerTest {
 
         when(mockSpecLoader.isOpenApiFile(specFile)).thenReturn(true);
         when(mockSpecLoader.tryLoad(specFile)).thenReturn(Optional.of(fakeSpec));
-        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, true))
+        when(mockOpenApiRouteBuilder.buildRouteJson(fakeSpec, specFile, true, false))
                 .thenReturn(routeJson);
         when(mockRouteBuilder.build(any(), any(), any())).thenReturn(mockRoute);
 
         strictHandler.onChanges(addedChangeSet(specFile));
 
         // Must be called with failOnResponseViolation=true
-        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, true);
+        verify(mockOpenApiRouteBuilder).buildRouteJson(fakeSpec, specFile, true, false);
     }
 
     @Test
