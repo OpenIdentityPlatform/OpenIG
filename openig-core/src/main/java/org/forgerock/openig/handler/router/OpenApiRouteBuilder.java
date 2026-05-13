@@ -61,6 +61,9 @@ public class OpenApiRouteBuilder {
     /** Name used to reference the validation filter inside the heap. */
     private static final String VALIDATOR_HEAP_NAME = "OpenApiValidator";
 
+    /** Name used to reference the mock handler inside the heap. */
+    private static final String MOCK_HANDLER_HEAP_NAME = "OpenApiMockHandler";
+
     /**
      * Builds an OpenIG route {@link JsonValue} for the supplied OpenAPI specification.
      *
@@ -74,17 +77,38 @@ public class OpenApiRouteBuilder {
      * @return a {@link JsonValue} that can be passed directly to the {@code RouterHandler}'s
      *         internal route-loading mechanism
      */
-
     public JsonValue buildRouteJson(final OpenAPI spec, final File specFile, boolean failOnResponseViolation) {
+        return buildRouteJson(spec, specFile, failOnResponseViolation, false);
+    }
+
+    /**
+     * Builds an OpenIG route {@link JsonValue} for the supplied OpenAPI specification.
+     *
+     * @param spec     the parsed OpenAPI model
+     * @param specFile the original spec file on disk (used for the validator config and as a
+     *                 fallback route name)
+     * @param failOnResponseViolation if {@code true}, the generated
+     *                                {@code OpenApiValidationFilter} will return
+     *                                {@code 502 Bad Gateway} when a response violates the spec;
+     *                                if {@code false} (default), violations are only logged
+     * @param mockMode if {@code true}, the route handler chain terminates at an
+     *                 {@code OpenApiMockResponseHandler} instead of a {@code ClientHandler};
+     *                 when {@code false} (default) requests are forwarded upstream
+     * @return a {@link JsonValue} that can be passed directly to the {@code RouterHandler}'s
+     *         internal route-loading mechanism
+     */
+    public JsonValue buildRouteJson(final OpenAPI spec, final File specFile,
+                                    boolean failOnResponseViolation, boolean mockMode) {
         final String routeName = deriveRouteName(spec, specFile);
         final String condition = buildConditionExpression(spec);
         final String baseUri   = extractBaseUri(spec);
 
-        logger.info("Building OpenAPI route '{}' from spec file '{}' (condition: {}, baseUri: {}, failOnResponseViolation: {})",
-                routeName, specFile.getName(), condition, baseUri != null ? baseUri : "<none>", failOnResponseViolation);
+        logger.info("Building OpenAPI route '{}' from spec file '{}' (condition: {}, baseUri: {}, "
+                        + "failOnResponseViolation: {}, mockMode: {})",
+                routeName, specFile.getName(), condition, baseUri != null ? baseUri : "<none>",
+                failOnResponseViolation, mockMode);
 
-
-        // ----- heap: one OpenApiValidationFilter entry -----
+        // ----- heap: OpenApiValidationFilter entry -----
         final Map<String, Object> validatorConfig = new LinkedHashMap<>();
         validatorConfig.put("spec", "${read('" + specFile.getAbsolutePath() + "')}");
         validatorConfig.put("failOnResponseViolation", failOnResponseViolation);
@@ -94,10 +118,29 @@ public class OpenApiRouteBuilder {
         validatorHeapObject.put("type", "OpenApiValidationFilter");
         validatorHeapObject.put("config", validatorConfig);
 
-        // ----- handler: Chain -> [OpenApiValidationFilter] -> ClientHandler -----
+        final List<Object> heapObjects = new ArrayList<>();
+        heapObjects.add(validatorHeapObject);
+
+        final String terminalHandlerName;
+        if (mockMode) {
+            // ----- heap: OpenApiMockResponseHandler entry -----
+            final Map<String, Object> mockConfig = new LinkedHashMap<>();
+            mockConfig.put("spec", "${read('" + specFile.getAbsolutePath() + "')}");
+
+            final Map<String, Object> mockHeapObject = new LinkedHashMap<>();
+            mockHeapObject.put("name", MOCK_HANDLER_HEAP_NAME);
+            mockHeapObject.put("type", "OpenApiMockResponseHandler");
+            mockHeapObject.put("config", mockConfig);
+            heapObjects.add(mockHeapObject);
+            terminalHandlerName = MOCK_HANDLER_HEAP_NAME;
+        } else {
+            terminalHandlerName = "ClientHandler";
+        }
+
+        // ----- handler: Chain -> [OpenApiValidationFilter] -> <terminal> -----
         final Map<String, Object> chainConfig = new LinkedHashMap<>();
         chainConfig.put("filters", List.of(VALIDATOR_HEAP_NAME));
-        chainConfig.put("handler", "ClientHandler");
+        chainConfig.put("handler", terminalHandlerName);
 
         final Map<String, Object> handlerObject = new LinkedHashMap<>();
         handlerObject.put("type", "Chain");
@@ -111,12 +154,12 @@ public class OpenApiRouteBuilder {
             routeMap.put("condition", condition);
         }
 
-        // Apply baseURI decorator when the spec declares a server URL
-        if (baseUri != null) {
+        // Apply baseURI decorator when the spec declares a server URL (not needed in mock mode)
+        if (baseUri != null && !mockMode) {
             routeMap.put("baseURI", baseUri);
         }
 
-        routeMap.put("heap", List.of(validatorHeapObject));
+        routeMap.put("heap", heapObjects);
         routeMap.put("handler", handlerObject);
 
         return json(routeMap);
@@ -198,7 +241,7 @@ public class OpenApiRouteBuilder {
      *
      * <p>Transformation rules (applied in order):
      * <ol>
-     *   <li>Literal {@code .} → {@code \.} (escape regex metachar)</li>
+     *   <li>Literal {@code .} → {@code \\.} (escape regex metachar)</li>
      *   <li>Literal {@code +} → {@code \+} (escape regex metachar)</li>
      *   <li>{@code {paramName}} → {@code [^/]+} (path parameter → non-slash segment)</li>
      *   <li>Prepend {@code ^}, append {@code $} (full-path anchor)</li>
@@ -208,7 +251,7 @@ public class OpenApiRouteBuilder {
      * <ul>
      *   <li>{@code /pets}           → {@code ^/pets$}</li>
      *   <li>{@code /pets/{id}}      → {@code ^/pets/[^/]+$}</li>
-     *   <li>{@code /a.b/{x}/c}     → {@code ^/a\.b/[^/]+/c$}</li>
+     *   <li>{@code /a.b/{x}/c}     → {@code ^/a\\.b/[^/]+/c$}</li>
      *   <li>{@code /v1/{org}/{repo}/releases} → {@code ^/v1/[^/]+/[^/]+/releases$}</li>
      * </ul>
      *
@@ -221,7 +264,7 @@ public class OpenApiRouteBuilder {
         }
         String regex = openApiPath;
         // 1. Escape literal regex metacharacters that can appear in paths
-        regex = regex.replace(".", "\\.");
+        regex = regex.replace(".", "\\\\.");
         regex = regex.replace("+", "\\+");
         // 2. Replace every {paramName} placeholder with a non-slash segment matcher
         regex = regex.replaceAll("\\{[^/{}]+}", "[^/]+");

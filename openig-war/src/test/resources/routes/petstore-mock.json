@@ -1,0 +1,16 @@
+{
+  "name": "petstore-mock",
+  "condition": "${matches(request.uri.path, '^/v2/')}",
+  "heap": [
+    {
+      "name": "PetstoreMock",
+      "type": "OpenApiMockResponseHandler",
+      "config": {
+        "spec": "${read('$$SWAGGER_FILE$$')}",
+        "defaultStatusCode": 200,
+        "arraySize": 2
+      }
+    }
+  ],
+  "handler": "PetstoreMock"
+}

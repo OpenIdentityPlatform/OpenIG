@@ -53,6 +53,11 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>2.18.6</version>
+    </dependency>
+    <dependency>
       <groupId>org.openidentityplatform.commons</groupId>
       <artifactId>util</artifactId>
     </dependency>
@@ -165,6 +170,11 @@
       <groupId>com.atlassian.oai</groupId>
       <artifactId>swagger-request-validator-core</artifactId>
       <version>2.46.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.datafaker</groupId>
+      <artifactId>datafaker</artifactId>
+      <version>1.9.0</version>
     </dependency>
 
     <!-- test dependencies -->

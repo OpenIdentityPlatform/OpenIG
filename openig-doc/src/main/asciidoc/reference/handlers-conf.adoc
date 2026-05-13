@@ -720,8 +720,9 @@ xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter(5)].
         "directory": expression,
         "scanInterval": integer,
         "openApiValidation": {
-            "enabled": boolean
-            "failOnResponseViolation": boolean
+            "enabled": boolean,
+            "failOnResponseViolation": boolean,
+            "mockMode": boolean
         }
     }
 }
@@ -797,6 +798,18 @@ from a detected spec file.
 This setting applies only to auto-generated routes. Routes that declare an
 `OpenApiValidationFilter` manually in their heap control this flag themselves.
 
++
+Default: `false`.
+
+`"mockMode"`: __boolean, optional__::
+When set to `true`, auto-generated routes terminate at an
+`OpenApiMockResponseHandler` instead of forwarding the request to an upstream
+service via `ClientHandler`.
++
+Use this setting to stand up a fully self-contained mock API from an OpenAPI
+spec without any real upstream service.  The mock handler generates a
+JSON response body that conforms to the response schema declared in the spec,
+using realistic test data derived from field names, formats, and examples.
 +
 Default: `false`.
 
@@ -1294,6 +1307,151 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 [#d210e4465]
 ==== Javadoc
 link:{apidocs-url}/org/forgerock/openig/handler/SequenceHandler.html[org.forgerock.openig.handler.SequenceHandler, window=\_blank]
+
+'''
+[#OpenApiMockResponseHandler]
+=== OpenApiMockResponseHandler — generate mock responses from an OpenAPI spec
+
+[#openapi-mock-description]
+==== Description
+An `OpenApiMockResponseHandler` is a handler that generates valid mock HTTP responses
+with realistic test data based on an OpenAPI / Swagger specification.
+
+Instead of forwarding the request to an upstream service, the handler:
+
+. Matches the incoming request path + method against the paths declared in the spec.
+  Path parameter placeholders such as `{userId}` are matched against any non-slash segment.
+. Locates the best response schema for the matched operation.
+  The preference order is: `200` → `201` → first `2xx` → `default`.
+. Recursively generates a JSON body from the schema using the following priority rules for each field:
+  .. If the schema has an `example` value, it is used as-is.
+  .. If the schema has an `enum` list, the first value is used.
+  .. If the field format matches a known format (`date`, `date-time`, `email`, `uri`, `uuid`,
+     `ipv4`, `hostname`, `byte`, `password`, etc.), a format-appropriate value is generated.
+  .. If the field name matches a built-in dictionary entry (e.g. `firstName`, `email`, `phone`,
+     `city`, `company`, `token`), a realistic pre-defined value is returned.
+  .. Otherwise a type-appropriate generic value is generated.
+. Returns the generated body with `Content-Type: application/json`.
+
+If no matching path is found the handler returns `404 Not Found`.
+If the path is matched but the HTTP method is not declared the handler returns `405 Method Not Allowed`.
+
+Use this handler in combination with `OpenApiValidationFilter` to build a fully
+self-contained mock API from an OpenAPI spec, without any real upstream service.
+
+[#openapi-mock-usage]
+==== Usage
+
+[source, javascript]
+----
+{
+    "name": string,
+    "type": "OpenApiMockResponseHandler",
+    "config": {
+        "spec": expression,
+        "defaultStatusCode": integer,
+        "arraySize": integer
+    }
+}
+----
+
+[#openapi-mock-properties]
+==== Properties
+--
+
+`"spec"`: __expression, required__::
+The content of the OpenAPI specification (YAML or JSON) as a string expression.
++
+Typically written as `"${read('/path/to/openapi.yaml')}"` to read the spec from a file on disk.
++
+See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
+
+`"defaultStatusCode"`: __integer, optional__::
+The HTTP status code used for generated responses.
++
+Default: `200`.
+
+`"arraySize"`: __integer, optional__::
+The number of items to generate when the response schema is of type `array`.
++
+Default: `1`.
+
+--
+
+[#openapi-mock-example]
+==== Example
+
+The following configuration creates a standalone mock handler for a Petstore API:
+
+[source, json]
+----
+{
+    "name": "PetstoreMock",
+    "type": "OpenApiMockResponseHandler",
+    "config": {
+        "spec": "${read('/opt/openig/config/specs/petstore.yaml')}",
+        "defaultStatusCode": 200,
+        "arraySize": 3
+    }
+}
+----
+
+To use it in a route with request validation:
+
+[source, json]
+----
+{
+    "name": "petstore-mock",
+    "heap": [
+        {
+            "name": "PetstoreValidator",
+            "type": "OpenApiValidationFilter",
+            "config": {
+                "spec": "${read('/opt/openig/config/specs/petstore.yaml')}",
+                "failOnResponseViolation": false
+            }
+        },
+        {
+            "name": "PetstoreMock",
+            "type": "OpenApiMockResponseHandler",
+            "config": {
+                "spec": "${read('/opt/openig/config/specs/petstore.yaml')}",
+                "arraySize": 3
+            }
+        }
+    ],
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": ["PetstoreValidator"],
+            "handler": "PetstoreMock"
+        }
+    }
+}
+----
+
+You can also enable mock mode globally via the Router's `openApiValidation.mockMode` setting,
+which automatically wires the mock handler for every OpenAPI spec file placed in the routes directory:
+
+[source, json]
+----
+{
+    "name": "Router",
+    "type": "Router",
+    "config": {
+        "directory": "/opt/openig/config/routes",
+        "openApiValidation": {
+            "enabled": true,
+            "failOnResponseViolation": false,
+            "mockMode": true
+        }
+    }
+}
+----
+
+[#openapi-mock-javadoc]
+==== Javadoc
+link:{apidocs-url}/org/forgerock/openig/handler/OpenApiMockResponseHandler.html[org.forgerock.openig.handler.OpenApiMockResponseHandler, window=\_blank]
 
 '''
 [#StaticResponseHandler]

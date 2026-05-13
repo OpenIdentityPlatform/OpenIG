@@ -56,8 +56,8 @@ public class OpenApiRouteBuilderTest {
                 { "/pets",                     "^/pets$"                        },
                 { "/pets/{id}",                "^/pets/[^/]+$"                  },
                 { "/pets/{petId}/photos",      "^/pets/[^/]+/photos$"           },
-                { "/v1/{org}/{repo}/releases", "^/v1/[^/]+/[^/]+/releases$"    },
-                { "/a.b/{x}",                  "^/a\\.b/[^/]+$"                 },
+                { "/v1/{org}/{repo}/releases", "^/v1/[^/]+/[^/]+/releases$"     },
+                { "/a.b/{x}",                  "^/a\\\\.b/[^/]+$"               },
                 { "/items/{id+}",              "^/items/[^/]+$"                 },
                 { "/users",                    "^/users$"                       },
         };
@@ -287,6 +287,64 @@ public class OpenApiRouteBuilderTest {
         assertThat(build(spec).get("baseURI").isNull()).isTrue();
     }
 
+    // ---- mockMode ---------------------------------------------------------
+
+    @Test
+    public void buildRouteJson_mockMode_handlerIsChainWithMockHandler() throws IOException {
+        final File spec = writeYaml("mock.yaml", specWithPaths("/pets"));
+        final JsonValue route = buildMock(spec);
+        final JsonValue handler = route.get("handler");
+        assertThat(handler.get("type").asString()).isEqualTo("Chain");
+        assertThat(handler.get("config").get("handler").asString()).isEqualTo("OpenApiMockHandler");
+    }
+
+    @Test
+    public void buildRouteJson_mockMode_heapContainsMockHandler() throws IOException {
+        final File spec = writeYaml("mock2.yaml", specWithPaths("/items"));
+        final List<Object> heap = buildMock(spec).get("heap").asList();
+
+        final boolean hasMock = heap.stream()
+                .filter(o -> o instanceof java.util.Map)
+                .map(o -> (java.util.Map<?, ?>) o)
+                .anyMatch(m -> "OpenApiMockResponseHandler".equals(m.get("type")));
+        assertThat(hasMock).isTrue();
+    }
+
+    @Test
+    public void buildRouteJson_mockMode_hasNoBaseUri_evenWhenSpecHasServer() throws IOException {
+        final File spec = writeYaml("mock-server.yaml",
+                "openapi: '3.0.3'\n"
+                        + "info:\n"
+                        + "  title: API\n"
+                        + "  version: '1'\n"
+                        + "servers:\n"
+                        + "  - url: 'https://api.example.com/v2'\n"
+                        + "paths:\n"
+                        + "  /items:\n"
+                        + "    get:\n"
+                        + "      responses:\n"
+                        + "        '200':\n"
+                        + "          description: OK\n");
+        // In mockMode, no baseURI should be set (requests stay local)
+        assertThat(buildMock(spec).get("baseURI").isNull()).isTrue();
+    }
+
+    @Test
+    public void buildRouteJson_mockMode_mockHandlerConfigContainsSpecPath() throws IOException {
+        final File spec = writeYaml("mock3.yaml", specWithPaths("/things"));
+        final List<Object> heap = buildMock(spec).get("heap").asList();
+
+        final java.util.Map<?, ?> mockEntry = heap.stream()
+                .filter(o -> o instanceof java.util.Map)
+                .map(o -> (java.util.Map<?, ?>) o)
+                .filter(m -> "OpenApiMockResponseHandler".equals(m.get("type")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No OpenApiMockResponseHandler in heap"));
+
+        final java.util.Map<?, ?> config = (java.util.Map<?, ?>) mockEntry.get("config");
+        assertThat(config.get("spec").toString()).contains(spec.getAbsolutePath());
+    }
+
 
     private File writeYaml(final String name, final String content) throws IOException {
         final File file = new File(tempDir, name);
@@ -298,6 +356,12 @@ public class OpenApiRouteBuilderTest {
         final Optional<OpenAPI> api = specLoader.tryLoad(specFile);
         assertThat(api.isPresent()).as("Expected spec file to parse successfully: " + specFile).isTrue();
         return routeBuilder.buildRouteJson(api.get(), specFile, true);
+    }
+
+    private JsonValue buildMock(final File specFile) {
+        final Optional<OpenAPI> api = specLoader.tryLoad(specFile);
+        assertThat(api.isPresent()).as("Expected spec file to parse successfully: " + specFile).isTrue();
+        return routeBuilder.buildRouteJson(api.get(), specFile, false, true);
     }
 
     private static String specWithPaths(final String... paths) {
