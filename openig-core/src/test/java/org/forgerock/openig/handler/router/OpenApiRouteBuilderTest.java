@@ -239,7 +239,8 @@ public class OpenApiRouteBuilderTest {
                 .orElseThrow(() -> new AssertionError("No OpenApiValidationFilter in heap"));
 
         final java.util.Map<?, ?> config = (java.util.Map<?, ?>) validatorEntry.get("config");
-        assertThat(config.get("spec").toString()).contains(spec.getAbsolutePath());
+        // OpenApiRouteBuilder normalises the platform separator to '/' for the read() literal.
+        assertThat(config.get("spec").toString()).contains(spec.getAbsolutePath().replace(File.separatorChar, '/'));
     }
 
     @Test
@@ -342,7 +343,8 @@ public class OpenApiRouteBuilderTest {
                 .orElseThrow(() -> new AssertionError("No OpenApiMockResponseHandler in heap"));
 
         final java.util.Map<?, ?> config = (java.util.Map<?, ?>) mockEntry.get("config");
-        assertThat(config.get("spec").toString()).contains(spec.getAbsolutePath());
+        // OpenApiRouteBuilder normalises the platform separator to '/' for the read() literal.
+        assertThat(config.get("spec").toString()).contains(spec.getAbsolutePath().replace(File.separatorChar, '/'));
     }
 
 

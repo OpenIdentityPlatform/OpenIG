@@ -108,9 +108,15 @@ public class OpenApiRouteBuilder {
                 routeName, specFile.getName(), condition, baseUri != null ? baseUri : "<none>",
                 failOnResponseViolation, mockMode);
 
+        // Normalise the platform path separator to '/': this path is embedded in an EL
+        // read('...') string literal, where a Windows backslash (D:\...) is parsed as an
+        // (invalid) escape sequence. Forward slashes are accepted by read()/File on every OS.
+        final String absolutePath = specFile.getAbsolutePath();
+        final String specPath = absolutePath == null ? null : absolutePath.replace(File.separatorChar, '/');
+
         // ----- heap: OpenApiValidationFilter entry -----
         final Map<String, Object> validatorConfig = new LinkedHashMap<>();
-        validatorConfig.put("spec", "${read('" + specFile.getAbsolutePath() + "')}");
+        validatorConfig.put("spec", "${read('" + specPath + "')}");
         validatorConfig.put("failOnResponseViolation", failOnResponseViolation);
 
         final Map<String, Object> validatorHeapObject = new LinkedHashMap<>();
@@ -125,7 +131,7 @@ public class OpenApiRouteBuilder {
         if (mockMode) {
             // ----- heap: OpenApiMockResponseHandler entry -----
             final Map<String, Object> mockConfig = new LinkedHashMap<>();
-            mockConfig.put("spec", "${read('" + specFile.getAbsolutePath() + "')}");
+            mockConfig.put("spec", "${read('" + specPath + "')}");
 
             final Map<String, Object> mockHeapObject = new LinkedHashMap<>();
             mockHeapObject.put("name", MOCK_HANDLER_HEAP_NAME);
