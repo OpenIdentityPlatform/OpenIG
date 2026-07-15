@@ -1,7 +1,7 @@
 {
   "name": "swagger-petstore-test",
-  "condition": "${(matches(request.uri.path, '^/v2/pet/findByStatus$') && matches(request.method, '^GET$'))}",
-  "baseURI": "http://localhost:8090/v2",
+  "condition": "${(matches(request.uri.path, '^/v2.1/pet/findByStatus$') && matches(request.method, '^GET$'))}",
+  "baseURI": "http://localhost:8090/v2.1",
   "heap": [
     {
       "name": "OpenApiValidator",

@@ -83,11 +83,11 @@ public class IT_MockRoute {
                     .atMost(30, SECONDS)
                     .until(() -> routeAvailable(ROUTE_ID));
 
-            // GET /v2/pet/findByStatus?status=available → 200 JSON array
+            // GET /v2.1/pet/findByStatus?status=available → 200 JSON array
             final String body = RestAssured
                     .given()
                     .when()
-                    .get("/v2/pet/findByStatus?status=available")
+                    .get("/v2.1/pet/findByStatus?status=available")
                     .then()
                     .statusCode(200)
                     .contentType("application/json")
@@ -99,7 +99,7 @@ public class IT_MockRoute {
             // Parse and assert array contents
             @SuppressWarnings("unchecked")
             final List<Map<String, Object>> pets =
-                    RestAssured.given().when().get("/v2/pet/findByStatus?status=available")
+                    RestAssured.given().when().get("/v2.1/pet/findByStatus?status=available")
                             .jsonPath().getList("$");
 
             assertThat(pets).isNotEmpty();
@@ -131,7 +131,7 @@ public class IT_MockRoute {
                 .until(() -> !routeAvailable(ROUTE_ID));
 
         RestAssured.given().when()
-                .get("/v2/pet/findByStatus?status=available")
+                .get("/v2.1/pet/findByStatus?status=available")
                 .then()
                 .statusCode(404);
     }
@@ -161,10 +161,10 @@ public class IT_MockRoute {
                     .atMost(30, SECONDS)
                     .until(() -> routeAvailable("petstore-mock-single"));
 
-            // GET /v2/pet/{petId} → single object
+            // GET /v2.1/pet/{petId} → single object
             @SuppressWarnings("unchecked")
             final Map<String, Object> pet =
-                    RestAssured.given().when().get("/v2/pet/42")
+                    RestAssured.given().when().get("/v2.1/pet/42")
                             .then()
                             .statusCode(200)
                             .contentType("application/json")

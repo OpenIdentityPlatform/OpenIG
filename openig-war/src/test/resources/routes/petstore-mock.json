@@ -1,6 +1,6 @@
 {
   "name": "petstore-mock",
-  "condition": "${matches(request.uri.path, '^/v2/')}",
+  "condition": "${matches(request.uri.path, '^/v2.1/')}",
   "heap": [
     {
       "name": "PetstoreMock",
