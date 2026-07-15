@@ -216,6 +216,8 @@ public class IT_MockRoute {
             Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
         }
         tmp.toFile().deleteOnExit();
-        return tmp.toAbsolutePath().toString();
+        // Use forward slashes: the path is substituted into the route JSON and an EL read('...')
+        // expression, where a Windows backslash path (C:\...) is an invalid JSON/EL escape.
+        return tmp.toAbsolutePath().toString().replace('\\', '/');
     }
 }

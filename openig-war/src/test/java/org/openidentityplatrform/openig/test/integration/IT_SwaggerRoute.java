@@ -87,7 +87,9 @@ public class IT_SwaggerRoute {
     @Test
     public void testCustomRoute() throws IOException {
         String testConfigPath = getTestConfigPath();
-        String openApiSpec = this.getClass().getClassLoader().getResource("routes/petstore.yaml").getPath();
+        // Use forward slashes: the path is substituted into the route JSON and an EL read('...')
+        // expression, where a Windows backslash path (D:\...) is an invalid JSON/EL escape.
+        String openApiSpec = this.getClass().getClassLoader().getResource("routes/petstore.yaml").getPath().replace('\\', '/');
         String routeContents = IOUtils.resourceToString("routes/01-find-pet.json", StandardCharsets.UTF_8, this.getClass().getClassLoader())
                 .replace("$$SWAGGER_FILE$$", openApiSpec);
         Path destination = Path.of(testConfigPath, "config", "routes", "01-find-pet.json");
