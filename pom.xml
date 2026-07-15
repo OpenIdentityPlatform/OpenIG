@@ -38,7 +38,10 @@
     <maven.min.version>3.1.0</maven.min.version>
 	<maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
-    
+
+    <!-- Javadoc doclint level, inherited by all modules. -->
+    <doclint>all,-missing</doclint>
+
     <!--  ForgeRock build tools and Checkstyle versions (to avoid many checkstyle errors with ForgeRock Parent 2.0.10) -->
     <forgerockBuildToolsVersion>1.0.3</forgerockBuildToolsVersion>
     <checkstylePluginVersion>2.9.1</checkstylePluginVersion>
@@ -859,7 +862,8 @@
 		    </execution>
 		  </executions>
 		  <configuration>
-		  	<doclint>none</doclint>
+		  	<doclint>${doclint}</doclint>
+			<failOnWarnings>true</failOnWarnings>
 			<notimestamp>true</notimestamp>
 		  </configuration>
 		</plugin>
@@ -956,7 +960,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-javadoc-plugin</artifactId>
-			<version>3.10.1</version>
+			<version>3.12.0</version>
 			<configuration>
 			</configuration>
 		</plugin>

@@ -212,7 +212,7 @@ public final class JsonValues {
 
     /**
      * Returns a function that will evaluate all String nodes. Transformation is applied
-     * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
+     * recursively. <p>Malformed expressions are ignored e.g: <code>"$$$${{"</code>
      * and their values are not changed. <p>When an error occurs during the
      * evaluation of an expression, the value is set to {@code null} because we
      * cannot differentiate successful evaluations or failed ones.
@@ -225,7 +225,7 @@ public final class JsonValues {
 
     /**
      * Returns a function that will evaluate all String nodes. Transformation is applied
-     * recursively. <p>Malformed expressions are ignored e.g: <tt>"$$$${{"</tt>
+     * recursively. <p>Malformed expressions are ignored e.g: <code>"$$$${{"</code>
      * and their values are not changed. <p>When an error occurs during the
      * evaluation of an expression, the value is set to {@code null} because we
      * cannot differentiate successful evaluations or failed ones.

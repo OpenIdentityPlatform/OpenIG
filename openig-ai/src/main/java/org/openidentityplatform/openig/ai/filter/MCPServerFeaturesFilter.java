@@ -46,8 +46,8 @@ import static org.forgerock.json.JsonValue.object;
 
 /**
  * MCPServerFeaturesFilter
- * <br/>
- * This filter enforces allow/deny policies for MCP (Management & Control Protocol)
+ * <br>
+ * This filter enforces allow/deny policies for MCP (Management &amp; Control Protocol)
  * features exchanged as JSON-RPC payloads with an MCP server. It inspects both
  * incoming requests and outgoing responses and removes or rejects features
  * according to the configured rules.

@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyrighted 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.el;
@@ -25,7 +26,7 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * This is an implementation of the {@link AsyncFunction} based on the evaluation of an {@link Expression}.
- * @param <V>
+ * @param <V> the type of the value returned by the evaluated expression
  */
 public class ExpressionRequestAsyncFunction<V> implements AsyncFunction<ContextAndRequest, V, Exception> {
 

@@ -104,7 +104,7 @@ import org.slf4j.LoggerFactory;
  *     synchronously.</li>
  * </ul>
  * In both cases, the default value is 10 seconds.
- * <br/>
+ * <br>
  * <p>In addition to regular route JSON files, this handler now also recognises OpenAPI spec files
  * ({@code .json}, {@code .yaml}, {@code .yml}) dropped into the same routes directory.
  * When {@code openApiValidation.mockMode} is {@code true}, auto-generated routes use an

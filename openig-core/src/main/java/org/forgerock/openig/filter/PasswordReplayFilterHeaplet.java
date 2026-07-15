@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyrighted 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.filter;
@@ -76,9 +77,9 @@ import org.forgerock.util.promise.ResultHandler;
  *     <li>Extracted patterns need to have at least a single regex group, the first one is always used</li>
  * </ul>
  *
- * <h3>Usage examples:</h3>
+ * <h2>Usage examples:</h2>
  *
- * <h4>Authenticate on behalf of the user when a login page is GET</h4>
+ * <h3>Authenticate on behalf of the user when a login page is GET</h3>
  *
  * <p>When a {@literal GET} request to the login page is intercepted, OpenIG will generate an alternative
  * authentication request and send it in place of the original request. The response is forwarded as-is to the caller.
@@ -99,7 +100,7 @@ import org.forgerock.util.promise.ResultHandler;
  *     }
  * </pre>
  *
- * <h4>Authenticate on behalf of the user when a login page is returned</h4>
+ * <h3>Authenticate on behalf of the user when a login page is returned</h3>
  *
  * <p>When a response that is identified to be a login page is intercepted, OpenIG will generate an authentication
  * request and send it. The authentication response is ignored ATM. Then OpenIG replays the original incoming request.

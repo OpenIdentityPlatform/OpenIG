@@ -64,7 +64,6 @@ import static org.forgerock.openig.util.JsonValues.optionalHeapObject;
  *       {@code 503 Service Unavailable}</li>
  *   <li>{@code false} (default) – log a warning and pass the original response through.</li>
  * </ul>
- * </p>
  *
  * <h2>Heap configuration</h2>
  * <pre>{@code

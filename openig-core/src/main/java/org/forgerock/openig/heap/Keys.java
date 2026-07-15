@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyrighted 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.heap;
 
@@ -99,7 +100,7 @@ public final class Keys {
     public static final String SESSION_FACTORY_HEAP_KEY = "Session";
 
     /**
-     * Key to retrieve an implementation of a {@link org.forgerock.util.Factory<org.forgerock.http.io.Buffer>} instance
+     * Key to retrieve an implementation of a {@link org.forgerock.util.Factory}&lt;{@link org.forgerock.http.io.Buffer}&gt; instance
      * from the {@link org.forgerock.openig.heap.Heap}.
      */
     public static final String TEMPORARY_STORAGE_HEAP_KEY = "TemporaryStorage";

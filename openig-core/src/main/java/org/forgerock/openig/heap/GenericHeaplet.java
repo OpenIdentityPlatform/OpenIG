@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyrighted 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.heap;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A generic base class for heaplets with automatically injected fields.
  * <p>
- * If the object created is an instance of {@link GenericHeapObject}, it is then
+ * If the object created is an instance of {@code GenericHeapObject}, it is then
  * automatically injected with {@code logger} and {@code storage} objects.
  */
 public abstract class GenericHeaplet implements Heaplet {
