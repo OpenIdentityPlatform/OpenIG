@@ -139,6 +139,7 @@ public class ServerEndPoint {
             				session_upstream.setMaxTextMessageBufferSize(session_client.getMaxTextMessageBufferSize());
             				session_upstream.setMaxIdleTimeout(session_client.getMaxIdleTimeout());
             				session_upstream.addMessageHandler(new MessageHandler.Whole<String>() {
+            		            @Override
             		            public void onMessage(String message) {
             		            	try {
             		            		if (logger.isTraceEnabled()) {
@@ -160,6 +161,7 @@ public class ServerEndPoint {
             		        });
             		    	
             				session_upstream.addMessageHandler(new MessageHandler.Whole<ByteBuffer>() {
+            		            @Override
             		            public void onMessage(ByteBuffer message) {
             		            	try {
             		            		if (logger.isTraceEnabled()) {
