@@ -36,15 +36,21 @@ define([
 
         eventManager.registerListener(constants.EVENT_APP_INITIALIZED, () => {
             // The test suites and their dependencies resolve through the require.config of main.js, so they are
-            // only loaded here, once the application is up.
+            // only loaded here, once the application is up. ViewManager and Configuration are requested explicitly:
+            // the application itself loads ViewManager asynchronously while navigating to its first view, so a
+            // synchronous require() from testStart is not guaranteed to find it loaded yet.
             require([
                 "ThemeManager",
+                "org/forgerock/commons/ui/common/main/ViewManager",
+                "org/forgerock/commons/ui/common/main/Configuration",
                 "../test/tests/OpenIGValidatorsTests",
                 "../test/tests/TransformServiceTests",
                 "../test/tests/DataFilterTests",
                 "../test/tests/getLoggedUser"
             ], (
                 ThemeManager,
+                ViewManager,
+                Configuration,
                 openIGValidatorsTests,
                 transformServiceTests,
                 dataFilterTests,
@@ -53,14 +59,12 @@ define([
                     QUnit.testStart((testDetails) => {
                         console.log(`Starting ${testDetails.module}: ${testDetails.name}`);
 
-                        const vm = require("org/forgerock/commons/ui/common/main/ViewManager");
+                        ViewManager.currentView = null;
+                        ViewManager.currentDialog = null;
+                        ViewManager.currentViewArgs = null;
+                        ViewManager.currentDialogArgs = null;
 
-                        vm.currentView = null;
-                        vm.currentDialog = null;
-                        vm.currentViewArgs = null;
-                        vm.currentDialogArgs = null;
-
-                        require("org/forgerock/commons/ui/common/main/Configuration").baseTemplate = null;
+                        Configuration.baseTemplate = null;
                     });
 
                     _.delay(() => {
