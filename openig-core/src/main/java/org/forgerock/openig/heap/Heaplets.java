@@ -81,7 +81,7 @@ public final class Heaplets {
         // we're directly pointing to the Heaplet
         if (Heaplet.class.isAssignableFrom(c)) {
             try {
-                heaplet = c.asSubclass(Heaplet.class).newInstance();
+                heaplet = c.asSubclass(Heaplet.class).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 logger.warn("An error occurred while trying to instantiate {} as a Heaplet", c.getName(), e);
                 // Ignored

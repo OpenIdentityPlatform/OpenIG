@@ -22,8 +22,11 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.servlet.HttpFrameworkServlet;
 import org.forgerock.services.context.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Principal implements java.security.Principal {
+	private static final Logger logger=LoggerFactory.getLogger(Principal.class);
 	
 	
 	final Context context; 
@@ -42,8 +45,25 @@ public class Principal implements java.security.Principal {
 	long lastAuthorize=0;
 	Status res=null;
 
+	/** System property holding the re-authorization interval, in seconds. */
+	static final String TTL_PROPERTY="org.openidentityplatform.openig.websocket.ttl";
+	static final long DEFAULT_TTL_SECONDS=180;
+	private static final long TTL_MILLIS=ttlMillis(System.getProperty(TTL_PROPERTY));
+
+	/** Parses the re-authorization interval, falling back to the default when the value is not a number. */
+	static long ttlMillis(String seconds) {
+		if (seconds!=null) {
+			try {
+				return Long.parseLong(seconds.trim())*1000;
+			} catch (NumberFormatException e) {
+				logger.warn("Ignoring invalid value \"{}\" of system property {}, using {} seconds", seconds, TTL_PROPERTY, DEFAULT_TTL_SECONDS);
+			}
+		}
+		return DEFAULT_TTL_SECONDS*1000;
+	}
+
 	public Status authorize() throws InterruptedException, ExecutionException {
-		final long ttl=Long.parseLong(System.getProperty("org.openidentityplatform.openig.websocket.ttl", "180"))*1000;
+		final long ttl=TTL_MILLIS;
 		if (res==null || System.currentTimeMillis()-lastAuthorize>=ttl) {
 			synchronized (this) {
 				if (res==null || (System.currentTimeMillis()-lastAuthorize)>=ttl) {
