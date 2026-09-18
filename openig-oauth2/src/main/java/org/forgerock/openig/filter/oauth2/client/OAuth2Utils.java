@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.filter.oauth2.client;
@@ -129,8 +130,8 @@ final class OAuth2Utils {
                                              final TimeService time) throws OAuth2ErrorException,
                                                                             ResponseException {
         SessionContext sessionContext = context.asContext(SessionContext.class);
-        final Object sessionJson = sessionContext.getSession().get(sessionKey(context,
-                                                                   buildUri(context, request, clientEndpoint)));
+        final Object sessionJson =
+                sessionContext.getSession().get(sessionKey(buildUri(context, request, clientEndpoint)));
         if (sessionJson != null) {
             return OAuth2Session.fromJson(time, new JsonValue(sessionJson));
         }
@@ -141,17 +142,17 @@ final class OAuth2Utils {
                               final Request request,
                               final Expression<String> clientEndpoint) throws ResponseException {
         SessionContext sessionContext = context.asContext(SessionContext.class);
-        sessionContext.getSession().remove(sessionKey(context, buildUri(context, request, clientEndpoint)));
+        sessionContext.getSession().remove(sessionKey(buildUri(context, request, clientEndpoint)));
     }
 
     static void saveSession(final Context context,
                             final OAuth2Session session,
                             final URI clientEndpoint) {
         SessionContext sessionContext = context.asContext(SessionContext.class);
-        sessionContext.getSession().put(sessionKey(context, clientEndpoint), session.toJson().getObject());
+        sessionContext.getSession().put(sessionKey(clientEndpoint), session.toJson().getObject());
     }
 
-    static String sessionKey(final Context context, final URI clientEndpoint) {
+    static String sessionKey(final URI clientEndpoint) {
         return "oauth2:" + clientEndpoint;
     }
 
