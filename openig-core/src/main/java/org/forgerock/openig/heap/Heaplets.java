@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.heap;
@@ -80,7 +81,7 @@ public final class Heaplets {
         // we're directly pointing to the Heaplet
         if (Heaplet.class.isAssignableFrom(c)) {
             try {
-                heaplet = c.asSubclass(Heaplet.class).newInstance();
+                heaplet = c.asSubclass(Heaplet.class).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 logger.warn("An error occurred while trying to instantiate %s as a Heaplet", c.getName(), e);
                 // Ignored

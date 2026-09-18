@@ -1,3 +1,19 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2022-2026 3A Systems, LLC.
+ */
+
 package org.openidentityplatform.openig.filter;
 
 import java.io.IOException;
@@ -11,6 +27,8 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -56,8 +74,8 @@ public class ICAPFilter implements Filter {
 			try {
 				final URI uri=new URI(server);
 				filter.icap=new ICAPClient(uri.getHost(), uri.getPort()>0?uri.getPort():1344);
-				filter.icap.setConnectTimeout(Integer.parseInt(config.get("connect_timeout").defaultTo("5000").as(expression(String.class)).eval()));
-				filter.icap.setReadTimeout(Integer.parseInt(config.get("read_timeout").defaultTo("15000").as(expression(String.class)).eval()));
+				filter.icap.setConnectTimeout(timeout("connect_timeout", "5000"));
+				filter.icap.setReadTimeout(timeout("read_timeout", "15000"));
 				filter.service=config.get("service").defaultTo("").as(expression(String.class)).eval();
 				filter.rewrite=Boolean.parseBoolean(config.get("rewrite").defaultTo("true").as(expression(String.class)).eval());
 				logger.info("start {} connect_timeout={} read_timeout={}",uri,filter.icap.getConnectTimeout(),filter.icap.getReadTimeout());
@@ -66,6 +84,17 @@ public class ICAPFilter implements Filter {
 			}
 		}
 		
+		/** Reads a timeout (in milliseconds) from the config, naming the field when the value is not a number. */
+		private int timeout(String name, String defaultValue) {
+			final JsonValue value=config.get(name).defaultTo(defaultValue);
+			final String evaluated=value.as(expression(String.class)).eval();
+			try {
+				return Integer.parseInt(evaluated);
+			} catch (NumberFormatException e) {
+				throw new JsonValueException(value, "Expecting a number of milliseconds, got: "+evaluated, e);
+			}
+		}
+
 		@Override
 		public void destroy() {
 			super.destroy();

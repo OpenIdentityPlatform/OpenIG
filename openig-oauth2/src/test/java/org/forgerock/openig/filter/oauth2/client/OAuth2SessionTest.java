@@ -12,11 +12,13 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -175,6 +177,29 @@ public class OAuth2SessionTest {
                                              .stateAuthorized(accessTokenResponse);
 
         assertThat(session.getExpiresIn()).isEqualTo(3599L);
+    }
+
+    @Test
+    public void shouldStateAuthorizedWithNonNumericExpiresInFailWithOAuth2Error() {
+        JsonValue accessTokenResponse = json(object(field("access_token", "at"),
+                                                    field("token_type", "tt"),
+                                                    field("expires_in", "soon"),
+                                                    field("id_token", idToken)
+        ));
+        assertThatThrownBy(() -> OAuth2Session.stateNew(time).stateAuthorized(accessTokenResponse))
+                .isInstanceOf(OAuth2ErrorException.class)
+                .hasMessageContaining("expires_in");
+    }
+
+    @Test
+    public void shouldStateAuthorizedWithUndecodableIdTokenFailWithReadableMessage() {
+        JsonValue accessTokenResponse = json(object(field("access_token", "at"),
+                                                    field("token_type", "tt"),
+                                                    field("id_token", "not-a-jwt")
+        ));
+        assertThatThrownBy(() -> OAuth2Session.stateNew(time).stateAuthorized(accessTokenResponse))
+                .isInstanceOf(OAuth2ErrorException.class)
+                .hasMessageContaining("ID token could not be decoded");
     }
 
     @Test
