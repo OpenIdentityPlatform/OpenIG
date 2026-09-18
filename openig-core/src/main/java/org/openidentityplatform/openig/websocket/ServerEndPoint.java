@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2022-2025 3A Systems LLC.
+ * Copyright 2022-2026 3A Systems LLC.
  */
 
 package org.openidentityplatform.openig.websocket;
@@ -35,6 +35,7 @@ import jakarta.websocket.ClientEndpointConfig.Builder;
 import jakarta.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +46,52 @@ public class ServerEndPoint {
 	static Logger logger=LoggerFactory.getLogger(ServerEndPoint.class); 
 	
 	Principal principal=null;
-	Session session_upstream=null;
+	volatile Session session_upstream=null;
+
+	/** A close frame reason phrase is limited to 123 UTF-8 bytes; {@link CloseReason} rejects longer ones. */
+	static final int MAX_REASON_PHRASE_BYTES = 123;
+
+	/** Builds a {@link CloseReason}, truncating the phrase so that it never exceeds the protocol limit. */
+	static CloseReason closeReason(CloseReason.CloseCode code, String phrase) {
+		String reason = phrase.length() > MAX_REASON_PHRASE_BYTES ? phrase.substring(0, MAX_REASON_PHRASE_BYTES) : phrase;
+		while (reason.getBytes(StandardCharsets.UTF_8).length > MAX_REASON_PHRASE_BYTES) {
+			reason = reason.substring(0, reason.length() - 1);
+		}
+		return new CloseReason(code, reason);
+	}
+
+	/** Waits (up to ~5 s) for the upstream session to be connected and returns it. */
+	private Session upstream() throws IOException, InterruptedException {
+		int ct=0;
+		while ((ct++<5000)&&(session_upstream==null || !session_upstream.isOpen())) {
+			Thread.sleep(1);
+		}
+		final Session upstream=session_upstream;
+		if (upstream==null || !upstream.isOpen()) {
+			throw new IOException("upstream not connected");
+		}
+		return upstream;
+	}
+
+	/** Closes the upstream session (if any) with the given reason and forgets it. */
+	private void closeUpstream(CloseReason reason) {
+		final Session upstream=session_upstream;
+		session_upstream=null;
+		if (upstream!=null) {
+			try {
+				upstream.close(reason);
+			} catch (Throwable e1) {}
+		}
+	}
+
+	/** Closes both the client and the upstream sessions abnormally with the given reason. */
+	private void closeAbnormally(Session session_client, String phrase) {
+		final CloseReason reason=closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, phrase);
+		try {
+			session_client.close(reason);
+		} catch (Throwable e1) {}
+		closeUpstream(reason);
+	}
 	
 	public void authorize() throws Exception {
 		if (principal==null || principal.authorize().getCode()!=101) {
@@ -101,11 +147,12 @@ public class ServerEndPoint {
             		            		authorize();
            		                    	session_client.getBasicRemote().sendText(message);
             		                } catch (Throwable e) {
+            		                	final CloseReason reason=closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString());
             		                	try {
-            		                    	session_client.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString()));
+            		                    	session_client.close(reason);
             		                    } catch (Throwable e1) {}
             		                	try {
-            		                    	session_upstream.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString()));
+            		                    	session_upstream.close(reason);
             		                    } catch (Throwable e1) {}
             		                    
             		                }
@@ -121,11 +168,12 @@ public class ServerEndPoint {
             		            		authorize();
            		                    	session_client.getBasicRemote().sendBinary(message);
             		                } catch (Throwable e) {
+            		                	final CloseReason reason=closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString());
             		                	try {
-            		                    	session_client.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString()));
+            		                    	session_client.close(reason);
             		                    } catch (Throwable e1) {}
             		                	try {
-            		                    	session_upstream.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"upstream message error: "+e.toString()));
+            		                    	session_upstream.close(reason);
             		                    } catch (Throwable e1) {}
             		                }
             		            }
@@ -146,7 +194,7 @@ public class ServerEndPoint {
         } catch (Exception e) {
         	logger.error("{}: {}",principal.request.getUri().asURI(),e.toString());
         	try {
-				session_client.close(new CloseReason(CloseReason.CloseCodes.TRY_AGAIN_LATER,"upstream down: "+e.toString()));
+				session_client.close(closeReason(CloseReason.CloseCodes.TRY_AGAIN_LATER,"upstream down: "+e.toString()));
 			} catch (IOException e1) {}
         }
     }
@@ -155,12 +203,7 @@ public class ServerEndPoint {
     public void end(Session session_client,CloseReason reason) throws IOException {
     	logger.debug("client close {} {}: {}",session_client.getRequestURI(),session_client.getId(),reason);
 
-		try {
-			session_upstream.close(reason);
-        } catch (Throwable ioe) {}
-	    finally {
-			session_upstream=null;
-		}
+		closeUpstream(reason);
     }
     
     @OnError
@@ -168,12 +211,7 @@ public class ServerEndPoint {
     	try {
        		session_client.close();
         } catch (Throwable e1) {}
-    	try {
-       		session_upstream.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client error: "+t.toString()));
-        } catch (Throwable e1) {}
-    	finally {
-    		session_upstream=null;
-		}
+    	closeUpstream(closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client error: "+t.toString()));
     }
     
     @OnMessage
@@ -182,22 +220,11 @@ public class ServerEndPoint {
     		logger.trace("->{}: {}",session_client.getRequestURI(),msg);
     	}
         try {
-        	int ct=0;
-        	while ((ct++<5000)&&(session_upstream==null || !session_upstream.isOpen())) {
-        		Thread.sleep(1);
-        	}
+        	final Session upstream=upstream();
         	authorize();
-           	session_upstream.getBasicRemote().sendText(msg, last);
+           	upstream.getBasicRemote().sendText(msg, last);
         } catch (Throwable e) {
-        	try {
-           		session_client.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client message error: "+e.toString()));
-            } catch (Throwable e1) {}
-        	try {
-           		session_upstream.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client message error: "+e.toString()));
-            } catch (Throwable e1) {}
-        	finally {
-        		session_upstream=null;
-			}
+        	closeAbnormally(session_client, "client message error: "+e.toString());
         }
     }
 
@@ -207,22 +234,11 @@ public class ServerEndPoint {
     		logger.trace("->{}: {}",session_client.getRequestURI(),bb.capacity());
     	}
         try {
-        	int ct=0;
-        	while ((ct++<5000)&&(session_upstream==null || !session_upstream.isOpen())) {
-        		Thread.sleep(1);
-        	}
+        	final Session upstream=upstream();
         	authorize();
-            session_upstream.getBasicRemote().sendBinary(bb, last);
+            upstream.getBasicRemote().sendBinary(bb, last);
         } catch (Throwable e) {
-        	try {
-           		session_client.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client message error: "+e.toString()));
-            } catch (Throwable e1) {}
-        	try {
-           		session_upstream.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client message error: "+e.toString()));
-            } catch (Throwable e1) {}
-        	finally {
-        		session_upstream=null;
-			}
+        	closeAbnormally(session_client, "client message error: "+e.toString());
         }
     }
 }
