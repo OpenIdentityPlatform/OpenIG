@@ -1,3 +1,16 @@
+# The contents of this file are subject to the terms of the Common Development and
+# Distribution License (the License). You may not use this file except in compliance with the
+# License.
+#
+# You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+# specific language governing permission and limitations under the License.
+#
+# When distributing Covered Software, include this CDDL Header Notice in each file and include
+# the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+# Header, with the fields enclosed by brackets [] replaced by your own identifying
+# information: "Portions copyright [year] [name of copyright owner]".
+#
+# Portions Copyright 2026 3A Systems, LLC.
 name: Build 
 
 on:
@@ -51,12 +64,17 @@ jobs:
   build-docker:
     needs: build-maven
     runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+      # upload of the Trivy scan results to code scanning
+      security-events: write
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
     steps:
+      - uses: actions/checkout@v7
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
@@ -66,6 +84,7 @@ jobs:
         run:   |
           export git_version_last="$(curl -i -o - --silent https://api.github.com/repos/OpenIdentityPlatform/OpenIG/releases/latest | grep -m1 "\"name\"" | cut -d\" -f4)" ; echo "last release: $git_version_last"
           echo "release_version=$git_version_last" >> $GITHUB_ENV
+          echo "image_repository=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
@@ -101,3 +120,25 @@ jobs:
         run: |
           docker run --rm -it -d --name=test localhost:5000/${GITHUB_REPOSITORY,,}:${{ env.release_version }}
           timeout 3m bash -c 'until docker inspect --format="{{json .State.Health.Status}}" test | grep -q \"healthy\"; do sleep 10; done'
+      - name: Scan image for vulnerabilities (Trivy)
+        # trivy resolves the image from the local Docker daemon, so only the runner's
+        # linux/amd64 manifest is scanned; cache: false keeps the ~1GB trivy DBs from
+        # evicting the m2-repository caches out of the repo's 10GB actions-cache quota
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: localhost:5000/${{ env.image_repository }}:${{ env.release_version }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          limit-severities-for-sarif: true
+          ignore-unfixed: true
+          scanners: vuln
+          cache: false
+      - name: Upload Trivy report to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        # upload even if a preceding step failed, but not without a report to upload
+        if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
+        with:
+          sarif_file: trivy-results.sarif
+          # distinct from the docker-scan.yml category, which tracks the published image
+          category: trivy-build-default
