@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 define([
@@ -30,27 +31,30 @@ define([
     executeAll () {
         QUnit.module("TransformService TestSuite");
 
-        QUnit.asyncTest("Should fail when transforming undefined model", (assert) => {
+        // assert.throws validator: the error is a TransformServiceException of the given type
+        const transformError = (errorType) => (error) => (
+            error.name === "TransformServiceException" && error.errorType === errorType
+        );
+
+        QUnit.test("Should fail when transforming undefined model", (assert) => {
             assert.throws(() => {
                 transformService.transformRoute(undefined);
             },
-                transformService.TransformServiceException("invalidModel"),
+                transformError("invalidModel"),
                 "Passing an undefined throws an error"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail when transforming null model", (assert) => {
+        QUnit.test("Should fail when transforming null model", (assert) => {
             assert.throws(() => {
                 transformService.transformRoute(null);
             },
-                transformService.TransformServiceException("invalidModel"),
+                transformError("invalidModel"),
                 "Passing a null throws an error"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail when no 'name' attribute is provided", (assert) => {
+        QUnit.test("Should fail when no 'name' attribute is provided", (assert) => {
             const applicationWithEmptyName = new RouteModel({
                 id: "modelID",
                 name: ""
@@ -59,13 +63,12 @@ define([
             assert.throws(() => {
                 transformService.transformRoute(applicationWithEmptyName);
             },
-                transformService.TransformServiceException("invalidModel"),
+                transformError("invalidModel"),
                 "Passing model with empty name throws an error"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail when no 'baseURI' attribute is provided", (assert) => {
+        QUnit.test("Should fail when no 'baseURI' attribute is provided", (assert) => {
             const applicationWithEmptyBaseUrl = new RouteModel({
                 id: "modelID",
                 url: ""
@@ -74,13 +77,12 @@ define([
             assert.throws(() => {
                 transformService.transformRoute(applicationWithEmptyBaseUrl);
             },
-                transformService.TransformServiceException("invalidModel"),
+                transformError("invalidModel"),
                 "Passing model with empty baseURL throws an error"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform 'path condition' attribute", (assert) => {
+        QUnit.test("Should transform 'path condition' attribute", (assert) => {
             const applicationWithPathCondition = new RouteModel({
                 id: "example",
                 name: "example",
@@ -102,10 +104,9 @@ define([
                 },
                 "Wrong top level properties"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform 'expression condition' attribute", (assert) => {
+        QUnit.test("Should transform 'expression condition' attribute", (assert) => {
             const applicationWithPathCondition = new RouteModel({
                 id: "example",
                 name: "example",
@@ -127,10 +128,9 @@ define([
                 },
                 "Wrong top level properties"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should map basic model properties to top level route attributes", (assert) => {
+        QUnit.test("Should map basic model properties to top level route attributes", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -146,10 +146,9 @@ define([
                 },
                 "Wrong top level properties"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform ThrottlingFilter", (assert) => {
+        QUnit.test("Should transform ThrottlingFilter", (assert) => {
             assert.deepEqual(transformService.throttlingFilter({
                 numberOfRequests: 60,
                 durationValue: 1,
@@ -167,10 +166,9 @@ define([
                 },
                 "Wrong JSON for ThrottlingFilter"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform OAuth2ClientFilter", (assert) => {
+        QUnit.test("Should transform OAuth2ClientFilter", (assert) => {
             assert.deepEqual(transformService.oAuth2ClientFilter({
                 clientEndpoint: "/openid",
                 clientId: "*****",
@@ -223,20 +221,18 @@ define([
                 },
                 "Wrong JSON for OAuth2ClientFilter"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should throw exception for unknown filter type", (assert) => {
+        QUnit.test("Should throw exception for unknown filter type", (assert) => {
             assert.throws(() => {
                 transformService.transformFilter({ type: "UnknownTypeOfFilter" });
             },
-                transformService.TransformServiceException("invalidModel"),
+                transformError("unknownFilterType"),
                 "Passing 'UnknownTypeOfFilter' throws an error"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should pass even if all filters are disabled", (assert) => {
+        QUnit.test("Should pass even if all filters are disabled", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -261,10 +257,9 @@ define([
                 },
                 "Wrong number of filters when all of them are disabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should pass only enabled filters", (assert) => {
+        QUnit.test("Should pass only enabled filters", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -304,10 +299,9 @@ define([
                 },
                 "Wrong number of filters when all of them are disabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate route level request capture", (assert) => {
+        QUnit.test("Should activate route level request capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -330,10 +324,9 @@ define([
                 },
                 "Expecting only 'request' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate route level response capture", (assert) => {
+        QUnit.test("Should activate route level response capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -356,10 +349,9 @@ define([
                 },
                 "Expecting only 'response' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate request and response route level capture", (assert) => {
+        QUnit.test("Should activate request and response route level capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -382,10 +374,9 @@ define([
                 },
                 "Expecting both 'request' & 'response' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate outbound request capture", (assert) => {
+        QUnit.test("Should activate outbound request capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -415,10 +406,9 @@ define([
                 },
                 "Expecting only 'request' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate outbound response capture", (assert) => {
+        QUnit.test("Should activate outbound response capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -449,10 +439,9 @@ define([
                 },
                 "Expecting only 'response' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate request and response outbound capture", (assert) => {
+        QUnit.test("Should activate request and response outbound capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -483,10 +472,9 @@ define([
                 },
                 "Expecting both 'request' & 'response' for capture"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate entity capture", (assert) => {
+        QUnit.test("Should activate entity capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -518,10 +506,9 @@ define([
                 },
                 "Expecting entity capture enabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should activate entity capture", (assert) => {
+        QUnit.test("Should activate entity capture", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -543,10 +530,9 @@ define([
                 },
                 "Expecting entity capture enabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should enable statistics", (assert) => {
+        QUnit.test("Should enable statistics", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -565,10 +551,9 @@ define([
                 },
                 "Expecting monitor enabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should enable statistics and add percentiles", (assert) => {
+        QUnit.test("Should enable statistics and add percentiles", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -591,10 +576,9 @@ define([
                 },
                 "Expecting monitor enabled with percentiles"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should disable statistics and remove percentiles", (assert) => {
+        QUnit.test("Should disable statistics and remove percentiles", (assert) => {
             const route = new RouteModel({
                 id: "modelID",
                 name: "Router",
@@ -614,10 +598,9 @@ define([
                 },
                 "Expecting monitor disabled"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should produce contextual info for multiple headers", (assert) => {
+        QUnit.test("Should produce contextual info for multiple headers", (assert) => {
             const filter = {
                 type: "PolicyEnforcementFilter",
                 openamUrl: "http://openam.example.com/openam",
@@ -650,10 +633,9 @@ define([
                 },
                 "Expecting policy enforcement filter with headers in environment"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should not produce contextual info for empty header", (assert) => {
+        QUnit.test("Should not produce contextual info for empty header", (assert) => {
             const filter = {
                 type: "PolicyEnforcementFilter",
                 openamUrl: "http://openam.example.com/openam",
@@ -682,10 +664,9 @@ define([
                 },
                 "Expecting policy enforcement filter with empty environment"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should produce contextual info with client IP address", (assert) => {
+        QUnit.test("Should produce contextual info with client IP address", (assert) => {
             const filter = {
                 type: "PolicyEnforcementFilter",
                 openamUrl: "http://openam.example.com/openam",
@@ -717,10 +698,9 @@ define([
                 },
                 "Expecting policy enforcement filter with IP in environment"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform PolicyEnforcementFilter with ssoTokenSubject", (assert) => {
+        QUnit.test("Should transform PolicyEnforcementFilter with ssoTokenSubject", (assert) => {
             // Optional values omitted intentionally
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
@@ -741,10 +721,9 @@ define([
                 },
                 "Wrong JSON for PolicyEnforcementFilter"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform PolicyEnforcementFilter with jwtSubject", (assert) => {
+        QUnit.test("Should transform PolicyEnforcementFilter with jwtSubject", (assert) => {
             // Optional values set to empty strings intentionally
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
@@ -768,10 +747,9 @@ define([
                 },
                 "Wrong JSON for PolicyEnforcementFilter"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should transform PolicyEnforcementFilter with all properties", (assert) => {
+        QUnit.test("Should transform PolicyEnforcementFilter with all properties", (assert) => {
             // Optional values are correctly valued
             assert.deepEqual(transformService.policyEnforcementFilter(
                 {
@@ -800,10 +778,9 @@ define([
                 },
                 "Wrong JSON for PolicyEnforcementFilter"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should fail to transform PolicyEnforcementFilter with no subject", (assert) => {
+        QUnit.test("Should fail to transform PolicyEnforcementFilter with no subject", (assert) => {
             const inBlock = () => {
                 transformService.policyEnforcementFilter(
                     {
@@ -812,11 +789,10 @@ define([
                         pepPassword: "secret"
                     });
             };
-            assert.throws(inBlock, transformService.TransformServiceException("invalidModel"), "Must provide subject");
-            QUnit.start();
+            assert.throws(inBlock, transformError("invalidModel"), "Must provide subject");
         });
 
-        QUnit.asyncTest("Transform SingleSignOnFilter", (assert) => {
+        QUnit.test("Transform SingleSignOnFilter", (assert) => {
             assert.deepEqual(transformService.singleSignOnFilter(
                 {
                     type: "SingleSignOnFilter",
@@ -852,27 +828,24 @@ define([
                 },
                 "SingleSignOnFilter with only openamUrl"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should return generated expression", (assert) => {
+        QUnit.test("Should return generated expression", (assert) => {
             const path = "/myApplication";
 
             assert.deepEqual(transformService.generateCondition(path),
                 "${matches(request.uri.path, '^/myApplication')}",
                 "Expecting condition expression"
             );
-            QUnit.start();
         });
 
-        QUnit.asyncTest("Should return undefined if no path defined", (assert) => {
+        QUnit.test("Should return undefined if no path defined", (assert) => {
             const path = "";
 
             assert.equal(transformService.generateCondition(path),
                 undefined,
                 "Expecting undefined"
             );
-            QUnit.start();
         });
     }
 }));

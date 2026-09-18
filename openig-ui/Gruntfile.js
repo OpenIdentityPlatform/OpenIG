@@ -12,9 +12,10 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
-/* global module, require */
+/* global module, require, process */
 
 module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-babel");
@@ -48,7 +49,11 @@ module.exports = function (grunt) {
             "**/*",
             "!**/*.less",
             "!**/*.js"
-        ];
+        ],
+        // The test page is opened from file:// and the app fetches translations and templates through XHR,
+        // which Chrome only allows for local files with this flag. Setting puppeteer.args replaces the
+        // arguments grunt-contrib-qunit would pass itself, so its CI-only --no-sandbox is re-added here.
+        chromiumArgs = ["--allow-file-access-from-files"].concat(process.env.CI ? ["--no-sandbox"] : []);
 
     grunt.initConfig({
         eslint: {
@@ -89,6 +94,17 @@ module.exports = function (grunt) {
 
         },
         qunit: {
+            /**
+             * Run the QUnit suite in headless Chrome (Puppeteer).
+             */
+            options: {
+                // Time allowed between two QUnit messages; the first one only arrives once the application has
+                // initialised and the suites are loaded.
+                timeout: 30000,
+                puppeteer: {
+                    args: chromiumArgs
+                }
+            },
             all: [testTargetDirectory + "/qunit.html"]
         },
         requirejs: {
@@ -264,6 +280,17 @@ module.exports = function (grunt) {
                     src: ["*.css"],
                     dest: compositionDirectory + "/css"
                 }]
+            },
+            /**
+             * Copy the QUnit runtime next to the test page.
+             */
+            qunit: {
+                files: [{
+                    expand: true,
+                    cwd: nodeModules + "/qunit/qunit",
+                    src: ["qunit.js", "qunit.css"],
+                    dest: testTargetDirectory + "/libs"
+                }]
             }
         }
     });
@@ -279,8 +306,15 @@ module.exports = function (grunt) {
         "babel",
         "sync:transpiledfiles",
         "sync:transpiledtestfiles",
-        //"qunit",
         "requirejs"
+    ]);
+
+    /**
+     * Run the tests against the output of "build".
+     */
+    grunt.registerTask("test", [
+        "copy:qunit",
+        "qunit"
     ]);
 
     grunt.registerTask("build-dev", [
@@ -294,7 +328,7 @@ module.exports = function (grunt) {
         "babel",
         "sync:transpiledfiles",
         "sync:transpiledtestfiles",
-        "qunit"
+        "test"
     ]);
 
     grunt.registerTask("dev", ["build-dev", "watch"]);
