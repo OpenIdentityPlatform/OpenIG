@@ -12,21 +12,30 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.jwt;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
 
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.session.Session;
 import org.forgerock.json.jose.jws.handlers.HmacSigningHandler;
+import org.forgerock.openig.heap.HeapUtilsTest;
+import org.forgerock.openig.heap.Name;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -60,5 +69,20 @@ public class JwtSessionManagerTest {
     public void shouldNotSaveSession() throws Exception {
         manager.save(session, null);
         verifyNoMoreInteractions(session);
+    }
+
+    @Test
+    public void shouldGenerateAtLeast2048BitKeyPairWhenNoKeystoreIsConfigured() throws Exception {
+        JwtSessionManager created = (JwtSessionManager) new JwtSessionManager.Heaplet()
+                .create(Name.of("this"), json(object()), HeapUtilsTest.buildDefaultHeap());
+
+        RSAPublicKey publicKey = (RSAPublicKey) keyPairOf(created).getPublic();
+        assertThat(publicKey.getModulus().bitLength()).isGreaterThanOrEqualTo(2048);
+    }
+
+    private static KeyPair keyPairOf(JwtSessionManager manager) throws Exception {
+        Field field = JwtSessionManager.class.getDeclaredField("keyPair");
+        field.setAccessible(true);
+        return (KeyPair) field.get(manager);
     }
 }

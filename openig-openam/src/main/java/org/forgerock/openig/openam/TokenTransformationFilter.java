@@ -12,7 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
- * Copyright 2018 3A Systems, LLC
+ * Copyright 2018-2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.openam;
@@ -152,7 +152,7 @@ public class TokenTransformationFilter implements Filter {
         	final String issued_token=cache.getIfPresent(resolvedIdToken);
         	if (issued_token!=null) {
         		if (logger.isTraceEnabled()) {
-        			logger.trace("get ftrom cache {}", issued_token);
+        			logger.trace("issued token found in cache (length={})", issued_token.length());
         		}
         		return next.handle(new StsContext(context, issued_token), request);
         	}
