@@ -1,3 +1,16 @@
+# The contents of this file are subject to the terms of the Common Development and
+# Distribution License (the License). You may not use this file except in compliance with the
+# License.
+#
+# You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+# specific language governing permission and limitations under the License.
+#
+# When distributing Covered Software, include this CDDL Header Notice in each file and include
+# the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+# Header, with the fields enclosed by brackets [] replaced by your own identifying
+# information: "Portions copyright [year] [name of copyright owner]".
+#
+# Portions Copyright 2026 3A Systems, LLC.
 name: Package/Deploy 
 
 on:
@@ -13,18 +26,21 @@ jobs:
   deploy-maven:
     if: ${{ github.event.workflow_run.conclusion == 'success'  && github.event.workflow_run.event=='push' }}
     runs-on: 'ubuntu-latest'
+    permissions:
+      # git push to the repository wiki
+      contents: write
     steps:
       - name: Print github context
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
           ref: ${{ github.event.workflow_run.head_branch }}
       - name: Set up Java for publishing to Maven Central Repository OSS
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: ${{ github.event.workflow_run.head_branch == 'sustaining/5.4.x' && '8' || '11'}}
           distribution: 'temurin'
@@ -32,7 +48,7 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Cache Maven packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
          path: ~/.m2/repository
          key: ${{ runner.os }}-m2-repository-${{ hashFiles('**/pom.xml') }}
@@ -75,7 +91,7 @@ jobs:
           git config --global user.name "Open Identity Platform Community"
           git config --global user.email "open-identity-platform-opendj@googlegroups.com"
           cd ..
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         continue-on-error: true
         with:
           repository: ${{ github.repository }}.wiki
@@ -95,7 +111,7 @@ jobs:
           git commit -a -m "upload docs after deploy ${{ github.sha }}"
           git push --quiet --force
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         continue-on-error: true
         with:
           repository: OpenIdentityPlatform/doc.openidentityplatform.org
