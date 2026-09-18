@@ -13,12 +13,14 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.text;
 
 import static org.forgerock.util.Utils.closeSilently;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ import java.util.List;
 /**
  * Reads records with delimiter-separated values from a character stream.
  */
-public class SeparatedValuesReader {
+public class SeparatedValuesReader implements Closeable {
 
     private static final int CR = '\r';
     private static final int LF = '\n';
@@ -113,6 +115,7 @@ public class SeparatedValuesReader {
      * reader has been closed, further {@code next()} invocations will throw an
      * {@code IOException}. Closing a previously closed reader has no effect.
      */
+    @Override
     public void close() {
         closeSilently(input);
     }
