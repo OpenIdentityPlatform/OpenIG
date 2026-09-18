@@ -13,6 +13,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
 
   Copyright 2014-2016 ForgeRock AS.
+  Portions Copyright 2026 3A Systems, LLC.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
@@ -92,6 +93,16 @@
               <arguments>build</arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>grunt-test</id>
+            <goals>
+              <goal>grunt</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>test</arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -124,7 +135,7 @@
             </goals>
             <configuration>
               <includeGroupIds>org.openidentityplatform.commons.ui.libs</includeGroupIds>
-              <excludeArtifactIds>less,qunit,r</excludeArtifactIds>
+              <excludeArtifactIds>less,r</excludeArtifactIds>
               <includeTypes>js</includeTypes>
               <outputDirectory>${project.build.directory}/compose/libs</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
@@ -140,7 +151,6 @@
             </goals>
             <configuration>
               <includeGroupIds>org.openidentityplatform.commons.ui.libs</includeGroupIds>
-              <excludeArtifactIds>qunit</excludeArtifactIds>
               <includeTypes>css</includeTypes>
               <outputDirectory>${project.build.directory}/compose/css</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
@@ -173,20 +183,6 @@
               <includeArtifactIds>r</includeArtifactIds>
               <includeTypes>js</includeTypes>
               <outputDirectory>${project.build.directory}/optimization</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-dependencies-qunit</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeArtifactIds>qunit</includeArtifactIds>
-              <outputDirectory>${basedir}/target/test/libs</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -235,18 +231,6 @@
       <artifactId>sinon</artifactId>
       <version>1.15.4</version>
       <type>js</type>
-    </dependency>
-    <dependency>
-      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
-      <artifactId>qunit</artifactId>
-      <version>1.15.0</version>
-      <type>js</type>
-    </dependency>
-    <dependency>
-      <groupId>org.openidentityplatform.commons.ui.libs</groupId>
-      <artifactId>qunit</artifactId>
-      <version>1.15.0</version>
-      <type>css</type>
     </dependency>
     <dependency>
       <groupId>org.openidentityplatform.commons.ui.libs</groupId>

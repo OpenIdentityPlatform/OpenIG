@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 /*global define, require, QUnit, localStorage, Backbone, _ */
@@ -20,62 +21,60 @@ define([
     "jquery",
     "doTimeout",
     "org/forgerock/commons/ui/common/util/Constants",
-    "org/forgerock/commons/ui/common/main/EventManager",
-    "../test/tests/OpenIGValidatorsTests",
-    "../test/tests/TransformServiceTests",
-    "../test/tests/DataFilterTests",
-    "../test/tests/getLoggedUser"
+    "org/forgerock/commons/ui/common/main/EventManager"
 ], (
     $,
     doTimeout,
     constants,
-    eventManager,
-    openIGValidatorsTests,
-    transformServiceTests,
-    dataFilterTests,
-    getLoggedUser) => {
+    eventManager) => {
 
     $.doTimeout = function (name, time, func) {
         func(); // run the function immediately rather than delayed.
     };
 
-    // TODO: Remove this after upgrade to newer phantomjs
-    if (!Function.prototype.bind) {
-        // eslint-disable-next-line no-extend-native
-        Function.prototype.bind = function (otherThis) {
-            return _.bind(this, otherThis);
-        };
-    }
-
     return function (server) {
 
         eventManager.registerListener(constants.EVENT_APP_INITIALIZED, () => {
-            require("ThemeManager").getTheme().then(() => {
-                QUnit.testStart((testDetails) => {
-                    console.log(`Starting ${testDetails.module}":"${testDetails.name}(${testDetails.testNumber})`);
+            // The test suites and their dependencies resolve through the require.config of main.js, so they are
+            // only loaded here, once the application is up.
+            require([
+                "ThemeManager",
+                "../test/tests/OpenIGValidatorsTests",
+                "../test/tests/TransformServiceTests",
+                "../test/tests/DataFilterTests",
+                "../test/tests/getLoggedUser"
+            ], (
+                ThemeManager,
+                openIGValidatorsTests,
+                transformServiceTests,
+                dataFilterTests,
+                getLoggedUser) => {
+                ThemeManager.getTheme().then(() => {
+                    QUnit.testStart((testDetails) => {
+                        console.log(`Starting ${testDetails.module}: ${testDetails.name}`);
 
-                    const vm = require("org/forgerock/commons/ui/common/main/ViewManager");
+                        const vm = require("org/forgerock/commons/ui/common/main/ViewManager");
 
-                    vm.currentView = null;
-                    vm.currentDialog = null;
-                    vm.currentViewArgs = null;
-                    vm.currentDialogArgs = null;
+                        vm.currentView = null;
+                        vm.currentDialog = null;
+                        vm.currentViewArgs = null;
+                        vm.currentDialogArgs = null;
 
-                    require("org/forgerock/commons/ui/common/main/Configuration").baseTemplate = null;
-                });
+                        require("org/forgerock/commons/ui/common/main/Configuration").baseTemplate = null;
+                    });
 
+                    _.delay(() => {
+                        openIGValidatorsTests.executeAll(server, getLoggedUser());
+                        transformServiceTests.executeAll(server);
+                        dataFilterTests.executeAll(server);
+                        QUnit.start();
+                    }, 500);
 
-                _.delay(() => {
-                    QUnit.start();
-                    openIGValidatorsTests.executeAll(server, getLoggedUser());
-                    transformServiceTests.executeAll(server);
-                    dataFilterTests.executeAll(server);
-                }, 500);
-
-                QUnit.done(() => {
-                    localStorage.clear();
-                    Backbone.history.stop();
-                    window.location.hash = "";
+                    QUnit.done(() => {
+                        localStorage.clear();
+                        Backbone.history.stop();
+                        window.location.hash = "";
+                    });
                 });
             });
         });
