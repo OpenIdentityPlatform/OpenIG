@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 define([
@@ -20,9 +21,9 @@ define([
     DataFilter
 ) => ({
     executeAll () {
-        module("DataFilter Tests");
+        QUnit.module("DataFilter Tests");
 
-        QUnit.asyncTest("DataFilter", (assert) => {
+        QUnit.test("DataFilter", (assert) => {
             const data = {
                 id: "exampleapp",
                 name: "Example app 1",
@@ -78,8 +79,6 @@ define([
             testDataFilter("uri:http://app.ex", true);
             testDataFilter("uri:http://:app.ex", false);
             testDataFilter("id:exa uri:http://app.ex", true);
-
-            QUnit.start();
         });
     }
 })
