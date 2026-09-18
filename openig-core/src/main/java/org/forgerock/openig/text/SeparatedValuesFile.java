@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.text;
@@ -148,11 +149,9 @@ public class SeparatedValuesFile {
      */
     public Map<String, String> getRecord(String key, String value) throws IOException {
         Map<String, String> map = null;
-        SeparatedValuesReader reader = new SeparatedValuesReader(
+        try (SeparatedValuesReader reader = new SeparatedValuesReader(
                 new InputStreamReader(new FileInputStream(file), charset),
-                separator
-        );
-        try {
+                separator)) {
             List<String> fields = this.fields;
             if (header) {
                 // first line in the file is the field header
@@ -181,8 +180,6 @@ public class SeparatedValuesFile {
                     }
                 }
             }
-        } finally {
-            reader.close();
         }
         return map;
     }
