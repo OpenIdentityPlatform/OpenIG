@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.script;
 
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Map;
 
 import javax.script.ScriptException;
@@ -147,12 +149,13 @@ public final class Script {
             final GroovyScriptEngine engine = getGroovyScriptEngine(environment);
             final File groovyScriptCacheDir = getGroovyScriptCacheDir();
             try {
+                // Files.createTempFile() creates the file readable by the owner only
                 final File cachedScript =
-                        File.createTempFile("script-", ".groovy", groovyScriptCacheDir);
+                        Files.createTempFile(groovyScriptCacheDir.toPath(), "script-", ".groovy").toFile();
                 cachedScript.deleteOnExit();
-                final FileWriter writer = new FileWriter(cachedScript);
-                writer.write(source);
-                writer.close();
+                try (FileWriter writer = new FileWriter(cachedScript)) {
+                    writer.write(source);
+                }
                 final Impl impl = new GroovyImpl(engine, cachedScript.toURI().toURL().toString());
                 return new Script(impl);
             } catch (final IOException e) {
@@ -177,9 +180,9 @@ public final class Script {
             }
 
             try {
-                cacheDir = File.createTempFile("openig-groovy-script-cache-", null);
-                cacheDir.delete();
-                cacheDir.mkdir();
+                // Files.createTempDirectory() creates the directory atomically and accessible by
+                // the owner only: the cached scripts may embed credentials from the route config
+                cacheDir = Files.createTempDirectory("openig-groovy-script-cache-").toFile();
                 cacheDir.deleteOnExit();
             } catch (final IOException e) {
                 throw new ScriptException(e);
