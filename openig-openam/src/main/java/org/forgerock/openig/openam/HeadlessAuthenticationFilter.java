@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.openam;
@@ -132,7 +133,7 @@ public class HeadlessAuthenticationFilter implements Filter {
         return nonNullRealm.startsWith("/") ? nonNullRealm : "/" + nonNullRealm;
     }
 
-    private class SsoTokenHolder {
+    private static class SsoTokenHolder {
 
         private final Handler ssoClientHandler;
         private final Factory<Request> authenticationRequest;
