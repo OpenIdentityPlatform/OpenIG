@@ -25,6 +25,7 @@ import static org.forgerock.openig.util.StringUtil.trailingSlash;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -152,8 +153,10 @@ public final class JsonValues {
             throw new JsonValueException(value, "expecting " + type.getName());
         }
         try {
-            return (T) c.newInstance();
-        } catch (ExceptionInInitializerError | InstantiationException | IllegalAccessException e) {
+            return (T) c.getDeclaredConstructor().newInstance();
+        } catch (InvocationTargetException e) {
+            throw new JsonValueException(value, e.getTargetException());
+        } catch (ExceptionInInitializerError | ReflectiveOperationException e) {
             throw new JsonValueException(value, e);
         }
     }
