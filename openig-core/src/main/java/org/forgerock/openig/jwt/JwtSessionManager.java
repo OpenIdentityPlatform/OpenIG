@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.jwt;
@@ -199,8 +200,8 @@ public class JwtSessionManager implements SessionManager {
 
         private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
 
-        /** RSA needs at least a 512 key length.*/
-        private static final int KEY_SIZE = 1024;
+        /** RSA key size (in bits) for the temporary KeyPair generated when no KeyStore is configured. */
+        private static final int KEY_SIZE = 2048;
 
         @Override
         public Object create() throws HeapException {

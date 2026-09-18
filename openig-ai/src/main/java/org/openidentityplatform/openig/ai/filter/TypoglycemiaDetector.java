@@ -86,29 +86,29 @@ public class TypoglycemiaDetector implements InjectionDetector {
         }
 
         // Tokenise: split on whitespace + common punctuation, lowercase everything
-        String[] tokens = tokenise(prompt);
-        if (tokens.length == 0) {
+        String[] words = tokenise(prompt);
+        if (words.length == 0) {
             return DetectionResult.clean();
         }
 
         // Collect all matched keywords (position → keyword) for phrase-window check
         Map<Integer, String> hits = new HashMap<>();
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i];
-            if (token.length() < minWordLength) {
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            if (word.length() < minWordLength) {
                 continue;
             }
 
-            Fingerprint fp = Fingerprint.of(token);
+            Fingerprint fp = Fingerprint.of(word);
             List<String> candidates = index.get(fp);
             if (candidates == null) {
                 continue;
             }
 
             for (String keyword : candidates) {
-                if (isTypoglycemiaMatch(token, keyword)) {
+                if (isTypoglycemiaMatch(word, keyword)) {
                     hits.put(i, keyword);
-                    logger.debug("Typoglycemia hit: token='{}' matches keyword='{}' at pos={}", token, keyword, i);
+                    logger.debug("Typoglycemia hit: word='{}' matches keyword='{}' at pos={}", word, keyword, i);
                     break;
                 }
             }
@@ -120,7 +120,7 @@ public class TypoglycemiaDetector implements InjectionDetector {
 
         // A single-token hit on a high-value keyword is sufficient to flag
         String matchedKeyword = hits.values().iterator().next();
-        double score = computeScore(hits, tokens.length);
+        double score = computeScore(hits, words.length);
 
         return DetectionResult.injection(
                 score,

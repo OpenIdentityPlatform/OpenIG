@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.web;
@@ -70,16 +71,8 @@ class UiAdminHttpApplication extends AdminHttpApplication {
 
         // Unpack it in the OpenIG temp directory (create sub-directory)
         File unpack = new File(environment.getTempDirectory(), "openig-ui");
-        try (JarInputStream jar = new JarInputStream(new BufferedInputStream(url.openStream()))) {
-            JarEntry entry = jar.getNextJarEntry();
-            while (entry != null) {
-                if (!entry.isDirectory()) {
-                    unpackFileEntry(jar, entry, new File(unpack, entry.getName()));
-                }
-                // Close and move to the next entry
-                jar.closeEntry();
-                entry = jar.getNextJarEntry();
-            }
+        try (InputStream in = url.openStream()) {
+            unpackJar(in, unpack);
         }
 
         // Create a FileResourceSet around that directory
@@ -92,6 +85,34 @@ class UiAdminHttpApplication extends AdminHttpApplication {
 
         // Register it in the router under the /openig/studio path
         getOpenIGRouter().addRoute(requestUriMatcher(STARTS_WITH, "studio"), handler);
+    }
+
+    /**
+     * Unpacks all file entries of the given jar stream into the {@code unpack} directory.
+     *
+     * @param in the jar content
+     * @param unpack the directory to unpack file entries into
+     * @throws IOException when unpack fails
+     */
+    static void unpackJar(final InputStream in, final File unpack) throws IOException {
+        String unpackPath = unpack.getCanonicalPath() + File.separator;
+        try (JarInputStream jar = new JarInputStream(new BufferedInputStream(in))) {
+            JarEntry entry = jar.getNextJarEntry();
+            while (entry != null) {
+                if (!entry.isDirectory()) {
+                    File destination = new File(unpack, entry.getName());
+                    // Reject entries that would escape the unpack directory (zip slip)
+                    if (!destination.getCanonicalPath().startsWith(unpackPath)) {
+                        throw new IOException("Jar entry '" + entry.getName()
+                                                      + "' is outside of the unpack directory " + unpack);
+                    }
+                    unpackFileEntry(jar, entry, destination);
+                }
+                // Close and move to the next entry
+                jar.closeEntry();
+                entry = jar.getNextJarEntry();
+            }
+        }
     }
 
     private static void unpackFileEntry(final JarInputStream jar, final JarEntry entry, final File destination)
