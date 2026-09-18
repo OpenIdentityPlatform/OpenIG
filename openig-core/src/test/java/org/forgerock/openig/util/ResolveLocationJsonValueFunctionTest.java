@@ -12,10 +12,12 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.util;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
@@ -83,6 +85,13 @@ public class ResolveLocationJsonValueFunctionTest {
     @Test(dataProvider = "invalidLocations", expectedExceptions = JsonValueException.class)
     public void shouldThrowExceptionIfNotValidURL(JsonValue value) throws Exception {
         value.as(resolveLocation);
+    }
+
+    @Test
+    public void shouldReportTheValueWhenLocationIsNull() {
+        assertThatThrownBy(() -> json(object(field("$location", null))).as(resolveLocation))
+                .isInstanceOf(JsonValueException.class)
+                .hasMessageContaining("$location value (null) cannot be null (or evaluated to null)");
     }
 
     @Test

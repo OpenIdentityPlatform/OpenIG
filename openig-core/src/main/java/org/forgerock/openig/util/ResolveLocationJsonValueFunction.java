@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.util;
@@ -103,7 +104,7 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
         URL url = location.as(url());
         if (url == null) {
             throw new JsonValueException(location,
-                                         format("$location value ({}) cannot be null (or evaluated to null)",
+                                         format("$location value (%s) cannot be null (or evaluated to null)",
                                                 location.getObject()));
         }
 
