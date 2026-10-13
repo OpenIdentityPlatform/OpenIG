@@ -292,9 +292,9 @@ public class MockDataGenerator {
         if (key.equals("port"))
             return coerce(FAKER.number().numberBetween(1024, 65535), type, schema);
         if (key.equals("latitude"))
-            return coerce(Double.parseDouble(FAKER.address().latitude().replace(",", ".")), type, schema);
+            return coerce(FAKER.number().randomDouble(6, -90, 90), type, schema);
         if (key.equals("longitude"))
-            return coerce(Double.parseDouble(FAKER.address().longitude().replace(",", ".")), type, schema);
+            return coerce(FAKER.number().randomDouble(6, -180, 180), type, schema);
 
         // --- Booleans ---
         if ("boolean".equals(type)) {
