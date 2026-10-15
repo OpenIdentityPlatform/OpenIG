@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.heap;
@@ -31,8 +32,13 @@ import org.forgerock.openig.heap.domain.Book4;
 import org.forgerock.openig.heap.domain.Editor;
 import org.forgerock.openig.heap.domain.EditorHeapletFactory;
 import org.forgerock.openig.heap.domain.Publisher;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 
 @SuppressWarnings("javadoc")
 public class HeapletsTest {
@@ -102,5 +108,37 @@ public class HeapletsTest {
 
         // inner class is private (not public)
         assertThat(Heaplets.getHeaplet(Book4.class)).isNull();
+    }
+
+    @Test
+    public void shouldLogClassNameWhenHeapletCannotBeInstantiated() throws Exception {
+        Logger logger = (Logger) LoggerFactory.getLogger(Heaplets.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            assertThat(Heaplets.getHeaplet(BrokenHeaplet.class)).isNull();
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list).hasSize(1);
+        ILoggingEvent event = appender.list.get(0);
+        assertThat(event.getFormattedMessage())
+                .isEqualTo("An error occurred while trying to instantiate "
+                                   + BrokenHeaplet.class.getName() + " as a Heaplet");
+        assertThat(event.getThrowableProxy()).isNotNull();
+    }
+
+    /** A heaplet whose constructor always fails. */
+    public static class BrokenHeaplet extends GenericHeaplet {
+        public BrokenHeaplet() {
+            throw new IllegalStateException("Cannot be instantiated");
+        }
+
+        @Override
+        public Object create() throws HeapException {
+            return null;
+        }
     }
 }
