@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 define([
@@ -78,7 +79,7 @@ define([
         "dependencies": [],
         "validator" (el, input, callback) {
             const v = input.val();
-            if (/^[\d,a-z,-]+$/.test(v)) {
+            if (/^[\da-z-]+$/.test(v)) {
                 callback();
             } else {
                 callback([i18n.t("common.form.validation.notUrlCompatible")]);

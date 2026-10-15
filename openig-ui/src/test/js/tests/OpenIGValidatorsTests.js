@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 define([
@@ -96,6 +97,10 @@ define([
             ));
 
             testURLCompatible("id=bad", (result) => (
+                _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
+            ));
+
+            testURLCompatible("bad,id", (result) => (
                 _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
             ));
 

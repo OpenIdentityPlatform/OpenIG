@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 define([
@@ -22,7 +23,7 @@ define([
     function throwOnNoData (data) {
         if (!data) {
             throw new Error("[createTreeNavigation] No \"data\" array found.");
-        } else if (data && !_.isArray(data)) {
+        } else if (!_.isArray(data)) {
             throw new Error("[createTreeNavigation] \"data\" is not an array.");
         }
     }
