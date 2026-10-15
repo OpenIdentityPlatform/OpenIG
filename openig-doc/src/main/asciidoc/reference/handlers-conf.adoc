@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems LLC.
 ////
 
 :figure-caption!:
@@ -812,6 +812,7 @@ JSON response body that conforms to the response schema declared in the spec,
 using realistic test data derived from field names, formats, and examples.
 +
 Default: `false`.
+====
 
 --
 
