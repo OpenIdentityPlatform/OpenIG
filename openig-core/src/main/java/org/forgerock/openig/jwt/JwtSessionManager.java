@@ -116,6 +116,9 @@ public class JwtSessionManager implements SessionManager {
      */
     public static final Duration MAX_SESSION_TIMEOUT = Duration.duration("3650 days");
 
+    /** Shared source of randomness for the temporary key pair and shared secret generated at startup. */
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     /**
      * The pair of keys for JWT payload encryption/decryption.
      */
@@ -275,7 +278,7 @@ public class JwtSessionManager implements SessionManager {
             KeyPair keyPair;
             try {
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-                generator.initialize(KEY_SIZE, new SecureRandom());
+                generator.initialize(KEY_SIZE, RANDOM);
                 keyPair = generator.generateKeyPair();
             } catch (NoSuchAlgorithmException e) {
                 throw new HeapException("Cannot build a random KeyPair", e);
@@ -298,7 +301,7 @@ public class JwtSessionManager implements SessionManager {
                                     + "restart, nor will it be able to verify JWT session cookies signed by "
                                     + "another OpenIG server.");
                 secret = new byte[32];
-                new SecureRandom().nextBytes(secret);
+                RANDOM.nextBytes(secret);
             } else {
                 // User-defined shared secret
                 JsonValue sharedSecret = evaluated.get("sharedSecret").required().expect(String.class);

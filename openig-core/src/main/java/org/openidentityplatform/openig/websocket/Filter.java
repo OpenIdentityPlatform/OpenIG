@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2022-2025 3A Systems LLC.
+ * Copyright 2022-2026 3A Systems LLC.
  */
 
 package org.openidentityplatform.openig.websocket;
@@ -56,7 +56,7 @@ public class Filter implements jakarta.servlet.Filter {
 	
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
-		final Boolean upgrade="websocket".equalsIgnoreCase(((HttpServletRequest)req).getHeader("Upgrade"));
+		final boolean upgrade="websocket".equalsIgnoreCase(((HttpServletRequest)req).getHeader("Upgrade"));
 		if (!upgrade) {
 			chain.doFilter(req, resp);
 			return;

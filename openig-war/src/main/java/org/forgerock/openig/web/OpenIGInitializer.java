@@ -13,7 +13,7 @@
  *
  * Copyright 2016 ForgeRock AS.
  * Portions copyright 2022 Open Identity Platform Community
- * Portions copyright 2022-2025 3A Systems LLC.
+ * Portions copyright 2022-2026 3A Systems LLC.
  */
 
 package org.forgerock.openig.web;
@@ -177,6 +177,6 @@ public class OpenIGInitializer implements ServletContainerInitializer {
         if (logbackXml.canRead()) {
             return logbackXml.toURI().toURL();
         }
-        return getClass().getResource("logback.xml");
+        return OpenIGInitializer.class.getResource("logback.xml");
     }
 }

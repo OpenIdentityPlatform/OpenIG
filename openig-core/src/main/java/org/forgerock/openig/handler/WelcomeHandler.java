@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.handler;
@@ -58,7 +59,7 @@ public class WelcomeHandler implements Handler {
     public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
         Response response = new Response(Status.OK);
         response.getHeaders().add("Content-Type", "text/html");
-        response.setEntity(IO.newBranchingInputStream(getClass().getResourceAsStream("welcome.html"), storage));
+        response.setEntity(IO.newBranchingInputStream(WelcomeHandler.class.getResourceAsStream("welcome.html"), storage));
         return Promises.newResultPromise(response);
     }
 

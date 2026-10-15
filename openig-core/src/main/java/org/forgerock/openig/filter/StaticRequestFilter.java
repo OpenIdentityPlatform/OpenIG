@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.filter;
@@ -221,7 +222,7 @@ public class StaticRequestFilter implements Filter {
                 }
             }
         }
-        if (this.form != null && !this.form.isEmpty()) {
+        if (!this.form.isEmpty()) {
             Form f = new Form();
             for (String key : this.form.keySet()) {
                 for (Expression<String> expression : this.form.get(key)) {
