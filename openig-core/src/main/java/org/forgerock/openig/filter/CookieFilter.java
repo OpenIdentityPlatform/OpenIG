@@ -14,6 +14,7 @@
  * Copyright 2009 Sun Microsystems Inc.
  * Portions Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.filter;
@@ -301,6 +302,7 @@ public class CookieFilter implements Filter {
             manager = (CookieManager) session.get(CookieManager.class.getName());
             if (manager == null) {
                 manager = new CookieManager(null, new CookiePolicy() {
+                    @Override
                     public boolean shouldAccept(URI uri, HttpCookie cookie) {
                         return (action(cookie.getName()) == Action.MANAGE && policy.shouldAccept(uri, cookie));
                     }

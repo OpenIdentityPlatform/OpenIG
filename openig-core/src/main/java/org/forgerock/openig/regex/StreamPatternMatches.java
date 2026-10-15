@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.regex;
@@ -102,6 +103,7 @@ public class StreamPatternMatches implements Closeable {
      *
      * @throws IOException if an I/O exception occurs.
      */
+    @Override
     public void close() throws IOException {
         if (input != null) {
             input.close();

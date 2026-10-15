@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.http;
@@ -227,6 +228,7 @@ public class AdminHttpApplication implements DescribedHttpApplication {
      *
      * @return a swagger api producer.
      */
+    @Override
     public SwaggerApiProducer getApiProducer() {
         return new SwaggerApiProducer(new Info().title(API_TITLE),
                                       addLeadingSlash(adminPrefix),

@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.heap;
@@ -587,7 +588,7 @@ public class HeapImpl implements Heap {
     /**
      * A simple data holder object letting decorators known about the decorated heap object.
      */
-    private class DecorationContext implements Context {
+    private static class DecorationContext implements Context {
         private final Heap heap;
         private final Name name;
         private final JsonValue config;

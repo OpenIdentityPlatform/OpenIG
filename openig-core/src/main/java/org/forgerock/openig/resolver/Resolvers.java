@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.resolver;
@@ -61,6 +62,7 @@ public final class Resolvers {
      */
     public static Iterable<Resolver> resolvers(final Object object) {
         return new Iterable<Resolver>() {
+            @Override
             public Iterator<Resolver> iterator() {
                 return (object.getClass().isArray() ? ARRAY_RESOLVER.iterator() : new Iterator<Resolver>() {
                     Class<?> class1 = object.getClass();
@@ -68,11 +70,13 @@ public final class Resolvers {
                     Iterator<Class<?>> interfaces = null;
                     int n = 0;
 
+                    @Override
                     public boolean hasNext() {
                         // interface hierarchy not yet exhausted
                         return (class2 != null);
                     }
 
+                    @Override
                     public Resolver next() {
                         while (class1 != null) {
                             // class hierarchy
@@ -106,6 +110,7 @@ public final class Resolvers {
                         return BeanResolver.INSTANCE;
                     }
 
+                    @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }
