@@ -232,7 +232,9 @@ public final class SampleApplication {
      *         or null if no valid SSL configuration could be set up.
      */
     private static SSLEngineConfigurator createSslConfiguration() {
-        SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+        // Ignore the javax.net.ssl.* system properties: the sample brings its own key store,
+        // and a missing key store provider would leave the HTTPS listener without a key.
+        SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(false);
         try {
             // Cannot read the key store as a file inside a jar,
             // so get the key store as a byte array.

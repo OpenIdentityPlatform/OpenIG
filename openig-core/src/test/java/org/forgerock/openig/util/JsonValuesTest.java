@@ -336,6 +336,11 @@ public class JsonValuesTest {
         asNewInstance(json(FailingConstructor.class.getName()), Object.class);
     }
 
+    @Test(expectedExceptions = ExceptionInInitializerError.class)
+    public void shouldAsNewInstancePropagateInitializerErrorRaisedByConstructor() throws Exception {
+        asNewInstance(json(ConstructorTouchingBrokenClass.class.getName()), Object.class);
+    }
+
     public static class ThrowingConstructor {
         public ThrowingConstructor() {
             throw new IllegalStateException("boom");
@@ -345,6 +350,24 @@ public class JsonValuesTest {
     public static class FailingConstructor {
         public FailingConstructor() {
             throw new NoClassDefFoundError("boom");
+        }
+    }
+
+    public static class ConstructorTouchingBrokenClass {
+        public ConstructorTouchingBrokenClass() {
+            BrokenStaticInitializer.touch();
+        }
+    }
+
+    /**
+     * Only the first access raises {@link ExceptionInInitializerError}, later ones get a
+     * {@link NoClassDefFoundError}: keep this class private to the test above.
+     */
+    static class BrokenStaticInitializer {
+        static final int VALUE = Integer.parseInt("boom");
+
+        static int touch() {
+            return VALUE;
         }
     }
 }

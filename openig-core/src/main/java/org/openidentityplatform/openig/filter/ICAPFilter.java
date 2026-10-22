@@ -84,14 +84,14 @@ public class ICAPFilter implements Filter {
 			}
 		}
 		
-		/** Reads a timeout (in milliseconds) from the config, naming the field when the value is not a number. */
+		/** Reads a timeout (in milliseconds) from the config, naming the field when the value is not an int. */
 		private int timeout(String name, String defaultValue) {
 			final JsonValue value=config.get(name).defaultTo(defaultValue);
 			final String evaluated=value.as(expression(String.class)).eval();
 			try {
 				return Integer.parseInt(evaluated);
 			} catch (NumberFormatException e) {
-				throw new JsonValueException(value, "Expecting a number of milliseconds, got: "+evaluated, e);
+				throw new JsonValueException(value, "Expecting a number of milliseconds that fits in an int, got: "+evaluated, e);
 			}
 		}
 

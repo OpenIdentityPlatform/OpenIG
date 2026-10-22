@@ -55,4 +55,27 @@ public class PrincipalTest {
             }
         }
     }
+
+    @Test
+    public void shouldAuthorizeFromCacheWithTtlReadAtClassLoad() throws Exception {
+        final Principal principal = new Principal(null, null);
+        principal.res = Status.OK;
+        principal.lastAuthorize = System.currentTimeMillis();
+        // A per-call read of "0" would re-authorize through the gateway servlet instead of the cache
+        final String previous = System.setProperty(Principal.TTL_PROPERTY, "0");
+        try {
+            assertThat(principal.authorize()).isSameAs(Status.OK);
+        } finally {
+            if (previous == null) {
+                System.clearProperty(Principal.TTL_PROPERTY);
+            } else {
+                System.setProperty(Principal.TTL_PROPERTY, previous);
+            }
+        }
+    }
+
+    @Test
+    public void shouldExpireWithoutCachedResult() {
+        assertThat(new Principal(null, null).expired(1_000L)).isTrue();
+    }
 }
