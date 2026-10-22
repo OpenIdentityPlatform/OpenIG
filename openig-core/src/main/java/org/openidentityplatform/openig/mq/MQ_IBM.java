@@ -1,4 +1,22 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2021-2026 3A Systems, LLC.
+ */
+
 package org.openidentityplatform.openig.mq;
+
+import static org.openidentityplatform.openig.mq.MQLog.forLog;
 
 import java.util.Map.Entry;
 
@@ -93,6 +111,11 @@ public class MQ_IBM implements Handler{
 		}
 	}
 	
+	// the connection factory settings are dumped to the debug log: mask the password
+	static Object settingForLog(String key, Object value) {
+		return WMQConstants.PASSWORD.equals(key) ? "***" : value;
+	}
+
     public static class Heaplet extends GenericHeaplet {
 
         private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
@@ -136,7 +159,7 @@ public class MQ_IBM implements Handler{
 				} 
 				handler.cf.forEach((key,value)->
 					{ 
-						logger.debug("settings {}: {}={}",name,key,value);
+						logger.debug("settings {}: {}={}",name,key,settingForLog(key,value));
 					}
 				);
 				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*32).asInteger();
@@ -153,7 +176,7 @@ public class MQ_IBM implements Handler{
 											while (true){
 												final Message message=consumer.receive();
 												if (logger.isTraceEnabled() ) {
-									        		 logger.trace("consume {}",message);
+									        		 logger.trace("consume {}",forLog(message));
 									            }
 									        	try {
 									        		final Request request=new Request();
@@ -182,7 +205,7 @@ public class MQ_IBM implements Handler{
 								                               }
 								                           });
 								            		 }else {
-								            			 logger.info("process done: {}",request.getEntity().toString());
+								            			 logger.info("process done: {}",forLog(request.getEntity()));
 								            		 }
 									        	 }catch (Exception e) {
 									        		 logger.error("error process message {}",e);
