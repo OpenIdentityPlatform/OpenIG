@@ -13,13 +13,15 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Bob (Requesting Party)</title>
   <link type="text/css" rel="stylesheet" href="style.css">
-  <script type="text/javascript" src="///code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script type="text/javascript" src="common.js"></script>
 </head>
 <body>
@@ -87,8 +89,7 @@ $("#start").click(function () {
                 "username": uma_username,
                 "password": uma_password,
                 "scope": uma_scope
-            },
-            accepts: "json"
+            }
         })
         .done(function (data) {
             var aat = data.access_token;
@@ -102,8 +103,7 @@ $("#start").click(function () {
                     xhr.setRequestHeader("Authorization", "Bearer " + aat);
                 },
                 data: JSON.stringify({ "ticket": ticket }),
-                contentType: "application/json",
-                accepts: "json"
+                contentType: "application/json"
             })
             .done(function (data) {
                 var rpt = data.rpt;

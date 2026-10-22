@@ -13,13 +13,15 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Alice (Resource Owner)</title>
   <link type="text/css" rel="stylesheet" href="style.css">
-  <script type="text/javascript" src="///code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script type="text/javascript" src="common.js"></script>
 </head>
 <body>
@@ -81,8 +83,7 @@ $("#start").click(function () {
             "username": rs_username,
             "password": rs_password,
             "scope": rs_scope
-        },
-        accepts: "json"
+        }
     })
     .done(function (data) {
         $("#pat").html(json2html(data, "Protection API Token"));
@@ -92,8 +93,7 @@ $("#start").click(function () {
             url: share_url,
             type: "POST",
             data: JSON.stringify({ "path": share, "pat": data.access_token }),
-            contentType: "application/json",
-            accepts: "json"
+            contentType: "application/json"
         })
         .done(function (data) {
             $("#resource-set-id").html(json2html(data, "Resource Set ID"));
@@ -108,8 +108,7 @@ $("#start").click(function () {
                     xhr.setRequestHeader("X-OpenAM-Password", rs_password);
                 },
                 data: JSON.stringify({}),
-                contentType: "application/json",
-                accepts: "json"
+                contentType: "application/json"
             })
             .done(function (data) {
                 $("#auth").html(json2html(data, "Authenticated as Alice"));
@@ -133,8 +132,7 @@ $("#start").click(function () {
                             }
                         ]
                     }),
-                    contentType: "application/json",
-                    accepts: "json"
+                    contentType: "application/json"
                 })
                 .done(function (data) {
                     $("#share").html(json2html(data, "Permissions Shared ({} == Success)"));
