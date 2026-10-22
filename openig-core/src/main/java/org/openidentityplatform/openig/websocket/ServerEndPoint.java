@@ -53,16 +53,25 @@ public class ServerEndPoint {
 
 	/**
 	 * Builds a {@link CloseReason}, truncating the phrase so that it never exceeds the protocol limit
-	 * and never ends in the first half of a surrogate pair.
+	 * and never ends in the first half of a surrogate pair. A truncated phrase ends with U+2026.
 	 */
 	static CloseReason closeReason(CloseReason.CloseCode code, String phrase) {
-		String reason = phrase.length() > MAX_REASON_PHRASE_BYTES ? phrase.substring(0, MAX_REASON_PHRASE_BYTES) : phrase;
+		if (phrase.getBytes(StandardCharsets.UTF_8).length <= MAX_REASON_PHRASE_BYTES) {
+			return new CloseReason(code, truncate(phrase, MAX_REASON_PHRASE_BYTES));
+		}
+		// mark the cut as Tomcat does: at most 120 bytes, then U+2026 (3 bytes in UTF-8)
+		return new CloseReason(code, truncate(phrase, MAX_REASON_PHRASE_BYTES - 3) + "\u2026");
+	}
+
+	/** Cuts the phrase to at most {@code maxBytes} UTF-8 bytes without splitting a character. */
+	private static String truncate(String phrase, int maxBytes) {
+		String reason = phrase.length() > maxBytes ? phrase.substring(0, maxBytes) : phrase;
 		// a lone high surrogate is encoded as a single '?' byte, so the length check alone does not catch it
-		while (reason.getBytes(StandardCharsets.UTF_8).length > MAX_REASON_PHRASE_BYTES
+		while (reason.getBytes(StandardCharsets.UTF_8).length > maxBytes
 				|| (!reason.isEmpty() && Character.isHighSurrogate(reason.charAt(reason.length() - 1)))) {
 			reason = reason.substring(0, reason.length() - 1);
 		}
-		return new CloseReason(code, reason);
+		return reason;
 	}
 
 	/** Waits (up to ~5 s) for the upstream session to be connected and returns it. */
@@ -216,10 +225,11 @@ public class ServerEndPoint {
     
     @OnError
     public void onError(Session session_client,Throwable t) throws Throwable {
+    	// upstream first: Tomcat runs @OnClose inside close(), and end() would close the upstream normally
+    	closeUpstream(closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client error: "+t.toString()));
     	try {
        		session_client.close();
         } catch (Throwable e1) {}
-    	closeUpstream(closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY,"client error: "+t.toString()));
     }
     
     @OnMessage
@@ -228,8 +238,8 @@ public class ServerEndPoint {
     		logger.trace("->{}: {}",session_client.getRequestURI(),msg);
     	}
         try {
-        	final Session upstream=upstream();
         	authorize();
+        	final Session upstream=upstream();
            	upstream.getBasicRemote().sendText(msg, last);
         } catch (Throwable e) {
         	closeAbnormally(session_client, "client message error: "+e.toString());
@@ -242,8 +252,8 @@ public class ServerEndPoint {
     		logger.trace("->{}: {}",session_client.getRequestURI(),bb.capacity());
     	}
         try {
-        	final Session upstream=upstream();
         	authorize();
+        	final Session upstream=upstream();
             upstream.getBasicRemote().sendBinary(bb, last);
         } catch (Throwable e) {
         	closeAbnormally(session_client, "client message error: "+e.toString());
