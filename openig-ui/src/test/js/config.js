@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions copyright 2025 3A Systems LLC.
+ * Portions copyright 2025-2026 3A Systems LLC.
  */
 
 require.config({
@@ -24,6 +24,9 @@ require.config({
     },
     baseUrl: "../www",
     paths: {
+        // The application is started from its unbundled sources: the optimised main.js carries its own copy of
+        // the libraries this page has already loaded (jQuery, lodash, ...), which would then exist twice.
+        main: "../compose/main",
         jquery: "libs/jquery-3.7.1-min",
         doTimeout: "libs/jquery.ba-dotimeout-1.0-min",
         lodash: "libs/lodash-3.10.1-min",
@@ -42,13 +45,15 @@ require.config({
 
 require([
     "jquery",
-    "org/forgerock/openig/ui/common/main/MockServer"
-], ($, MockServer) => {
+    "org/forgerock/openig/ui/common/main/MockServer",
+    "../test/run"
+], ($, MockServer, run) => {
 
     $("head", document).append("<base href='../www/' />");
 
-    require(["main", "../test/run"], (appMain, run) => {
-        run(MockServer.instance);
-    });
+    // Register for the application's initialisation before starting it, so that the event cannot be missed.
+    run(MockServer.instance);
+
+    require(["main"]);
 
 });

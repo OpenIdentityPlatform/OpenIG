@@ -12,6 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
 
   Copyright 2016 ForgeRock AS.
+  Portions Copyright 2026 3A Systems, LLC.
   -->
 
 # OpenIG UI
@@ -52,6 +53,17 @@ Total time: 27.323 s
 Finished at: 2016-06-24T17:17:31+02:00
 Final Memory: 18M/59M
 ------------------------------------------------------------------------
+```
+
+## Tests
+
+The QUnit suite in `src/test/js` runs in headless Chrome (Puppeteer downloads it during `npm install`) in the
+Maven `test` phase, so `mvn verify` fails on a failing JavaScript test; `-DskipTests` or `-Dmaven.test.skip=true`
+skips the suite. Chrome refuses to start as root with its sandbox enabled: when building as root (e.g. in a
+container), set `CI=true` or `CHROMIUM_FLAGS=--no-sandbox`. To run the suite on its own after a build:
+
+```
+>$ ./node/node node_modules/grunt-cli/bin/grunt test
 ```
 
 # Try It

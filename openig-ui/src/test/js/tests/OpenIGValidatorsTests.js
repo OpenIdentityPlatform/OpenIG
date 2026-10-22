@@ -25,12 +25,12 @@ define([
     OpenIGValidators
 ) => ({
     executeAll () {
-        module("OpenIG Tests");
+        QUnit.module("OpenIG Tests");
 
          // when validators invoke `callback()` without argument, that means the input is valid
         const isValid = (result) => (result === undefined);
 
-        QUnit.asyncTest("BaseURI Validator", (assert) => {
+        QUnit.test("BaseURI Validator", (assert) => {
             const testBaseURI = (value, callbackCheck) => {
                 OpenIGValidators.baseURI.validator(undefined, this.fakeInputElement(value), (result) => {
                     assert.ok(
@@ -64,11 +64,9 @@ define([
             testBaseURI("http://www.example.org:8080/subpath", (result) => (
                 _.isEqual(result, [i18n.t("common.form.validation.baseURIContainsPath")])
             ));
-
-            QUnit.start();
         });
 
-        QUnit.asyncTest("urlCompatible Validator", (assert) => {
+        QUnit.test("urlCompatible Validator", (assert) => {
             const testURLCompatible = (value, callbackCheck) => {
                 OpenIGValidators.urlCompatible.validator(undefined, this.fakeInputElement(value), (result) => {
                     assert.ok(
@@ -103,11 +101,9 @@ define([
             testURLCompatible("bad,id", (result) => (
                 _.isEqual(result, [i18n.t("common.form.validation.notUrlCompatible")])
             ));
-
-            QUnit.start();
         });
 
-        QUnit.asyncTest("customValidator Validator", (assert) => {
+        QUnit.test("customValidator Validator", (assert) => {
             const testCustomValidator = (value, callbackCheck) => {
                 OpenIGValidators.customValidator.validator(
                     undefined,
@@ -130,12 +126,10 @@ define([
 
             // Invalid values
             testCustomValidator(undefined, (result) => (result === undefined));
-
-            QUnit.start();
         });
 
 
-        QUnit.asyncTest("greaterThanOrEqualMin Validator", (assert) => {
+        QUnit.test("greaterThanOrEqualMin Validator", (assert) => {
             const testMinValue = (value, min, callbackCheck) => {
                 OpenIGValidators.greaterThanOrEqualMin.validator(
                     undefined,
@@ -172,11 +166,9 @@ define([
                     }
                 )])
             ));
-
-            QUnit.start();
         });
 
-        QUnit.asyncTest("lessThanOrEqualMax Validator", (assert) => {
+        QUnit.test("lessThanOrEqualMax Validator", (assert) => {
             const testMaxValue = (value, max, callbackCheck) => {
                 OpenIGValidators.lessThanOrEqualMax.validator(
                     undefined,
@@ -212,8 +204,6 @@ define([
                     }
                 )])
             ));
-
-            QUnit.start();
         });
     },
 

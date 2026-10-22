@@ -796,20 +796,6 @@
 				              <packaging>js</packaging>
 				              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/sinon.js/{version}/{artifactId}.{packaging}</downloadUrl>
 				            </artifactItem>
-				            <artifactItem>
-				              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
-				              <artifactId>qunit</artifactId>
-				              <version>1.15.0</version>
-				              <packaging>js</packaging>
-				              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/qunit/{version}/{artifactId}.{packaging}</downloadUrl>
-				            </artifactItem>
-				            <artifactItem>
-				              <groupId>org.openidentityplatform.commons.ui.libs</groupId>
-				              <artifactId>qunit</artifactId>
-				              <packaging>css</packaging>
-				              <version>1.15.0</version>
-				              <downloadUrl>https://cdnjs.cloudflare.com/ajax/libs/qunit/{version}/{artifactId}.{packaging}</downloadUrl>
-				            </artifactItem>
 				</artifactItems>
 			</configuration>
 			<executions>
