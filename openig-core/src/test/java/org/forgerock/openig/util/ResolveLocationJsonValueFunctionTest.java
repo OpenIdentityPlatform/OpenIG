@@ -95,6 +95,13 @@ public class ResolveLocationJsonValueFunctionTest {
     }
 
     @Test
+    public void shouldReportTheExpressionWhenLocationEvaluatesToNull() {
+        assertThatThrownBy(() -> json(object(field("$location", "${missing}"))).as(resolveLocation))
+                .isInstanceOf(JsonValueException.class)
+                .hasMessageContaining("$location value (${missing}) cannot be null (or evaluated to null)");
+    }
+
+    @Test
     public void shouldEvaluateExpressions() throws IOException {
         // Create the test file
         File targetFile = temporaryJsonFile("openig-test-properties",
