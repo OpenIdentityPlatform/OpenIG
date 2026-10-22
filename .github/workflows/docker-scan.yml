@@ -14,6 +14,9 @@
 
 # Scans the published Docker image for known vulnerabilities: new CVEs surface in
 # already-released images (mostly via the base image), without any change in this repository.
+# Its trivy-image-latest category exists only on master, so once it has run, every PR that
+# uploads trivy-build-default gets a "Trivy" check that concludes neutral with
+# "1 configuration not found".
 name: Docker Scan
 
 on:
@@ -29,6 +32,8 @@ jobs:
     # Do not run the scheduled scan in forks; manual runs are always allowed.
     if: github.event_name == 'workflow_dispatch' || github.repository == 'OpenIdentityPlatform/OpenIG'
     runs-on: ubuntu-latest
+    # trivy's own --timeout bounds neither the Java DB download nor the Trivy install
+    timeout-minutes: 30
     permissions:
       contents: read
       security-events: write
@@ -38,11 +43,25 @@ jobs:
         tag: [ 'latest' ]
     steps:
       - uses: actions/checkout@v7
+        with:
+          # no git command here needs the token; upload-sarif takes it through its own input
+          persist-credentials: false
+      - name: Install Trivy
+        # cached, unlike the DBs: trivy-action's `cache: false` would also skip the binary
+        # cache and leave an anonymous github.com release lookup in every run. Unlike in
+        # build.yml, a failure here fails the job: a failed scan is what this workflow reports
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.70.0
+          cache: true
       - name: Scan openidentityplatform/openig:${{ matrix.tag }} (Trivy)
-        # unlike the build.yml gate, unfixed CVEs are reported too: surfacing them in
-        # already-released images is the point of this workflow
+        # unlike the build.yml scan (ignore-unfixed: true), unfixed CVEs are reported too:
+        # surfacing them in already-released images is the point of this workflow. Trivy pulls
+        # only the linux/amd64 manifest (no --platform is passed); the other published
+        # platforms (arm64, ppc64le, s390x) are not scanned
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          skip-setup-trivy: true
           image-ref: openidentityplatform/openig:${{ matrix.tag }}
           format: sarif
           output: trivy-${{ matrix.tag }}.sarif
@@ -52,8 +71,8 @@ jobs:
           cache: false
       - name: Upload report to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
-        # upload even if a preceding step failed, but not without a report to upload
-        if: ${{ always() && hashFiles(format('trivy-{0}.sarif', matrix.tag)) != '' }}
+        # upload even if a preceding step failed, but not on a cancelled run or without a report to upload
+        if: ${{ !cancelled() && hashFiles(format('trivy-{0}.sarif', matrix.tag)) != '' }}
         with:
           sarif_file: trivy-${{ matrix.tag }}.sarif
           category: trivy-image-${{ matrix.tag }}
