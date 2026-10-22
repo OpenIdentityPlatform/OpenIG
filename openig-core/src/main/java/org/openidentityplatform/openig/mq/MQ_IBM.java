@@ -16,6 +16,8 @@
 
 package org.openidentityplatform.openig.mq;
 
+import static org.openidentityplatform.openig.mq.MQLog.forLog;
+
 import java.util.Map.Entry;
 
 import javax.jms.*;
@@ -109,6 +111,11 @@ public class MQ_IBM implements Handler{
 		}
 	}
 	
+	// the connection factory settings are dumped to the debug log: mask the password
+	static Object settingForLog(String key, Object value) {
+		return WMQConstants.PASSWORD.equals(key) ? "***" : value;
+	}
+
     public static class Heaplet extends GenericHeaplet {
 
         private static final Logger logger = LoggerFactory.getLogger(Heaplet.class);
@@ -152,7 +159,7 @@ public class MQ_IBM implements Handler{
 				} 
 				handler.cf.forEach((key,value)->
 					{ 
-						logger.debug("settings {}: {}={}",name,key,WMQConstants.PASSWORD.equals(key) ? "***" : value);
+						logger.debug("settings {}: {}={}",name,key,settingForLog(key,value));
 					}
 				);
 				final int core=evaluated.get("core").defaultTo(Runtime.getRuntime().availableProcessors()*32).asInteger();
@@ -169,8 +176,7 @@ public class MQ_IBM implements Handler{
 											while (true){
 												final Message message=consumer.receive();
 												if (logger.isTraceEnabled() ) {
-													 // strip line breaks: the message body comes from the queue and must not forge log lines
-									        		 logger.trace("consume {}",String.valueOf(message).replaceAll("[\\r\\n]", " "));
+									        		 logger.trace("consume {}",forLog(message));
 									            }
 									        	try {
 									        		final Request request=new Request();
@@ -199,7 +205,7 @@ public class MQ_IBM implements Handler{
 								                               }
 								                           });
 								            		 }else {
-								            			 logger.info("process done: {}",request.getEntity().toString());
+								            			 logger.info("process done: {}",forLog(request.getEntity()));
 								            		 }
 									        	 }catch (Exception e) {
 									        		 logger.error("error process message {}",e);

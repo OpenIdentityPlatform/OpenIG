@@ -47,6 +47,9 @@ public class ScriptTest {
         environment = new DefaultEnvironment(Files.createTempDirectory("openig-script-test").toFile());
     }
 
+    // The permission tests catch code that takes its permissions from the umask (File.createTempFile(),
+    // File.mkdir()) only when the JVM runs with a group/other-readable umask, such as the usual default 022:
+    // under umask 077 such code passes them too.
     @Test
     public void shouldCreateInlineScriptCacheDirectoryReadableByOwnerOnly() throws Exception {
         Script.fromSource(environment, GROOVY_MIME_TYPE, "return 42");
