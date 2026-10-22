@@ -49,8 +49,8 @@ jobs:
           java-version: ${{ github.event.workflow_run.head_branch == 'sustaining/5.4.x' && '8' || '11'}}
           distribution: 'temurin'
           server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
+          server-username-env-var: MAVEN_USERNAME
+          server-password-env-var: MAVEN_PASSWORD
       # Maven 3.10 leaves maven-metadata-local.xml and _remote.repositories in the
       # central-publishing staging directory, and Maven Central rejects the bundle.
       - name: Set up Maven 3.9
