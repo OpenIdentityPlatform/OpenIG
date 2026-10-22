@@ -54,10 +54,13 @@ define([
             );
         });
 
+        // RouteModel.validate() stops at the first missing attribute, so each of the next two models leaves out only
+        // the attribute under test.
         QUnit.test("Should fail when no 'name' attribute is provided", (assert) => {
             const applicationWithEmptyName = new RouteModel({
                 id: "modelID",
-                name: ""
+                name: "",
+                baseURI: "http://www.example.com"
             });
 
             assert.throws(() => {
@@ -71,7 +74,8 @@ define([
         QUnit.test("Should fail when no 'baseURI' attribute is provided", (assert) => {
             const applicationWithEmptyBaseUrl = new RouteModel({
                 id: "modelID",
-                url: ""
+                name: "routeName",
+                baseURI: ""
             });
 
             assert.throws(() => {

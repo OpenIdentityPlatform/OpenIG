@@ -52,8 +52,11 @@ module.exports = function (grunt) {
         ],
         // The test page is opened from file:// and the app fetches translations and templates through XHR,
         // which Chrome only allows for local files with this flag. Setting puppeteer.args replaces the
-        // arguments grunt-contrib-qunit would pass itself, so its CI-only --no-sandbox is re-added here.
-        chromiumArgs = ["--allow-file-access-from-files"].concat(process.env.CI ? ["--no-sandbox"] : []);
+        // arguments grunt-contrib-qunit would build itself (CHROMIUM_FLAGS, else --no-sandbox under CI),
+        // so they are re-created here.
+        chromiumArgs = ["--allow-file-access-from-files"].concat(
+            (process.env.CHROMIUM_FLAGS || (process.env.CI ? "--no-sandbox" : "")).split(" ").filter(Boolean)
+        );
 
     grunt.initConfig({
         eslint: {

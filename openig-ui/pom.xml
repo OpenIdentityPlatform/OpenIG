@@ -272,4 +272,34 @@
     <dependencies>
     </dependencies>
   </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <!-- frontend-maven-plugin skips the grunt-test execution on -DskipTests only; honour maven.test.skip as well.
+           Setting <skip> on the execution itself would replace ${skip.grunt} for it. -->
+      <id>maven-test-skip</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>grunt-test</id>
+                <configuration>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

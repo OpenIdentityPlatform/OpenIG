@@ -58,8 +58,9 @@ Final Memory: 18M/59M
 ## Tests
 
 The QUnit suite in `src/test/js` runs in headless Chrome (Puppeteer downloads it during `npm install`) in the
-Maven `test` phase, so `mvn verify` fails on a failing JavaScript test and `-DskipTests` skips the suite.
-To run it on its own after a build:
+Maven `test` phase, so `mvn verify` fails on a failing JavaScript test; `-DskipTests` or `-Dmaven.test.skip=true`
+skips the suite. Chrome refuses to start as root with its sandbox enabled: when building as root (e.g. in a
+container), set `CI=true` or `CHROMIUM_FLAGS=--no-sandbox`. To run the suite on its own after a build:
 
 ```
 >$ ./node/node node_modules/grunt-cli/bin/grunt test

@@ -46,6 +46,7 @@ define([
                 "../test/tests/OpenIGValidatorsTests",
                 "../test/tests/TransformServiceTests",
                 "../test/tests/DataFilterTests",
+                "../test/tests/StylesheetTests",
                 "../test/tests/getLoggedUser"
             ], (
                 ThemeManager,
@@ -54,6 +55,7 @@ define([
                 openIGValidatorsTests,
                 transformServiceTests,
                 dataFilterTests,
+                stylesheetTests,
                 getLoggedUser) => {
                 ThemeManager.getTheme().then(() => {
                     QUnit.testStart((testDetails) => {
@@ -71,6 +73,7 @@ define([
                         openIGValidatorsTests.executeAll(server, getLoggedUser());
                         transformServiceTests.executeAll(server);
                         dataFilterTests.executeAll(server);
+                        stylesheetTests.executeAll();
                         QUnit.start();
                     }, 500);
 
