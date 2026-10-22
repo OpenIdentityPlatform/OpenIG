@@ -271,6 +271,14 @@ public class OpenApiMockResponseHandlerTest {
     }
 
     @Test
+    public void bestResponseSchema_fallsBackToDefaultResponse() {
+        final Operation op = buildOperation("default");
+        final Schema<?> schema = OpenApiMockResponseHandler.bestResponseSchema(op);
+        assertThat(schema).isNotNull();
+        assertThat(schema.getDescription()).isEqualTo("schema-default");
+    }
+
+    @Test
     public void bestResponseSchema_returnsNull_whenNoResponseSchema() {
         final Operation op = new Operation();
         final ApiResponses responses = new ApiResponses();

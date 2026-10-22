@@ -44,6 +44,17 @@ public class ICAPFilterTest {
         assertThat(filter.icap.getReadTimeout()).isEqualTo(2000);
     }
 
+    @Test
+    public void shouldApplyDefaultTimeouts() throws Exception {
+        ICAPFilter filter = (ICAPFilter) new ICAPFilter.Heaplet().create(
+                Name.of("icap"),
+                json(object(field("server", "icap://localhost:1344"))),
+                HeapUtilsTest.buildDefaultHeap());
+
+        assertThat(filter.icap.getConnectTimeout()).isEqualTo(5000);
+        assertThat(filter.icap.getReadTimeout()).isEqualTo(15000);
+    }
+
     @DataProvider
     public static Object[][] timeoutFields() {
         return new Object[][] { { "connect_timeout" }, { "read_timeout" } };

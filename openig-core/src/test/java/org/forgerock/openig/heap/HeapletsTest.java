@@ -23,6 +23,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.heap.Keys.TEMPORARY_STORAGE_HEAP_KEY;
 
+import org.forgerock.json.JsonValue;
 import org.forgerock.openig.heap.domain.Author;
 import org.forgerock.openig.heap.domain.AuthorHeaplet;
 import org.forgerock.openig.heap.domain.Book;
@@ -139,6 +140,46 @@ public class HeapletsTest {
         @Override
         public Object create() throws HeapException {
             return null;
+        }
+    }
+
+    @Test
+    public void shouldIgnoreGivenHeapletClassWhoseConstructorThrowsAnException() throws Exception {
+        assertThat(Heaplets.getHeaplet(ThrowingHeaplet.class)).isNull();
+    }
+
+    @Test(expectedExceptions = NoClassDefFoundError.class)
+    public void shouldPropagateErrorThrownByGivenHeapletClassConstructor() throws Exception {
+        Heaplets.getHeaplet(FailingHeaplet.class);
+    }
+
+    public static class ThrowingHeaplet implements Heaplet {
+        public ThrowingHeaplet() {
+            throw new IllegalStateException("boom");
+        }
+
+        @Override
+        public Object create(Name name, JsonValue config, Heap heap) {
+            return null;
+        }
+
+        @Override
+        public void destroy() {
+        }
+    }
+
+    public static class FailingHeaplet implements Heaplet {
+        public FailingHeaplet() {
+            throw new NoClassDefFoundError("boom");
+        }
+
+        @Override
+        public Object create(Name name, JsonValue config, Heap heap) {
+            return null;
+        }
+
+        @Override
+        public void destroy() {
         }
     }
 }

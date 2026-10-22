@@ -18,6 +18,7 @@ package org.openidentityplatform.openig.websocket;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.forgerock.http.protocol.Status;
 import org.testng.annotations.Test;
 
 @SuppressWarnings("javadoc")
@@ -34,5 +35,24 @@ public class PrincipalTest {
         assertThat(Principal.ttlMillis(null)).isEqualTo(Principal.DEFAULT_TTL_SECONDS * 1000);
         assertThat(Principal.ttlMillis("soon")).isEqualTo(Principal.DEFAULT_TTL_SECONDS * 1000);
         assertThat(Principal.ttlMillis("")).isEqualTo(Principal.DEFAULT_TTL_SECONDS * 1000);
+    }
+
+    @Test
+    public void shouldReauthorizeWithTtlReadAtClassLoad() {
+        final Principal principal = new Principal(null, null);
+        principal.res = Status.OK;
+        principal.lastAuthorize = 1_000L;
+        // Changing the property after class load must not affect the interval
+        final String previous = System.setProperty(Principal.TTL_PROPERTY, "0");
+        try {
+            assertThat(principal.expired(1_000L + Principal.TTL_MILLIS - 1)).isFalse();
+            assertThat(principal.expired(1_000L + Principal.TTL_MILLIS)).isTrue();
+        } finally {
+            if (previous == null) {
+                System.clearProperty(Principal.TTL_PROPERTY);
+            } else {
+                System.setProperty(Principal.TTL_PROPERTY, previous);
+            }
+        }
     }
 }

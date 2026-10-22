@@ -155,7 +155,11 @@ public final class JsonValues {
         try {
             return (T) c.getDeclaredConstructor().newInstance();
         } catch (InvocationTargetException e) {
-            throw new JsonValueException(value, e.getTargetException());
+            final Throwable target = e.getTargetException();
+            if (target instanceof Error) {
+                throw (Error) target;
+            }
+            throw new JsonValueException(value, target);
         } catch (ExceptionInInitializerError | ReflectiveOperationException e) {
             throw new JsonValueException(value, e);
         }

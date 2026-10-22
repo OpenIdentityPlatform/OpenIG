@@ -25,6 +25,7 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.mockito.Mockito.when;
 
+import org.forgerock.http.oauth2.OAuth2Error;
 import org.forgerock.json.JsonValue;
 import org.forgerock.util.time.TimeService;
 import org.mockito.Mock;
@@ -187,7 +188,8 @@ public class OAuth2SessionTest {
                                                     field("id_token", idToken)
         ));
         assertThatThrownBy(() -> OAuth2Session.stateNew(time).stateAuthorized(accessTokenResponse))
-                .isInstanceOf(OAuth2ErrorException.class)
+                .isInstanceOfSatisfying(OAuth2ErrorException.class, e ->
+                        assertThat(e.getOAuth2Error().getError()).isEqualTo(OAuth2Error.E_SERVER_ERROR))
                 .hasMessageContaining("expires_in");
     }
 

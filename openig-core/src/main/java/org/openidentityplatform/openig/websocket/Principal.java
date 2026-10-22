@@ -48,7 +48,7 @@ public class Principal implements java.security.Principal {
 	/** System property holding the re-authorization interval, in seconds. */
 	static final String TTL_PROPERTY="org.openidentityplatform.openig.websocket.ttl";
 	static final long DEFAULT_TTL_SECONDS=180;
-	private static final long TTL_MILLIS=ttlMillis(System.getProperty(TTL_PROPERTY));
+	static final long TTL_MILLIS=ttlMillis(System.getProperty(TTL_PROPERTY));
 
 	/** Parses the re-authorization interval, falling back to the default when the value is not a number. */
 	static long ttlMillis(String seconds) {
@@ -62,11 +62,15 @@ public class Principal implements java.security.Principal {
 		return DEFAULT_TTL_SECONDS*1000;
 	}
 
+	/** Tells whether the cached authorization result has to be refreshed at the given time. */
+	boolean expired(long now) {
+		return res==null || now-lastAuthorize>=TTL_MILLIS;
+	}
+
 	public Status authorize() throws InterruptedException, ExecutionException {
-		final long ttl=TTL_MILLIS;
-		if (res==null || System.currentTimeMillis()-lastAuthorize>=ttl) {
+		if (expired(System.currentTimeMillis())) {
 			synchronized (this) {
-				if (res==null || (System.currentTimeMillis()-lastAuthorize)>=ttl) {
+				if (expired(System.currentTimeMillis())) {
 					res=HttpFrameworkServlet.getGatewayHttpFrameworkServlet().handler.handle(context, request).get().getStatus();
 					lastAuthorize=System.currentTimeMillis();
 				}
