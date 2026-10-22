@@ -322,7 +322,7 @@ public class PolicyEnforcementFilter implements Filter {
                 }
 
                 // Should never happen
-                logger.error("Returned resource ('{}' does not match current request URI (''))", resource, original);
+                logger.error("Returned resource ('{}') does not match current request URI ('{}')", resource, original);
                 return newResponsePromise(newInternalServerError());
             }
         };

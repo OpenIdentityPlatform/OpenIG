@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.util;
@@ -68,7 +69,7 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
         // Lookup for the special case first :  is it a sole element ?
         // { "$location" : "...." }
         if (node.isMap() && node.size() == 1 && node.isDefined("$location")) {
-            return fetch(node.get("$location").as(evaluated(bindings)));
+            return fetch(node.get("$location"));
         }
 
         if (node.isMap()) {
@@ -100,10 +101,10 @@ class ResolveLocationJsonValueFunction implements Function<JsonValue, JsonValue,
     }
 
     private JsonValue fetch(JsonValue location) {
-        URL url = location.as(url());
+        URL url = location.as(evaluated(bindings)).as(url());
         if (url == null) {
             throw new JsonValueException(location,
-                                         format("$location value ({}) cannot be null (or evaluated to null)",
+                                         format("$location value (%s) cannot be null (or evaluated to null)",
                                                 location.getObject()));
         }
 
