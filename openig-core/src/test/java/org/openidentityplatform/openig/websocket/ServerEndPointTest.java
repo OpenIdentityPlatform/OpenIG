@@ -17,10 +17,13 @@
 package org.openidentityplatform.openig.websocket;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -30,6 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import jakarta.websocket.CloseReason;
+import jakarta.websocket.RemoteEndpoint;
 import jakarta.websocket.Session;
 
 @SuppressWarnings("javadoc")
@@ -71,6 +75,40 @@ public class ServerEndPointTest {
     }
 
     @Test
+    public void shouldTruncateLongUpstreamErrorWhenClosingClient() throws Exception {
+        // Connected upstream that fails with a message longer than a close frame can carry
+        Session upstream = mock(Session.class);
+        RemoteEndpoint.Basic remote = mock(RemoteEndpoint.Basic.class);
+        when(upstream.isOpen()).thenReturn(true);
+        when(upstream.getBasicRemote()).thenReturn(remote);
+        doThrow(new IOException("x".repeat(200))).when(remote).sendText("hello", true);
+        endpoint.session_upstream = upstream;
+
+        endpoint.echoTextMessage(client, "hello", true);
+
+        CloseReason reason = closeReasonOf(client);
+        assertThat(reason.getCloseCode()).isEqualTo(CloseReason.CloseCodes.CLOSED_ABNORMALLY);
+        assertThat(reason.getReasonPhrase()).startsWith("client message error: java.io.IOException: x");
+        assertThat(reason.getReasonPhrase().getBytes(StandardCharsets.UTF_8)).hasSize(123);
+        verify(upstream).close(reason);
+        assertThat(endpoint.session_upstream).isNull();
+    }
+
+    @Test
+    public void shouldCloseStaleUpstreamWhenItIsNotOpen() throws Exception {
+        // Upstream session is set but already closed: the endpoint waits for it (up to ~5 s), then drops it
+        Session upstream = mock(Session.class);
+        when(upstream.isOpen()).thenReturn(false);
+        endpoint.session_upstream = upstream;
+
+        endpoint.echoTextMessage(client, "hello", true);
+
+        assertThat(closeReasonOf(client).getReasonPhrase()).contains("upstream not connected");
+        verify(upstream).close(any(CloseReason.class));
+        assertThat(endpoint.session_upstream).isNull();
+    }
+
+    @Test
     public void shouldTruncateCloseReasonPhraseToProtocolLimit() {
         // ASCII: cut to 123 bytes
         String ascii = "x".repeat(500);
@@ -81,6 +119,12 @@ public class ServerEndPointTest {
         String phrase = ServerEndPoint.closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, cyrillic).getReasonPhrase();
         assertThat(phrase.getBytes(StandardCharsets.UTF_8)).hasSize(122);
         assertThat(phrase).isEqualTo("\u0436".repeat(61));
+        // Surrogate pairs: never leave the high half of a pair at the end of the phrase
+        String smile = "\uD83D\uDE00";
+        assertThat(ServerEndPoint.closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, "x" + smile.repeat(100)).getReasonPhrase())
+                .isEqualTo("x" + smile.repeat(30));
+        assertThat(ServerEndPoint.closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, "a".repeat(122) + smile.repeat(5)).getReasonPhrase())
+                .isEqualTo("a".repeat(122));
         // Short phrases are left untouched
         assertThat(ServerEndPoint.closeReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, "short").getReasonPhrase())
                 .isEqualTo("short");

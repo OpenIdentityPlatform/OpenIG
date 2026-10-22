@@ -149,9 +149,10 @@ public class SeparatedValuesFile {
      */
     public Map<String, String> getRecord(String key, String value) throws IOException {
         Map<String, String> map = null;
-        try (SeparatedValuesReader reader = new SeparatedValuesReader(
-                new InputStreamReader(new FileInputStream(file), charset),
-                separator)) {
+        try (FileInputStream stream = new FileInputStream(file);
+                SeparatedValuesReader reader = new SeparatedValuesReader(
+                        new InputStreamReader(stream, charset),
+                        separator)) {
             List<String> fields = this.fields;
             if (header) {
                 // first line in the file is the field header

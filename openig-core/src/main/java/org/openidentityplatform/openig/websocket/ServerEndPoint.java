@@ -51,10 +51,15 @@ public class ServerEndPoint {
 	/** A close frame reason phrase is limited to 123 UTF-8 bytes; {@link CloseReason} rejects longer ones. */
 	static final int MAX_REASON_PHRASE_BYTES = 123;
 
-	/** Builds a {@link CloseReason}, truncating the phrase so that it never exceeds the protocol limit. */
+	/**
+	 * Builds a {@link CloseReason}, truncating the phrase so that it never exceeds the protocol limit
+	 * and never ends in the first half of a surrogate pair.
+	 */
 	static CloseReason closeReason(CloseReason.CloseCode code, String phrase) {
 		String reason = phrase.length() > MAX_REASON_PHRASE_BYTES ? phrase.substring(0, MAX_REASON_PHRASE_BYTES) : phrase;
-		while (reason.getBytes(StandardCharsets.UTF_8).length > MAX_REASON_PHRASE_BYTES) {
+		// a lone high surrogate is encoded as a single '?' byte, so the length check alone does not catch it
+		while (reason.getBytes(StandardCharsets.UTF_8).length > MAX_REASON_PHRASE_BYTES
+				|| (!reason.isEmpty() && Character.isHighSurrogate(reason.charAt(reason.length() - 1)))) {
 			reason = reason.substring(0, reason.length() - 1);
 		}
 		return new CloseReason(code, reason);
@@ -63,10 +68,11 @@ public class ServerEndPoint {
 	/** Waits (up to ~5 s) for the upstream session to be connected and returns it. */
 	private Session upstream() throws IOException, InterruptedException {
 		int ct=0;
-		while ((ct++<5000)&&(session_upstream==null || !session_upstream.isOpen())) {
+		Session upstream=session_upstream;
+		while ((ct++<5000)&&(upstream==null || !upstream.isOpen())) {
 			Thread.sleep(1);
+			upstream=session_upstream;
 		}
-		final Session upstream=session_upstream;
 		if (upstream==null || !upstream.isOpen()) {
 			throw new IOException("upstream not connected");
 		}
