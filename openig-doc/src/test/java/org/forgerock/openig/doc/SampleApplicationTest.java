@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.doc;
@@ -112,6 +113,22 @@ public class SampleApplicationTest {
         // Then
         assertEquals(webResponse.getStatusCode(), 200);
         assertTrue(webResponse.getContentAsString().contains(LOGIN_TITLE));
+    }
+
+    @Test
+    public void testUmaPagesLoadPinnedJQueryOverHttps() throws Exception {
+        for (final String page : new String[] { "/uma/index.html", "/uma/alice.html", "/uma/bob.html" }) {
+            logger.info("Testing equivalent of curl --verbose " + httpServerPath + page);
+
+            final WebRequest webRequest = new WebRequest(new URL(httpServerPath + page), GET);
+            final WebResponse webResponse = webClient.loadWebResponse(webRequest);
+
+            assertEquals(webResponse.getStatusCode(), 200);
+            final String content = webResponse.getContentAsString();
+            assertTrue(content.contains("src=\"https://code.jquery.com/jquery-3.7.1.min.js\""), page);
+            assertTrue(content.contains(
+                    "integrity=\"sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=\""), page);
+        }
     }
 
     @Test

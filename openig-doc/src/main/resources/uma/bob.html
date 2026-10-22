@@ -89,8 +89,7 @@ $("#start").click(function () {
                 "username": uma_username,
                 "password": uma_password,
                 "scope": uma_scope
-            },
-            accepts: "json"
+            }
         })
         .done(function (data) {
             var aat = data.access_token;
@@ -104,8 +103,7 @@ $("#start").click(function () {
                     xhr.setRequestHeader("Authorization", "Bearer " + aat);
                 },
                 data: JSON.stringify({ "ticket": ticket }),
-                contentType: "application/json",
-                accepts: "json"
+                contentType: "application/json"
             })
             .done(function (data) {
                 var rpt = data.rpt;

@@ -83,8 +83,7 @@ $("#start").click(function () {
             "username": rs_username,
             "password": rs_password,
             "scope": rs_scope
-        },
-        accepts: "json"
+        }
     })
     .done(function (data) {
         $("#pat").html(json2html(data, "Protection API Token"));
@@ -94,8 +93,7 @@ $("#start").click(function () {
             url: share_url,
             type: "POST",
             data: JSON.stringify({ "path": share, "pat": data.access_token }),
-            contentType: "application/json",
-            accepts: "json"
+            contentType: "application/json"
         })
         .done(function (data) {
             $("#resource-set-id").html(json2html(data, "Resource Set ID"));
@@ -110,8 +108,7 @@ $("#start").click(function () {
                     xhr.setRequestHeader("X-OpenAM-Password", rs_password);
                 },
                 data: JSON.stringify({}),
-                contentType: "application/json",
-                accepts: "json"
+                contentType: "application/json"
             })
             .done(function (data) {
                 $("#auth").html(json2html(data, "Authenticated as Alice"));
@@ -135,8 +132,7 @@ $("#start").click(function () {
                             }
                         ]
                     }),
-                    contentType: "application/json",
-                    accepts: "json"
+                    contentType: "application/json"
                 })
                 .done(function (data) {
                     $("#share").html(json2html(data, "Permissions Shared ({} == Success)"));
