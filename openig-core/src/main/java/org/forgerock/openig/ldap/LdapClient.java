@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.ldap;
 
@@ -191,14 +192,5 @@ public final class LdapClient {
             }
         }
         return factory;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        for (ConnectionFactory factory : factories.values()) {
-            factory.close();
-        }
-        factories.clear();
-        super.finalize();
     }
 }

@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.doc;
@@ -84,9 +85,14 @@ public final class SampleApplication {
         }
 
         if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-            if (args.length >= 2) {
-                sslPort = Integer.parseInt(args[1]);
+            try {
+                port = Integer.parseInt(args[0]);
+                if (args.length >= 2) {
+                    sslPort = Integer.parseInt(args[1]);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Port numbers must be integers: " + e.getMessage() + "\n" + usage);
+                System.exit(-1);
             }
             if (args.length == 3) {
                 openamUrl = args[2];
@@ -226,7 +232,9 @@ public final class SampleApplication {
      *         or null if no valid SSL configuration could be set up.
      */
     private static SSLEngineConfigurator createSslConfiguration() {
-        SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+        // Ignore the javax.net.ssl.* system properties: the sample brings its own key store,
+        // and a missing key store provider would leave the HTTPS listener without a key.
+        SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator(false);
         try {
             // Cannot read the key store as a file inside a jar,
             // so get the key store as a byte array.
@@ -238,16 +246,17 @@ public final class SampleApplication {
             return null;
         }
 
-        if (sslContextConfigurator.validateConfiguration(true)) {
+        try {
             SSLEngineConfigurator sslEngineConfigurator =
-                    new SSLEngineConfigurator(sslContextConfigurator.createSSLContext());
+                    new SSLEngineConfigurator(sslContextConfigurator.createSSLContext(true));
             sslEngineConfigurator.setClientMode(false);
             sslEngineConfigurator.setNeedClientAuth(false);
             sslEngineConfigurator.setWantClientAuth(false);
             return sslEngineConfigurator;
+        } catch (SSLContextConfigurator.GenericStoreException e) {
+            LOGGER.log(Level.INFO, "Failed to build a valid HTTPS configuration.", e);
+            return null;
         }
-        LOGGER.info("Failed to build a valid HTTPS configuration.");
-        return null;
     }
 
     /**

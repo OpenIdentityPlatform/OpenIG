@@ -18,6 +18,7 @@
 package org.forgerock.openig.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
@@ -25,6 +26,7 @@ import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.JsonValueFunctions.listOf;
 import static org.forgerock.openig.el.Bindings.bindings;
 import static org.forgerock.openig.util.JsonValues.asFunction;
+import static org.forgerock.openig.util.JsonValues.asNewInstance;
 import static org.forgerock.openig.util.JsonValues.evaluated;
 import static org.forgerock.openig.util.JsonValues.firstOf;
 import static org.forgerock.openig.util.JsonValues.getWithDeprecation;
@@ -41,6 +43,7 @@ import org.forgerock.http.Handler;
 import org.forgerock.json.JsonException;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Bindings;
 import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.Heap;
@@ -319,5 +322,52 @@ public class JsonValuesTest {
                 }
         };
         //@Checkstyle:on
+    }
+
+    @Test
+    public void shouldAsNewInstanceWrapExceptionThrownByConstructor() throws Exception {
+        assertThatThrownBy(() -> asNewInstance(json(ThrowingConstructor.class.getName()), Object.class))
+                .isInstanceOf(JsonValueException.class)
+                .hasCauseInstanceOf(IllegalStateException.class);
+    }
+
+    @Test(expectedExceptions = NoClassDefFoundError.class)
+    public void shouldAsNewInstancePropagateErrorThrownByConstructor() throws Exception {
+        asNewInstance(json(FailingConstructor.class.getName()), Object.class);
+    }
+
+    @Test(expectedExceptions = ExceptionInInitializerError.class)
+    public void shouldAsNewInstancePropagateInitializerErrorRaisedByConstructor() throws Exception {
+        asNewInstance(json(ConstructorTouchingBrokenClass.class.getName()), Object.class);
+    }
+
+    public static class ThrowingConstructor {
+        public ThrowingConstructor() {
+            throw new IllegalStateException("boom");
+        }
+    }
+
+    public static class FailingConstructor {
+        public FailingConstructor() {
+            throw new NoClassDefFoundError("boom");
+        }
+    }
+
+    public static class ConstructorTouchingBrokenClass {
+        public ConstructorTouchingBrokenClass() {
+            BrokenStaticInitializer.touch();
+        }
+    }
+
+    /**
+     * Only the first access raises {@link ExceptionInInitializerError}, later ones get a
+     * {@link NoClassDefFoundError}: keep this class private to the test above.
+     */
+    static class BrokenStaticInitializer {
+        static final int VALUE = Integer.parseInt("boom");
+
+        static int touch() {
+            return VALUE;
+        }
     }
 }

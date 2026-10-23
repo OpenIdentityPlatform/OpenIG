@@ -266,7 +266,7 @@ public class OpenApiMockResponseHandler implements Handler {
         }
 
         // default
-        return schemaFromResponse(responses.getDefault());
+        return schemaFromResponse(responses.get(ApiResponses.DEFAULT));
     }
 
     @SuppressWarnings("rawtypes")

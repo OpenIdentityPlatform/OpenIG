@@ -20,6 +20,7 @@ package org.forgerock.openig.heap;
 
 import static java.util.Collections.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import org.forgerock.http.util.Loader;
@@ -81,12 +82,27 @@ public final class Heaplets {
         // we're directly pointing to the Heaplet
         if (Heaplet.class.isAssignableFrom(c)) {
             try {
-                heaplet = c.asSubclass(Heaplet.class).newInstance();
+                heaplet = instantiate(c.asSubclass(Heaplet.class));
             } catch (Exception e) {
                 logger.warn("An error occurred while trying to instantiate {} as a Heaplet", c.getName(), e);
                 // Ignored
             }
         }
         return heaplet;
+    }
+
+    /**
+     * Invokes the no-arg constructor, letting an {@link Error} thrown by it propagate as
+     * {@code Class.newInstance()} did.
+     */
+    private static Heaplet instantiate(final Class<? extends Heaplet> c) throws ReflectiveOperationException {
+        try {
+            return c.getDeclaredConstructor().newInstance();
+        } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof Error) {
+                throw (Error) e.getTargetException();
+            }
+            throw e;
+        }
     }
 }

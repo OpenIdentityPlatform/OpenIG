@@ -188,6 +188,20 @@ public class MockDataGeneratorTest {
         assertThat(MockDataGenerator.generate("FIRSTNAME",  schema)).isInstanceOf(String.class);
     }
 
+    @Test
+    public void generate_returnsCoordinatesInRange() {
+        final Schema<Double> schema = new Schema<>();
+        schema.setType("number");
+        for (int i = 0; i < 100; i++) {
+            final Object latitude = MockDataGenerator.generate("latitude", schema);
+            final Object longitude = MockDataGenerator.generate("longitude", schema);
+            assertThat(latitude).isInstanceOf(Number.class);
+            assertThat(longitude).isInstanceOf(Number.class);
+            assertThat(((Number) latitude).doubleValue()).isBetween(-90.0, 90.0);
+            assertThat(((Number) longitude).doubleValue()).isBetween(-180.0, 180.0);
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Numeric generation with constraints
     // -----------------------------------------------------------------------

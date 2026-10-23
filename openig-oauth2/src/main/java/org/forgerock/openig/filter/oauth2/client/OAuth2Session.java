@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 package org.forgerock.openig.filter.oauth2.client;
 
@@ -55,7 +56,7 @@ final class OAuth2Session {
                 return JWT_DECODER.reconstructJwt(idToken, SignedJwt.class);
             } catch (final JwtReconstructionException e) {
                 throw new OAuth2ErrorException(E_SERVER_ERROR,
-                        "Authorization call-back failed because the OpenID Connect ID token"
+                        "Authorization call-back failed because the OpenID Connect ID token "
                                 + "could not be decoded", e);
             }
         }
@@ -183,7 +184,7 @@ final class OAuth2Session {
         final Map<String, Object> mergedAccessTokenResponse =
                 new LinkedHashMap<>(accessTokenResponse.asMap());
         mergedAccessTokenResponse.putAll(newAccessTokenResponse.asMap());
-        JsonValue accessTokenResponse =
+        final JsonValue mergedResponse =
                 new JsonValue(Collections.unmodifiableMap(mergedAccessTokenResponse));
 
         // Compute effective scopes.
@@ -201,7 +202,12 @@ final class OAuth2Session {
         if (expires.isNotNull()) {
             long expiresIn;
             if (expires.isString()) {
-                expiresIn = Long.valueOf(expires.asString());
+                try {
+                    expiresIn = Long.parseLong(expires.asString());
+                } catch (NumberFormatException e) {
+                    throw new OAuth2ErrorException(OAuth2Error.E_SERVER_ERROR,
+                                                   "'expires_in' field value is not a number: " + expires.asString(), e);
+                }
             } else if (expires.isNumber()) {
                 expiresIn = expires.asNumber().longValue();
             } else {
@@ -211,10 +217,10 @@ final class OAuth2Session {
             expiresAt = expiresIn + now();
         }
         // Decode the ID token for OpenID Connect interactions.
-        final SignedJwt idToken = extractIdToken(accessTokenResponse);
+        final SignedJwt idToken = extractIdToken(mergedResponse);
 
         return new OAuth2Session(time, clientRegistrationName, clientEndpoint, null, actualScopes,
-                accessTokenResponse, idToken, expiresAt);
+                mergedResponse, idToken, expiresAt);
     }
 
     OAuth2Session stateAuthorizing(final String clientRegistrationName,
