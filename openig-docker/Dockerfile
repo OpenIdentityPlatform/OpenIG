@@ -29,6 +29,8 @@ RUN rm -fr $CATALINA_HOME/webapps/*
 
 #COPY openig-war/target/OpenIG-*.war $CATALINA_HOME/webapps/ROOT.war
 
+# /usr/bin/pebble ships with the Ubuntu base image outside dpkg, so apt-get upgrade never patches
+# its Go runtime; the image runs catalina.sh, not pebble, so it is removed
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     && apt-get install -y --no-install-recommends curl unzip \
@@ -42,6 +44,7 @@ RUN apt-get update \
     && chgrp -R 0 $OPENIG_BASE \
     && chmod -R g=u $OPENIG_BASE \
     && apt-get remove -y --purge unzip && rm -rf /var/lib/apt/lists/* \
+    && rm -f /usr/bin/pebble \
     && sed -i '/<\/Host>/i \ \ \ \ <Valve className=\"org.apache.catalina.valves.RemoteIpValve\" httpServerPort=\"8080\" httpsServerPort=\"443\" />' $CATALINA_HOME/conf/server.xml
 
 USER $OPENIG_USER
