@@ -30,7 +30,8 @@ RUN rm -fr $CATALINA_HOME/webapps/*
 #COPY openig-war/target/OpenIG-*.war $CATALINA_HOME/webapps/ROOT.war
 
 # /usr/bin/pebble ships with the Ubuntu base image outside dpkg, so apt-get upgrade never patches
-# its Go runtime; the image runs catalina.sh, not pebble, so it is removed
+# its Go runtime; the image runs catalina.sh, not pebble, so it is deleted from the container
+# filesystem (the base layer still carries it; Trivy applies whiteouts)
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     && apt-get install -y --no-install-recommends curl unzip \

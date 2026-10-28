@@ -1087,7 +1087,9 @@
 			<artifactId>jaxrpc-spi</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- Bouncy Castle of com.ibm.mq.allclient (openig-core): 1.71 has known CVEs -->
+		<!-- Bouncy Castle of com.ibm.mq.allclient (openig-core): 1.71 has known CVEs, and unlike 1.86 it is
+		     not signed with the certificate of opendj-core's bc-fips, so with the FIPS jars first on the
+		     classpath its org.bouncycastle.crypto classes fail to load ("signer information does not match") -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15to18</artifactId>
@@ -1102,6 +1104,12 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcutil-jdk15to18</artifactId>
 			<version>1.86</version>
+		</dependency>
+		<!-- lz4 of kafka-clients 3.9.2 (openig-core): 1.10.1 is inside CVE-2026-106451, fixed in 1.11.4 -->
+		<dependency>
+			<groupId>at.yawk.lz4</groupId>
+			<artifactId>lz4-java</artifactId>
+			<version>1.11.4</version>
 		</dependency>
 		<!-- HttpClient 5 reaches the war through antisamy (openam-federation-library), but its version
 		     would otherwise be chosen by the test-scoped wiremock, which is nearer in the tree -->
