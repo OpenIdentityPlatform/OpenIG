@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.openidentityplatform.openig</groupId>
         <artifactId>openig-project</artifactId>
-        <version>6.2.0</version>
+        <version>6.2.1-SNAPSHOT</version>
     </parent>
     <groupId>org.openidentityplatform.openam.jakarta</groupId>
     <artifactId>transform-jakarta</artifactId>
