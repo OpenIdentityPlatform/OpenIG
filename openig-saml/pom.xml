@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.openidentityplatform.openig</groupId>
     <artifactId>openig-project</artifactId>
-    <version>6.1.2-SNAPSHOT</version>
+    <version>6.2.0</version>
   </parent>
   <artifactId>openig-saml</artifactId>
   <name>OpenIG SAML Support</name>

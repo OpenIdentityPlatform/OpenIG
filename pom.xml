@@ -21,7 +21,7 @@
   <groupId>org.openidentityplatform.openig</groupId>
   <artifactId>openig-project</artifactId>
   <packaging>pom</packaging>
-  <version>6.1.2-SNAPSHOT</version>
+  <version>6.2.0</version>
 
   <name>OpenIG Project</name>
   <description>
@@ -136,7 +136,7 @@
     <connection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</connection>
     <developerConnection>scm:git:https://github.com/OpenIdentityPlatform/OpenIG.git</developerConnection>
     <url>https://github.com/OpenIdentityPlatform/OpenIG</url>
-    <tag>HEAD</tag>
+    <tag>6.2.0</tag>
   </scm>
   
   <modules>
