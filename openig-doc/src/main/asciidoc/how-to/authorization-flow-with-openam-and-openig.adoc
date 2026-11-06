@@ -1,0 +1,51 @@
+////
+The contents of this file are subject to the terms of the Common Development and
+Distribution License (the License). You may not use this file except in compliance with the
+License.
+
+You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+specific language governing permission and limitations under the License.
+
+When distributing Covered Software, include this CDDL Header Notice in each file and include
+the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+Header, with the fields enclosed by brackets [] replaced by your own identifying
+information: "Portions copyright [year] [name of copyright owner]".
+
+Copyright 2026 3A Systems, LLC.
+////
+
+[[authorization-flow-with-openam-and-openig]]
+== Authorization Flow with OpenAM and OpenIG
+:imagesdir: ../
+
+The browser accesses a protected API or UI through OpenIG. OpenIG redirects unauthenticated requests to OpenAM, validates the returned session token, and checks authorization before forwarding the request to the protected resource.
+
+image:images/how-to/authorization-flow.svg[Authorization flow]
+
+The `/passport` deployment context and `iPlanetDirectoryPro` session token below are illustrative. Use your OpenAM deployment context and configured session cookie name. Token conversion and profile enrichment are optional steps.
+
+For a complete configuration, see xref:openam:how-to:how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack.adoc[the OpenAM and OpenIG authorization tutorial].
+
+The sequence diagram is also available as text:
+
+[source,text]
+----
+title Authorization flow with OpenAM and OpenIG
+Browser -> OpenIG: GET /app (API or UI)
+note right of OpenIG: Authentication: check for a session token
+OpenIG -> Browser: Redirect to OpenAM /passport/UI/Login?goto=/app
+Browser -> OpenAM: Open the authentication UI
+note right of OpenAM: Registration or authentication
+OpenAM -> Browser: Session token
+Browser -> OpenIG: GET /app with the session token
+note right of OpenIG: Authentication: token valid and not revoked?
+note right of OpenIG: Authorization: user allowed to access /app?
+alt Access denied
+    OpenIG -> Browser: Access restricted
+else Access allowed
+    note right of OpenIG: Optional profile enrichment and token conversion
+    OpenIG -> Resource: GET /app with JWT and user information headers
+    note right of Resource: Read the user identifier and roles
+    Resource -> Browser: API or UI response
+end
+----
