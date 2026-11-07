@@ -535,13 +535,14 @@ Add a `ScriptableFilter` before the existing `SwitchFilter` in the route's `filt
 ...
 ----
 
-Create `/openig-config/scripts/groovy/accept.groovy`. The script uses the Apache HTTP header parser and Guava media-type parser already available in OpenIG, including their handling of quoted parameters. It checks all `Accept` field values, ignores malformed ranges and leaves responses without `Content-Type` unchanged. It does not select or convert the upstream representation; if no matching range has a positive quality, it replaces the response with 406.
+Create `/openig-config/scripts/groovy/accept.groovy`. The script uses the Apache HTTP header parser and Guava media-type parser already available in OpenIG, including their handling of quoted parameters. It checks all `Accept` field values, ignores malformed ranges and leaves responses without a parseable `Content-Type` unchanged. It does not select or convert the upstream representation; if no matching range has a positive quality, it replaces the response with 406.
 
 [source#how-to-protect-web-services-with-openig-accept-script,groovy]
 ----
 import com.google.common.net.MediaType
 import org.apache.http.message.BasicHeaderValueParser
 import org.forgerock.http.header.ContentTypeHeader
+import org.forgerock.http.header.MalformedHeaderException
 import org.forgerock.http.protocol.Response
 import org.forgerock.http.protocol.Status
 import org.forgerock.util.Function
@@ -550,17 +551,23 @@ boolean accepts(List<String> fields, ContentTypeHeader contentType) {
     if (fields == null || contentType == null) {
         return true
     }
-    def representation = MediaType.parse(contentType.type)
-    if (contentType.charset != null) {
-        representation = representation.withCharset(contentType.charset)
-    }
-    if (contentType.boundary != null) {
-        representation = representation.withParameter(
-                'boundary', contentType.boundary)
-    }
-    for (parameter in contentType.additionalParameters) {
-        representation = representation.withParameter(
-                parameter.key, parameter.value)
+    def representation
+    try {
+        representation = MediaType.parse(contentType.type)
+        if (contentType.charset != null) {
+            representation = representation.withCharset(contentType.charset)
+        }
+        if (contentType.boundary != null) {
+            representation = representation.withParameter(
+                    'boundary', contentType.boundary)
+        }
+        for (parameter in contentType.additionalParameters) {
+            representation = representation.withParameter(
+                    parameter.key, parameter.value)
+        }
+    } catch (IllegalArgumentException ignored) {
+        // An unparseable media type or an unknown charset is left unchanged.
+        return true
     }
     def qualityPattern = ~/(?:0(?:\.[0-9]{0,3})?|1(?:\.0{0,3})?)/
     int bestType = -1
@@ -609,8 +616,13 @@ boolean accepts(List<String> fields, ContentTypeHeader contentType) {
 }
 
 return next.handle(context, request).then({ response ->
-    if (accepts(request.headers['Accept']?.values,
-                response.headers.get(ContentTypeHeader))) {
+    ContentTypeHeader contentType
+    try {
+        contentType = response.headers.get(ContentTypeHeader)
+    } catch (MalformedHeaderException ignored) {
+        return response
+    }
+    if (accepts(request.headers['Accept']?.values, contentType)) {
         return response
     }
     response.close()
@@ -963,8 +975,7 @@ Let's test a request with JWT with an invalid role:
 
 [listing]
 ----
-curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYmFkIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MjYyMzkwMjJ9.UezPgiGOcbp9CMM7hkrbvFsPmFIOnPnph5n60wF9jEWfGAIpS3dgBYvsprsVx0iZaUfhj2GTTLXhQUKrEM08n6jhUBSlwQ22LYBEHhBY57-AwtUhFZVJL8En00tc3HTGLV_El55PyvJvuLRbQ_fZB7rfp27OMPS0y2ciehz21_90TGKvUWUUGJgqDvRPchSKdO7LVa97oigGUp8vi7XiutMxopMLoms63f7FbasbIxMfgEFa48cuJTTcmk7genlPpMX8CBeBUjVriK0452uYdONvSFllqX2rdHwi7idKV-wB0qeUdNq2MDgcVqTrztxRQ8_ezoZVMnn3OLzuSABSpHKtPM3G3uVctY2X408zwOqe86BFvahT1eyBsEmrtszaIL-REy6vy-6P8JJ7iZdD720F1h3VyXj7PWNQiA-v3TumBLpRiML4Clb0SmqpB2iIvPhAz2-ob1w9BBxbvES6n95JEvFDlsv0JqOpvs-ZqQeR1pL7ML0RDR6ZR7xMWE6iVC4hlHEyX5Ufi6CBvkzVLVSnbIPyIBSBc4bzDzqdRkgt139bEdD-htrKWFmGkJKl_yvNcW_rYCkeMmb60km389XUtpiBoSc5CmKkcxrjsarvEMRh-AkIqB5R7Hz0KVKFdp1Hlzj4v1CQKK8eM4Poiq0NoO9IgHFJtgZKMosD7Qc
-' http://localhost:8080/secure
+curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYmFkIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MjYyMzkwMjJ9.UezPgiGOcbp9CMM7hkrbvFsPmFIOnPnph5n60wF9jEWfGAIpS3dgBYvsprsVx0iZaUfhj2GTTLXhQUKrEM08n6jhUBSlwQ22LYBEHhBY57-AwtUhFZVJL8En00tc3HTGLV_El55PyvJvuLRbQ_fZB7rfp27OMPS0y2ciehz21_90TGKvUWUUGJgqDvRPchSKdO7LVa97oigGUp8vi7XiutMxopMLoms63f7FbasbIxMfgEFa48cuJTTcmk7genlPpMX8CBeBUjVriK0452uYdONvSFllqX2rdHwi7idKV-wB0qeUdNq2MDgcVqTrztxRQ8_ezoZVMnn3OLzuSABSpHKtPM3G3uVctY2X408zwOqe86BFvahT1eyBsEmrtszaIL-REy6vy-6P8JJ7iZdD720F1h3VyXj7PWNQiA-v3TumBLpRiML4Clb0SmqpB2iIvPhAz2-ob1w9BBxbvES6n95JEvFDlsv0JqOpvs-ZqQeR1pL7ML0RDR6ZR7xMWE6iVC4hlHEyX5Ufi6CBvkzVLVSnbIPyIBSBc4bzDzqdRkgt139bEdD-htrKWFmGkJKl_yvNcW_rYCkeMmb60km389XUtpiBoSc5CmKkcxrjsarvEMRh-AkIqB5R7Hz0KVKFdp1Hlzj4v1CQKK8eM4Poiq0NoO9IgHFJtgZKMosD7Qc' http://localhost:8080/secure
 *   Trying 127.0.0.1:8080...
 * Connected to localhost (127.0.0.1) port 8080 (#0)
 > GET /secure HTTP/1.1
@@ -973,7 +984,6 @@ curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Au
 > Content-Type: application/json
 > Accept: application/json
 > Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYmFkIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MjYyMzkwMjJ9.UezPgiGOcbp9CMM7hkrbvFsPmFIOnPnph5n60wF9jEWfGAIpS3dgBYvsprsVx0iZaUfhj2GTTLXhQUKrEM08n6jhUBSlwQ22LYBEHhBY57-AwtUhFZVJL8En00tc3HTGLV_El55PyvJvuLRbQ_fZB7rfp27OMPS0y2ciehz21_90TGKvUWUUGJgqDvRPchSKdO7LVa97oigGUp8vi7XiutMxopMLoms63f7FbasbIxMfgEFa48cuJTTcmk7genlPpMX8CBeBUjVriK0452uYdONvSFllqX2rdHwi7idKV-wB0qeUdNq2MDgcVqTrztxRQ8_ezoZVMnn3OLzuSABSpHKtPM3G3uVctY2X408zwOqe86BFvahT1eyBsEmrtszaIL-REy6vy-6P8JJ7iZdD720F1h3VyXj7PWNQiA-v3TumBLpRiML4Clb0SmqpB2iIvPhAz2-ob1w9BBxbvES6n95JEvFDlsv0JqOpvs-ZqQeR1pL7ML0RDR6ZR7xMWE6iVC4hlHEyX5Ufi6CBvkzVLVSnbIPyIBSBc4bzDzqdRkgt139bEdD-htrKWFmGkJKl_yvNcW_rYCkeMmb60km389XUtpiBoSc5CmKkcxrjsarvEMRh-AkIqB5R7Hz0KVKFdp1Hlzj4v1CQKK8eM4Poiq0NoO9IgHFJtgZKMosD7Qc
->
 >
 < HTTP/1.1 403
 < X-Content-Type-Options: nosniff

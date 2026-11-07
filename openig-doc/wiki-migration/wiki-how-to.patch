@@ -117,7 +117,7 @@ index a7df6ab..ef067ad 100644
 +* [REST API Security: OAuth/OIDC, OpenAPI Validation and Monitoring](https://doc.openidentityplatform.org/openig/how-to/rest-api-security-oauth-oidc-openapi-and-monitoring)
 +* [Authorization Flow with OpenAM and OpenIG](https://doc.openidentityplatform.org/openig/how-to/authorization-flow-with-openam-and-openig)
 diff --git a/How-To-Guides.md b/How-To-Guides.md
-index 718e423..b4453c1 100644
+index 718e423..5645918 100644
 --- a/How-To-Guides.md
 +++ b/How-To-Guides.md
 @@ -1 +1,3 @@
@@ -125,7 +125,7 @@ index 718e423..b4453c1 100644
 \ No newline at end of file
 +# How-To Guides
 +
-+See the [OpenIG How-To Guides](https://doc.openidentityplatform.org/openig/how-to/index).
++See the [OpenIG How-To Guides](https://doc.openidentityplatform.org/openig/how-to/index) ([pdf](https://raw.githubusercontent.com/wiki/OpenIdentityPlatform/OpenIG/asciidoc/pdf/HowTo_Guides.pdf)).
 diff --git a/How-To-Protect-Kubernetes-Services-With-OpenIG.md b/How-To-Protect-Kubernetes-Services-With-OpenIG.md
 index 6dfc832..f3cc3db 100644
 --- a/How-To-Protect-Kubernetes-Services-With-OpenIG.md

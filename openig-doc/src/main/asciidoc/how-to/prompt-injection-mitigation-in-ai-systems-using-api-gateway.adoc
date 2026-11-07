@@ -318,7 +318,7 @@ def generateErrorResponse(status, message) {
     def response = new Response()
     response.status = status
     response.headers['Content-Type'] = "application/json"
-    response.setEntity("{'error' : '" + message + "'}")
+    response.setEntity(JsonOutput.toJson([error: message]))
     return response
 }
 
@@ -386,7 +386,7 @@ def generateErrorResponse(status, message) {
     def response = new Response()
     response.status = status
     response.headers['Content-Type'] = "application/json"
-    response.setEntity("{'error' : '" + message + "'}")
+    response.setEntity(JsonOutput.toJson([error: message]))
     return response
 }
 
@@ -434,7 +434,7 @@ logger.info("response entity: {}", resp.entity)
 def llmResponse = slurper.parseText(resp.entity.getString())
 
 logger.info("response entity: {}", llmResponse)
-if(!llmResponse.choices.every{ it.message.content == "SAFE" }) {
+if (!llmResponse.choices || !llmResponse.choices.every{ it.message?.content == "SAFE" }) {
     logger.warn("prompt injection detected: {}", request.entity)
     return generateErrorResponse(Status.FORBIDDEN, "request is not allowed, prompt injection detected")
 }
@@ -516,11 +516,11 @@ Let's send a request containing prompt injection with typoglycemia to LLM.
 * upload completely sent off: 167 bytes
 < HTTP/1.1 403
 < Content-Type: application/json
-< Content-Length: 63
+< Content-Length: 61
 < Date: Fri, 16 Jan 2026 06:35:50 GMT
 <
 * Connection #0 to host localhost left intact
-{'error' : 'request is not allowed, prompt injection detected'}
+{"error":"request is not allowed, prompt injection detected"}
 ----
 
 Now let's send a request that returns potentially malicious code:

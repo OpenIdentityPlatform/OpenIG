@@ -42,7 +42,7 @@ Create Apache Kafka topic:
 kafka-topics.sh --create --topic topic1 --bootstrap-server localhost:9092
 ----
 
-Add Apache Kafka consumer handler to the heap in OpenIG configuration file:
+Add Apache Kafka producer handler to the heap in OpenIG configuration file:
 
 `config.json`
 
@@ -56,7 +56,7 @@ Add Apache Kafka consumer handler to the heap in OpenIG configuration file:
       "type": "MQ_Kafka",
       "config": {
         "bootstrap.servers": "kafka:9092",
-        "topic.produce": "incoming-messages"
+        "topic.produce": "topic1"
       }
     },
     ...
@@ -96,7 +96,7 @@ Add OpenIG route to `routes` folder to process HTTP requests:
         "config": {
           "bindings": [
             {
-              "handler": "kafka-consumer"
+              "handler": "kafka-producer"
             }
           ]
         }
@@ -257,7 +257,7 @@ Some significant *EmbeddedKafka* settings:
 |===
 |Setting |Name
 |`zookeper.port` |Port of the embedded ZooKeeper. Kafka does not start unless `zookeper.port` or `zookeper.connect` is set
-|`zookeper.connect` |Address of an external ZooKeeper, used instead of the embedded one
+|`zookeper.connect` |Address of an external ZooKeeper that Kafka uses instead of `localhost:<zookeper.port>`. Leave `zookeper.port` unset with it, otherwise an unused embedded ZooKeeper still starts on that port
 |`listeners` |Port and hosts which Kafka binds to for listening
 |`advertised.listeners` |Port and hosts which Kafka clients listening
 |===
