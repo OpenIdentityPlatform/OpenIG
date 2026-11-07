@@ -15,6 +15,8 @@
 """Regression tests for How-To link validation."""
 
 from pathlib import Path
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -130,6 +132,104 @@ class HowToLinksTest(unittest.TestCase):
                 result = self.check_link("hidden", definition)
                 self.assertEqual(1, result.returncode, result.stdout + result.stderr)
                 self.assertIn("broken anchor", result.stdout)
+
+
+    def test_source_style_shorthand_id_is_a_destination(self):
+        result = self.check_source("[source#present,yaml]\n----\na: b\n----\nxref:#present[Present]\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_passthrough_does_not_define_asciidoc_anchors(self):
+        result = self.check_link("hidden", "++++\n[[hidden]]\n++++\n")
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("broken anchor", result.stdout)
+
+    def test_passthrough_references_are_not_links(self):
+        result = self.check_source("++++\nxref:missing.adoc[Example]\nimage::absent.png[]\n++++\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_module_qualified_xref_resolves_from_source_root(self):
+        result = self.check_source("xref:reference:page.adoc#present[Present]\n",
+                                   {"reference/page.adoc": "[[present]]\n== Title\n"})
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_module_qualified_xref_checks_fragments(self):
+        result = self.check_source("xref:reference:page.adoc#missing[Missing]\n",
+                                   {"reference/page.adoc": "[[present]]\n== Title\n"})
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("broken anchor", result.stdout)
+
+    def test_angle_references_are_rejected(self):
+        for reference in ("<<present>>", "<<page.adoc#present,Text>>"):
+            with self.subTest(reference=reference):
+                result = self.check_source("[[present]]\n== Title\n" + reference + "\n")
+                self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+                self.assertIn("use xref:", result.stdout)
+
+    def test_listing_angle_references_are_not_links(self):
+        result = self.check_source("----\n<<example>>\n----\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_shorthand_role_and_option_are_not_part_of_the_id(self):
+        result = self.check_source("[#present.role%option]\n== Title\nxref:#present[Present]\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_reftext_is_not_part_of_the_id(self):
+        result = self.check_source("[[present,Present text]]\n== Title\nxref:#present[Present]\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_remote_and_data_images_are_skipped(self):
+        result = self.check_source("image::https://example.com/a.png[]\nimage:data:image/png;base64,AAAA[]\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_image_without_imagesdir_resolves_next_to_the_page(self):
+        result = self.check_source("image::picture.svg[]\n", {"how-to/picture.svg": "<svg/>"})
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def wiki_destinations(self):
+        fixture = Path(__file__).parent / "src/test/resources/how-to-wiki-destinations.txt"
+        destinations = [line for line in fixture.read_text(encoding="utf-8").splitlines()
+                        if line and not line.startswith("#")]
+        self.assertEqual(85, len(set(destinations)))
+        return destinations
+
+    def check_wiki_destinations(self, rename_anchor=False):
+        doc = Path(__file__).parent
+        destinations = self.wiki_destinations()
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source"
+            shutil.copytree(doc / "src/main/asciidoc", source)
+            (source / "how-to/wiki-compatibility.adoc").write_text(
+                "\n".join(f"xref:{page}#++{anchor}++[Section]"
+                          for page, anchor in (target.split("#", 1) for target in destinations)),
+                encoding="utf-8")
+            if rename_anchor:
+                page = source / "how-to/how-to-integrate-openig-and-message-brokers.adoc"
+                page.write_text(page.read_text(encoding="utf-8").replace(
+                    "[[how-to-integrate-openig-and-message-brokers-introduction]]",
+                    "[[renamed-introduction]]"), encoding="utf-8")
+            return subprocess.run([sys.executable, str(CHECKER), str(source)],
+                                  capture_output=True, text=True)
+
+    def test_original_wiki_destinations_exist(self):
+        result = self.check_wiki_destinations()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_renamed_wiki_destination_fails(self):
+        result = self.check_wiki_destinations(rename_anchor=True)
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("broken anchor", result.stdout)
+        self.assertIn("how-to-integrate-openig-and-message-brokers-introduction", result.stdout)
+
+    def test_deferred_patch_uses_original_wiki_destinations(self):
+        patch = Path(__file__).parent / "wiki-migration/wiki-how-to.patch"
+        if not patch.exists():
+            self.skipTest("Deferred wiki patch has been removed after publication")
+        links = set()
+        for line in patch.read_text(encoding="utf-8").splitlines():
+            if line.startswith("+"):
+                links.update(f"{page}.adoc#{anchor}" for page, anchor in re.findall(
+                    r"https://doc\.openidentityplatform\.org/openig/how-to/([\w-]+)#([\w-]+)", line))
+        self.assertEqual(set(self.wiki_destinations()), links)
 
 
 if __name__ == "__main__":

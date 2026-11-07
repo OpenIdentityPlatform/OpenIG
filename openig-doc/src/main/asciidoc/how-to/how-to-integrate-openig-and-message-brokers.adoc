@@ -69,7 +69,7 @@ Some important *MQ++_++Kafka* handler settings:
 [cols=",",options="header",]
 |===
 |Setting |Name
-|`boostrap.server` |Comma-separated list of host and port pairs that are the addresses of the Kafka brokers
+|`bootstrap.servers` |Comma-separated list of host and port pairs that are the addresses of the Kafka brokers
 |`topic.produce` |To which topic OpenIG should send messages
 |`topic.consume` |From which topic should OpenIG consume messages
 |`uri` |OpenIG route endpoint
@@ -256,7 +256,8 @@ Some significant *EmbeddedKafka* settings:
 [cols=",",options="header",]
 |===
 |Setting |Name
-|`zookeper.port` |Zookeeper port for Embedded Apache Kafka. If not set Kafka won't start
+|`zookeper.port` |Port of the embedded ZooKeeper. Kafka does not start unless `zookeper.port` or `zookeper.connect` is set
+|`zookeper.connect` |Address of an external ZooKeeper, used instead of the embedded one
 |`listeners` |Port and hosts which Kafka binds to for listening
 |`advertised.listeners` |Port and hosts which Kafka clients listening
 |===

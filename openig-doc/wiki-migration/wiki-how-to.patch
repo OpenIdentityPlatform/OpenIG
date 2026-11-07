@@ -3088,10 +3088,10 @@ index 71d0f3c..a819903 100644
 -
 +[Mapped Throttling Configuration](https://doc.openidentityplatform.org/openig/how-to/how-to-setup-api-throughput-control-throttling#how-to-setup-api-throughput-control-throttling-mapped-throttling-configuration)
 diff --git a/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG.md b/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG.md
-index a22d3c5..57e1d37 100644
+index a22d3c5..4bf7c1e 100644
 --- a/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG.md
 +++ b/How-to-setup-ICAP-Filter-for-DLP-and-Antivirus-protection-with-OpenIG.md
-@@ -1,270 +1,37 @@
+@@ -1,270 +1,38 @@
 +# How to Set Up an ICAP Filter for DLP and Antivirus Protection
  
 -- [Introduction](#introduction)
@@ -3366,6 +3366,7 @@ index a22d3c5..57e1d37 100644
 -< HTTP/1.1 100 Continue
 -* We are completely uploaded and fine
 -* Mark bundle as not supporting multiuse
++<a id="icap-denial-of-service-in---dicaprewritetrue-mode"></a>
 +## ICAP Denial of Service in -Dicap.rewrite=true Mode
  
 -17:54:37.255 [http-bio-8081-exec-1] ERROR org.openidentityplatform.openig.filter.ICAPFilter - net.rfc3507.client.ICAPException: java.net.ConnectException: Connection refused (Connection refused)
@@ -4162,7 +4163,7 @@ index 52a888d..82a0746 100644
 -This article is not an exhaustive solution for preventing prompt injection. It is merely a proof of concept. Each approach must be adapted to the needs of your organization. Take the source code for the solution and modify it for your needs.
 +[Conclusion](https://doc.openidentityplatform.org/openig/how-to/prompt-injection-mitigation-in-ai-systems-using-api-gateway#prompt-injection-mitigation-in-ai-systems-using-api-gateway-conclusion)
 diff --git a/REST-API-Security:-OAuth-OIDC-Authorization,-OpenAPI-Swagger-Compliance-Validation,-Service-Level-Monitoring.md b/REST-API-Security:-OAuth-OIDC-Authorization,-OpenAPI-Swagger-Compliance-Validation,-Service-Level-Monitoring.md
-index e08565c..01410ba 100644
+index e08565c..830cea2 100644
 --- a/REST-API-Security:-OAuth-OIDC-Authorization,-OpenAPI-Swagger-Compliance-Validation,-Service-Level-Monitoring.md
 +++ b/REST-API-Security:-OAuth-OIDC-Authorization,-OpenAPI-Swagger-Compliance-Validation,-Service-Level-Monitoring.md
 @@ -1,533 +1,43 @@
@@ -4402,7 +4403,7 @@ index e08565c..01410ba 100644
 -DS_DIRMGRDN=cn=Directory Manager
 -DS_DIRMGRPASSWD=passw0rd" > conf.file && java -jar openam-configurator-tool*.jar --file conf.file'
 -```
-+<a id="настройка-openig"></a>
++<a id="настройка--openig"></a>
  
 -Wait for the command to finish.
 +## Configuring OpenIG

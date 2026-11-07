@@ -12,9 +12,10 @@
 #
 # Copyright 2026 3A Systems, LLC.
 
-"""Check local How-To xrefs and images in preprocessed AsciiDoc.
+"""Check xref: macros and images in preprocessed How-To AsciiDoc.
 
 Component-qualified xrefs are checked by the full Antora site build.
+Local paths and module:page xrefs are supported; <<...>> references are rejected.
 """
 
 from pathlib import Path
@@ -23,8 +24,8 @@ import sys
 
 
 def visible_text(text):
-    """Comment, listing and literal blocks define neither links nor anchors."""
-    return re.sub(r"^(/{4,}|-{4,}|\.{4,})[ \t]*\n.*?^\1[ \t]*$", "",
+    """Verbatim blocks define neither AsciiDoc links nor AsciiDoc anchors."""
+    return re.sub(r"^(/{4,}|-{4,}|\.{4,}|\+{4,})[ \t]*\n.*?^\1[ \t]*$", "",
                   text, flags=re.MULTILINE | re.DOTALL)
 
 
@@ -41,6 +42,8 @@ def main():
     images = 0
     for article in articles:
         text = visible_text(article.read_text(encoding="utf-8"))
+        for match in re.finditer(r"<<[^<>\n]+>>", text):
+            errors.append(f"{article.name}: use xref: instead of {match.group(0)}")
         for match in re.finditer(r"xref:([^\s\[]+)\[", text):
             target = match.group(1)
             # Antora creates the component landing page; it has no source file here.
@@ -54,7 +57,11 @@ def main():
                 # Asciidoctor turns an intraword double hyphen into an em dash.
                 errors.append(f"{article.name}: fragment needs ++...++: {target}")
                 continue
-            destination = article.parent / page if page else article
+            if re.match(r"[^/:]+:", page):
+                module, page = page.split(":", 1)
+                destination = source / module / page
+            else:
+                destination = article.parent / page if page else article
             if not destination.is_file():
                 errors.append(f"{article.name}: missing page: {target}")
                 continue
@@ -62,7 +69,7 @@ def main():
                 destination_text = visible_text(destination.read_text(encoding="utf-8"))
                 ids = re.findall(r"^\[\[([^\],]+)", destination_text, re.MULTILINE)
                 # In shorthand attributes, a dot starts a role and % starts an option.
-                ids += re.findall(r"^\[#([^\].,%]+)", destination_text, re.MULTILINE)
+                ids += re.findall(r"^\[[^\]#,\s]*#([^\].,%]+)", destination_text, re.MULTILINE)
                 if anchor not in ids:
                     errors.append(f"{article.name}: broken anchor: {target}")
 
