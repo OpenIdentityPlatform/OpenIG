@@ -1,0 +1,100 @@
+# The contents of this file are subject to the terms of the Common Development and
+# Distribution License (the License). You may not use this file except in compliance with the
+# License.
+#
+# You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+# specific language governing permission and limitations under the License.
+#
+# When distributing Covered Software, include this CDDL Header Notice in each file and include
+# the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+# Header, with the fields enclosed by brackets [] replaced by your own identifying
+# information: "Portions copyright [year] [name of copyright owner]".
+#
+# Copyright 2026 3A Systems, LLC.
+
+# Original wiki deep-link destinations; retain after the deferred patch is removed.
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-embedded-apache-kafka
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-introduction
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-send-apache-kafka-messages-to-http-endpoint
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-send-http-requests-to-apache-kafka
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-send-http-requests-to-ibm-mq
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-send-ibm-mq-messages-to-http-endpoint
+how-to-integrate-openig-and-message-brokers.adoc#how-to-integrate-openig-and-message-brokers-use-cases
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-check-if-openig-works
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-create-configmaps-for-openig-routes
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-create-main-configmap
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-create-openig-configmaps
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-create-openig-deployment
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-create-openig-service
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-deploy-openig
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-deploy-sample-service-for-test
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-expose-openig-via-ingress-and-test
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-preface
+how-to-protect-kubernetes-services-with-openig.adoc#how-to-protect-kubernetes-services-with-openig-test-access
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-add-response-security-headers-x-frame-options-and-x-content-type-options
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-authentication-check
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-authorization-check
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-http-methods-restriction
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-introduction
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-jwt-validation
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-openig-setup
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-proxy-requests-to-sample-service
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-runing-sample-service-in-docker-container
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-running-sample-service
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-sample-service
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-securing-sample-service
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-validate-accept-request-header-and-content-type-response-header
+how-to-protect-web-services-with-openig.adoc#how-to-protect-web-services-with-openig-validate-content-type-request-header
+how-to-protect-websocket-connection-with-openam-and-openig.adoc#how-to-protect-websocket-connection-with-openam-and-openig-introduction
+how-to-protect-websocket-connection-with-openam-and-openig.adoc#how-to-protect-websocket-connection-with-openam-and-openig-openam-configuration
+how-to-protect-websocket-connection-with-openam-and-openig.adoc#how-to-protect-websocket-connection-with-openam-and-openig-openig-configuration
+how-to-protect-websocket-connection-with-openam-and-openig.adoc#how-to-protect-websocket-connection-with-openam-and-openig-sample-websocket-service-introduction
+how-to-protect-websocket-connection-with-openam-and-openig.adoc#how-to-protect-websocket-connection-with-openam-and-openig-test-solution
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-check-if-openig-works
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-create-configmaps-for-openig-routes
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-create-main-configmap
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-create-openig-configmaps
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-create-openig-deployment
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-create-openig-service
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-expose-openig-service-via-ingress
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-preface
+how-to-run-openig-in-kubernetes.adoc#how-to-run-openig-in-kubernetes-test-access
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-basic-throttling
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-brief-demo-project-description
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-demo-project
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-grouped-throttling
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-introduction
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-mapped-throttling-configuration
+how-to-setup-api-throughput-control-throttling.adoc#how-to-setup-api-throughput-control-throttling-request-throttling-setup
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-deny-content-mode--dicaprewritetrue
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-deny-content-notification-mode--dicaprewritefalse
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-getting-test-malicious-file
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-icap-denial-of-service-in--dicaprewritetrue-mode
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-introduction
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-setup-filter
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-setup-test-icap-server
+how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc#how-to-setup-icap-filter-for-dlp-and-antivirus-protection-testing-solution
+openig-http-client.adoc#openig-http-client-background
+openig-http-client.adoc#openig-http-client-further-information-on-the-promise-object
+openig-http-client.adoc#openig-http-client-groovy-specific-points
+openig-http-client.adoc#openig-http-client-migrate-to-chf-asynchronous-apis
+openig-http-client.adoc#openig-http-client-migrated-example-script
+openig-http-client.adoc#openig-http-client-migrated-example-script-1
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-conclusion
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-introduction
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-lets-check-the-solution
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-output-validation
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-preparing-the-environment
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-using-a-third-party-llm-to-detect-prompt-injection
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-validation-and-cleaning-of-user-requests
+prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc#prompt-injection-mitigation-in-ai-systems-using-api-gateway-what-is-prompt-injection
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-adding-api-throttling
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-conclusion
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-configuring-a-route-to-the-pet-clinic-service
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-configuring-authentication
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-configuring-openig
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-preparation
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-requests-and-responses-validation
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-what-this-article-is-about
+rest-api-security-oauth-oidc-openapi-and-monitoring.adoc#rest-api-security-oauth-oidc-openapi-and-monitoring-what-threats-does-this-solution-address

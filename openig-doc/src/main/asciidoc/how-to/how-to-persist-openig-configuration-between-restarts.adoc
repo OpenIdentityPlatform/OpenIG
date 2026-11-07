@@ -1,0 +1,49 @@
+////
+The contents of this file are subject to the terms of the Common Development and
+Distribution License (the License). You may not use this file except in compliance with the
+License.
+
+You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+specific language governing permission and limitations under the License.
+
+When distributing Covered Software, include this CDDL Header Notice in each file and include
+the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+Header, with the fields enclosed by brackets [] replaced by your own identifying
+information: "Portions copyright [year] [name of copyright owner]".
+
+Copyright 2026 3A Systems, LLC.
+////
+
+[[how-to-persist-openig-configuration-between-restarts]]
+== How to Persist OpenIG Configuration Between Restarts
+:imagesdir: ../
+
+OpenIG stores its configuration data in `/usr/local/openig-config` directory. If you need to customize OpenIG configuration and need OpenIG Docker container to load it, mount your local folder to the OpenIG docker image
+
+With `docker-compose.yaml` file
+
+[source,yaml]
+----
+services:
+  openig:
+    image: openidentityplatform/openig:latest
+    volumes:
+      - ./openig-config:/usr/local/openig-config/config
+    ports:
+      - "8080:8080"
+----
+
+With `docker run` command:
+
+[listing]
+----
+docker run -h openig-01.domain.com \
+    -p 8080:8080 \
+    --name openig-01 \
+    -v ./openig-config:/usr/local/openig-config/config \
+    openidentityplatform/openig
+----
+
+See also
+
+* xref:how-to-protect-web-services-with-openig.adoc[How To Protect Web Services with OpenIG]

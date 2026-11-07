@@ -1,0 +1,89 @@
+////
+The contents of this file are subject to the terms of the Common Development and
+Distribution License (the License). You may not use this file except in compliance with the
+License.
+
+You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+specific language governing permission and limitations under the License.
+
+When distributing Covered Software, include this CDDL Header Notice in each file and include
+the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+Header, with the fields enclosed by brackets [] replaced by your own identifying
+information: "Portions copyright [year] [name of copyright owner]".
+
+Copyright 2026 3A Systems, LLC.
+////
+
+[[convert-openam-token-to-openid-connect-jwt]]
+== Convert an OpenAM Token to OpenID Connect (JWT)
+:imagesdir: ../
+
+This route transforms an OpenAM session token into an OpenID Connect token using an OpenAM REST STS instance named `jwt` in the `/staff` realm. Configure that STS instance first, and supply the OpenAM URL and protected backend URL through the `openam` and `endpoint.api` system properties.
+
+See xref:../reference/filters-conf.adoc#TokenTransformationFilter[TokenTransformationFilter] for the filter configuration and the OpenAM authorization tutorial for a complete STS setup.
+
+[source,json]
+----
+{
+    "name": "10-api",
+    "condition": "${matches(request.uri.path, '^/api')}",
+    "monitor": true,
+    "timer": true,
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "TokenTransformationFilter",
+                    "config": {
+                        "openamUri": "${system['openam']}",
+                        "realm": "/staff",
+                        "instance": "jwt",
+                        "from": "OPENAM",
+                        "to": "OPENIDCONNECT",
+                        "idToken": "${request.headers['Authorization'][0]}"
+                    }
+                },
+                {
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "REQUEST",
+                        "remove": [
+                            "Authorization"
+                        ]
+                    }
+                },
+                {
+                    "type": "ConditionalFilter",
+                    "config": {
+                        "condition": "${not empty contexts.sts.issuedToken}",
+                        "delegate": {
+                            "type": "HeaderFilter",
+                            "config": {
+                                "messageType": "REQUEST",
+                                "add": {
+                                    "Authorization": [
+                                        "Bearer ${contexts.sts.issuedToken}"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "handler": {
+                "type": "DispatchHandler",
+                "config": {
+                    "bindings": [
+                        {
+                            "handler": "ClientHandler",
+                            "capture": ["filtered_request"],
+                            "baseURI": "${system['endpoint.api']}"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+----
