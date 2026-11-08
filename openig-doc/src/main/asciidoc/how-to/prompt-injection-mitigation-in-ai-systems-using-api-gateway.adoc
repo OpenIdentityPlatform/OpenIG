@@ -14,6 +14,8 @@ information: "Portions copyright [year] [name of copyright owner]".
 Copyright 2026 3A Systems, LLC.
 ////
 
+:table-caption!:
+
 [[prompt-injection-mitigation-in-ai-systems-using-api-gateway]]
 == Prompt Injection Mitigation in AI Systems Using an API Gateway
 :imagesdir: ../

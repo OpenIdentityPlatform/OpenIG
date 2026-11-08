@@ -14,6 +14,8 @@ information: "Portions copyright [year] [name of copyright owner]".
 Copyright 2026 3A Systems, LLC.
 ////
 
+:table-caption!:
+
 [[rest-api-security-oauth-oidc-openapi-and-monitoring]]
 == REST API Security: OAuth/OIDC, OpenAPI Validation and Monitoring
 :imagesdir: ../
