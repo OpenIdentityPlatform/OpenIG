@@ -553,6 +553,9 @@ boolean accepts(List<String> fields, ContentTypeHeader contentType) {
     }
     def representation
     try {
+        if (contentType.type == null) {
+            throw new IllegalArgumentException('Missing media type')
+        }
         representation = MediaType.parse(contentType.type)
         if (contentType.charset != null) {
             representation = representation.withCharset(contentType.charset)
@@ -562,6 +565,9 @@ boolean accepts(List<String> fields, ContentTypeHeader contentType) {
                     'boundary', contentType.boundary)
         }
         for (parameter in contentType.additionalParameters) {
+            if (parameter.value == null) {
+                throw new IllegalArgumentException('Missing parameter value')
+            }
             representation = representation.withParameter(
                     parameter.key, parameter.value)
         }

@@ -111,6 +111,8 @@ public class HowToScriptsTest {
             { new String[] { "*/*" }, "text/html; charset=x-unknown", 200 },
             { new String[] { "*/*" }, "text", 200 },
             { new String[] { "*/*" }, "", 200 },
+            { new String[] { "*/*" }, ";", 200 },
+            { new String[] { "*/*" }, "application/json; foo", 200 },
         };
     }
 
@@ -122,7 +124,7 @@ public class HowToScriptsTest {
         }
         Response response = new Response(Status.OK);
         if (contentType != null) {
-            response.getHeaders().put("Content-Type", contentType);
+            response.getHeaders().add("Content-Type", contentType);
         }
         Response filtered = filter(request, response);
         assertThat(filtered.getStatus().getCode()).isEqualTo(status);
