@@ -15,7 +15,6 @@
 """Regression tests for How-To link validation."""
 
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
@@ -219,31 +218,6 @@ class HowToLinksTest(unittest.TestCase):
         self.assertEqual(1, result.returncode, result.stdout + result.stderr)
         self.assertIn("broken anchor", result.stdout)
         self.assertIn("how-to-integrate-openig-and-message-brokers-introduction", result.stdout)
-
-    def test_deferred_patch_uses_original_wiki_destinations(self):
-        patch = Path(__file__).parent / "wiki-migration/wiki-how-to.patch"
-        if not patch.exists():
-            self.skipTest("Deferred wiki patch has been removed after publication")
-        links = set()
-        for line in patch.read_text(encoding="utf-8").splitlines():
-            if line.startswith("+"):
-                links.update(f"{page}.adoc#{anchor}" for page, anchor in re.findall(
-                    r"https://doc\.openidentityplatform\.org/openig/how-to/([\w-]+)#([\w-]+)", line))
-        self.assertEqual(set(self.wiki_destinations()), links)
-
-    def test_deferred_patch_links_existing_pages(self):
-        doc = Path(__file__).parent
-        patch = doc / "wiki-migration/wiki-how-to.patch"
-        if not patch.exists():
-            self.skipTest("Deferred wiki patch has been removed after publication")
-        pages = set()
-        for line in patch.read_text(encoding="utf-8").splitlines():
-            if line.startswith("+"):
-                pages.update(re.findall(
-                    r"https://doc\.openidentityplatform\.org/openig/how-to/([\w-]+)", line))
-        missing = sorted(page for page in pages
-                         if not (doc / f"src/main/asciidoc/how-to/{page}.adoc").is_file())
-        self.assertEqual([], missing)
 
 
 if __name__ == "__main__":
