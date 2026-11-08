@@ -1,0 +1,65 @@
+<!--
+The contents of this file are subject to the terms of the Common Development and
+Distribution License (the License). You may not use this file except in compliance with the
+License.
+
+You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+specific language governing permission and limitations under the License.
+
+When distributing Covered Software, include this CDDL Header Notice in each file and include
+the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+Header, with the fields enclosed by brackets [] replaced by your own identifying
+information: "Portions copyright [year] [name of copyright owner]".
+
+Copyright 2026 3A Systems, LLC.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1100" viewBox="0 0 1200 1100" role="img" aria-labelledby="title desc">
+<title id="title">Authorization flow with OpenAM and OpenIG</title>
+<desc id="desc">OpenIG redirects the browser to OpenAM, validates the session token, checks authorization, and forwards permitted requests to the resource. Denied requests return to the browser.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#233951"/></marker></defs>
+<rect width="1200" height="1100" fill="white"/>
+<g font-family="sans-serif" font-size="17" fill="#233951">
+<text x="600" y="34" text-anchor="middle" font-size="24" font-weight="bold">Authorization flow with OpenAM and OpenIG</text>
+<rect x="33" y="60" width="154" height="45" rx="6" fill="#e6eff7" stroke="#233951"/>
+<text x="110" y="89" text-anchor="middle" font-weight="bold">Browser</text>
+<line x1="110" y1="105" x2="110" y2="1055" stroke="#8c9cac" stroke-dasharray="6 5"/>
+<rect x="343" y="60" width="154" height="45" rx="6" fill="#e6eff7" stroke="#233951"/>
+<text x="420" y="89" text-anchor="middle" font-weight="bold">OpenIG</text>
+<line x1="420" y1="105" x2="420" y2="1055" stroke="#8c9cac" stroke-dasharray="6 5"/>
+<rect x="703" y="60" width="154" height="45" rx="6" fill="#e6eff7" stroke="#233951"/>
+<text x="780" y="89" text-anchor="middle" font-weight="bold">OpenAM</text>
+<line x1="780" y1="105" x2="780" y2="1055" stroke="#8c9cac" stroke-dasharray="6 5"/>
+<rect x="1013" y="60" width="154" height="45" rx="6" fill="#e6eff7" stroke="#233951"/>
+<text x="1090" y="89" text-anchor="middle" font-weight="bold">Resource</text>
+<line x1="1090" y1="105" x2="1090" y2="1055" stroke="#8c9cac" stroke-dasharray="6 5"/>
+<line x1="110" y1="150" x2="420" y2="150" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="265.0" y="138" text-anchor="middle">GET /app (API or UI)</text>
+<rect x="445" y="168" width="390" height="38" rx="4" fill="#fff6d8" stroke="#c2a44d"/>
+<text x="460" y="192">Authentication: session token present?</text>
+<line x1="420" y1="270" x2="110" y2="270" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="265.0" y="258" text-anchor="middle">Redirect to OpenAM login UI</text>
+<line x1="110" y1="327" x2="780" y2="327" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="445.0" y="315" text-anchor="middle">GET /passport/UI/Login?goto=/app</text>
+<text x="780" y="365" text-anchor="middle">Registration or authentication</text>
+<line x1="780" y1="412" x2="110" y2="412" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="445.0" y="400" text-anchor="middle">Return session token</text>
+<line x1="110" y1="470" x2="420" y2="470" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="265.0" y="458" text-anchor="middle">GET /app with session token</text>
+<rect x="445" y="491" width="390" height="61" rx="4" fill="#fff6d8" stroke="#c2a44d"/>
+<text x="460" y="515">Authentication: token valid, not revoked?</text>
+<text x="460" y="538">Authorization: user allowed to access /app?</text>
+<rect x="35" y="580" width="1130" height="443" fill="none" stroke="#7890a8"/>
+<text x="50" y="607" font-weight="bold">alt: access denied</text>
+<line x1="420" y1="654" x2="110" y2="654" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="265.0" y="642" text-anchor="middle">Access restricted</text>
+<line x1="35" y1="692" x2="1165" y2="692" stroke="#7890a8" stroke-dasharray="5 4"/>
+<text x="50" y="721" font-weight="bold">else: access allowed</text>
+<rect x="445" y="741" width="390" height="38" rx="4" fill="#fff6d8" stroke="#c2a44d"/>
+<text x="460" y="765">Optional: enrich profile and convert token</text>
+<line x1="420" y1="851" x2="1090" y2="851" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="755.0" y="839" text-anchor="middle">GET /app with JWT and user information headers</text>
+<text x="1090" y="896" text-anchor="middle" font-size="15">Read user ID and roles</text>
+<line x1="1090" y1="972" x2="110" y2="972" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="600.0" y="960" text-anchor="middle">API or UI response</text>
+</g>
+</svg>

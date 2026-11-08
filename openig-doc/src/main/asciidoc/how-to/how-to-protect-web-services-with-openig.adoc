@@ -1,0 +1,1003 @@
+////
+The contents of this file are subject to the terms of the Common Development and
+Distribution License (the License). You may not use this file except in compliance with the
+License.
+
+You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+specific language governing permission and limitations under the License.
+
+When distributing Covered Software, include this CDDL Header Notice in each file and include
+the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+Header, with the fields enclosed by brackets [] replaced by your own identifying
+information: "Portions copyright [year] [name of copyright owner]".
+
+Copyright 2026 3A Systems, LLC.
+////
+
+[[how-to-protect-web-services-with-openig]]
+== How to Protect Web Services with OpenIG
+:imagesdir: ../
+
+[[how-to-protect-web-services-with-openig-introduction]]
+=== Introduction
+
+Securing web services is critical part of production environment to prevent compromising application from attacks. In microservice architecture, there is no need to implement security for each microservice. Each microservice should be responsible for its atomic functionality. To protect services you need to use an API Gateway application. Consider how to protect simple web service with Open Identity Gateway (OpenIG) in the following article.
+
+Source code for this article is located here: https://github.com/maximthomas/openig-protect-ws/
+
+[[how-to-protect-web-services-with-openig-sample-service]]
+=== Sample Service
+
+Consider service application with 2 endpoints http://localhost:8080/ - public http://localhost:8080/secure - private, so only authenticated users should have access to it. This service implemented with https://spring.io/projects/spring-boot[Spring Boot:]
+
+[source,java]
+----
+package org.openidentityplatform.sampleservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Map;
+
+@SpringBootApplication
+public class SampleServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SampleServiceApplication.class, args);
+    }
+
+    @RestController
+    public class IndexController {
+        @RequestMapping("/")
+        public Map<String, String> index() {
+            return Collections.singletonMap("hello", "world");
+        }
+
+        @RequestMapping("/secure")
+        public Map<String, String> secure(HttpServletRequest request) {
+            return Collections.singletonMap("hello", request.getHeader("X-Auth-Username"));
+        }
+    }
+}
+----
+
+[[how-to-protect-web-services-with-openig-running-sample-service]]
+==== Running Sample Service
+
+Clone the project from GitHub:
+
+[listing]
+----
+$ git clone https://github.com/maximthomas/openig-protect-ws.git
+----
+
+then run:
+
+[listing]
+----
+cd ./openig-protect-ws
+$ ./mvnw spring-boot:run -f sample-service
+----
+
+Check service working
+
+[listing]
+----
+~$ curl -v -X GET http://localhost:8080/
+Note: Unnecessary use of -X or --request, GET is already inferred.
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Server: Apache-Coyote/1.1
+< Date: Wed, 24 Apr 2019 15:06:17 GMT
+< Content-Type: application/json;charset=UTF-8
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":"world"}
+----
+
+[[how-to-protect-web-services-with-openig-runing-sample-service-in-docker-container]]
+==== Runing Sample Service in Docker container
+
+At first you need to build `sample-service`
+
+[listing]
+----
+$ ./mvnw install
+----
+
+`Dockerfile` for sample service looks like this:
+
+[source,Dockerfile]
+----
+FROM openjdk:8-jdk-alpine
+COPY ./target/*.jar app.jar
+ENTRYPOINT ["java", "-jar","/app.jar"]
+----
+
+Build and run docker image with `docker-compose`: `docker-compose.yaml`
+
+[source,yaml]
+----
+version: '3.1'
+
+services:
+  sample-service:
+    build:
+      context: ./sample-service
+    restart: always
+----
+
+Then run
+
+[listing]
+----
+$ docker-compose up --build
+----
+
+[[how-to-protect-web-services-with-openig-openig-setup]]
+=== OpenIG Setup
+
+Create OpenIG configuration folder `openig-config`. In this folder create another folder `config` with configuration files. In `openig-config/config` folder create 2 files:
+
+`admin.json`
+
+[source,json]
+----
+{
+  "prefix" : "openig",
+  "mode": "PRODUCTION"
+}
+----
+
+and `config.json`
+
+[source,json]
+----
+{
+  "heap": [
+  ],
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+
+      ],
+      "handler": {
+        "type": "Router",
+        "name": "_router",
+        "capture": "all"
+      }
+    }
+  }
+}
+----
+
+Add OpenIG service to `docker-compose.yaml` Mount `openig-config` folder with OpenIG configuration files to Docker container. `-Dopenig.base` option should point to this mounted folder:
+
+[source,yaml]
+----
+version: '3.1'
+
+services:
+  sample-service:
+    build:
+      context: ./sample-service
+    restart: always
+
+  #OpenIG service
+  openig:
+    image: openidentityplatform/openig:latest
+    restart: always
+    volumes:
+      - ./openig-config:/usr/local/openig-config
+    environment:
+      #OpenIG options
+      CATALINA_OPTS: -Dopenig.base=/usr/local/openig-config
+    ports:
+      - "8080:8080"
+----
+
+[[how-to-protect-web-services-with-openig-proxy-requests-to-sample-service]]
+==== Proxy Requests to Sample Service
+
+Setup proxy requests through OpenIG to `sample-service`. Add system property - `sample-service` endpoint url `-Dendpoint.api`. This setting will be used in OpenIG routes configuration files.
+
+`docker-compose.yaml`:
+
+[source,yaml]
+----
+version: '3.1'
+
+...
+  openig:
+    image: openidentityplatform/openig:latest
+    restart: always
+    volumes:
+      - ./openig-config:/usr/local/openig-config
+    environment:
+      #OpenIG options
+      CATALINA_OPTS: -Dopenig.base=/usr/local/openig-config -Dendpoint.api=http://sample-service:8080/
+    ports:
+      - "8080:8080"
+----
+
+Add folder `routes` to `openig-config/config/` and add file `10-api.json` - main route to this folder. `10-api.json` route makes OpenIG proxy requests to `sample-service`
+
+`10-api.json`:
+
+[source,json]
+----
+{
+  "name": "${matches(request.uri.path, '^/')}",
+  "condition": "${matches(request.uri.path, '^/')}",
+  "monitor": true,
+  "timer": true,
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+
+      ],
+      "handler": "EndpointHandler"
+    }
+  },
+  "heap": [
+    {
+      "name": "EndpointHandler",
+      "type": "DispatchHandler",
+      "config": {
+        "bindings": [
+          {
+            "handler": "ClientHandler",
+            "capture": "all",
+            "baseURI": "${system['endpoint.api']}"
+          }
+        ]
+      }
+    }
+  ]
+}
+----
+
+Add default route, which returns 404 status to all other requests
+
+`99-default.json`:
+
+[source,json]
+----
+{
+  "name": "99-default",
+  "handler": {
+    "type": "StaticResponseHandler",
+    "config": {
+      "status": 404,
+      "reason": "Not Found",
+      "headers": {
+        "Content-Type": [ "application/json" ]
+      },
+      "entity": "{ \"error\": \"Something went wrong, please contact your system administrator.\"}"
+    }
+  },
+  "audit": "/404"
+}
+----
+
+Start `sample-service` and OpenIG container:
+
+[listing]
+----
+$ docker-compose up --build
+----
+
+Lets check service:
+
+[listing]
+----
+~$ curl -v -X GET http://localhost:8080/
+Note: Unnecessary use of -X or --request, GET is already inferred.
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Server: Apache-Coyote/1.1
+< Date: Wed, 24 Apr 2019 15:06:17 GMT
+< Content-Type: application/json;charset=UTF-8
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":"world"}
+----
+
+[listing]
+----
+$ curl -v -X GET http://localhost:8080/secure
+Note: Unnecessary use of -X or --request, GET is already inferred.
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /secure HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Server: Apache-Coyote/1.1
+< Date: Wed, 24 Apr 2019 15:04:49 GMT
+< Content-Type: application/json;charset=UTF-8
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":null}
+----
+
+If everything works fine, let's move on to setting up service security.
+
+[[how-to-protect-web-services-with-openig-securing-sample-service]]
+=== Securing Sample Service
+
+There are https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/REST_Security_Cheat_Sheet.md[OWASP recommendations] to secure REST services:
+
+[[how-to-protect-web-services-with-openig-http-methods-restriction]]
+==== HTTP Methods Restriction
+
+We will restrict HTTP methods, leave only GET and POST methods allowed. To do that add `SwitchFilter` to `10-api.json`:
+
+[source,json]
+----
+{
+  "name": "${matches(request.uri.path, '^/')}",
+  "condition": "${matches(request.uri.path, '^/')}",
+  "monitor": true,
+  "timer": true,
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        {
+          "type": "SwitchFilter",
+          "config": {
+            "onRequest": [
+              {
+                "condition": "${request.method != 'POST' and request.method != 'GET'}",
+                "handler": {
+                  "type": "StaticResponseHandler",
+                  "config": {
+                    "status": 405,
+                    "reason": "Method not allowed",
+                    "headers": {
+                      "Content-Type": [
+                        "application/json"
+                      ]
+                    },
+                    "entity": "{ \"error\": \"Method not allowed\"}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+
+      "handler": "EndpointHandler"
+    }
+  },
+  "heap": [
+    {
+      "name": "EndpointHandler",
+      "type": "DispatchHandler",
+      "config": {
+        "bindings": [
+          {
+            "handler": "ClientHandler",
+            "capture": "all",
+            "baseURI": "${system['endpoint.api']}"
+          }
+        ]
+      }
+    }
+  ]
+}
+----
+
+Lets check. If the method is different from GET or POST, OpenIG will return status `405 Method not allowed`:
+
+[listing]
+----
+$ curl -v -X PUT http://localhost:8080/
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> PUT / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 405 Method Not Allowed
+< Server: Apache-Coyote/1.1
+< Content-Type: application/json
+< Content-Length: 32
+< Date: Wed, 24 Apr 2019 15:13:04 GMT
+<
+* Connection #0 to host localhost left intact
+{ "error": "Method not allowed"}
+----
+
+[[how-to-protect-web-services-with-openig-validate-content-type-request-header]]
+==== Validate Content-Type Request Header
+
+Lets make our service accept only `Content-Type: application/json` header for POST requests. To do that add into `SwitchFilter` `Content-Type` request header condition:
+
+`10-api.json`:
+
+[source,json]
+----
+...
+      {
+          "type": "SwitchFilter",
+          "config": {
+            "onRequest": [
+              {
+                "condition": "${request.method != 'POST' and request.method != 'GET'}",
+                "handler": {
+                  "type": "StaticResponseHandler",
+                  "config": {
+                    "status": 405,
+                    "reason": "Method not allowed",
+                    "headers": {
+                      "Content-Type": [
+                        "application/json"
+                      ]
+                    },
+                    "entity": "{ \"error\": \"Method not allowed\"}"
+                  }
+                }
+              },
+              {
+                "condition": "${request.method == 'POST' and request.headers['Content-Type'][0].split(';')[0] != 'application/json'}",
+                "handler": {
+                  "type": "StaticResponseHandler",
+                  "config": {
+                    "status": 415,
+                    "reason": "Unsupported Media Type",
+                    "headers": {
+                      "Content-Type": [ "application/json" ]
+                    },
+                    "entity": "{ \"error\": \"Unsupported Media Type\"}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+...
+----
+
+Then check request with `Content-Type: application/xml` header:
+
+[listing]
+----
+$ curl -v -X POST -H 'Content-Type: application/xml' http://localhost:8080/
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> POST / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Accept: */*
+> Content-Type: application/xml
+>
+< HTTP/1.1 415 Unsupported Media Type
+< Server: Apache-Coyote/1.1
+< Content-Type: application/json
+< Content-Length: 36
+< Date: Wed, 24 Apr 2019 15:21:04 GMT
+<
+* Connection #0 to host localhost left intact
+{ "error": "Unsupported Media Type"}
+----
+
+[[how-to-protect-web-services-with-openig-validate-accept-request-header-and-content-type-response-header]]
+==== Validate Accept Request Header and Content-Type Response Header
+
+Check whether the response media type is acceptable to the client. An absent `Accept` header allows any media type; lists, wildcards and quality values need more than an exact string comparison. The most specific matching range takes precedence, including a `q=0` exclusion.
+
+Add a `ScriptableFilter` before the existing `SwitchFilter` in the route's `filters` array in `10-api.json`:
+
+[source,json]
+----
+...
+"filters": [
+  {
+    "type": "ScriptableFilter",
+    "config": {
+      "type": "application/x-groovy",
+      "file": "accept.groovy"
+    }
+  },
+  ...
+]
+...
+----
+
+Create `/openig-config/scripts/groovy/accept.groovy`. The script uses the Apache HTTP header parser and Guava media-type parser already available in OpenIG, including their handling of quoted parameters. It checks all `Accept` field values, ignores malformed ranges and leaves responses without a parseable `Content-Type` unchanged. It does not select or convert the upstream representation; if no matching range has a positive quality, it replaces the response with 406.
+
+[source#how-to-protect-web-services-with-openig-accept-script,groovy]
+----
+import com.google.common.net.MediaType
+import org.apache.http.message.BasicHeaderValueParser
+import org.forgerock.http.header.ContentTypeHeader
+import org.forgerock.http.header.MalformedHeaderException
+import org.forgerock.http.protocol.Response
+import org.forgerock.http.protocol.Status
+import org.forgerock.util.Function
+
+boolean accepts(List<String> fields, ContentTypeHeader contentType) {
+    if (fields == null || contentType == null) {
+        return true
+    }
+    def representation
+    try {
+        if (contentType.type == null) {
+            throw new IllegalArgumentException('Missing media type')
+        }
+        representation = MediaType.parse(contentType.type)
+        if (contentType.charset != null) {
+            representation = representation.withCharset(contentType.charset)
+        }
+        if (contentType.boundary != null) {
+            representation = representation.withParameter(
+                    'boundary', contentType.boundary)
+        }
+        for (parameter in contentType.additionalParameters) {
+            if (parameter.value == null) {
+                throw new IllegalArgumentException('Missing parameter value')
+            }
+            representation = representation.withParameter(
+                    parameter.key, parameter.value)
+        }
+    } catch (IllegalArgumentException ignored) {
+        // An unparseable media type or an unknown charset is left unchanged.
+        return true
+    }
+    def qualityPattern = ~/(?:0(?:\.[0-9]{0,3})?|1(?:\.0{0,3})?)/
+    int bestType = -1
+    int bestParameters = -1
+    BigDecimal bestQuality = BigDecimal.ZERO
+    for (element in BasicHeaderValueParser.parseElements(fields.join(','), null)) {
+        try {
+            if (element.value != null) {
+                throw new IllegalArgumentException('Invalid media range')
+            }
+            def range = MediaType.parse(element.name)
+            BigDecimal quality = BigDecimal.ONE
+            boolean qualitySeen = false
+            for (parameter in element.parameters) {
+                if (parameter.value == null) {
+                    throw new IllegalArgumentException('Missing parameter value')
+                }
+                if (parameter.name.equalsIgnoreCase('q')) {
+                    if (qualitySeen || !(parameter.value ==~ qualityPattern)) {
+                        throw new IllegalArgumentException('Invalid quality')
+                    }
+                    qualitySeen = true
+                    quality = new BigDecimal(parameter.value)
+                } else {
+                    range = range.withParameter(parameter.name, parameter.value)
+                }
+            }
+            if (!representation.is(range)) {
+                continue
+            }
+            int type = range.type() == '*' ? 0 : (range.subtype() == '*' ? 1 : 2)
+            int parameters = range.parameters().size()
+            if (type > bestType ||
+                    (type == bestType && parameters > bestParameters)) {
+                bestType = type
+                bestParameters = parameters
+                bestQuality = quality
+            } else if (type == bestType && parameters == bestParameters) {
+                bestQuality = bestQuality.max(quality)
+            }
+        } catch (IllegalArgumentException ignored) {
+            // A malformed range does not make a representation acceptable.
+        }
+    }
+    return bestQuality > 0
+}
+
+return next.handle(context, request).then({ response ->
+    ContentTypeHeader contentType
+    try {
+        contentType = response.headers.get(ContentTypeHeader)
+    } catch (MalformedHeaderException ignored) {
+        return response
+    }
+    if (accepts(request.headers['Accept']?.values, contentType)) {
+        return response
+    }
+    response.close()
+    def rejected = new Response(Status.NOT_ACCEPTABLE)
+    rejected.headers['Content-Type'] = 'application/json'
+    rejected.setEntity('{"error":"Not Acceptable"}')
+    return rejected
+} as Function)
+----
+
+Lets check request:
+
+[listing]
+----
+$ curl -v -X POST -H 'Content-Type: application/json' -H 'Accept: application/xml'  http://localhost:8080/
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> POST / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Content-Type: application/json
+> Accept: application/xml
+>
+< HTTP/1.1 406 Not Acceptable
+< Server: Apache-Coyote/1.1
+< Content-Type: application/json
+< Content-Length: 26
+< Date: Wed, 24 Apr 2019 15:28:54 GMT
+<
+* Connection #0 to host localhost left intact
+{"error":"Not Acceptable"}
+----
+
+[[how-to-protect-web-services-with-openig-add-response-security-headers-x-frame-options-and-x-content-type-options]]
+==== Add Response Security Headers X-Frame-Options and X-Content-Type-Options
+
+OpenIG should return `X-Frame-Options: deny` and `X-Content-Type-Options: nosniff` headers to client to prevent XSS and drag'n drop clickjacking attacks in older browsers. To do that, add `HeaderFilter` to filter chain after `SwitchFilter`:
+
+`10-api.json`:
+
+[source,json]
+----
+       {
+          "type": "HeaderFilter",
+          "comment": "Add security headers to response",
+          "config": {
+            "messageType": "response",
+            "add": {
+              "X-Frame-Options": [ "deny" ],
+              "X-Content-Type-Options": [ "nosniff" ]
+            }
+          }
+        }
+----
+
+Check response headers:
+
+[listing]
+----
+$ curl -v -X POST -H 'Content-Type: application/json' -H 'Accept: application/json'  http://localhost:8080/
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> POST / HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.58.0
+> Content-Type: application/json
+> Accept: application/json
+>
+< HTTP/1.1 200 OK
+< Server: Apache-Coyote/1.1
+< Date: Wed, 24 Apr 2019 15:31:31 GMT
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: deny
+< Content-Type: application/json;charset=UTF-8
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":"world"}
+----
+
+[[how-to-protect-web-services-with-openig-authentication-check]]
+==== Authentication Check
+
+If you need to protect services from unauthenticated access, there is no need to implement access control on each service. You can check access to the service with OpenIG, and if access has been granted, enrich request with the headers containing identity information. For example, authentication service returns to the client signed https://en.wikipedia.org/wiki/JSON_Web_Token[JSON Web Token] (JWT) and client use this JWT to authenticate in service. There is a public key on OpenIG and OpenIG verifies the JWT signature and enriches the request with identity headers.
+
+Generate keys:
+
+private:
+
+[listing]
+----
+$ openssl genrsa -out private_key.pem 4096
+----
+
+and public:
+
+[listing]
+----
+$ openssl rsa -pubout -in private_key.pem -out public_key.pem
+----
+
+Example keys are in source folder: https://github.com/maximthomas/openig-protect-ws/tree/master/openig-config/keys
+
+Lets generate with https://jwt.io/ and generated `private++_++key.pem` signed JWT token
+
+NOTE: The JWTs and successful responses below are historical captures. The sample tokens expired on 13 September 2024 at 14:50:22 UTC. Before running the commands, issue fresh JWTs with a future `exp` value, signed with your `private_key.pem`, and configure OpenIG with the matching public key. Use the `manager` role for the successful examples and the `bad` role for the forbidden example.
+
+Sample token:
+
+[listing]
+----
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoibWFuYWdlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI2MjM5MDIyfQ.bhzhwj2cY1iYbpx7Mzbukfi1jOCvWP-Pdd9dm3hf7lZDDuokNVDUXU3jvHial4QN-bOTSNCUKVy907hokcVeQaFwbiYoZs485Kr230Z0y9MU6zbDe8yQp68-71TDgJGIZ78YYOKvJTrzCWgWgE_Py1DskG_ViSxfGFlETpFQa056Rk2bty-9iuc_Cx5_Wr6RCcJTG6WYRrBtdWGIFxljEjxSAcJYmGPPA8dHHORDOnmka2OAjWURnsqbz50aI_SrWpnqp4i2eXVA1b5QD5rlsgc_QAqJptghrijBlRPhasTk1N-kXE8Ozboa0FwGfIRr7gNiG-3if7INZe2R5NUCmjlAlywcSfOunWuSzY8tLGTHV2swnQPP8lBXwVJcS5nJMqBNIbcLcFWHk3ryvvtf-LYty_jAY8v1zDe9-DwFPWI0rry8fmiZj7yhAnvX5EHZHvSQtp_zyPpVWvOXFPwasI0jdKoxhWvyJpbmw-D95J5CgJAMfkrWPDQKVt3ipebwnMJStA3xAPPyl28mTBYhJrT6gzIOS3DseoVKK4adn34ZrQi2Hm-wyUtbdulopK739MKM73NYgoFXSJeVUqcy4iw3-In5XmOhdRnUL50TSiaNBbkys8iK7r00HD3kI3CH0GfaPdrcgRgaFXKmVDhX-tEaPJYcuEUTHfQAxWwMdiw
+----
+
+[[how-to-protect-web-services-with-openig-jwt-validation]]
+==== JWT Validation
+
+To validate JWT for `/secure` URL lets add to main filter chain another `SwitchFilter`, which will toggle `Chain` handler if target url matches `/secure`. Add to `Chain` handler `ScriptableFilter` with `jwt.groovy` script, which will validate JWT and enrich request with authentication data headers.
+
+`10-api.json`:
+
+[source,json]
+----
+...
+        {
+          "type": "SwitchFilter",
+          "config": {
+            "onRequest": [
+              {
+                "condition": "${matches(request.uri.path, '^/secure')}",
+                "handler": {
+                  "type": "Chain",
+                  "config": {
+                    "filters": [
+                      {
+                        "type": "ScriptableFilter",
+                        "config": {
+                          "type": "application/x-groovy",
+                          "file": "jwt.groovy",
+                          "args": {
+                            "iss": {
+                              "sample-service": "${read('/usr/local/openig-config/keys/public_key.pem')}"
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "handler": "EndpointHandler"
+                  }
+                }
+              }
+            ]
+          }
+        }
+...
+----
+
+Add `jwt.groovy` file to `/openig-config/scripts/groovy/`. This script verifies JWT signature with the public key and if signature verified, checks JWT expiration. If JWT is valid, script adds header with name JWT claim to the request. Otherwise, script returns 401 HTTP status.
+
+`jwt.groovy`:
+
+[source,Groovy]
+----
+import java.security.KeyFactory
+import org.forgerock.json.jose.builders.JwtBuilderFactory
+import org.forgerock.json.jose.jws.SignedJwt
+import org.forgerock.json.jose.jws.SigningManager
+import org.forgerock.http.protocol.Status
+import java.security.spec.X509EncodedKeySpec
+
+//extract jwt from request header
+def jwt = request.headers['Authorization']?.firstValue
+
+if (jwt!=null && jwt.startsWith("Bearer eyJ")) {
+    jwt=jwt.replace("Bearer ", "")
+
+    try {
+        //parse jwt
+        def sjwt=new JwtBuilderFactory().reconstruct(jwt, SignedJwt.class)
+
+        //verify jwt signature
+        if (!sjwt.verify(new SigningManager().newRsaSigningHandler(getKey(sjwt.getClaimsSet())))) {
+            throw new Exception("invalid signature")
+        }
+
+        //check jwt expiration
+        if ((sjwt.getClaimsSet().getExpirationTime()!=null && sjwt.getClaimsSet().getExpirationTime().before(new Date()))) {
+            throw new Exception("signature expired "+sjwt.getClaimsSet().getExpirationTime())
+        }
+
+        //add name from JWT claim to header
+        request.headers.put('X-Auth-Username', sjwt.getClaimsSet().getClaim("name"))
+
+        return next.handle(new org.forgerock.openig.openam.StsContext(context, jwt), request)
+    } catch(Exception e) {
+        e.printStackTrace();
+        return getErrorResponse(Status.UNAUTHORIZED, e.getMessage())
+    }
+} else {
+    //returns 401 status if JWT not present in request
+    return getErrorResponse(Status.UNAUTHORIZED, "Not Authenticated")
+}
+
+return next.handle(context, request)
+
+
+def getErrorResponse(status, message) {
+    def response = new Response()
+    response.status = status
+    response.headers['Content-Type'] = "application/json"
+    response.setEntity(groovy.json.JsonOutput.toJson([error: message]))
+    return response
+}
+
+def getKey(claims) {
+    def pem=iss[claims.getIssuer()]
+    if (pem != null) {
+        def pemReplaced = pem.replaceFirst("(?m)(?s)^---*BEGIN.*---*\$(.*)^---*END.*---*\$.*", "\$1")
+        byte[] encoded = Base64.getMimeDecoder().decode(pemReplaced)
+        def kf = KeyFactory.getInstance("RSA")
+        def pubKey = kf.generatePublic(new X509EncodedKeySpec(encoded))
+        println 'got pub key' + pubKey
+        return pubKey
+    }
+
+    throw new Exception('Unknown issuer')
+}
+
+----
+
+Lets check a valid request
+
+[listing]
+----
+curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoibWFuYWdlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI2MjM5MDIyfQ.bhzhwj2cY1iYbpx7Mzbukfi1jOCvWP-Pdd9dm3hf7lZDDuokNVDUXU3jvHial4QN-bOTSNCUKVy907hokcVeQaFwbiYoZs485Kr230Z0y9MU6zbDe8yQp68-71TDgJGIZ78YYOKvJTrzCWgWgE_Py1DskG_ViSxfGFlETpFQa056Rk2bty-9iuc_Cx5_Wr6RCcJTG6WYRrBtdWGIFxljEjxSAcJYmGPPA8dHHORDOnmka2OAjWURnsqbz50aI_SrWpnqp4i2eXVA1b5QD5rlsgc_QAqJptghrijBlRPhasTk1N-kXE8Ozboa0FwGfIRr7gNiG-3if7INZe2R5NUCmjlAlywcSfOunWuSzY8tLGTHV2swnQPP8lBXwVJcS5nJMqBNIbcLcFWHk3ryvvtf-LYty_jAY8v1zDe9-DwFPWI0rry8fmiZj7yhAnvX5EHZHvSQtp_zyPpVWvOXFPwasI0jdKoxhWvyJpbmw-D95J5CgJAMfkrWPDQKVt3ipebwnMJStA3xAPPyl28mTBYhJrT6gzIOS3DseoVKK4adn34ZrQi2Hm-wyUtbdulopK739MKM73NYgoFXSJeVUqcy4iw3-In5XmOhdRnUL50TSiaNBbkys8iK7r00HD3kI3CH0GfaPdrcgRgaFXKmVDhX-tEaPJYcuEUTHfQAxWwMdiw' http://localhost:8080/secure
+*   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /secure HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.1.2
+> Content-Type: application/json
+> Accept: application/json
+> Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoibWFuYWdlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI2MjM5MDIyfQ.bhzhwj2cY1iYbpx7Mzbukfi1jOCvWP-Pdd9dm3hf7lZDDuokNVDUXU3jvHial4QN-bOTSNCUKVy907hokcVeQaFwbiYoZs485Kr230Z0y9MU6zbDe8yQp68-71TDgJGIZ78YYOKvJTrzCWgWgE_Py1DskG_ViSxfGFlETpFQa056Rk2bty-9iuc_Cx5_Wr6RCcJTG6WYRrBtdWGIFxljEjxSAcJYmGPPA8dHHORDOnmka2OAjWURnsqbz50aI_SrWpnqp4i2eXVA1b5QD5rlsgc_QAqJptghrijBlRPhasTk1N-kXE8Ozboa0FwGfIRr7gNiG-3if7INZe2R5NUCmjlAlywcSfOunWuSzY8tLGTHV2swnQPP8lBXwVJcS5nJMqBNIbcLcFWHk3ryvvtf-LYty_jAY8v1zDe9-DwFPWI0rry8fmiZj7yhAnvX5EHZHvSQtp_zyPpVWvOXFPwasI0jdKoxhWvyJpbmw-D95J5CgJAMfkrWPDQKVt3ipebwnMJStA3xAPPyl28mTBYhJrT6gzIOS3DseoVKK4adn34ZrQi2Hm-wyUtbdulopK739MKM73NYgoFXSJeVUqcy4iw3-In5XmOhdRnUL50TSiaNBbkys8iK7r00HD3kI3CH0GfaPdrcgRgaFXKmVDhX-tEaPJYcuEUTHfQAxWwMdiw
+>
+< HTTP/1.1 200
+< Date: Wed, 19 Jun 2024 08:59:06 GMT
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: deny
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":"John Doe"}
+----
+
+Request without JWT:
+
+[listing]
+----
+curl -v -H 'Content-Type: application/json' -H 'Accept: application/json'  http://localhost:8080/secure
+*   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /secure HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.1.2
+> Content-Type: application/json
+> Accept: application/json
+>
+< HTTP/1.1 401
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: deny
+< Content-Type: application/json
+< Content-Length: 29
+< Date: Wed, 19 Jun 2024 08:59:43 GMT
+<
+* Connection #0 to host localhost left intact
+{"error":"Not Authenticated"}
+----
+
+[[how-to-protect-web-services-with-openig-authorization-check]]
+==== Authorization Check
+
+Let's configure OpenIG so it authorizes access only to users with the `manager` role. The role will be taken from the `role` JWT claim . If the JWT `role` claim does not exist or is different from `manager`, OpenIG will return 403 Forbidden HTTP status.
+
+Let's add the `allowedRole` parameter to the `ScriptableFilter` filter in the route so that we can set the allowed role in the route without changing the script.
+
+[source,json]
+----
+...
+{
+  "type": "ScriptableFilter",
+  "config": {
+    "type": "application/x-groovy",
+    "file": "jwt.groovy",
+    "args": {
+      "iss": {
+        "sample-service": "${read('/usr/local/openig-config/keys/public_key.pem')}"
+      },
+      "allowedRole": "manager"
+    }
+  }
+}
+...
+----
+
+Let's add a role check to `jwt.groovy` after the JWT validation:
+
+[source,Groovy]
+----
+//check jwt expiration
+if ((sjwt.getClaimsSet().getExpirationTime()!=null && sjwt.getClaimsSet().getExpirationTime().before(new Date()))) {
+    throw new Exception("signature expired "+sjwt.getClaimsSet().getExpirationTime())
+}
+
+//check role
+ if (!sjwt.getClaimsSet().keys().contains("role")
+    || !allowedRole.equals(sjwt.getClaimsSet().getClaim("role", String.class))) {
+     return getErrorResponse(Status.FORBIDDEN, "Forbidden")
+}
+----
+
+Lets test a valid request
+
+[listing]
+----
+curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoibWFuYWdlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI2MjM5MDIyfQ.bhzhwj2cY1iYbpx7Mzbukfi1jOCvWP-Pdd9dm3hf7lZDDuokNVDUXU3jvHial4QN-bOTSNCUKVy907hokcVeQaFwbiYoZs485Kr230Z0y9MU6zbDe8yQp68-71TDgJGIZ78YYOKvJTrzCWgWgE_Py1DskG_ViSxfGFlETpFQa056Rk2bty-9iuc_Cx5_Wr6RCcJTG6WYRrBtdWGIFxljEjxSAcJYmGPPA8dHHORDOnmka2OAjWURnsqbz50aI_SrWpnqp4i2eXVA1b5QD5rlsgc_QAqJptghrijBlRPhasTk1N-kXE8Ozboa0FwGfIRr7gNiG-3if7INZe2R5NUCmjlAlywcSfOunWuSzY8tLGTHV2swnQPP8lBXwVJcS5nJMqBNIbcLcFWHk3ryvvtf-LYty_jAY8v1zDe9-DwFPWI0rry8fmiZj7yhAnvX5EHZHvSQtp_zyPpVWvOXFPwasI0jdKoxhWvyJpbmw-D95J5CgJAMfkrWPDQKVt3ipebwnMJStA3xAPPyl28mTBYhJrT6gzIOS3DseoVKK4adn34ZrQi2Hm-wyUtbdulopK739MKM73NYgoFXSJeVUqcy4iw3-In5XmOhdRnUL50TSiaNBbkys8iK7r00HD3kI3CH0GfaPdrcgRgaFXKmVDhX-tEaPJYcuEUTHfQAxWwMdiw' http://localhost:8080/secure
+*   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /secure HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.1.2
+> Content-Type: application/json
+> Accept: application/json
+> Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoibWFuYWdlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI2MjM5MDIyfQ.bhzhwj2cY1iYbpx7Mzbukfi1jOCvWP-Pdd9dm3hf7lZDDuokNVDUXU3jvHial4QN-bOTSNCUKVy907hokcVeQaFwbiYoZs485Kr230Z0y9MU6zbDe8yQp68-71TDgJGIZ78YYOKvJTrzCWgWgE_Py1DskG_ViSxfGFlETpFQa056Rk2bty-9iuc_Cx5_Wr6RCcJTG6WYRrBtdWGIFxljEjxSAcJYmGPPA8dHHORDOnmka2OAjWURnsqbz50aI_SrWpnqp4i2eXVA1b5QD5rlsgc_QAqJptghrijBlRPhasTk1N-kXE8Ozboa0FwGfIRr7gNiG-3if7INZe2R5NUCmjlAlywcSfOunWuSzY8tLGTHV2swnQPP8lBXwVJcS5nJMqBNIbcLcFWHk3ryvvtf-LYty_jAY8v1zDe9-DwFPWI0rry8fmiZj7yhAnvX5EHZHvSQtp_zyPpVWvOXFPwasI0jdKoxhWvyJpbmw-D95J5CgJAMfkrWPDQKVt3ipebwnMJStA3xAPPyl28mTBYhJrT6gzIOS3DseoVKK4adn34ZrQi2Hm-wyUtbdulopK739MKM73NYgoFXSJeVUqcy4iw3-In5XmOhdRnUL50TSiaNBbkys8iK7r00HD3kI3CH0GfaPdrcgRgaFXKmVDhX-tEaPJYcuEUTHfQAxWwMdiw
+>
+< HTTP/1.1 200
+< Date: Wed, 19 Jun 2024 09:05:31 GMT
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: deny
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+<
+* Connection #0 to host localhost left intact
+{"hello":"John Doe"}%
+----
+
+Let's test a request with JWT with an invalid role:
+
+[listing]
+----
+curl -v -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYmFkIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MjYyMzkwMjJ9.UezPgiGOcbp9CMM7hkrbvFsPmFIOnPnph5n60wF9jEWfGAIpS3dgBYvsprsVx0iZaUfhj2GTTLXhQUKrEM08n6jhUBSlwQ22LYBEHhBY57-AwtUhFZVJL8En00tc3HTGLV_El55PyvJvuLRbQ_fZB7rfp27OMPS0y2ciehz21_90TGKvUWUUGJgqDvRPchSKdO7LVa97oigGUp8vi7XiutMxopMLoms63f7FbasbIxMfgEFa48cuJTTcmk7genlPpMX8CBeBUjVriK0452uYdONvSFllqX2rdHwi7idKV-wB0qeUdNq2MDgcVqTrztxRQ8_ezoZVMnn3OLzuSABSpHKtPM3G3uVctY2X408zwOqe86BFvahT1eyBsEmrtszaIL-REy6vy-6P8JJ7iZdD720F1h3VyXj7PWNQiA-v3TumBLpRiML4Clb0SmqpB2iIvPhAz2-ob1w9BBxbvES6n95JEvFDlsv0JqOpvs-ZqQeR1pL7ML0RDR6ZR7xMWE6iVC4hlHEyX5Ufi6CBvkzVLVSnbIPyIBSBc4bzDzqdRkgt139bEdD-htrKWFmGkJKl_yvNcW_rYCkeMmb60km389XUtpiBoSc5CmKkcxrjsarvEMRh-AkIqB5R7Hz0KVKFdp1Hlzj4v1CQKK8eM4Poiq0NoO9IgHFJtgZKMosD7Qc' http://localhost:8080/secure
+*   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /secure HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.1.2
+> Content-Type: application/json
+> Accept: application/json
+> Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzYW1wbGUtc2VydmljZSIsInN1YiI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYmFkIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MjYyMzkwMjJ9.UezPgiGOcbp9CMM7hkrbvFsPmFIOnPnph5n60wF9jEWfGAIpS3dgBYvsprsVx0iZaUfhj2GTTLXhQUKrEM08n6jhUBSlwQ22LYBEHhBY57-AwtUhFZVJL8En00tc3HTGLV_El55PyvJvuLRbQ_fZB7rfp27OMPS0y2ciehz21_90TGKvUWUUGJgqDvRPchSKdO7LVa97oigGUp8vi7XiutMxopMLoms63f7FbasbIxMfgEFa48cuJTTcmk7genlPpMX8CBeBUjVriK0452uYdONvSFllqX2rdHwi7idKV-wB0qeUdNq2MDgcVqTrztxRQ8_ezoZVMnn3OLzuSABSpHKtPM3G3uVctY2X408zwOqe86BFvahT1eyBsEmrtszaIL-REy6vy-6P8JJ7iZdD720F1h3VyXj7PWNQiA-v3TumBLpRiML4Clb0SmqpB2iIvPhAz2-ob1w9BBxbvES6n95JEvFDlsv0JqOpvs-ZqQeR1pL7ML0RDR6ZR7xMWE6iVC4hlHEyX5Ufi6CBvkzVLVSnbIPyIBSBc4bzDzqdRkgt139bEdD-htrKWFmGkJKl_yvNcW_rYCkeMmb60km389XUtpiBoSc5CmKkcxrjsarvEMRh-AkIqB5R7Hz0KVKFdp1Hlzj4v1CQKK8eM4Poiq0NoO9IgHFJtgZKMosD7Qc
+>
+< HTTP/1.1 403
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: deny
+< Content-Type: application/json
+< Content-Length: 21
+< Date: Wed, 19 Jun 2024 09:06:32 GMT
+<
+* Connection #0 to host localhost left intact
+{"error":"Forbidden"}
+----

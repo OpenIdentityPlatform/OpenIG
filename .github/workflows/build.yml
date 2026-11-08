@@ -1,3 +1,5 @@
+# Portions Copyright 2026 3A Systems, LLC.
+
 # The contents of this file are subject to the terms of the Common Development and
 # Distribution License (the License). You may not use this file except in compliance with the
 # License.
@@ -55,6 +57,11 @@ jobs:
       env:
         MAVEN_OPTS: -Dhttps.protocols=TLSv1.2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -Dmaven.wagon.http.retryHandler.count=10
       run: mvn --batch-mode --errors --update-snapshots verify --file pom.xml
+    - name: Check How-To documentation links
+      if: matrix.os == 'ubuntu-latest' && matrix.java == '11'
+      run: |
+        python3 -m unittest discover -s openig-doc -p 'test_check_how_to_links.py'
+        python3 openig-doc/check-how-to-links.py
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
