@@ -14,6 +14,8 @@ information: "Portions copyright [year] [name of copyright owner]".
 Copyright 2026 3A Systems, LLC.
 ////
 
+:table-caption!:
+
 [[authorization-flow-with-openam-and-openig]]
 == Authorization Flow with OpenAM and OpenIG
 :imagesdir: ../

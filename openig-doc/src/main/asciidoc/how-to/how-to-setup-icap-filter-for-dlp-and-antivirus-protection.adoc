@@ -14,6 +14,8 @@ information: "Portions copyright [year] [name of copyright owner]".
 Copyright 2026 3A Systems, LLC.
 ////
 
+:table-caption!:
+
 [[how-to-setup-icap-filter-for-dlp-and-antivirus-protection]]
 == How to Set Up an ICAP Filter for DLP and Antivirus Protection
 :imagesdir: ../
