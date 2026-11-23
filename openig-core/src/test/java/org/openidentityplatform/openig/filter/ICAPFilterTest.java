@@ -18,15 +18,30 @@ package org.openidentityplatform.openig.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.forgerock.http.io.IO.newBranchingInputStream;
+import static org.forgerock.http.io.IO.newTemporaryStorage;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
+import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Request;
+import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.HeapUtilsTest;
 import org.forgerock.openig.heap.Name;
+import org.forgerock.services.context.RootContext;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import net.rfc3507.client.ICAPClient;
 
 @SuppressWarnings("javadoc")
 public class ICAPFilterTest {
@@ -71,4 +86,47 @@ public class ICAPFilterTest {
                 .hasMessageContaining(name)
                 .hasMessageContaining("soon");
     }
+    @DataProvider
+    public static Object[][] requestBodyReadFailurePositions() {
+        return new Object[][] { { 0 }, { 1 } };
+    }
+
+    @Test(dataProvider = "requestBodyReadFailurePositions")
+    public void shouldRejectUnreadableRequestBody(int readableBytes) throws Exception {
+        ICAPFilter filter = new ICAPFilter();
+        filter.icap = mock(ICAPClient.class);
+        Handler next = (context, request) -> newResultPromise(new Response(Status.OK));
+        InputStream body = new InputStream() {
+            private int remaining = readableBytes;
+
+            @Override
+            public int read() throws IOException {
+                if (remaining == 0) {
+                    throw new IOException("Request body read failed");
+                }
+                remaining--;
+                return 'x';
+            }
+        };
+
+        try (Request request = new Request().setEntity(newBranchingInputStream(body, newTemporaryStorage()));
+             Response response = filter.filter(new RootContext(), request, next).get()) {
+            assertThat(response.getStatus()).isEqualTo(Status.BAD_REQUEST);
+            verifyNoInteractions(filter.icap);
+        }
+    }
+
+    @Test
+    public void shouldForwardEmptyRequestWithoutCallingIcap() throws Exception {
+        ICAPFilter filter = new ICAPFilter();
+        filter.icap = mock(ICAPClient.class);
+        Handler next = (context, request) -> newResultPromise(new Response(Status.OK));
+
+        try (Request request = new Request();
+             Response response = filter.filter(new RootContext(), request, next).get()) {
+            assertThat(response.getStatus()).isEqualTo(Status.OK);
+            verifyNoInteractions(filter.icap);
+        }
+    }
+
 }
