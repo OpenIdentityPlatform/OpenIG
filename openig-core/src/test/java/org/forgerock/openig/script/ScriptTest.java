@@ -44,7 +44,9 @@ public class ScriptTest {
         if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
             throw new SkipException("File permissions can only be checked on a POSIX file system");
         }
-        environment = new DefaultEnvironment(Files.createTempDirectory("openig-script-test").toFile());
+        // The shared Groovy engine keeps the script directory from its first initialization.
+        File testRoot = new File(ScriptTest.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        environment = new DefaultEnvironment(testRoot);
     }
 
     // The permission tests catch code that takes its permissions from the umask (File.createTempFile(),
