@@ -93,9 +93,16 @@ jobs:
           name: ubuntu-latest-11
       - name: Get latest release version
         shell: bash
-        run:   |
-          export git_version_last="$(curl -i -o - --silent https://api.github.com/repos/OpenIdentityPlatform/OpenIG/releases/latest | grep -m1 "\"name\"" | cut -d\" -f4)" ; echo "last release: $git_version_last"
-          echo "release_version=$git_version_last" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_version="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name // empty')"
+          if [[ -z "$release_version" ]]; then
+            echo "::error::Latest release has no tag"
+            exit 1
+          fi
+          echo "last release: $release_version"
+          echo "release_version=$release_version" >> $GITHUB_ENV
           echo "image_repository=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       - name: Docker meta
         id: meta
