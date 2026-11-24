@@ -96,14 +96,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          release_version="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name // empty')"
+          release_repository=OpenIdentityPlatform/OpenIG
+          release_path="repos/${release_repository}/releases/latest"
+          if [[ "${GITHUB_REPOSITORY,,}" == "${release_repository,,}" ]]; then
+            release_version="$(gh api "$release_path" --jq '.tag_name // empty')"
+          else
+            # The workflow token is scoped to the fork.
+            release_version="$(curl --fail --silent --show-error "https://api.github.com/${release_path}" |
+              jq -r '.tag_name // empty')"
+          fi
           if [[ -z "$release_version" ]]; then
             echo "::error::Latest release has no tag"
             exit 1
           fi
           echo "last release: $release_version"
-          echo "release_version=$release_version" >> $GITHUB_ENV
-          echo "image_repository=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+          echo "release_version=$release_version" >> "$GITHUB_ENV"
+          echo "image_repository=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
