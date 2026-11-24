@@ -24,9 +24,13 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.util.promise.Promises.newResultPromise;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -38,10 +42,13 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.heap.HeapUtilsTest;
 import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.RootContext;
+import org.mockito.ArgumentCaptor;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import net.rfc3507.client.ICAPClient;
+import net.rfc3507.client.ICAPRequest;
+import net.rfc3507.client.ICAPResponse;
 
 @SuppressWarnings("javadoc")
 public class ICAPFilterTest {
@@ -126,6 +133,26 @@ public class ICAPFilterTest {
              Response response = filter.filter(new RootContext(), request, next).get()) {
             assertThat(response.getStatus()).isEqualTo(Status.OK);
             verifyNoInteractions(filter.icap);
+        }
+    }
+
+    @Test
+    public void shouldSendFullRequestBodyToIcap() throws Exception {
+        ICAPFilter filter = new ICAPFilter();
+        filter.icap = mock(ICAPClient.class);
+        ICAPResponse icapResponse = mock(ICAPResponse.class);
+        when(icapResponse.getStatus()).thenReturn(204);
+        when(filter.icap.execute(any(ICAPRequest.class))).thenReturn(icapResponse);
+        Handler next = (context, request) -> newResultPromise(new Response(Status.OK));
+        byte[] body = { 1, 2, 3 };
+        InputStream source = new ByteArrayInputStream(body);
+
+        try (Request request = new Request().setEntity(newBranchingInputStream(source, newTemporaryStorage()));
+             Response response = filter.filter(new RootContext(), request, next).get()) {
+            assertThat(response.getStatus()).isEqualTo(Status.OK);
+            ArgumentCaptor<ICAPRequest> sentRequest = ArgumentCaptor.forClass(ICAPRequest.class);
+            verify(filter.icap).execute(sentRequest.capture());
+            assertThat(sentRequest.getValue().getHttpRequestBody()).containsExactly(body);
         }
     }
 
