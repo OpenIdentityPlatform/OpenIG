@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
+import org.forgerock.http.protocol.Entity;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
@@ -106,10 +107,22 @@ public class ICAPFilter implements Filter {
 
 	@Override
 	public Promise<Response, NeverThrowsException> filter(Context context, Request request, Handler next) {
-		if (icap!=null && !request.getEntity().isRawContentEmpty()) {
+		if (icap!=null) {
+			final Entity entity = request.getEntity();
+			final byte[] body;
+			try {
+				if (isRawContentEmpty(entity)) {
+					return next.handle(context, request);
+				}
+				body = entity.getBytes();
+			} catch (IOException e) {
+				logger.warn("Failed to read request body for ICAP: {}", e.toString());
+				return Promises.newResultPromise(new Response(Status.BAD_REQUEST));
+			}
+
 			final ICAPRequest req=new ICAPRequest(service, Mode.REQMOD);
 			try {
-				req.setHttpRequestBody(request.getEntity().getBytes());
+				req.setHttpRequestBody(body);
 				final ICAPResponse res=icap.execute(req);
 				if (res.getStatus()==204) { //allow content
 					return next.handle(context, request);
@@ -133,11 +146,18 @@ public class ICAPFilter implements Filter {
 				}
 			}catch (ICAPException e) {
 				logger.error("{}",e.toString());
-			}catch (IOException e) {
-				logger.warn("{}",e.toString());
 			}
 		}
 		return next.handle(context, request);
+	}
+
+	private static boolean isRawContentEmpty(Entity entity) throws IOException {
+		entity.push();
+		try {
+			return entity.getRawContentInputStream().read() == -1;
+		} finally {
+			entity.pop();
+		}
 	}
 
 }
