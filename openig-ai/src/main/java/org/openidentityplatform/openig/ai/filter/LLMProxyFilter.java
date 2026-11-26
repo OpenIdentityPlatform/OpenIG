@@ -23,6 +23,7 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.Expression.DeferredBindingException;
 import org.forgerock.openig.heap.GenericHeaplet;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -324,10 +326,71 @@ public class LLMProxyFilter implements Filter {
                     Object value = configured.eval(bindings(), REQUEST_BINDINGS);
                     subject = new JsonValue(value, subject.getPointer());
                 } catch (DeferredBindingException e) {
-                    // Keep the original expression for request-time evaluation.
+                    Expression<String> template = heapSubjectTemplate(subject, configured);
+                    if (template != null) {
+                        return template;
+                    }
                 }
             }
             return subject.defaultTo("anonymous").as(expression(String.class));
+        }
+
+        private Expression<String> heapSubjectTemplate(JsonValue subject, Expression<Object> configured) {
+            Set<String> heapBindings = new HashSet<>(REQUEST_BINDINGS);
+            heapBindings.retainAll(heap.getProperties().asMap().keySet());
+            if (heapBindings.isEmpty()) {
+                return null;
+            }
+
+            Set<String> deferred = new HashSet<>(REQUEST_BINDINGS);
+            deferred.removeAll(heapBindings);
+            Set<String> stringsRead = new HashSet<>();
+            try {
+                // Legacy templates may use ordinary EL fallback rules with the configured values.
+                Object value = configured.eval(bindings(), deferred, heapBindings, text -> {
+                    stringsRead.add(text);
+                    return text;
+                });
+                if (!(value instanceof String)) {
+                    return null;
+                }
+                String source = (String) value;
+                stringsRead.removeIf(text -> !isTemplate(text));
+                if (!stringsRead.isEmpty()) {
+                    Expression<String> template = new JsonValue(source, subject.getPointer()).as(expression(String.class));
+                    if (!template.isLiteralText()
+                            && selectsHeapTemplate(configured, deferred, heapBindings, stringsRead, source)) {
+                        return template;
+                    }
+                }
+            } catch (DeferredBindingException | JsonValueException e) {
+                // The compatibility evaluation could not select a template.
+            }
+            return null;
+        }
+
+        private boolean selectsHeapTemplate(Expression<Object> configured, Set<String> deferred,
+                                            Set<String> heapBindings, Set<String> templates, String source) {
+            String marker = "\uE000";
+            while (source.contains(marker)) {
+                marker += "\uE001";
+            }
+            // Tag the observed templates to distinguish returned text from values read only by a guard.
+            String tag = marker;
+            Object tagged = configured.eval(bindings(), deferred, heapBindings,
+                    text -> templates.contains(text)
+                            ? text.replace("${", tag + "${").replace("#{", tag + "#{")
+                            : text);
+            return tagged instanceof String && ((String) tagged).contains(tag)
+                    && ((String) tagged).replace(tag, "").equals(source);
+        }
+
+        private boolean isTemplate(String text) {
+            try {
+                return !json(text).as(expression(String.class)).isLiteralText();
+            } catch (JsonValueException e) {
+                return false;
+            }
         }
     }
 }

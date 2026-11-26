@@ -26,6 +26,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -143,19 +144,35 @@ public class Expression<T> {
     }
 
     /**
-     * Evaluates the expression using the available bindings. Evaluation can be deferred when a binding
-     * reserved for later evaluation, or a member reached through it, is unavailable.
+     * Evaluates the expression until it reads a binding reserved for a later evaluation.
      *
      * @param bindings the bindings to evaluate the expression within
      * @param deferredBindings the names of top-level bindings reserved for later evaluation
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type
-     * @throws DeferredBindingException if a read under a deferred binding cannot be resolved
+     * @throws DeferredBindingException if evaluation reads a deferred binding
      */
     public T eval(final Bindings bindings, final Set<String> deferredBindings) {
+        return eval(bindings, deferredBindings, Collections.emptySet(), null);
+    }
+
+    /**
+     * Evaluates the expression with a function applied to strings read from the selected bindings.
+     * Strings can come from a binding directly or from an object reached through it.
+     *
+     * @param bindings the bindings to evaluate the expression within
+     * @param deferredBindings the names of top-level bindings reserved for later evaluation
+     * @param observedBindings the names of top-level bindings whose string values the function can inspect
+     * @param stringRead the function supplying the value for each observed string
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type
+     * @throws DeferredBindingException if evaluation reads a deferred binding
+     */
+    public T eval(final Bindings bindings, final Set<String> deferredBindings,
+                  final Set<String> observedBindings, final UnaryOperator<String> stringRead) {
         Object value;
         try {
             Bindings evaluationBindings = bindings().bind(initialBindings).bind(bindings);
-            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings));
+            BindingReads reads = observedBindings.isEmpty() ? null : new BindingReads(observedBindings, stringRead);
+            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings, reads));
         } catch (ELException ele) {
             logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
@@ -187,6 +204,14 @@ public class Expression<T> {
         return eval(bindings());
     }
 
+    /**
+     * Returns whether this expression consists entirely of literal text.
+     * @return {@code true} for literal text
+     */
+    public boolean isLiteralText() {
+        return valueExpression.isLiteralText();
+    }
+
     /** Indicates that evaluation needs a binding reserved for later. */
     public static final class DeferredBindingException extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -200,11 +225,11 @@ public class Expression<T> {
         private final ELResolver elResolver;
 
         XLContext(Object scope) {
-            this(scope, Collections.emptySet());
+            this(scope, Collections.emptySet(), null);
         }
 
-        private XLContext(Object scope, Set<String> deferredBindings) {
-            elResolver = new XLResolver(scope, deferredBindings);
+        private XLContext(Object scope, Set<String> deferredBindings, BindingReads reads) {
+            elResolver = new XLResolver(scope, deferredBindings, reads);
         }
 
         @Override
@@ -227,19 +252,19 @@ public class Expression<T> {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
         private final Set<String> deferredBindings;
-        private Map<Object, String> resolvedDeferredBindings;
+        private final BindingReads reads;
 
-        XLResolver(final Object scope, final Set<String> deferredBindings) {
+        XLResolver(final Object scope, final Set<String> deferredBindings, final BindingReads reads) {
             // Resolvers.get() don't support null value
             this.scope = (scope == null) ? new Object() : scope;
             this.deferredBindings = deferredBindings;
+            this.reads = reads;
         }
 
         @Override
         public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
 
-            String deferredBinding;
             if (base == null) {
                 String name = property.toString();
                 // deal with readonly implicit objects
@@ -247,32 +272,16 @@ public class Expression<T> {
                 if (node != null) {
                     return node.getObject();
                 }
-                deferredBinding = deferredBindings.contains(name) ? name : null;
-            } else {
-                deferredBinding = deferredBindingOf(base);
+                if (deferredBindings.contains(name)) {
+                    throw new DeferredBindingException(name);
+                }
             }
 
             Object value = Resolvers.get((base == null ? scope : base), property);
-            if (deferredBinding != null) {
-                return rememberDeferredBinding(deferredBinding, value);
+            if (reads != null) {
+                value = reads.transform(base, property, value);
             }
             return (value != Resolver.UNRESOLVED ? value : null);
-        }
-
-        private String deferredBindingOf(Object value) {
-            return resolvedDeferredBindings == null ? null : resolvedDeferredBindings.get(value);
-        }
-
-        private Object rememberDeferredBinding(String name, Object value) {
-            if (value == null || value == Resolver.UNRESOLVED) {
-                throw new DeferredBindingException(name);
-            }
-            // Follow chained reads so a partial heap value cannot stand in for the request.
-            if (resolvedDeferredBindings == null) {
-                resolvedDeferredBindings = new IdentityHashMap<>();
-            }
-            resolvedDeferredBindings.put(value, name);
-            return value;
         }
 
         @Override
@@ -310,16 +319,41 @@ public class Expression<T> {
                              final Object method,
                              final Class<?>[] paramTypes,
                              final Object[] params) {
-            String deferredBinding = deferredBindingOf(base);
             try {
                 Object value = RESOLVER.invoke(context, base, method, paramTypes, params);
-                return deferredBinding == null ? value : rememberDeferredBinding(deferredBinding, value);
+                return reads == null ? value : reads.transform(base, method, value);
             } catch (MethodNotFoundException e) {
-                if (deferredBinding != null) {
-                    throw new DeferredBindingException(deferredBinding);
+                String binding = reads == null ? null : reads.roots.get(base);
+                if (binding != null) {
+                    throw new DeferredBindingException(binding);
                 }
                 throw e;
             }
+        }
+    }
+
+    private static final class BindingReads {
+        private final Set<String> observedBindings;
+        private final UnaryOperator<String> stringRead;
+        private final Map<Object, String> roots = new IdentityHashMap<>();
+
+        private BindingReads(Set<String> observedBindings, UnaryOperator<String> stringRead) {
+            this.observedBindings = observedBindings;
+            this.stringRead = stringRead;
+        }
+
+        private Object transform(Object base, Object property, Object value) {
+            String binding = roots.get(base);
+            if (base == null && observedBindings.contains(property)) {
+                binding = property.toString();
+            }
+            if (binding != null && value != null && value != Resolver.UNRESOLVED) {
+                if (value instanceof String) {
+                    value = stringRead.apply((String) value);
+                }
+                roots.put(value, binding);
+            }
+            return value;
         }
     }
 

@@ -31,6 +31,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.forgerock.json.JsonValue.field;
@@ -112,18 +113,50 @@ public class LLMProxyFilterTest {
             { "${tenant}-${request.uri.path}", "example-/" },
             { "${tenant}-${request.getUri().path}", "example-/" },
             { "${tenant}-${attributes.sub}", "example-" },
+            { "${tenant}-${empty attributes ? 'guest' : attributes.sub}", "example-" },
             { "${system['openig.test.llm.subject']}-${attributes.sub}", "${attributes.sub}-" },
         };
     }
 
     @Test(dataProvider = "subjectConfigurations")
     public void shouldKeepSeparateQuotasForConfiguredSubjects(String subject, String prefix) throws Exception {
-        Name name = Name.of("llmProxy");
-        HeapImpl heap = new HeapImpl(name);
-        heap.init(json(object(field("properties", object(
+        assertSubjectQuotas(subject, prefix, object(
                 field("tenant", "example"),
                 field("subjectTemplate", "\\${attributes.sub}"),
-                field("request", "\\${attributes.sub}"))))));
+                field("request", "\\${attributes.sub}"),
+                field("attributes", object())));
+    }
+
+    @Test
+    public void shouldUseHeapTemplateWhenOptionalOverrideIsAbsent() throws Exception {
+        assertSubjectQuotas("${empty request.override ? request.defaultSubject : request.override}", "",
+                object(field("request", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldKeepTemplateTextLiteralWhenUsingRequestAttributes() throws Exception {
+        assertSubjectQuotas("${system['openig.test.llm.subject']}-${attributes.sub}", "${attributes.sub}-",
+                object(field("attributes", object(field("unusedTemplate", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldKeepTemplateTextLiteralWhenAHeapTemplateIsOnlyReadByTheGuard() throws Exception {
+        assertSubjectQuotas("${system['openig.test.llm.subject']}"
+                        + "-${empty attributes.defaultSubject ? attributes.sub : 'fallback'}",
+                "${attributes.sub}-",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldUseTrimmedHeapTemplate() throws Exception {
+        assertSubjectQuotas("${trim(attributes.defaultSubject)}", "",
+                object(field("attributes", object(field("defaultSubject", " ${attributes.sub} ")))));
+    }
+
+    private void assertSubjectQuotas(String subject, String prefix, Map<String, Object> properties) throws Exception {
+        Name name = Name.of("llmProxy");
+        HeapImpl heap = new HeapImpl(name);
+        heap.init(json(object(field("properties", properties))));
         String property = "openig.test.llm.subject";
         String previous = System.setProperty(property, "${attributes.sub}");
         try {
