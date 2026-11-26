@@ -160,6 +160,35 @@ public class LLMProxyFilterTest {
     }
 
     @Test
+    public void shouldUseHeapTemplatePassedThroughArrayAndJoin() throws Exception {
+        assertSubjectQuotas("${join(array(attributes.defaultSubject), '')}", "",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldKeepJvmTemplateLiteralWhenJoinDoesNotUseTheSeparator() throws Exception {
+        assertSubjectQuotas("${join(array(system['openig.test.llm.subject']), attributes.defaultSubject)}"
+                        + "-${attributes.sub}", "${attributes.sub}-",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}"),
+                        field("sub", "configured")))));
+    }
+
+    @Test
+    public void shouldKeepJvmTemplateLiteralWhenReplaceFindsNoMatch() throws Exception {
+        assertSubjectQuotas("${system['openig.test.llm.subject'].replace('missing', attributes.defaultSubject)}"
+                        + "-${attributes.sub}", "${tenant}-",
+                object(field("tenant", "fixed"),
+                        field("attributes", object(field("defaultSubject", "${tenant}"),
+                                field("sub", "configured")))), "${tenant}", Map.of("defaultSubject", "unused"));
+    }
+
+    @Test
+    public void shouldUseHeapTemplateInsertedByReplace() throws Exception {
+        assertSubjectQuotas("${'prefix-value'.replace('value', attributes.defaultSubject)}", "prefix-",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
     public void shouldUseHeapTemplateWhenJvmGuardReadsTheSameText() throws Exception {
         assertSubjectQuotas("${system['openig.test.llm.subject'].startsWith('$') ? attributes.defaultSubject : 'guest'}",
                 "", object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
@@ -237,7 +266,7 @@ public class LLMProxyFilterTest {
         LLMProxyFilter filter = subjectFilter("${request.defaultSubject}",
                 object(field("request", object(field("defaultSubject", "service-account")))));
 
-        assertThat(acceptedIdentity(filter, "alice")).isEqualTo("service-account");
+        assertThat(acceptedIdentity(filter, "alice", Map.of())).isEqualTo("service-account");
     }
 
     @Test
@@ -286,15 +315,20 @@ public class LLMProxyFilterTest {
     }
 
     private void assertSubjectQuotas(String subject, String prefix, Map<String, Object> properties) throws Exception {
+        assertSubjectQuotas(subject, prefix, properties, "${attributes.sub}", Map.of());
+    }
+
+    private void assertSubjectQuotas(String subject, String prefix, Map<String, Object> properties, String jvmTemplate,
+            Map<String, Object> requestAttributes) throws Exception {
         String property = "openig.test.llm.subject";
-        String previous = System.setProperty(property, "${attributes.sub}");
+        String previous = System.setProperty(property, jvmTemplate);
         try {
             LLMProxyFilter filter = subjectFilter(subject, properties);
 
-            assertThat(acceptedIdentity(filter, "alice")).isEqualTo(prefix + "alice");
-            assertThat(acceptedIdentity(filter, "bob")).isEqualTo(prefix + "bob");
-            Response exhausted = filter.filter(contextWithSubject("alice"), chatRequest("/alice"), mockNextHandler)
-                                       .get();
+            assertThat(acceptedIdentity(filter, "alice", requestAttributes)).isEqualTo(prefix + "alice");
+            assertThat(acceptedIdentity(filter, "bob", requestAttributes)).isEqualTo(prefix + "bob");
+            Response exhausted = filter.filter(contextWithSubject("alice", requestAttributes),
+                    chatRequest("/alice"), mockNextHandler).get();
             assertThat(exhausted.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
         } finally {
             if (previous == null) {
@@ -317,9 +351,10 @@ public class LLMProxyFilterTest {
                         field("rate", object(field("numberOfTokens", 4), field("duration", "1 hour"))))), heap);
     }
 
-    private String acceptedIdentity(LLMProxyFilter filter, String subject) throws Exception {
-        Response response = filter.filter(contextWithSubject(subject), chatRequest("/" + subject), mockNextHandler)
-                                  .get();
+    private String acceptedIdentity(LLMProxyFilter filter, String subject, Map<String, Object> requestAttributes)
+            throws Exception {
+        Response response = filter.filter(contextWithSubject(subject, requestAttributes),
+                chatRequest("/" + subject), mockNextHandler).get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
         return response.getHeaders().getFirst(LLMProxyFilter.HEADER_LLM_IDENTITY);
     }
@@ -453,7 +488,12 @@ public class LLMProxyFilterTest {
     }
 
     private AttributesContext contextWithSubject(String sub) {
+        return contextWithSubject(sub, Map.of());
+    }
+
+    private AttributesContext contextWithSubject(String sub, Map<String, Object> attributes) {
         AttributesContext ctx = new AttributesContext(new RootContext());
+        ctx.getAttributes().putAll(attributes);
         ctx.getAttributes().put("sub", sub);
         return ctx;
     }

@@ -21,6 +21,7 @@ package org.forgerock.openig.el;
 import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.beans.FeatureDescriptor;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -268,12 +269,20 @@ public class Expression<T> {
         }
 
         /**
-         * Evaluates one argument of a method invocation in a separate observation scope.
+         * Evaluates one argument of a function or method invocation in a separate observation scope.
          * @param argument the original EL argument
          * @return the argument's value
          */
         default Object evaluateArgument(Supplier<Object> argument) {
             return argument.get();
+        }
+
+        /**
+         * Reports the result of an EL function after its arguments have been evaluated.
+         * @param function the resolved Java function
+         * @param value the function's return value
+         */
+        default void onFunction(Method function, Object value) {
         }
 
         /**
@@ -313,6 +322,16 @@ public class Expression<T> {
             return readUse == ReadUse.RESULT ? readPolicy.evaluateCall(invocation) : invocation.get();
         }
 
+        Object evaluateFunction(Method function, Supplier<Object> invocation) {
+            return evaluateCall(() -> {
+                Object value = invocation.get();
+                if (readUse == ReadUse.RESULT) {
+                    readPolicy.onFunction(function, value);
+                }
+                return value;
+            });
+        }
+
         Object evaluateArgument(Supplier<Object> argument) {
             return readUse == ReadUse.RESULT ? readPolicy.evaluateArgument(argument) : argument.get();
         }
@@ -335,6 +354,7 @@ public class Expression<T> {
 
     private static class XLResolver extends ELResolver {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
+        private static final Class<?>[] STRING_REPLACE_TYPES = { CharSequence.class, CharSequence.class };
         private final Object scope;
         private final Set<String> deferredBindings;
         private final ReadPolicy readPolicy;
@@ -416,7 +436,14 @@ public class Expression<T> {
                              final Class<?>[] paramTypes,
                              final Object[] params) {
             checkRead(context, base, method, true);
-            Object value = RESOLVER.invoke(context, base, method, paramTypes, params);
+            Class<?>[] resolvedTypes = paramTypes;
+            if (paramTypes == null && base instanceof String && "replace".equals(method)
+                    && params != null && params.length == 2
+                    && params[0] instanceof CharSequence && params[1] instanceof CharSequence) {
+                // JUEL otherwise picks an overload by reflection order and can coerce both strings to characters.
+                resolvedTypes = STRING_REPLACE_TYPES;
+            }
+            Object value = RESOLVER.invoke(context, base, method, resolvedTypes, params);
             if (readPolicy != null && ((XLContext) context).readUse == ReadUse.RESULT) {
                 readPolicy.onInvocation(base, method, params);
             }

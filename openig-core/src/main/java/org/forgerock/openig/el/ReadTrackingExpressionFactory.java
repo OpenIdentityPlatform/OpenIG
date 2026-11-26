@@ -88,7 +88,18 @@ final class ReadTrackingExpressionFactory extends ExpressionFactoryImpl {
 
         @Override
         protected AstFunction createAstFunction(String name, int index, AstParameters parameters) {
-            return new AstFunction(name, index, parameters, context.isEnabled(Feature.VARARGS)) {
+            return new AstFunction(name, index, observeArguments(parameters), context.isEnabled(Feature.VARARGS)) {
+                @Override
+                public Object eval(Bindings bindings, ELContext context) {
+                    return ((XLContext) context).evaluateFunction(bindings.getFunction(index),
+                            () -> super.eval(bindings, context));
+                }
+            };
+        }
+
+        @Override
+        protected AstMethod createAstMethod(AstProperty property, AstParameters parameters) {
+            return new AstMethod(property, observeArguments(parameters)) {
                 @Override
                 public Object eval(Bindings bindings, ELContext context) {
                     return ((XLContext) context).evaluateCall(() -> super.eval(bindings, context));
@@ -96,18 +107,12 @@ final class ReadTrackingExpressionFactory extends ExpressionFactoryImpl {
             };
         }
 
-        @Override
-        protected AstMethod createAstMethod(AstProperty property, AstParameters parameters) {
+        private static AstParameters observeArguments(AstParameters parameters) {
             List<AstNode> arguments = new ArrayList<>(parameters.getCardinality());
             for (int i = 0; i < parameters.getCardinality(); i++) {
                 arguments.add(new ReadScope(parameters.getChild(i), Scope.ARGUMENT));
             }
-            return new AstMethod(property, new AstParameters(arguments)) {
-                @Override
-                public Object eval(Bindings bindings, ELContext context) {
-                    return ((XLContext) context).evaluateCall(() -> super.eval(bindings, context));
-                }
-            };
+            return new AstParameters(arguments);
         }
     }
 

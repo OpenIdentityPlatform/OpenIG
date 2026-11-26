@@ -29,6 +29,7 @@ import org.forgerock.openig.el.Expression.DeferredBindingException;
 import org.forgerock.openig.el.Expression.ReadPolicy;
 import org.forgerock.openig.el.Expression.ReadUse;
 import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.Functions;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -44,6 +45,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -398,7 +400,7 @@ public class LLMProxyFilter implements Filter {
         private static final class HeapSubjectReads implements ReadPolicy {
             private final Set<String> heapBindings;
             private final Object heapRequest;
-            private ResultStrings resultStrings = new ResultStrings();
+            private ResultSources resultSources = new ResultSources();
             private boolean requestConfigurationRead;
             private boolean sharedBindingRead;
 
@@ -424,35 +426,35 @@ public class LLMProxyFilter implements Filter {
             public void onRead(Object base, Object member, Object value, ReadUse use) {
                 if (base == null && heapBindings.contains(member)) {
                     if ("request".equals(member)) {
-                        rememberResultString(resultStrings.request, value, use);
+                        rememberResultString(resultSources.request, value, use);
                     } else {
                         sharedBindingRead = true;
                         rememberSharedValue(value, use);
                     }
                 } else if (base != null && base == heapRequest) {
                     if (base instanceof String) {
-                        rememberResultString(resultStrings.request, value, use);
+                        rememberResultString(resultSources.request, value, use);
                     } else {
                         // A non-HTTP member belongs to the heap configuration, including optional map keys.
                         requestConfigurationRead = true;
                     }
-                } else if (resultStrings.receivers.contains(base)) {
+                } else if (resultSources.receivers.contains(base)) {
                     rememberSharedValue(value, use);
                 }
             }
 
             private void rememberSharedValue(Object value, ReadUse use) {
                 if (value != null && use == ReadUse.RECEIVER) {
-                    resultStrings.receivers.add(value);
+                    resultSources.receivers.add(value);
                 }
-                rememberResultString(resultStrings.shared, value, use);
+                rememberResultString(resultSources.shared, value, use);
             }
 
             @Override
             public Object evaluateCall(Supplier<Object> invocation) {
-                ResultStrings parent = resultStrings;
-                ResultStrings inputs = new ResultStrings();
-                resultStrings = inputs;
+                ResultSources parent = resultSources;
+                ResultSources inputs = new ResultSources();
+                resultSources = inputs;
                 try {
                     Object value = invocation.get();
                     if (value instanceof String) {
@@ -460,22 +462,67 @@ public class LLMProxyFilter implements Filter {
                         String result = (String) value;
                         inputs.request.stream().filter(text -> retains(result, text)).forEach(parent.request::add);
                         inputs.shared.stream().filter(text -> retains(result, text)).forEach(parent.shared::add);
+                    } else if (value instanceof String[]) {
+                        List<ResultSources> elements = inputs.arrays.get(value);
+                        if (elements != null) {
+                            parent.arrays.put((String[]) value, elements);
+                        }
                     }
                     return value;
                 } finally {
-                    resultStrings = parent;
+                    resultSources = parent;
                 }
             }
 
             @Override
             public Object evaluateArgument(Supplier<Object> argument) {
-                ResultStrings parent = resultStrings;
-                resultStrings = new ResultStrings();
-                parent.arguments.add(resultStrings);
+                ResultSources parent = resultSources;
+                ResultSources sources = new ResultSources();
+                parent.arguments.add(sources);
+                resultSources = sources;
                 try {
-                    return argument.get();
+                    sources.argumentValue = argument.get();
+                    return sources.argumentValue;
                 } finally {
-                    resultStrings = parent;
+                    resultSources = parent;
+                }
+            }
+
+            @Override
+            public void onFunction(Method function, Object value) {
+                List<ResultSources> arguments = resultSources.arguments;
+                if (function.getDeclaringClass() == Functions.class) {
+                    if ("array".equals(function.getName())) {
+                        recordArray((String[]) value, arguments);
+                        return;
+                    }
+                    if ("join".equals(function.getName())) {
+                        recordJoinedStrings(arguments.get(0), arguments.get(1));
+                        return;
+                    }
+                }
+                arguments.forEach(resultSources::addStrings);
+            }
+
+            private void recordArray(String[] array, List<ResultSources> arguments) {
+                if (arguments.size() == 1 && arguments.get(0).argumentValue == array) {
+                    // A String[] passed as the sole vararg is returned directly.
+                    resultSources.arrays.putAll(arguments.get(0).arrays);
+                } else {
+                    resultSources.arrays.put(array, List.copyOf(arguments));
+                }
+            }
+
+            private void recordJoinedStrings(ResultSources values, ResultSources separator) {
+                if (values.argumentValue instanceof String[]) {
+                    String[] array = (String[]) values.argumentValue;
+                    List<ResultSources> elements = values.arrays.get(array);
+                    if (elements != null) {
+                        elements.forEach(resultSources::addStrings);
+                    }
+                    if (array.length > 1) {
+                        resultSources.addStrings(separator);
+                    }
                 }
             }
 
@@ -493,11 +540,15 @@ public class LLMProxyFilter implements Filter {
                         }
                         firstResultArgument = 1;
                     }
+                } else if (base instanceof String && "replace".equals(method) && arguments.length == 2) {
+                    // The search term selects a match. The replacement supplies text only when a match exists.
+                    if (!(arguments[0] instanceof CharSequence) || !(arguments[1] instanceof CharSequence)
+                            || !((String) base).contains((CharSequence) arguments[0])) {
+                        return;
+                    }
+                    firstResultArgument = 1;
                 }
-                resultStrings.arguments.stream().skip(firstResultArgument).forEach(argument -> {
-                    resultStrings.request.addAll(argument.request);
-                    resultStrings.shared.addAll(argument.shared);
-                });
+                resultSources.arguments.stream().skip(firstResultArgument).forEach(resultSources::addStrings);
             }
 
             private static void rememberResultString(Set<String> strings, Object value, ReadUse use) {
@@ -511,14 +562,14 @@ public class LLMProxyFilter implements Filter {
             }
 
             private boolean returnsRequestString(String result, boolean literal) {
-                return !sharedBindingRead && (resultStrings.request.stream()
+                return !sharedBindingRead && (resultSources.request.stream()
                         .anyMatch(text -> result.equals(text) || result.equals(text.trim()))
-                        || (!literal && containsTemplate(resultStrings.request, result)));
+                        || (!literal && containsTemplate(resultSources.request, result)));
             }
 
             private boolean returnsSharedTemplate(String result) {
                 // Runtime bindings such as attributes have no fixed set of member names.
-                return containsTemplate(resultStrings.shared, result);
+                return containsTemplate(resultSources.shared, result);
             }
 
             private static boolean containsTemplate(Set<String> strings, String result) {
@@ -538,11 +589,18 @@ public class LLMProxyFilter implements Filter {
                 }
             }
 
-            private static final class ResultStrings {
+            private static final class ResultSources {
                 private final Set<String> request = new HashSet<>();
                 private final Set<String> shared = new HashSet<>();
                 private final Set<Object> receivers = Collections.newSetFromMap(new IdentityHashMap<>());
-                private final List<ResultStrings> arguments = new ArrayList<>();
+                private final Map<String[], List<ResultSources>> arrays = new IdentityHashMap<>();
+                private final List<ResultSources> arguments = new ArrayList<>();
+                private Object argumentValue;
+
+                private void addStrings(ResultSources sources) {
+                    request.addAll(sources.request);
+                    shared.addAll(sources.shared);
+                }
             }
         }
     }
