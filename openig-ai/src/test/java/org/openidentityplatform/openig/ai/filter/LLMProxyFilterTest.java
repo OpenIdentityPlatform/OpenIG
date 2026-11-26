@@ -105,6 +105,12 @@ public class LLMProxyFilterTest {
             { "${system['openig.test.llm.subject']}", "" },
             { "${true ? system['openig.test.llm.subject'] : attributes.sub}", "" },
             { "\\${attributes.sub}", "" },
+            { "${subjectTemplate}", "" },
+            { "${request}", "" },
+            { "${true ? request : attributes.sub}", "" },
+            { "${tenant}-${request}", "example-" },
+            { "${tenant}-${request.uri.path}", "example-/" },
+            { "${tenant}-${request.getUri().path}", "example-/" },
             { "${tenant}-${attributes.sub}", "example-" },
             { "${system['openig.test.llm.subject']}-${attributes.sub}", "${attributes.sub}-" },
         };
@@ -114,7 +120,10 @@ public class LLMProxyFilterTest {
     public void shouldKeepSeparateQuotasForConfiguredSubjects(String subject, String prefix) throws Exception {
         Name name = Name.of("llmProxy");
         HeapImpl heap = new HeapImpl(name);
-        heap.init(json(object(field("properties", object(field("tenant", "example"))))));
+        heap.init(json(object(field("properties", object(
+                field("tenant", "example"),
+                field("subjectTemplate", "\\${attributes.sub}"),
+                field("request", "\\${attributes.sub}"))))));
         String property = "openig.test.llm.subject";
         String previous = System.setProperty(property, "${attributes.sub}");
         try {
@@ -127,7 +136,8 @@ public class LLMProxyFilterTest {
 
             assertThat(acceptedIdentity(filter, "alice")).isEqualTo(prefix + "alice");
             assertThat(acceptedIdentity(filter, "bob")).isEqualTo(prefix + "bob");
-            Response exhausted = filter.filter(contextWithSubject("alice"), chatRequest(), mockNextHandler).get();
+            Response exhausted = filter.filter(contextWithSubject("alice"), chatRequest("/alice"), mockNextHandler)
+                                       .get();
             assertThat(exhausted.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
         } finally {
             if (previous == null) {
@@ -139,7 +149,8 @@ public class LLMProxyFilterTest {
     }
 
     private String acceptedIdentity(LLMProxyFilter filter, String subject) throws Exception {
-        Response response = filter.filter(contextWithSubject(subject), chatRequest(), mockNextHandler).get();
+        Response response = filter.filter(contextWithSubject(subject), chatRequest("/" + subject), mockNextHandler)
+                                  .get();
         assertThat(response.getStatus()).isEqualTo(Status.OK);
         return response.getHeaders().getFirst(LLMProxyFilter.HEADER_LLM_IDENTITY);
     }
@@ -260,9 +271,13 @@ public class LLMProxyFilterTest {
     }
 
     private Request chatRequest() throws Exception {
+        return chatRequest("/v1/chat/completions");
+    }
+
+    private Request chatRequest(String path) throws Exception {
         Request request = new Request();
         request.setMethod("POST");
-        request.setUri(new URI("http://openig.local/v1/chat/completions"));
+        request.setUri(new URI("http://openig.local" + path));
         request.getHeaders().put("Content-Type", "application/json");
         request.setEntity(CHAT_BODY);
         return request;

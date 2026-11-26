@@ -22,6 +22,7 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.beans.FeatureDescriptor;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,7 @@ import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.FunctionMapper;
+import javax.el.MethodNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
@@ -141,12 +143,13 @@ public class Expression<T> {
     }
 
     /**
-     * Evaluates the expression until it reads a binding reserved for a later evaluation.
+     * Evaluates the expression using the available bindings. Evaluation can be deferred when a binding
+     * reserved for later evaluation, or a member reached through it, is unavailable.
      *
      * @param bindings the bindings to evaluate the expression within
      * @param deferredBindings the names of top-level bindings reserved for later evaluation
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type
-     * @throws DeferredBindingException if evaluation reads a deferred binding
+     * @throws DeferredBindingException if a read under a deferred binding cannot be resolved
      */
     public T eval(final Bindings bindings, final Set<String> deferredBindings) {
         Object value;
@@ -224,6 +227,7 @@ public class Expression<T> {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
         private final Set<String> deferredBindings;
+        private Map<Object, String> resolvedDeferredBindings;
 
         XLResolver(final Object scope, final Set<String> deferredBindings) {
             // Resolvers.get() don't support null value
@@ -235,20 +239,40 @@ public class Expression<T> {
         public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
 
-            // deal with readonly implicit objects
+            String deferredBinding;
             if (base == null) {
                 String name = property.toString();
+                // deal with readonly implicit objects
                 ExpressionPlugin node = Expression.PLUGINS.get(name);
                 if (node != null) {
                     return node.getObject();
                 }
-                if (deferredBindings.contains(name)) {
-                    throw new DeferredBindingException(name);
-                }
+                deferredBinding = deferredBindings.contains(name) ? name : null;
+            } else {
+                deferredBinding = deferredBindingOf(base);
             }
 
             Object value = Resolvers.get((base == null ? scope : base), property);
+            if (deferredBinding != null) {
+                return rememberDeferredBinding(deferredBinding, value);
+            }
             return (value != Resolver.UNRESOLVED ? value : null);
+        }
+
+        private String deferredBindingOf(Object value) {
+            return resolvedDeferredBindings == null ? null : resolvedDeferredBindings.get(value);
+        }
+
+        private Object rememberDeferredBinding(String name, Object value) {
+            if (value == null || value == Resolver.UNRESOLVED) {
+                throw new DeferredBindingException(name);
+            }
+            // Follow chained reads so a partial heap value cannot stand in for the request.
+            if (resolvedDeferredBindings == null) {
+                resolvedDeferredBindings = new IdentityHashMap<>();
+            }
+            resolvedDeferredBindings.put(value, name);
+            return value;
         }
 
         @Override
@@ -286,7 +310,16 @@ public class Expression<T> {
                              final Object method,
                              final Class<?>[] paramTypes,
                              final Object[] params) {
-            return RESOLVER.invoke(context, base, method, paramTypes, params);
+            String deferredBinding = deferredBindingOf(base);
+            try {
+                Object value = RESOLVER.invoke(context, base, method, paramTypes, params);
+                return deferredBinding == null ? value : rememberDeferredBinding(deferredBinding, value);
+            } catch (MethodNotFoundException e) {
+                if (deferredBinding != null) {
+                    throw new DeferredBindingException(deferredBinding);
+                }
+                throw e;
+            }
         }
     }
 

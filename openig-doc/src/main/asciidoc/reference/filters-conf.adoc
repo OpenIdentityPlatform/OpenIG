@@ -1060,7 +1060,7 @@ The destination URL, including the complete upstream path. The filter replaces t
 The API key for the configured provider. For an Ollama endpoint that does not check the key, supply any non-empty value.
 
 `"sub"`: __string or runtime expression<string>, optional__::
-The identity used to track token usage. The heap evaluates the setting when it creates the filter. If evaluation requires the request or its context, the filter evaluates the original expression for each request with heap properties available. If the heap resolves the setting to an EL template, for example from a JVM property or an escaped expression in the route JSON, the filter evaluates that template for each request. The default is `anonymous`, which also applies when the expression returns null or an empty string.
+The identity used to track token usage. The heap evaluates the setting when it creates the filter. A heap property can supply an EL template even when its name matches a request binding. Templates can also come from a JVM property or an escaped expression in the route JSON. The filter evaluates the resolved template for each request. If the setting itself requires data available only at request time, the filter evaluates the original expression for each request with heap properties available. The default is `anonymous`, which also applies when the expression returns null or an empty string.
 
 `"rateLimitEnabled"`: __boolean or expression<boolean>, optional__::
 Enables token rate limiting. The default is `true`.
