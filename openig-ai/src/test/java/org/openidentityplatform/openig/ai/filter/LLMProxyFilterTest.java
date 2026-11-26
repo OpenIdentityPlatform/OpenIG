@@ -153,19 +153,55 @@ public class LLMProxyFilterTest {
                 object(field("attributes", object(field("defaultSubject", " ${attributes.sub} ")))));
     }
 
+    @Test
+    public void shouldSelectHeapTemplateThroughStringGuard() throws Exception {
+        assertSubjectQuotas("${request.defaultSubject.startsWith('$') ? request.defaultSubject : 'fallback'}", "",
+                object(field("request", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldUsePlainSubjectFromHeap() throws Exception {
+        LLMProxyFilter filter = subjectFilter("${request.defaultSubject}",
+                object(field("request", object(field("defaultSubject", "service-account")))));
+
+        assertThat(acceptedIdentity(filter, "alice")).isEqualTo("service-account");
+    }
+
+    @Test
+    public void shouldSelectJvmTemplateThroughHeapCondition() throws Exception {
+        assertSubjectQuotas("${request.mode == 'per-user' ? system['openig.test.llm.subject'] : 'fallback'}", "",
+                object(field("request", object(field("mode", "per-user")))));
+    }
+
+    @Test
+    public void shouldSelectJvmTemplateWhenOptionalHeapMemberIsMissing() throws Exception {
+        assertSubjectQuotas("${empty request.override ? system['openig.test.llm.subject'] : request.override}", "",
+                object(field("request", object())));
+    }
+
+    @Test
+    public void shouldEvaluateRequestGuardWithAnEmptyHeapString() throws Exception {
+        assertSubjectQuotas("${empty request ? 'guest' : request.uri.path}", "/",
+                object(field("request", "")));
+    }
+
+    @Test
+    public void shouldPreserveRuntimeGuardWhenJvmTemplateMatchesHeapText() throws Exception {
+        assertSubjectQuotas("${empty attributes.defaultSubject ? request.uri.path : system['openig.test.llm.subject']}",
+                "/", object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldUseRuntimeUriWhenHeapHasTheSameMember() throws Exception {
+        assertSubjectQuotas("${request.uri.path}", "/",
+                object(field("request", object(field("uri", object(field("path", "/configured")))))));
+    }
+
     private void assertSubjectQuotas(String subject, String prefix, Map<String, Object> properties) throws Exception {
-        Name name = Name.of("llmProxy");
-        HeapImpl heap = new HeapImpl(name);
-        heap.init(json(object(field("properties", properties))));
         String property = "openig.test.llm.subject";
         String previous = System.setProperty(property, "${attributes.sub}");
         try {
-            LLMProxyFilter filter = (LLMProxyFilter) new LLMProxyFilter.Heaplet().create(name,
-                    json(object(
-                            field("provider", "OPENAI"),
-                            field("apiKey", "test-api-key"),
-                            field("sub", subject),
-                            field("rate", object(field("numberOfTokens", 4), field("duration", "1 hour"))))), heap);
+            LLMProxyFilter filter = subjectFilter(subject, properties);
 
             assertThat(acceptedIdentity(filter, "alice")).isEqualTo(prefix + "alice");
             assertThat(acceptedIdentity(filter, "bob")).isEqualTo(prefix + "bob");
@@ -179,6 +215,18 @@ public class LLMProxyFilterTest {
                 System.setProperty(property, previous);
             }
         }
+    }
+
+    private LLMProxyFilter subjectFilter(String subject, Map<String, Object> properties) throws Exception {
+        Name name = Name.of("llmProxy");
+        HeapImpl heap = new HeapImpl(name);
+        heap.init(json(object(field("properties", properties))));
+        return (LLMProxyFilter) new LLMProxyFilter.Heaplet().create(name,
+                json(object(
+                        field("provider", "OPENAI"),
+                        field("apiKey", "test-api-key"),
+                        field("sub", subject),
+                        field("rate", object(field("numberOfTokens", 4), field("duration", "1 hour"))))), heap);
     }
 
     private String acceptedIdentity(LLMProxyFilter filter, String subject) throws Exception {

@@ -22,17 +22,14 @@ import static org.forgerock.openig.el.Bindings.bindings;
 
 import java.beans.FeatureDescriptor;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.FunctionMapper;
-import javax.el.MethodNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
@@ -152,27 +149,24 @@ public class Expression<T> {
      * @throws DeferredBindingException if evaluation reads a deferred binding
      */
     public T eval(final Bindings bindings, final Set<String> deferredBindings) {
-        return eval(bindings, deferredBindings, Collections.emptySet(), null);
+        return eval(bindings, deferredBindings, null);
     }
 
     /**
-     * Evaluates the expression with a function applied to strings read from the selected bindings.
-     * Strings can come from a binding directly or from an object reached through it.
+     * Evaluates the expression with a policy for reading resolved values.
      *
      * @param bindings the bindings to evaluate the expression within
      * @param deferredBindings the names of top-level bindings reserved for later evaluation
-     * @param observedBindings the names of top-level bindings whose string values the function can inspect
-     * @param stringRead the function supplying the value for each observed string
+     * @param readPolicy the policy for each property or method read
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type
-     * @throws DeferredBindingException if evaluation reads a deferred binding
+     * @throws DeferredBindingException if evaluation reads a deferred binding or the policy defers a read
      */
     public T eval(final Bindings bindings, final Set<String> deferredBindings,
-                  final Set<String> observedBindings, final UnaryOperator<String> stringRead) {
+                  final ReadPolicy readPolicy) {
         Object value;
         try {
             Bindings evaluationBindings = bindings().bind(initialBindings).bind(bindings);
-            BindingReads reads = observedBindings.isEmpty() ? null : new BindingReads(observedBindings, stringRead);
-            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings, reads));
+            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings, readPolicy));
         } catch (ELException ele) {
             logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
@@ -212,6 +206,26 @@ public class Expression<T> {
         return valueExpression.isLiteralText();
     }
 
+    /** Controls which values are available in an evaluation. */
+    public interface ReadPolicy {
+        /**
+         * Checks a property read or a method invocation.
+         * @param base object being read, or {@code null} for a top-level binding
+         * @param member property or method name
+         * @param method whether the read is a method invocation
+         * @return {@code true} to resolve the member in this evaluation
+         */
+        boolean canRead(Object base, Object member, boolean method);
+
+        /**
+         * Observes a resolved value without changing it.
+         * @param base object being read, or {@code null} for a top-level binding
+         * @param member property or method name
+         * @param value resolved value, or {@code null} when unavailable
+         */
+        void onRead(Object base, Object member, Object value);
+    }
+
     /** Indicates that evaluation needs a binding reserved for later. */
     public static final class DeferredBindingException extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -228,8 +242,8 @@ public class Expression<T> {
             this(scope, Collections.emptySet(), null);
         }
 
-        private XLContext(Object scope, Set<String> deferredBindings, BindingReads reads) {
-            elResolver = new XLResolver(scope, deferredBindings, reads);
+        private XLContext(Object scope, Set<String> deferredBindings, ReadPolicy readPolicy) {
+            elResolver = new XLResolver(scope, deferredBindings, readPolicy);
         }
 
         @Override
@@ -252,25 +266,26 @@ public class Expression<T> {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
         private final Set<String> deferredBindings;
-        private final BindingReads reads;
+        private final ReadPolicy readPolicy;
 
-        XLResolver(final Object scope, final Set<String> deferredBindings, final BindingReads reads) {
+        XLResolver(final Object scope, final Set<String> deferredBindings, final ReadPolicy readPolicy) {
             // Resolvers.get() don't support null value
             this.scope = (scope == null) ? new Object() : scope;
             this.deferredBindings = deferredBindings;
-            this.reads = reads;
+            this.readPolicy = readPolicy;
         }
 
         @Override
         public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
+            checkRead(base, property, false);
 
             if (base == null) {
                 String name = property.toString();
                 // deal with readonly implicit objects
                 ExpressionPlugin node = Expression.PLUGINS.get(name);
                 if (node != null) {
-                    return node.getObject();
+                    return observedValue(null, property, node.getObject());
                 }
                 if (deferredBindings.contains(name)) {
                     throw new DeferredBindingException(name);
@@ -278,10 +293,20 @@ public class Expression<T> {
             }
 
             Object value = Resolvers.get((base == null ? scope : base), property);
-            if (reads != null) {
-                value = reads.transform(base, property, value);
+            return observedValue(base, property, value != Resolver.UNRESOLVED ? value : null);
+        }
+
+        private void checkRead(Object base, Object member, boolean method) {
+            if (readPolicy != null && !readPolicy.canRead(base, member, method)) {
+                throw new DeferredBindingException(member.toString());
             }
-            return (value != Resolver.UNRESOLVED ? value : null);
+        }
+
+        private Object observedValue(Object base, Object member, Object value) {
+            if (readPolicy != null) {
+                readPolicy.onRead(base, member, value);
+            }
+            return value;
         }
 
         @Override
@@ -319,41 +344,8 @@ public class Expression<T> {
                              final Object method,
                              final Class<?>[] paramTypes,
                              final Object[] params) {
-            try {
-                Object value = RESOLVER.invoke(context, base, method, paramTypes, params);
-                return reads == null ? value : reads.transform(base, method, value);
-            } catch (MethodNotFoundException e) {
-                String binding = reads == null ? null : reads.roots.get(base);
-                if (binding != null) {
-                    throw new DeferredBindingException(binding);
-                }
-                throw e;
-            }
-        }
-    }
-
-    private static final class BindingReads {
-        private final Set<String> observedBindings;
-        private final UnaryOperator<String> stringRead;
-        private final Map<Object, String> roots = new IdentityHashMap<>();
-
-        private BindingReads(Set<String> observedBindings, UnaryOperator<String> stringRead) {
-            this.observedBindings = observedBindings;
-            this.stringRead = stringRead;
-        }
-
-        private Object transform(Object base, Object property, Object value) {
-            String binding = roots.get(base);
-            if (base == null && observedBindings.contains(property)) {
-                binding = property.toString();
-            }
-            if (binding != null && value != null && value != Resolver.UNRESOLVED) {
-                if (value instanceof String) {
-                    value = stringRead.apply((String) value);
-                }
-                roots.put(value, binding);
-            }
-            return value;
+            checkRead(base, method, true);
+            return observedValue(base, method, RESOLVER.invoke(context, base, method, paramTypes, params));
         }
     }
 

@@ -26,6 +26,7 @@ import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.Expression.DeferredBindingException;
+import org.forgerock.openig.el.Expression.ReadPolicy;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -37,13 +38,20 @@ import org.openidentityplatform.openig.ai.filter.llm.LLMProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
@@ -268,6 +276,14 @@ public class LLMProxyFilter implements Filter {
 
         private static final Set<String> REQUEST_BINDINGS =
                 Set.of("request", "context", "contexts", "attributes", "session");
+        private static final BeanInfo REQUEST_API = requestApi();
+        private static final Set<String> REQUEST_PROPERTIES = Arrays.stream(REQUEST_API.getPropertyDescriptors())
+                .filter(property -> property.getReadMethod() != null)
+                .map(property -> property.getName())
+                .collect(toUnmodifiableSet());
+        private static final Set<String> REQUEST_METHODS = Arrays.stream(REQUEST_API.getMethodDescriptors())
+                .map(method -> method.getName())
+                .collect(toUnmodifiableSet());
 
         @Override
         public Object create() throws HeapException {
@@ -326,16 +342,16 @@ public class LLMProxyFilter implements Filter {
                     Object value = configured.eval(bindings(), REQUEST_BINDINGS);
                     subject = new JsonValue(value, subject.getPointer());
                 } catch (DeferredBindingException e) {
-                    Expression<String> template = heapSubjectTemplate(subject, configured);
-                    if (template != null) {
-                        return template;
+                    Expression<String> startupSubject = heapSubject(subject, configured);
+                    if (startupSubject != null) {
+                        return startupSubject;
                     }
                 }
             }
             return subject.defaultTo("anonymous").as(expression(String.class));
         }
 
-        private Expression<String> heapSubjectTemplate(JsonValue subject, Expression<Object> configured) {
+        private Expression<String> heapSubject(JsonValue subject, Expression<Object> configured) {
             Set<String> heapBindings = new HashSet<>(REQUEST_BINDINGS);
             heapBindings.retainAll(heap.getProperties().asMap().keySet());
             if (heapBindings.isEmpty()) {
@@ -344,52 +360,103 @@ public class LLMProxyFilter implements Filter {
 
             Set<String> deferred = new HashSet<>(REQUEST_BINDINGS);
             deferred.removeAll(heapBindings);
-            Set<String> stringsRead = new HashSet<>();
+            HeapSubjectReads reads = new HeapSubjectReads(heapBindings);
             try {
-                // Legacy templates may use ordinary EL fallback rules with the configured values.
-                Object value = configured.eval(bindings(), deferred, heapBindings, text -> {
-                    stringsRead.add(text);
-                    return text;
-                });
+                Object value = configured.eval(bindings(), deferred, reads);
                 if (!(value instanceof String)) {
                     return null;
                 }
                 String source = (String) value;
-                stringsRead.removeIf(text -> !isTemplate(text));
-                if (!stringsRead.isEmpty()) {
-                    Expression<String> template = new JsonValue(source, subject.getPointer()).as(expression(String.class));
-                    if (!template.isLiteralText()
-                            && selectsHeapTemplate(configured, deferred, heapBindings, stringsRead, source)) {
-                        return template;
-                    }
+                Expression<String> startupSubject = new JsonValue(source, subject.getPointer())
+                        .as(expression(String.class));
+                boolean literal = startupSubject.isLiteralText();
+                if (reads.usesRequestConfiguration() || reads.returnsRequestString(source, literal)
+                        || (!literal && reads.returnsSharedTemplate(source))) {
+                    return startupSubject;
                 }
             } catch (DeferredBindingException | JsonValueException e) {
-                // The compatibility evaluation could not select a template.
+                // Keep the original expression for request-time evaluation.
             }
             return null;
         }
 
-        private boolean selectsHeapTemplate(Expression<Object> configured, Set<String> deferred,
-                                            Set<String> heapBindings, Set<String> templates, String source) {
-            String marker = "\uE000";
-            while (source.contains(marker)) {
-                marker += "\uE001";
+        private static BeanInfo requestApi() {
+            try {
+                return Introspector.getBeanInfo(Request.class);
+            } catch (IntrospectionException e) {
+                throw new IllegalStateException("Cannot inspect HTTP Request members", e);
             }
-            // Tag the observed templates to distinguish returned text from values read only by a guard.
-            String tag = marker;
-            Object tagged = configured.eval(bindings(), deferred, heapBindings,
-                    text -> templates.contains(text)
-                            ? text.replace("${", tag + "${").replace("#{", tag + "#{")
-                            : text);
-            return tagged instanceof String && ((String) tagged).contains(tag)
-                    && ((String) tagged).replace(tag, "").equals(source);
         }
 
-        private boolean isTemplate(String text) {
-            try {
-                return !json(text).as(expression(String.class)).isLiteralText();
-            } catch (JsonValueException e) {
-                return false;
+        private static final class HeapSubjectReads implements ReadPolicy {
+            private final Set<String> heapBindings;
+            private final Set<Object> sharedValues = Collections.newSetFromMap(new IdentityHashMap<>());
+            private final Set<String> sharedStrings = new HashSet<>();
+            private final Set<String> otherStrings = new HashSet<>();
+            private Object heapRequest;
+            private boolean requestConfigurationRead;
+            private boolean sharedBindingRead;
+
+            private HeapSubjectReads(Set<String> heapBindings) {
+                this.heapBindings = heapBindings;
+            }
+
+            @Override
+            public boolean canRead(Object base, Object member, boolean method) {
+                return base == null || base != heapRequest
+                        || !(method ? REQUEST_METHODS : REQUEST_PROPERTIES).contains(member);
+            }
+
+            @Override
+            public void onRead(Object base, Object member, Object value) {
+                if (base == null && heapBindings.contains(member)) {
+                    if ("request".equals(member)) {
+                        heapRequest = value;
+                    } else {
+                        sharedBindingRead = true;
+                        rememberSharedValue(value);
+                    }
+                } else if (base != null && base == heapRequest) {
+                    // The member belongs to the heap configuration, including optional map keys.
+                    requestConfigurationRead = true;
+                } else if (sharedValues.contains(base)) {
+                    rememberSharedValue(value);
+                } else if (value instanceof String) {
+                    otherStrings.add((String) value);
+                }
+            }
+
+            private void rememberSharedValue(Object value) {
+                if (value != null) {
+                    sharedValues.add(value);
+                    if (value instanceof String) {
+                        sharedStrings.add((String) value);
+                    }
+                }
+            }
+
+            private boolean usesRequestConfiguration() {
+                return requestConfigurationRead && !sharedBindingRead;
+            }
+
+            private boolean returnsRequestString(String result, boolean literal) {
+                if (sharedBindingRead || !(heapRequest instanceof String)) {
+                    return false;
+                }
+                String configured = (String) heapRequest;
+                // Reading the whole binding can also be an empty or truthiness check.
+                return !matchesReadString(otherStrings, configured)
+                        && (result.equals(configured)
+                            || (!literal && !configured.isEmpty() && result.contains(configured)));
+            }
+
+            private boolean returnsSharedTemplate(String result) {
+                // Runtime bindings such as attributes have no fixed set of member names.
+                return matchesReadString(sharedStrings, result) && !matchesReadString(otherStrings, result);
+            }
+
+            private static boolean matchesReadString(Set<String> strings, String result) {
+                return strings.stream().anyMatch(text -> result.equals(text) || result.equals(text.trim()));
             }
         }
     }
