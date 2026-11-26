@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.el;
@@ -23,6 +24,7 @@ import java.beans.FeatureDescriptor;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -135,10 +137,22 @@ public class Expression<T> {
      * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type.
      */
     public T eval(final Bindings bindings) {
+        return eval(bindings, Collections.emptySet());
+    }
+
+    /**
+     * Evaluates the expression until it reads a binding reserved for a later evaluation.
+     *
+     * @param bindings the bindings to evaluate the expression within
+     * @param deferredBindings the names of top-level bindings reserved for later evaluation
+     * @return the result of the expression evaluation, or {@code null} if it does not resolve or match the type
+     * @throws DeferredBindingException if evaluation reads a deferred binding
+     */
+    public T eval(final Bindings bindings, final Set<String> deferredBindings) {
         Object value;
         try {
             Bindings evaluationBindings = bindings().bind(initialBindings).bind(bindings);
-            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap()));
+            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings));
         } catch (ELException ele) {
             logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
@@ -170,11 +184,24 @@ public class Expression<T> {
         return eval(bindings());
     }
 
+    /** Indicates that evaluation needs a binding reserved for later. */
+    public static final class DeferredBindingException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        private DeferredBindingException(String name) {
+            super(name);
+        }
+    }
+
     static class XLContext extends ELContext {
         private final ELResolver elResolver;
 
         XLContext(Object scope) {
-            elResolver = new XLResolver(scope);
+            this(scope, Collections.emptySet());
+        }
+
+        private XLContext(Object scope, Set<String> deferredBindings) {
+            elResolver = new XLResolver(scope, deferredBindings);
         }
 
         @Override
@@ -196,10 +223,12 @@ public class Expression<T> {
     private static class XLResolver extends ELResolver {
         private static final BeanELResolver RESOLVER = new BeanELResolver(true);
         private final Object scope;
+        private final Set<String> deferredBindings;
 
-        XLResolver(final Object scope) {
+        XLResolver(final Object scope, final Set<String> deferredBindings) {
             // Resolvers.get() don't support null value
             this.scope = (scope == null) ? new Object() : scope;
+            this.deferredBindings = deferredBindings;
         }
 
         @Override
@@ -208,9 +237,13 @@ public class Expression<T> {
 
             // deal with readonly implicit objects
             if (base == null) {
-                ExpressionPlugin node = Expression.PLUGINS.get(property.toString());
+                String name = property.toString();
+                ExpressionPlugin node = Expression.PLUGINS.get(name);
                 if (node != null) {
                     return node.getObject();
+                }
+                if (deferredBindings.contains(name)) {
+                    throw new DeferredBindingException(name);
                 }
             }
 

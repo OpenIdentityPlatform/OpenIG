@@ -24,6 +24,7 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.Expression.DeferredBindingException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.forgerock.json.JsonValue.json;
@@ -262,6 +264,9 @@ public class LLMProxyFilter implements Filter {
 
     public static class Heaplet extends GenericHeaplet {
 
+        private static final Set<String> REQUEST_BINDINGS =
+                Set.of("request", "context", "contexts", "attributes", "session");
+
         @Override
         public Object create() throws HeapException {
 
@@ -281,7 +286,7 @@ public class LLMProxyFilter implements Filter {
             boolean rateLimitEnabled = config.get("rateLimitEnabled").as(evaluatedWithHeapProperties())
                                              .defaultTo(true).asBoolean();
 
-            Expression<String> sub = config.get("sub").defaultTo("anonymous").as(expression(String.class));
+            Expression<String> sub = subjectExpression(config.get("sub"));
 
             TokenRateLimiter rateLimiter = null;
             if (rateLimitEnabled) {
@@ -310,6 +315,19 @@ public class LLMProxyFilter implements Filter {
             }
 
             return new LLMProxyFilter(provider, baseUrl, apiKey, sub, rateLimitEnabled, rateLimiter);
+        }
+
+        private Expression<String> subjectExpression(JsonValue subject) {
+            Expression<Object> configured = subject.as(expression(Object.class));
+            if (configured != null) {
+                try {
+                    Object value = configured.eval(bindings(), REQUEST_BINDINGS);
+                    subject = new JsonValue(value, subject.getPointer());
+                } catch (DeferredBindingException e) {
+                    // Keep the original expression for request-time evaluation.
+                }
+            }
+            return subject.defaultTo("anonymous").as(expression(String.class));
         }
     }
 }

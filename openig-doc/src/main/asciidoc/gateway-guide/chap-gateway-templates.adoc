@@ -35,6 +35,8 @@ Before you use one of the templates here, install and configure OpenIG with a ro
 
 Next, take one of the templates and then modify it to suit your deployment. Read the summary of each template to find the right match for your application.
 
+In the password replay templates, the route's `baseURI` selects the upstream for pass-through requests and initial page fetches. The filter's `request.uri` selects the login endpoint.
+
 When you move to use OpenIG in production, be sure to turn off DEBUG level logging, and to deactivate `CaptureDecorator` use to avoid filling up disk space. Also consider locking down the `Router` configuration.
 
 [#template-proxy-capture]
@@ -135,6 +137,7 @@ The route in xref:#example-simple-login[Simple Login Form] logs the user into th
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=simple')}"
 }
 ----
@@ -187,6 +190,7 @@ Some applications expect a cookie from the login page to be sent in the login re
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=cookie')}"
 }
 ----
@@ -266,6 +270,7 @@ The route uses a `CookieFilter` to manage cookies, ensuring that cookies from th
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=classic')}"
 }
 ----
@@ -348,6 +353,7 @@ Some applications call for extracting a hidden value from the login page and inc
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=hidden')}"
 }
 ----
@@ -460,6 +466,7 @@ The route in xref:#example-am-integration-headers[OpenAM Integration With Header
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=headers')}"
 }
 ----
@@ -562,12 +569,12 @@ The route in xref:#example-owa-online[Microsoft Online Outlook Web Access] logs 
           ],
           "handler": {
             "type": "ClientHandler"
-          },
-          "baseURI": "https://login.microsoftonline.com"
+          }
         }
       }
     }
   },
+  "baseURI": "https://login.microsoftonline.com",
   "condition": "${matches(request.uri.query, 'demo=headers')}"
 }
 ----

@@ -56,8 +56,8 @@ public class HowToScriptsTest {
     private static final String ARTICLE = "src/main/asciidoc/how-to/"
             + "how-to-protect-web-services-with-openig.adoc";
 
-    private String article() throws Exception {
-        return String.join("\n", Files.readAllLines(Paths.get(ARTICLE), StandardCharsets.UTF_8));
+    private static String article(String path) throws Exception {
+        return String.join("\n", Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8));
     }
 
     @DataProvider
@@ -154,7 +154,7 @@ public class HowToScriptsTest {
     }
 
     private Script jwtScript(Binding binding) throws Exception {
-        String text = article();
+        String text = article(ARTICLE);
         return script(listing(text.substring(text.indexOf("`jwt.groovy`:\n")), "[source,Groovy]"), binding);
     }
 
@@ -286,8 +286,7 @@ public class HowToScriptsTest {
 
     @Test(dataProvider = "logoutResponses")
     public void logoutScriptClosesResponseBeforeContinuing(String mode, String body) throws Exception {
-        String text = new String(Files.readAllBytes(Paths.get("src/main/asciidoc/how-to/openig-http-client.adoc")),
-                StandardCharsets.UTF_8);
+        String text = article("src/main/asciidoc/how-to/openig-http-client.adoc");
         Request request = new Request();
         request.getHeaders().put("Cookie", "iPlanetDirectoryPro=demo-cookie");
         Response logoutResponse = new Response(Status.OK).setEntity(body);

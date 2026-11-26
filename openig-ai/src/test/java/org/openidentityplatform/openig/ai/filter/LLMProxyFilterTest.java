@@ -27,6 +27,7 @@ import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.Promises;
 import org.openidentityplatform.openig.ai.filter.llm.LLMProvider;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -98,21 +99,49 @@ public class LLMProxyFilterTest {
                 .isNotNull();
     }
 
-    @Test
-    public void shouldResolveSubjectWithRequestAndHeapBindings() throws Exception {
+    @DataProvider
+    public Object[][] subjectConfigurations() {
+        return new Object[][] {
+            { "${system['openig.test.llm.subject']}", "" },
+            { "${true ? system['openig.test.llm.subject'] : attributes.sub}", "" },
+            { "\\${attributes.sub}", "" },
+            { "${tenant}-${attributes.sub}", "example-" },
+            { "${system['openig.test.llm.subject']}-${attributes.sub}", "${attributes.sub}-" },
+        };
+    }
+
+    @Test(dataProvider = "subjectConfigurations")
+    public void shouldKeepSeparateQuotasForConfiguredSubjects(String subject, String prefix) throws Exception {
         Name name = Name.of("llmProxy");
         HeapImpl heap = new HeapImpl(name);
         heap.init(json(object(field("properties", object(field("tenant", "example"))))));
-        LLMProxyFilter filter = (LLMProxyFilter) new LLMProxyFilter.Heaplet().create(name,
-                json(object(
-                        field("provider", "OPENAI"),
-                        field("apiKey", "test-api-key"),
-                        field("sub", "${tenant}-${attributes.sub}"))), heap);
+        String property = "openig.test.llm.subject";
+        String previous = System.setProperty(property, "${attributes.sub}");
+        try {
+            LLMProxyFilter filter = (LLMProxyFilter) new LLMProxyFilter.Heaplet().create(name,
+                    json(object(
+                            field("provider", "OPENAI"),
+                            field("apiKey", "test-api-key"),
+                            field("sub", subject),
+                            field("rate", object(field("numberOfTokens", 4), field("duration", "1 hour"))))), heap);
 
-        Response response = filter.filter(contextWithSubject("alice"), chatRequest(), mockNextHandler).get();
+            assertThat(acceptedIdentity(filter, "alice")).isEqualTo(prefix + "alice");
+            assertThat(acceptedIdentity(filter, "bob")).isEqualTo(prefix + "bob");
+            Response exhausted = filter.filter(contextWithSubject("alice"), chatRequest(), mockNextHandler).get();
+            assertThat(exhausted.getStatus()).isEqualTo(Status.TOO_MANY_REQUESTS);
+        } finally {
+            if (previous == null) {
+                System.clearProperty(property);
+            } else {
+                System.setProperty(property, previous);
+            }
+        }
+    }
 
-        assertThat(response.getHeaders().getFirst(LLMProxyFilter.HEADER_LLM_IDENTITY))
-                .isEqualTo("example-alice");
+    private String acceptedIdentity(LLMProxyFilter filter, String subject) throws Exception {
+        Response response = filter.filter(contextWithSubject(subject), chatRequest(), mockNextHandler).get();
+        assertThat(response.getStatus()).isEqualTo(Status.OK);
+        return response.getHeaders().getFirst(LLMProxyFilter.HEADER_LLM_IDENTITY);
     }
 
     @Test
