@@ -154,6 +154,79 @@ public class LLMProxyFilterTest {
     }
 
     @Test
+    public void shouldUseComposedHeapTemplate() throws Exception {
+        assertSubjectQuotas("tenant-${attributes.defaultSubject}", "tenant-",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldUseHeapTemplateWhenJvmGuardReadsTheSameText() throws Exception {
+        assertSubjectQuotas("${system['openig.test.llm.subject'].startsWith('$') ? attributes.defaultSubject : 'guest'}",
+                "", object(field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldUseTrimmedWholeRequestTemplate() throws Exception {
+        assertSubjectQuotas("${trim(request)}", "",
+                object(field("request", " \\${attributes.sub} ")));
+    }
+
+    @Test
+    public void shouldUseWholeRequestTemplateSelectedByStringGuard() throws Exception {
+        assertSubjectQuotas("${request.startsWith('$') ? request : 'guest'}", "",
+                object(field("request", "\\${attributes.sub}")));
+    }
+
+    @DataProvider
+    public Object[][] templateLookupArguments() {
+        return new Object[][] {
+            { "attributes.defaultSubject", "system['openig.test.llm.subject']" },
+            { "attributes.defaultSubject.trim()", "system['openig.test.llm.subject'].trim()" },
+        };
+    }
+
+    @Test(dataProvider = "templateLookupArguments")
+    public void shouldKeepJvmTemplateLiteralWhenTheHeapTemplateIsOnlyALookupKey(String key, String defaultValue)
+            throws Exception {
+        assertSubjectQuotas("${subjects.getOrDefault(" + key + ", " + defaultValue + ")}-${attributes.sub}",
+                "${attributes.sub}-",
+                object(field("subjects", object()),
+                        field("attributes", object(field("defaultSubject", "${attributes.sub}"),
+                                field("sub", "configured")))));
+    }
+
+    @Test
+    public void shouldKeepMatchedMapValueLiteralWhenTheHeapTemplateIsAnUnusedDefault() throws Exception {
+        assertSubjectQuotas("${subjects.getOrDefault('known', attributes.defaultSubject)}-${attributes.sub}",
+                "${attributes.sub}-", object(field("subjects", object(field("known", "${attributes.sub}"))),
+                        field("attributes", object(field("defaultSubject", "${attributes.sub}"),
+                                field("sub", "configured")))));
+    }
+
+    @Test
+    public void shouldUseHeapTemplateWhenTheMapSelectsItsDefault() throws Exception {
+        assertSubjectQuotas("${subjects.getOrDefault('missing', attributes.defaultSubject)}", "",
+                object(field("subjects", object()),
+                        field("attributes", object(field("defaultSubject", "${attributes.sub}")))));
+    }
+
+    @Test
+    public void shouldKeepJvmTemplateLiteralWhenTheHeapTemplateIsOnlyASearchArgument() throws Exception {
+        assertSubjectQuotas("${indexOf('prefix', attributes.defaultSubject)}"
+                        + "-${system['openig.test.llm.subject']}-${attributes.sub}", "-1-${attributes.sub}-",
+                object(field("attributes", object(field("defaultSubject", "${attributes.sub}"),
+                        field("sub", "configured")))));
+    }
+
+    @Test
+    public void shouldKeepTrimmedJvmTemplateLiteralWhenHeapTextIsOnlyAStringGuard() throws Exception {
+        assertSubjectQuotas("${(empty attributes.defaultSubject || attributes.defaultSubject.startsWith('$')"
+                        + " ? system['openig.test.llm.subject'] : 'guest').trim()}-${attributes.sub}",
+                "${attributes.sub}-", object(field("attributes", object(field("defaultSubject", "${attributes.sub}"),
+                        field("sub", "configured")))));
+    }
+
+    @Test
     public void shouldSelectHeapTemplateThroughStringGuard() throws Exception {
         assertSubjectQuotas("${request.defaultSubject.startsWith('$') ? request.defaultSubject : 'fallback'}", "",
                 object(field("request", object(field("defaultSubject", "${attributes.sub}")))));
@@ -183,6 +256,21 @@ public class LLMProxyFilterTest {
     public void shouldEvaluateRequestGuardWithAnEmptyHeapString() throws Exception {
         assertSubjectQuotas("${empty request ? 'guest' : request.uri.path}", "/",
                 object(field("request", "")));
+    }
+
+    @DataProvider
+    public Object[][] liveRequestSubjects() {
+        return new Object[][] {
+            { "attributes.sub", "" },
+            { "request.uri.path", "/" },
+        };
+    }
+
+    @Test(dataProvider = "liveRequestSubjects")
+    public void shouldEvaluateWholeRequestGuardAfterAnOptionalMemberRead(String liveSubject, String prefix)
+            throws Exception {
+        assertSubjectQuotas("${empty request.override && empty request ? 'guest' : " + liveSubject + "}", prefix,
+                object(field("request", object())));
     }
 
     @Test

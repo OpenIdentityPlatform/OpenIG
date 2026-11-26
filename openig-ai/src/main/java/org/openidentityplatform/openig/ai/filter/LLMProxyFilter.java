@@ -27,6 +27,8 @@ import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
 import org.forgerock.openig.el.Expression.DeferredBindingException;
 import org.forgerock.openig.el.Expression.ReadPolicy;
+import org.forgerock.openig.el.Expression.ReadUse;
+import org.forgerock.openig.el.ExpressionException;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -44,12 +46,16 @@ import java.beans.Introspector;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.forgerock.json.JsonValue.json;
@@ -352,15 +358,16 @@ public class LLMProxyFilter implements Filter {
         }
 
         private Expression<String> heapSubject(JsonValue subject, Expression<Object> configured) {
+            Map<String, Object> heapProperties = heap.getProperties().asMap();
             Set<String> heapBindings = new HashSet<>(REQUEST_BINDINGS);
-            heapBindings.retainAll(heap.getProperties().asMap().keySet());
+            heapBindings.retainAll(heapProperties.keySet());
             if (heapBindings.isEmpty()) {
                 return null;
             }
 
             Set<String> deferred = new HashSet<>(REQUEST_BINDINGS);
             deferred.removeAll(heapBindings);
-            HeapSubjectReads reads = new HeapSubjectReads(heapBindings);
+            HeapSubjectReads reads = new HeapSubjectReads(heapBindings, heapProperties.get("request"));
             try {
                 Object value = configured.eval(bindings(), deferred, reads);
                 if (!(value instanceof String)) {
@@ -390,48 +397,112 @@ public class LLMProxyFilter implements Filter {
 
         private static final class HeapSubjectReads implements ReadPolicy {
             private final Set<String> heapBindings;
-            private final Set<Object> sharedValues = Collections.newSetFromMap(new IdentityHashMap<>());
-            private final Set<String> sharedStrings = new HashSet<>();
-            private final Set<String> otherStrings = new HashSet<>();
-            private Object heapRequest;
+            private final Object heapRequest;
+            private ResultStrings resultStrings = new ResultStrings();
             private boolean requestConfigurationRead;
             private boolean sharedBindingRead;
 
-            private HeapSubjectReads(Set<String> heapBindings) {
+            private HeapSubjectReads(Set<String> heapBindings, Object heapRequest) {
                 this.heapBindings = heapBindings;
+                this.heapRequest = heapRequest;
             }
 
             @Override
-            public boolean canRead(Object base, Object member, boolean method) {
-                return base == null || base != heapRequest
-                        || !(method ? REQUEST_METHODS : REQUEST_PROPERTIES).contains(member);
+            public boolean canRead(Object base, Object member, boolean method, ReadUse use) {
+                if (base == null) {
+                    // A member lookup can use heap configuration. Testing the whole request needs the live request.
+                    return !"request".equals(member) || use.isReceiver()
+                            || (!use.isOperand() && heapRequest instanceof String);
+                }
+                if (base != heapRequest) {
+                    return true;
+                }
+                return !(method ? REQUEST_METHODS : REQUEST_PROPERTIES).contains(member);
             }
 
             @Override
-            public void onRead(Object base, Object member, Object value) {
+            public void onRead(Object base, Object member, Object value, ReadUse use) {
                 if (base == null && heapBindings.contains(member)) {
                     if ("request".equals(member)) {
-                        heapRequest = value;
+                        rememberResultString(resultStrings.request, value, use);
                     } else {
                         sharedBindingRead = true;
-                        rememberSharedValue(value);
+                        rememberSharedValue(value, use);
                     }
                 } else if (base != null && base == heapRequest) {
-                    // The member belongs to the heap configuration, including optional map keys.
-                    requestConfigurationRead = true;
-                } else if (sharedValues.contains(base)) {
-                    rememberSharedValue(value);
-                } else if (value instanceof String) {
-                    otherStrings.add((String) value);
+                    if (base instanceof String) {
+                        rememberResultString(resultStrings.request, value, use);
+                    } else {
+                        // A non-HTTP member belongs to the heap configuration, including optional map keys.
+                        requestConfigurationRead = true;
+                    }
+                } else if (resultStrings.receivers.contains(base)) {
+                    rememberSharedValue(value, use);
                 }
             }
 
-            private void rememberSharedValue(Object value) {
-                if (value != null) {
-                    sharedValues.add(value);
+            private void rememberSharedValue(Object value, ReadUse use) {
+                if (value != null && use == ReadUse.RECEIVER) {
+                    resultStrings.receivers.add(value);
+                }
+                rememberResultString(resultStrings.shared, value, use);
+            }
+
+            @Override
+            public Object evaluateCall(Supplier<Object> invocation) {
+                ResultStrings parent = resultStrings;
+                ResultStrings inputs = new ResultStrings();
+                resultStrings = inputs;
+                try {
+                    Object value = invocation.get();
                     if (value instanceof String) {
-                        sharedStrings.add((String) value);
+                        // Carry forward only text that survived this call, before EL appends other components.
+                        String result = (String) value;
+                        inputs.request.stream().filter(text -> retains(result, text)).forEach(parent.request::add);
+                        inputs.shared.stream().filter(text -> retains(result, text)).forEach(parent.shared::add);
                     }
+                    return value;
+                } finally {
+                    resultStrings = parent;
+                }
+            }
+
+            @Override
+            public Object evaluateArgument(Supplier<Object> argument) {
+                ResultStrings parent = resultStrings;
+                resultStrings = new ResultStrings();
+                parent.arguments.add(resultStrings);
+                try {
+                    return argument.get();
+                } finally {
+                    resultStrings = parent;
+                }
+            }
+
+            @Override
+            public void onInvocation(Object base, Object method, Object[] arguments) {
+                int firstResultArgument = 0;
+                if (base instanceof Map) {
+                    if ("get".equals(method) || "containsKey".equals(method)) {
+                        return;
+                    }
+                    if ("getOrDefault".equals(method) && arguments.length == 2) {
+                        // Only the default can supply text, and only when the key is absent.
+                        if (((Map<?, ?>) base).containsKey(arguments[0])) {
+                            return;
+                        }
+                        firstResultArgument = 1;
+                    }
+                }
+                resultStrings.arguments.stream().skip(firstResultArgument).forEach(argument -> {
+                    resultStrings.request.addAll(argument.request);
+                    resultStrings.shared.addAll(argument.shared);
+                });
+            }
+
+            private static void rememberResultString(Set<String> strings, Object value, ReadUse use) {
+                if (use == ReadUse.RESULT && value instanceof String) {
+                    strings.add((String) value);
                 }
             }
 
@@ -440,23 +511,38 @@ public class LLMProxyFilter implements Filter {
             }
 
             private boolean returnsRequestString(String result, boolean literal) {
-                if (sharedBindingRead || !(heapRequest instanceof String)) {
-                    return false;
-                }
-                String configured = (String) heapRequest;
-                // Reading the whole binding can also be an empty or truthiness check.
-                return !matchesReadString(otherStrings, configured)
-                        && (result.equals(configured)
-                            || (!literal && !configured.isEmpty() && result.contains(configured)));
+                return !sharedBindingRead && (resultStrings.request.stream()
+                        .anyMatch(text -> result.equals(text) || result.equals(text.trim()))
+                        || (!literal && containsTemplate(resultStrings.request, result)));
             }
 
             private boolean returnsSharedTemplate(String result) {
                 // Runtime bindings such as attributes have no fixed set of member names.
-                return matchesReadString(sharedStrings, result) && !matchesReadString(otherStrings, result);
+                return containsTemplate(resultStrings.shared, result);
             }
 
-            private static boolean matchesReadString(Set<String> strings, String result) {
-                return strings.stream().anyMatch(text -> result.equals(text) || result.equals(text.trim()));
+            private static boolean containsTemplate(Set<String> strings, String result) {
+                return strings.stream().map(String::trim)
+                        .anyMatch(text -> result.contains(text) && isTemplate(text));
+            }
+
+            private static boolean retains(String result, String text) {
+                return result.equals(text) || result.contains(text.trim());
+            }
+
+            private static boolean isTemplate(String text) {
+                try {
+                    return !Expression.valueOf(text, String.class).isLiteralText();
+                } catch (ExpressionException e) {
+                    return false;
+                }
+            }
+
+            private static final class ResultStrings {
+                private final Set<String> request = new HashSet<>();
+                private final Set<String> shared = new HashSet<>();
+                private final Set<Object> receivers = Collections.newSetFromMap(new IdentityHashMap<>());
+                private final List<ResultStrings> arguments = new ArrayList<>();
             }
         }
     }

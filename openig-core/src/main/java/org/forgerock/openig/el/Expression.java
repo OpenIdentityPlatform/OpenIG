@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.el.BeanELResolver;
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -166,7 +167,9 @@ public class Expression<T> {
         Object value;
         try {
             Bindings evaluationBindings = bindings().bind(initialBindings).bind(bindings);
-            value = valueExpression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings, readPolicy));
+            ValueExpression expression = readPolicy == null ? valueExpression
+                    : ReadTrackingFactory.INSTANCE.createValueExpression(new XLContext(null), original, Object.class);
+            value = expression.getValue(new XLContext(evaluationBindings.asMap(), deferredBindings, readPolicy));
         } catch (ELException ele) {
             logger.warn("An error occurred while evaluating the expression {}",
                          valueExpression.getExpressionString(),
@@ -206,6 +209,34 @@ public class Expression<T> {
         return valueExpression.isLiteralText();
     }
 
+    private static final class ReadTrackingFactory {
+        private static final ExpressionFactoryImpl INSTANCE = new ReadTrackingExpressionFactory();
+    }
+
+    /** The role of a read in the evaluated expression. */
+    public enum ReadUse {
+        /** A value used in the result, including an argument to a transformation such as trim. */
+        RESULT,
+        /** An operand of a condition, operator, or property selector. */
+        OPERAND,
+        /** The receiver of a property read or method invocation. */
+        RECEIVER,
+        /** A receiver within an operand. */
+        OPERAND_RECEIVER;
+
+        ReadUse asReceiver() {
+            return isOperand() ? OPERAND_RECEIVER : RECEIVER;
+        }
+
+        public boolean isOperand() {
+            return this == OPERAND || this == OPERAND_RECEIVER;
+        }
+
+        public boolean isReceiver() {
+            return this == RECEIVER || this == OPERAND_RECEIVER;
+        }
+    }
+
     /** Controls which values are available in an evaluation. */
     public interface ReadPolicy {
         /**
@@ -213,17 +244,46 @@ public class Expression<T> {
          * @param base object being read, or {@code null} for a top-level binding
          * @param member property or method name
          * @param method whether the read is a method invocation
+         * @param use the role of the read in the expression
          * @return {@code true} to resolve the member in this evaluation
          */
-        boolean canRead(Object base, Object member, boolean method);
+        boolean canRead(Object base, Object member, boolean method, ReadUse use);
 
         /**
          * Observes a resolved value without changing it.
          * @param base object being read, or {@code null} for a top-level binding
          * @param member property or method name
          * @param value resolved value, or {@code null} when unavailable
+         * @param use the role of the read in the expression
          */
-        void onRead(Object base, Object member, Object value);
+        void onRead(Object base, Object member, Object value, ReadUse use);
+
+        /**
+         * Evaluates a function or method so observations from its inputs can be scoped to its return value.
+         * @param invocation the original EL invocation
+         * @return the invocation's return value
+         */
+        default Object evaluateCall(Supplier<Object> invocation) {
+            return invocation.get();
+        }
+
+        /**
+         * Evaluates one argument of a method invocation in a separate observation scope.
+         * @param argument the original EL argument
+         * @return the argument's value
+         */
+        default Object evaluateArgument(Supplier<Object> argument) {
+            return argument.get();
+        }
+
+        /**
+         * Reports a completed method invocation with its resolved arguments.
+         * @param base the receiver
+         * @param method the resolved method name
+         * @param arguments the evaluated arguments in order
+         */
+        default void onInvocation(Object base, Object method, Object[] arguments) {
+        }
     }
 
     /** Indicates that evaluation needs a binding reserved for later. */
@@ -237,6 +297,8 @@ public class Expression<T> {
 
     static class XLContext extends ELContext {
         private final ELResolver elResolver;
+        private final ReadPolicy readPolicy;
+        ReadUse readUse = ReadUse.RESULT;
 
         XLContext(Object scope) {
             this(scope, Collections.emptySet(), null);
@@ -244,6 +306,15 @@ public class Expression<T> {
 
         private XLContext(Object scope, Set<String> deferredBindings, ReadPolicy readPolicy) {
             elResolver = new XLResolver(scope, deferredBindings, readPolicy);
+            this.readPolicy = readPolicy;
+        }
+
+        Object evaluateCall(Supplier<Object> invocation) {
+            return readUse == ReadUse.RESULT ? readPolicy.evaluateCall(invocation) : invocation.get();
+        }
+
+        Object evaluateArgument(Supplier<Object> argument) {
+            return readUse == ReadUse.RESULT ? readPolicy.evaluateArgument(argument) : argument.get();
         }
 
         @Override
@@ -278,14 +349,14 @@ public class Expression<T> {
         @Override
         public Object getValue(ELContext context, Object base, Object property) {
             context.setPropertyResolved(true);
-            checkRead(base, property, false);
+            checkRead(context, base, property, false);
 
             if (base == null) {
                 String name = property.toString();
                 // deal with readonly implicit objects
                 ExpressionPlugin node = Expression.PLUGINS.get(name);
                 if (node != null) {
-                    return observedValue(null, property, node.getObject());
+                    return observedValue(context, null, property, node.getObject());
                 }
                 if (deferredBindings.contains(name)) {
                     throw new DeferredBindingException(name);
@@ -293,18 +364,18 @@ public class Expression<T> {
             }
 
             Object value = Resolvers.get((base == null ? scope : base), property);
-            return observedValue(base, property, value != Resolver.UNRESOLVED ? value : null);
+            return observedValue(context, base, property, value != Resolver.UNRESOLVED ? value : null);
         }
 
-        private void checkRead(Object base, Object member, boolean method) {
-            if (readPolicy != null && !readPolicy.canRead(base, member, method)) {
+        private void checkRead(ELContext context, Object base, Object member, boolean method) {
+            if (readPolicy != null && !readPolicy.canRead(base, member, method, ((XLContext) context).readUse)) {
                 throw new DeferredBindingException(member.toString());
             }
         }
 
-        private Object observedValue(Object base, Object member, Object value) {
+        private Object observedValue(ELContext context, Object base, Object member, Object value) {
             if (readPolicy != null) {
-                readPolicy.onRead(base, member, value);
+                readPolicy.onRead(base, member, value, ((XLContext) context).readUse);
             }
             return value;
         }
@@ -344,8 +415,12 @@ public class Expression<T> {
                              final Object method,
                              final Class<?>[] paramTypes,
                              final Object[] params) {
-            checkRead(base, method, true);
-            return observedValue(base, method, RESOLVER.invoke(context, base, method, paramTypes, params));
+            checkRead(context, base, method, true);
+            Object value = RESOLVER.invoke(context, base, method, paramTypes, params);
+            if (readPolicy != null && ((XLContext) context).readUse == ReadUse.RESULT) {
+                readPolicy.onInvocation(base, method, params);
+            }
+            return observedValue(context, base, method, value);
         }
     }
 
