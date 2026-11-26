@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2026 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#handlers-conf]
+endif::env-site[]
 == Handlers
+
+ifdef::env-site[]
+anchor:handlers-conf[]
+endif::env-site[]
 
 Handler objects process an HTTP request by producing an associated response.
 [#Chain]
@@ -54,7 +60,7 @@ A chain is responsible for dispatching a request to an ordered list of filters, 
 An array of names of Filter objects defined in the heap, and inline Filter configuration objects.
 
 +
-The chain dispatches the request to these filters in the order they appear in the array.
+The chain dispatches the request to these filters in the order they appear in the array. An empty array dispatches directly to the handler.
 
 +
 See also xref:filters-conf.adoc#filters-conf[Filters].
@@ -87,7 +93,7 @@ See also xref:#handlers-conf[Handlers].
 
 [#d210e2464]
 ==== Javadoc
-link:{apidocs-url}/org/forgerock/openig/filter/Chain.html[org.forgerock.openig.filter.Chain, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/filter/ChainHandlerHeaplet.html[org.forgerock.openig.filter.ChainHandlerHeaplet, window=\_blank]
 
 '''
 [#ClientHandler]
@@ -95,7 +101,9 @@ link:{apidocs-url}/org/forgerock/openig/filter/Chain.html[org.forgerock.openig.f
 
 [#d210e2484]
 ==== Description
-Submits requests to remote servers.
+Submits HTTP requests to remote servers. The bundled provider uses Apache HttpAsyncClient.
+
+WebSocket upgrades use ordinary routes for authorization. The `ClientHandler` TLS settings and timeouts apply to HTTP requests made through this handler. Upstream WebSocket connections use the container's WebSocket client. See xref:../how-to/how-to-protect-websocket-connection-with-openam-and-openig.adoc[Protect a WebSocket Connection with OpenAM and OpenIG] for the `org.openidentityplatform.openig.websocket.ttl` authorization cache setting.
 
 [#d210e2494]
 ==== Usage
@@ -118,6 +126,7 @@ Submits requests to remote servers.
          "sslEnabledProtocols": array,
          "keyManager": KeyManager reference(s),
          "trustManager": TrustManager reference(s),
+         "temporaryStorage": TemporaryStorage reference
      }
 }
 ----
@@ -141,7 +150,7 @@ include::../partials/sec-duration-description.adoc[]
 Default: 10 seconds
 
 `"disableRetries"`: __boolean, optional__::
-Whether to disable automatic retries for failed requests.
+Sets the inverse of the HTTP provider's retry option. The bundled `AsyncHttpClientProvider` in Commons 3.2.2 ignores this option, so it does not change that provider's retry behavior.
 
 +
 Default: `false`
@@ -153,15 +162,12 @@ Whether to disable connection reuse.
 Default: `false`
 
 `"hostnameVerifier"`: __string, optional__::
-How to handle hostname verification for outgoing SSL connections.
+Controls hostname verification for outgoing TLS connections. Certificate trust is still checked by the configured or default trust manager.
 +
 Set this to one of the following values:
 
-* `ALLOW_ALL`: turn off verification.
-
-* `STRICT`: match the hostname either as the value of the the first CN, or any of the subject-alt names.
-+
-A wildcard can occur in the CN, and in any of the subject-alt names. Wildcards match one domain level, so `*.example.com` matches `www.example.com` but not `some.host.example.com`.
+* `ALLOW_ALL` skips hostname verification.
+* `STRICT` checks subject alternative names first and falls back to the certificate's common name (CN) when no DNS or IP subject alternative names are available. DNS wildcards match a single domain level. For example, `*.example.com` matches `www.example.com` but not `some.host.example.com`.
 
 +
 Default: `ALLOW_ALL`
@@ -235,13 +241,18 @@ The value of this field can be a single reference, or an array of references.
 Provide either the name(s) of TrustManager object(s) defined in the heap, or specify the configuration object(s) inline.
 
 +
-You can specify either a single TrustManager, as in `"trustManager": "MyTrustManager"`, or an array of KeyManagers, as in `"trustManager": [ "FirstTrustManager", "SecondTrustManager" ]`.
+You can specify either a single TrustManager, as in `"trustManager": "MyTrustManager"`, or an array of TrustManagers, as in `"trustManager": [ "FirstTrustManager", "SecondTrustManager" ]`.
 
 +
 If you do not configure a trust manager, then the client uses only the default Java truststore. The default Java truststore depends on the Java environment. For example, `$JAVA_HOME/lib/security/cacerts`.
 
 +
 See also xref:misc-conf.adoc#TrustManager[TrustManager(5)].
+
+`"temporaryStorage"`: __TemporaryStorage reference, optional__::
+Buffer storage for HTTP responses handled by this client. Specify a heap object name or an inline declaration. The default is the heap object named `TemporaryStorage`.
++
+See also xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)].
 
 --
 
@@ -296,7 +307,7 @@ link:{apidocs-url}/org/forgerock/openig/handler/ClientHandler.html[org.forgerock
 
 [#d210e3089]
 ==== Description
-Generates a DES key for use with OpenAM as described in xref:../gateway-guide/chap-password-capture-replay-tutorial.adoc#password-capture-configuration[Configuring Password Capture] in the __Gateway Guide__.
+Generates a DES key for compatibility with the legacy OpenAM password capture flow, as described in xref:../gateway-guide/chap-password-capture-replay-tutorial.adoc#password-capture-configuration[Configuring Password Capture] in the __Gateway Guide__.
 
 [#d210e3101]
 ==== Usage
@@ -319,7 +330,7 @@ link:{apidocs-url}/org/forgerock/openig/handler/DesKeyGenHandler.html[org.forger
 
 [#d210e3127]
 ==== Description
-Dispatches to one of a list of handlers. When a request is handled, each handler's `condition` is evaluated. If a condition expression yields `true`, then the request is dispatched to the associated handler with no further processing.
+Evaluates the bindings in order and dispatches the request to the first handler whose condition is `true` or whose binding has no condition. If no binding matches, the handler returns `404 Not Found`.
 
 [#d210e3143]
 ==== Usage
@@ -334,7 +345,7 @@ Dispatches to one of a list of handlers. When a request is handled, each handler
             {
                 "condition": expression,
                 "handler": Handler reference,
-                "baseURI": string,
+                "baseURI": string
             }, ...
         ]
     }
@@ -345,8 +356,8 @@ Dispatches to one of a list of handlers. When a request is handled, each handler
 ==== Properties
 --
 
-`"bindings"`: __array of objects, required__::
-A list of bindings of conditions and associated handlers to dispatch to.
+`"bindings"`: __array of objects, optional__::
+An ordered list of conditions and their associated handlers. Omit the field or use an empty array to configure no bindings.
 
 `"condition"`: __expression, optional__::
 Condition to evaluate to determine if associated handler should be dispatched to. If omitted, then dispatch is unconditional.
@@ -364,10 +375,10 @@ Provide either the name of a Handler object defined in the heap, or an inline Ha
 See also xref:#handlers-conf[Handlers].
 
 `"baseURI"`: __string, optional__::
-Overrides the existing request URI, making requests relative to a new base URI. Only scheme, host and port are used in the supplied URI.
+Sets the destination URI. If the supplied URI has an empty path, OpenIG changes only the scheme, host, and port. If it has a nonempty path, including `/`, OpenIG replaces the request URI with the supplied URI and preserves the original query string when the destination has no query string.
 
 +
-Default: leave URI untouched.
+Default: leave the request URI unchanged.
 
 --
 
@@ -406,78 +417,9 @@ link:{apidocs-url}/org/forgerock/openig/handler/DispatchHandler.html[org.forgero
 
 '''
 [#MonitorEndpointHandler]
-=== MonitorEndpointHandler — return basic audit statistics in JSON format
+=== Migrating from MonitorEndpointHandler
 
-[#d210e3239]
-==== Description
-This handler collates basic audit statistics, returning them in JSON format.
-
-Interface Stability: Deprecated (For details, see xref:appendix-interface-stability.adoc#interface-stability[Open Identity Platform Product Interface Stability].)
-
-You decorate the objects to audit by adding your own audit tags. The handler updates the count of messages in progress, completed, and internal errors for each audit event, initializing the counts at OpenIG startup time. When accessed, it returns the sums organized by object under audit using the tags that you defined.
-
-[#d210e3255]
-==== Usage
-
-[source, javascript]
-----
-{
-    "name": string,
-    "type": "MonitorEndpointHandler"
-}
-----
-
-[#d210e3261]
-==== Example
-The following sample route adds a monitor endpoint at `/monitor`:
-
-[source, json]
-----
-{
-    "handler": {
-        "type": "MonitorEndpointHandler"
-    },
-    "condition": "${request.method == 'GET'
-                    and request.uri.path == '/monitor'}"
-    "audit": "Monitor route"
-}
-----
-After adding audit tags to a number of other routes, the JSON returned from the monitor endpoint shows statistics since OpenIG started. The following example is formatted for legibility:
-
-[source, json]
-----
-{
-    "ForgeRock.com route": {
-        "in progress": 0,
-        "completed": 6,
-        "internal errors": 0
-    },
-    "ForgeRock.org route": {
-        "in progress": 0,
-        "completed": 15,
-        "internal errors": 0
-    },
-    "Monitor route": {
-        "in progress": 1,
-        "completed": 1,
-        "internal errors": 0
-    },
-    "Static login route": {
-        "in progress": 0,
-        "completed": 12,
-        "internal errors": 0
-    },
-    "HTTP Basic route": {
-        "in progress": 0,
-        "completed": 21,
-        "internal errors": 3
-    }
-}
-----
-
-[#d210e3277]
-==== Javadoc
-link:{apidocs-url}/org/forgerock/openig/audit/monitor/MonitorEndpointHandler.html[org.forgerock.openig.audit.monitor.MonitorEndpointHandler, window=\_blank]
+Enable the route's `monitor` property and read its statistics from xref:#crest-monitoring[the monitoring REST API]. For HTTP access audit events, use a route-level xref:audit-conf.adoc#AuditService[AuditService].
 
 '''
 [#Route]
@@ -485,7 +427,7 @@ link:{apidocs-url}/org/forgerock/openig/audit/monitor/MonitorEndpointHandler.htm
 
 [#Route-description]
 ==== Description
-In OpenIG, a route is represented by a separate JSON configuration file and that handles a request, described in xref:object-model-conf.adoc#Request[Request(5)], and context, described in xref:object-model-conf.adoc#Contexts[Contexts(5)], when a specified condition is met.
+A route handles a xref:object-model-conf.adoc#Request[request] and its xref:object-model-conf.adoc#Contexts[context] when the route condition matches. For a route defined in a JSON file, the router takes the route ID from its filename without `.json`. The router checks routes in lexicographic order by ID and selects the first match.
 
 A top-level Router, as described in xref:#Router[Router(5)], is responsible for reloading the route configuration. Use a Router to call route handlers, rather than calling a route directly as the handler of the top-level configuration. By default the Router rereads the configurations periodically, so that configuration changes to routes apply without restarting OpenIG.
 
@@ -502,9 +444,15 @@ For examples of route configurations see xref:../gateway-guide/chap-routing.adoc
     "handler": Handler reference or inline Handler declaration,
     "heap": [ configuration object, ... ],
     "condition": expression,
-    "monitor": boolean expression OR object,
+    "auditService": AuditService reference,
+    "monitor": boolean, boolean expression, or object,
     "name": string,
-    "session": Session reference
+    "session": Session reference,
+    "properties": object,
+    "globalDecorators": object,
+    "baseURI": string expression,
+    "capture": string or array of strings,
+    "timer": boolean or boolean expression
 }
 ----
 
@@ -534,22 +482,25 @@ You can omit an empty array. If you only have one object in the heap, you can in
 See also xref:required-conf.adoc#heap-objects[Heap Objects(5)].
 
 `"condition"`: __expression, optional__::
-Whether the route accepts to handle the request.
+A condition that is evaluated for each request in the parent heap's scope. The route accepts the request when the expression returns `true`.
 
 +
-Default: If the condition is not set, or is `null`, then this route accepts any request.
+If the field is omitted or set to `null`, the route accepts any request.
 
 +
-All paths starting with `/openig` are reserved for administrative use by OpenIG. Expressions such as the following never match externally configured routes: `${matches(request.uri.path, '^/openig/my/path')}`. In effect, such routes are ignored.
+The path under the administrative prefix (by default `/openig`) is handled by the administration servlet. To configure the prefix, see xref:required-conf.adoc#admin-json[admin.json].
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"monitor"`: __boolean expression OR object, optional__::
-This property lets you specify whether to maintain statistics about the route, an optionally to specify the percentiles in the distribution for which to record response times.
+`"auditService"`: __AuditService reference or inline declaration, optional__::
+Emit HTTP access events to the configured xref:audit-conf.adoc#AuditService[AuditService].
+
+`"monitor"`: __boolean, boolean expression, or object, optional__::
+Collect route statistics and optionally select the percentiles for response times.
 
 +
-Use a boolean or boolean expression to activate monitoring with the default percentiles configuration. When the boolean expression resolves to `true`, statistics for the route are exposed over REST as described in xref:#crest-monitoring["The REST API for Monitoring"].
+Use a boolean or boolean expression to activate monitoring with the default percentiles. OpenIG evaluates the monitoring configuration against the parent heap's properties when it loads the route. When enabled, route statistics are exposed over xref:#crest-monitoring[the monitoring REST API].
 
 +
 Default: `false` (with percentiles `0.999`, `0.9999`, and `0.99999`)
@@ -569,8 +520,8 @@ Use an object instead of a boolean to specify percentiles:
 ----
 The configuration object fields include the following:
 
-`"enabled"`: __boolean expression, required__::
-Whether to maintain statistics about the route, as described above.
+`"enabled"`: __boolean or boolean expression, optional__::
+Whether to collect statistics for the route. The default is `false`.
 
 `"percentiles"`: __array of decimal numbers, optional__::
 The percentiles in the distribution for which to maintain response time statistics. If you specify percentiles, only those percentiles are used. The default percentile settings no longer apply.
@@ -587,10 +538,7 @@ Default: `[ 0.999, 0.9999, 0.99999 ]`
 ====
 
 `"name"`: __string, optional__::
-Name for the route, used by the Router to order the routes.
-
-+
-Default: Route configuration file name
+Display name for the route. Names must be unique within the router. The default is the route ID.
 
 `"session"`: __Session reference, optional__::
 Session storage implementation used by this route, such as a JwtSession as described in xref:misc-conf.adoc#JwtSession[JwtSession(5)].
@@ -599,24 +547,49 @@ Session storage implementation used by this route, such as a JwtSession as descr
 Provide either the name of a session storage object defined in the heap, or an inline session storage configuration object.
 
 +
-Default: do not change the session storage implementation for `session`.
+Default: inherit the session storage implementation.
+
+`"properties"`: __object, optional__::
+Configuration expression bindings for objects in the route's heap. The route inherits bindings from its parent and can override them by key. Route-local bindings are available to the configurations of inline handlers and other objects declared in the route's heap. The `condition` and `monitor` fields use the parent heap's bindings. See xref:required-conf.adoc#gateway-properties[Configuration properties].
+
+`"globalDecorators"`: __object, optional__::
+Map from decorator names to settings that apply to eligible objects resolved from the route's heap, including objects inherited from the parent heap. See xref:decorators-conf.adoc#decorators-conf[Decorators].
+
+`"baseURI"`, `"capture"`, `"timer"`: __optional decorations__::
+Apply xref:decorators-conf.adoc#BaseUriDecorator[URI rebasing], xref:decorators-conf.adoc#CaptureDecorator[message capture], or xref:decorators-conf.adoc#TimerDecorator[timing] to this route's handler.
 
 --
 
 [#crest-monitoring]
 ==== The REST API for Monitoring
-When the route has `"monitor": "${true}"`, monitoring statistics are exposed at a registered endpoint. OpenIG logs the paths to registered endpoints when the log level is `INFO` or finer. Look for messages such as the following in the log:
+To enable monitoring, save a route such as the following as `00-monitor.json` in the routes directory:
+
+[source,json]
+----
+{
+    "condition": "${request.uri.path == '/ready'}",
+    "monitor": true,
+    "handler": {
+        "type": "StaticResponseHandler",
+        "config": {
+            "status": 200
+        }
+    }
+}
+----
+
+OpenIG logs the paths to registered monitoring endpoints at `INFO` level. With the bundled gateway configuration and default administration prefix, the endpoint for this route is:
 
 [source]
 ----
 Monitoring endpoint available at
- '/openig/api/system/objects/router-handler/routes/00-monitor/monitoring'
+ '/openig/api/system/objects/_router/routes/00-monitor/monitoring'
 ----
-To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/router-handler/routes/00-monitor/monitoring`.
+To access the endpoint over HTTP or HTTPS, prefix the path with the OpenIG scheme, host, and port to obtain a full URL, such as `\http://localhost:8080/openig/api/system/objects/_router/routes/00-monitor/monitoring`.
 
 The monitoring REST API supports only read (HTTP GET). For a detailed introduction to common REST APIs, see xref:preface.adoc#sec-about-crest[About Common REST].
 
-In the present implementation, OpenIG does not have mechanisms for resetting or for persisting monitoring statistics. When you set `"monitor": true` on the route, or when you start the OpenIG container, monitoring statistics are collected. When the OpenIG container stops, monitoring statistics are discarded.
+In the present implementation, OpenIG does not have mechanisms for resetting or for persisting monitoring statistics. When you set `"monitor": true` on the route, or when OpenIG loads a route with monitoring already enabled, OpenIG begins collecting statistics for that route. Unloading or reloading the route discards those statistics.
 
 A JSON monitoring resource with the default percentiles has the following form. Field values are described in comments:
 
@@ -693,8 +666,9 @@ When such a file is detected, the Router:
 . Parses the specification using the Swagger Parser library.
 . Synthesises a complete route configuration whose condition matches every
   `(path, HTTP method)` pair declared in the spec.
-  Path parameter placeholders such as `{userId}` are converted to the regex
+  Path parameter placeholders such as `+{userId}+` are converted to the regex
   `[^/]+` so they match any non-slash path segment.
+. Uses the URL-safe form of `info.title` as the route ID and name. When the title is absent or blank, the router uses the specification filename without its extension as the basis for both values.
 . Wires an `OpenApiValidationFilter` into the route chain to validate all
   inbound requests and outbound responses against the spec.
 . Sets the `baseURI` to `servers[0].url` when the spec declares a server URL.
@@ -718,7 +692,7 @@ xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter(5)].
     "config": {
         "defaultHandler": Handler reference,
         "directory": expression,
-        "scanInterval": integer,
+        "scanInterval": duration string,
         "openApiValidation": {
             "enabled": boolean,
             "failOnResponseViolation": boolean,
@@ -727,7 +701,7 @@ xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter(5)].
     }
 }
 ----
-An alternative value for type is `RouterHandler`.
+The `RouterHandler` alias is equivalent to `Router`.
 
 [#d210e3577]
 ==== Properties
@@ -740,10 +714,10 @@ Default handler for this Router.
 Provide either the name of a Handler object defined in the heap, or an inline Handler configuration object.
 
 +
-The router routes the request to the first route whose condition expression is satisfied. If no route condition matches, then the request is routed to the default handler if one is configured.
+The router tests regular and OpenAPI routes together in lexicographic order by route ID and dispatches to the first match. If no route matches, it dispatches to the default handler when configured.
 
 +
-Default: if no default route is set either here or in the route configurations, then OpenIG aborts the request with an internal error.
+Default: when no route matches and no default handler is configured, the router returns `404 Not Found`.
 
 +
 See also xref:#handlers-conf[Handlers].
@@ -762,19 +736,15 @@ If you define a new Router in the default base directory, then you must set the 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"scanInterval"`: __integer, optional__::
-Interval in seconds after which OpenIG scans the specified directory for changes to configuration files.
-
+`"scanInterval"`: __duration string or configuration expression, optional__::
+Interval between scheduled scans for added, modified, and removed files. The first scan takes place at startup.
 +
-Default: 10 (seconds)
-
+Default: `"10 seconds"`.
 +
-To prevent OpenIG from reloading Route configurations after you except at startup, set the scan interval to -1.
+Use `"disabled"` to perform only the startup scan. For compatibility, a numeric value specifies seconds, and zero or a negative number disables scheduled scans. An unlimited duration is invalid.
 
 `"openApiValidation"`: __object, optional__::
-Controls the automatic detection of OpenAPI specification files and the
-behaviour of the `OpenApiValidationFilter` instances that are synthesised for
-each detected spec.
+Controls OpenAPI specification discovery and the generated route behavior. Use JSON boolean values for these settings.
 +
 [open]
 ====
@@ -782,8 +752,7 @@ each detected spec.
 Whether to enable automatic detection and loading of OpenAPI specification
 files from the routes directory.
 +
-When set to `false`, the Router ignores `.yaml`, `.yml`, and spec-like `.json`
-files and only processes regular route JSON configurations.
+When set to `false`, the Router still scans `.json`, `.yaml`, and `.yml` files and tries to load them as ordinary JSON routes. Files that contain only an OpenAPI spec cannot load as routes. Move unused specification files out of the routes directory to avoid route loading errors.
 +
 Default: `true`.
 
@@ -792,7 +761,7 @@ Passed to every `OpenApiValidationFilter` instance that is created automatically
 from a detected spec file.
 +
 * `true` — a response that does not conform to the spec causes the filter to
-  return a `502 Bad Gateway` error to the client.
+  return `503 Service Unavailable` to the client.
 * `false` — a response violation is logged at `WARN` level and the original
   response is passed through unchanged.
 This setting applies only to auto-generated routes. Routes that declare an
@@ -806,10 +775,7 @@ When set to `true`, auto-generated routes terminate at an
 `OpenApiMockResponseHandler` instead of forwarding the request to an upstream
 service via `ClientHandler`.
 +
-Use this setting to stand up a fully self-contained mock API from an OpenAPI
-spec without any real upstream service.  The mock handler generates a
-JSON response body that conforms to the response schema declared in the spec,
-using realistic test data derived from field names, formats, and examples.
+The generated route passes the specification as `spec` to the mock handler. The handler uses its defaults for the status code and array size. See xref:#OpenApiMockResponseHandler[OpenApiMockResponseHandler] for the response generation rules.
 +
 Default: `false`.
 ====
@@ -818,7 +784,7 @@ Default: `false`.
 
 [#d210e3636]
 ==== Javadoc
-link:{apidocs-url}org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
+link:{apidocs-url}/org/forgerock/openig/handler/router/RouterHandler.html[org.forgerock.openig.handler.router.RouterHandler, window=\_blank]
 
 '''
 [#SamlFederationHandler]
@@ -864,8 +830,8 @@ More generally, do not use this handler when its use depends on something in the
 ==== Properties
 --
 
-`"assertionMapping"`: __object, required__::
-The assertionMapping defines how to transform attributes from the incoming assertion to attribute value pairs in OpenIG.
+`"assertionMapping"`: __object, optional__::
+Maps attributes in the incoming assertion to session attributes. Each mapped value is stored as a list of strings, including when the assertion contains a single value. The default is an empty map.
 
 +
 Each entry in the `assertionMapping` object has the form `localName: incomingName`, where __incomingName__ is used to fetch the value from the incoming assertion, and __localName__ is the name of the attribute set in the session. Avoid using dot characters (`.`) in the __localName__, as the `.` character also serves as a query separator in expressions.
@@ -901,13 +867,13 @@ Then the following values are set in the session:
 
 [source]
 ----
-username = george@example.com
+username = ["george@example.com"]
 ----
 +
 
 [source]
 ----
-password = costanza
+password = ["costanza"]
 ----
 +
 For this to work, you must edit the <Attribute name="attributeMap"> element in the SP extended metadata file, `$HOME/.openig/SAML/sp-extended.xml`, so that it matches the assertion mapping configured in the SAML 2.0 Identity Provider (IDP) metadata.
@@ -915,11 +881,8 @@ For this to work, you must edit the <Attribute name="attributeMap"> element in t
 +
 When protecting multiple service providers, use unique __localName__ settings. Otherwise different handlers can overwrite each others' data.
 
-`"redirectURI"`: __string, required__::
-Set this to the page that the filter used to HTTP POST a login form recognizes as the login page for the protected application.
-
-+
-This is how OpenIG and the Federation component work together to provide SSO. When OpenIG detects the login page of the protected application, it redirects to the Federation component. Once the Federation handler validates the SAML exchanges with the IDP, and sets the required session attributes, it redirects back to the login page of the protected application. This allows the filter used to HTTP POST a login form to finish the job by creating a login form to post to the application based on the credentials retrieved from the session attributes.
+`"redirectURI"`: __string, optional__::
+Fallback redirect destination after successful assertion processing. OpenIG uses a nonempty `RelayState` when provided. Set `redirectURI` for exchanges where the IdP may omit `RelayState`. In a password replay setup, use the login page recognized by the filter that reads the session attributes and posts the application's login form.
 
 `"assertionConsumerEndpoint"`: __string, optional__::
 Default: `fedletapplication` (same as the Fedlet)
@@ -937,10 +900,10 @@ Use this setting when protecting multiple service providers, as the different co
 As an example, if you set `"authnContext": "myAuthnContext"`, then OpenIG sets `session.myAuthnContext` to the authentication context specified in the assertion. When the authentication context is password over protected transport, then this results in the session containing `"myAuthnContext": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"`.
 
 +
-Default: map to `session.authnContext`
+Default: omit the authentication context from the session.
 
 `"authnContextDelimiter"`: __string, optional__::
-The authentication context delimiter used when there are multiple authentication contexts in the assertion.
+The separator used to join multiple authentication context values. Use a single character because the handler trims one trailing character when it stores the joined value.
 
 +
 Default: `|`
@@ -961,10 +924,10 @@ Use this setting when protecting multiple service providers, as the different co
 As an example, if you set `"sessionIndexMapping": "mySessionIndex"`, then OpenIG sets `session.mySessionIndex` to the session index specified in the assertion. This results in the session containing something like `"mySessionIndex": "s24ccbbffe2bfd761c32d42e1b7a9f60ea618f9801"`.
 
 +
-Default: map to `session.sessionIndex`
+Default: map to `session.sessionIndexMapping`.
 
 `"singleLogoutEndpoint"`: __string, optional__::
-Default: `fedletSLORedirect` (same as the Fedlet)
+Default: `fedletSloRedirect`.
 
 +
 If you modify this attribute you must change the metadata to match.
@@ -997,13 +960,13 @@ Use this setting when protecting multiple service providers, as the different co
 As an example, if you set `"subjectMapping": "mySubjectName"`, then OpenIG sets `session.mySubjectName` to the subject name specified in the assertion. If the subject name is an opaque identifier, then this results in the session containing something like `"mySubjectName": "vtOk+APj1s9Rr4yCka6V9pGUuzuL"`.
 
 +
-Default: map to `session.subjectName`
+Default: map to `session.subjectMapping`.
 
 --
 
 [#d210e3978]
 ==== Example
-The following sample configuration is corresponds to a scenario where OpenIG receives a SAML 2.0 assertion from the IDP, and then logs the user in to the protected application using the username and password from the assertion:
+The following example shows a configuration where OpenIG receives a SAML 2.0 assertion from the IDP, and then logs the user in to the protected application using the username and password from the assertion:
 
 [source, json]
 ----
@@ -1113,7 +1076,7 @@ The link:{apidocs-url}/org/forgerock/openig/ldap/LdapClient.html[ldap, window=\_
 Use this client to perform outbound LDAP requests, such as LDAP authentication.
 
 `logger`::
-The link:{apidocs-url}/org/forgerock/openig/log/Logger.html[logger, window=\_blank] object provides access to the server log sink.
+The SLF4J `logger` writes to the configured xref:logging-conf.adoc#logging-conf[application logs].
 
 `session`::
 The link:{apidocs-url}/org/forgerock/http/session/SessionContext.html[session, window=\_blank] object provides access to the session context, which is a mechanism for maintaining state when processing a successive requests from the same logical client or end-user.
@@ -1147,7 +1110,7 @@ Use `attributes` for transferring transient state between components when proces
 --
 
 `"type"`: __string, required__::
-The Internet media type (formerly MIME type) of the script, `"application/x-groovy"` for Groovy
+The media type of the script. Use `"application/x-groovy"` for Groovy. Provide exactly one of `file` and `source`.
 
 `"file"`: __expression__::
 Path to the file containing the script; mutually exclusive with `"source"`
@@ -1236,8 +1199,8 @@ The script can then reference `SampleFilter` as `filter`.
 +
 For details about the heap, see xref:required-conf.adoc#heap-objects[Heap Objects(5)].
 
-`"clientHandler"`, __ClientHandler reference, optional__::
-A Handler for making outbound HTTP requests.
+`"clientHandler"`: __Handler reference, optional__::
+A Handler for the script's `http` client. Specify a heap object name or an inline Handler declaration.
 
 +
 Default: Use the default ClientHandler.
@@ -1283,7 +1246,7 @@ Processes a request through a sequence of handlers. This allows multi-request pr
 --
 
 `"bindings"`: __array of objects, required__::
-A list of bindings of handler and postcondition to determine that sequence continues.
+An ordered list of handlers and their postconditions. Include at least one binding. Although an empty array loads, it cannot process requests.
 
 `"handler"`: __Handler reference, required__::
 Dispatch to this handler.
@@ -1295,10 +1258,10 @@ Either the name of the handler heap object to dispatch to, or an inline Handler 
 See also xref:#handlers-conf[Handlers].
 
 `"postcondition"`: __expression, optional__::
-Evaluated to determine if the sequence continues.
+Evaluated after the current handler returns. The expression can read its result as `response`. When the expression evaluates to `true`, the sequence continues if another binding remains.
 
 +
-Default: unconditional.
+Default: continue to the next binding when available.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
@@ -1310,35 +1273,76 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 link:{apidocs-url}/org/forgerock/openig/handler/SequenceHandler.html[org.forgerock.openig.handler.SequenceHandler, window=\_blank]
 
 '''
+[#MQ_Kafka]
+=== MQ_Kafka — bridge HTTP requests and Kafka records
+
+As a route handler, `MQ_Kafka` publishes the HTTP body as bytes to a Kafka topic. It uses the `correlation-id` request header as the record key, or generates a key when the header is absent. It copies the first value of each HTTP header to a Kafka record header using UTF-8. The handler waits for the producer to complete the send before returning `202 Accepted`. The response includes `correlation-id`, `kafka-topic`, `kafka-key`, `kafka-offset`, `kafka-timestamp`, and `kafka-timestamp-date`. If publishing is not configured, the handler returns `501 Not Implemented`.
+
+`"bootstrap.servers"` (string, optional)::
+Kafka broker addresses. The default is `localhost:9092`. Additional non-null settings in `config` are passed to the Kafka clients as strings. The producer and consumer use fixed codecs for string keys and byte-array values.
+
+`"topic.produce"`, `"topic.consume"` (strings, optional)::
+Kafka topic to publish to or consume from, respectively. Each operation is enabled by setting a topic for it. Consumed records are dispatched to the gateway asynchronously. Their values become request bodies, Kafka record headers become HTTP headers decoded as UTF-8, and metadata is exposed in the same headers as for a successful publish. If a consumed record has no key, OpenIG generates a correlation ID.
+
+`"group.id"`, `"enable.auto.commit"` (strings, optional)::
+Kafka consumer group and automatic commit setting. The defaults are the consumer thread name and `"true"`, respectively.
+
+`"method"`, `"uri"` (strings, optional)::
+HTTP method and path used to dispatch consumed records. The defaults are `PUT` and `/<heap-object-name>`.
+
+`"core"` (positive integer, optional)::
+Number of worker threads for dispatching consumed records. The default is 32 times the number of available processors.
+
+[#MQ_IBM]
+=== MQ_IBM — bridge HTTP requests and IBM MQ messages
+
+As a route handler, `MQ_IBM` sends the HTTP body as a non-persistent JMS bytes message. It uses the `correlation-id` request header or generates an ID. A successful send returns `202 Accepted` with the correlation ID. If publishing is not configured, the handler returns `501 Not Implemented`.
+
+`"XMSC_WMQ_CONNECTION_NAME_LIST"`, `"XMSC_WMQ_CHANNEL"`, `"XMSC_WMQ_QUEUE_MANAGER"` (strings, optional)::
+IBM MQ connection details. The defaults are `localhost(1414)`, `DEV.APP.SVRCONN`, and `QM1`, respectively.
+
+`"XMSC_USERID"`, `"XMSC_PASSWORD"` (strings, optional)::
+IBM MQ client credentials. The defaults are `app` and an empty password. Both settings support configuration expressions.
+
+`"topic.produce"`, `"topic.consume"` (strings, optional)::
+IBM MQ queue names for sending and receiving messages, respectively. Received messages are dispatched asynchronously through the gateway as HTTP requests with text or byte-array bodies. When publishing, OpenIG copies the first value of each HTTP header to a JMS string property, replacing every `-` in the name with `__`. When consuming, it replaces `__` with `-` when creating HTTP headers from JMS properties.
+
+`"method"`, `"uri"` (strings, optional)::
+HTTP method and path used to dispatch received messages. The defaults are `PUT` and `/<heap-object-name>`.
+
+`"core"` (integer, optional)::
+Number of consumer workers. The default is 32 times the number of available processors. Zero and negative values disable consumers.
+
+Additional non-null `config` settings are converted to strings and passed to the IBM MQ connection factory for keys the factory does not already contain.
+
+For route examples for both handlers, see xref:../how-to/how-to-integrate-openig-and-message-brokers.adoc[Integrate OpenIG and Message Brokers].
+
+'''
 [#OpenApiMockResponseHandler]
 === OpenApiMockResponseHandler — generate mock responses from an OpenAPI spec
 
 [#openapi-mock-description]
 ==== Description
-An `OpenApiMockResponseHandler` is a handler that generates valid mock HTTP responses
-with realistic test data based on an OpenAPI / Swagger specification.
+An `OpenApiMockResponseHandler` generates mock JSON responses from an OpenAPI / Swagger specification.
 
 Instead of forwarding the request to an upstream service, the handler:
 
-. Matches the incoming request path + method against the paths declared in the spec.
-  Path parameter placeholders such as `{userId}` are matched against any non-slash segment.
-. Locates the best response schema for the matched operation.
-  The preference order is: `200` → `201` → first `2xx` → `default`.
-. Recursively generates a JSON body from the schema using the following priority rules for each field:
-  .. If the schema has an `example` value, it is used as-is.
-  .. If the schema has an `enum` list, the first value is used.
+. Selects the first matching path template, using the path prefix from the first server URL when present. Path placeholders such as `+{userId}+` match one nonempty segment. The handler looks up the HTTP method on that path.
+. Looks for a response schema first under `200`, then `201`, then the first other response with a code beginning with `2`, and finally `default`. For each response, it uses the `application/json` media type when declared, or the first media type otherwise.
+. Recursively generates a JSON body from the schema:
+  .. If the schema has an `example` value, the handler uses it as supplied.
+  .. If the schema has an `enum` list, the handler uses its first value.
+  .. For `allOf`, the handler merges generated objects, with later values replacing earlier ones for duplicate keys. For `oneOf` and `anyOf`, it uses the first alternative.
   .. If the field format matches a known format (`date`, `date-time`, `email`, `uri`, `uuid`,
      `ipv4`, `hostname`, `byte`, `password`, etc.), a format-appropriate value is generated.
   .. If the field name matches a built-in dictionary entry (e.g. `firstName`, `email`, `phone`,
      `city`, `company`, `token`), a realistic pre-defined value is returned.
   .. Otherwise a type-appropriate generic value is generated.
-. Returns the generated body with `Content-Type: application/json`.
+. Returns the body with the configured `defaultStatusCode` and `Content-Type: application/json`.
 
-If no matching path is found the handler returns `404 Not Found`.
-If the path is matched but the HTTP method is not declared the handler returns `405 Method Not Allowed`.
+The handler returns `404 Not Found` when no path matches and `405 Method Not Allowed` when the first matching path has no operation for the method. A missing response schema or a branch deeper than 10 levels generates JSON `null`. If the parser returns no specification or the specification has no paths object, the handler returns `{}` with the configured status.
 
-Use this handler in combination with `OpenApiValidationFilter` to build a fully
-self-contained mock API from an OpenAPI spec, without any real upstream service.
+Use xref:filters-conf.adoc#OpenApiValidationFilter[OpenApiValidationFilter] to check generated responses against the specification. The mock generator uses selected schema constraints.
 
 [#openapi-mock-usage]
 ==== Usage
@@ -1368,12 +1372,12 @@ Typically written as `"${read('/path/to/openapi.yaml')}"` to read the spec from 
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 `"defaultStatusCode"`: __integer, optional__::
-The HTTP status code used for generated responses.
+The HTTP status code used for generated responses, regardless of which response supplied the schema.
 +
 Default: `200`.
 
 `"arraySize"`: __integer, optional__::
-The number of items to generate when the response schema is of type `array`.
+The number of items to generate for array schemas. Zero and negative values generate one item.
 +
 Default: `1`.
 
@@ -1495,8 +1499,8 @@ The response status reason (for example, `"OK"`).
 `"version"`: __string, optional__::
 Protocol version. Default: `"HTTP/1.1"`.
 
-`"headers"`: __array of objects, optional__::
-Header fields to set in the response. The `name` specifies the header name, with an associated array of expressions to evaluate as values.
+`"headers"`: __object, optional__::
+Map from response header names to arrays of string expressions. OpenIG evaluates the expressions to produce the header values.
 
 `"entity"`: __expression, optional__::
 The message entity expression to be evaluated and included in the response.
@@ -1520,9 +1524,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
      "config": {
         "status": 500,
         "reason": "Error",
-        "entity": "<html>
-                   <h2>Epic #FAIL</h2>
-                   </html>"
+        "entity": "<html><h2>Error</h2></html>"
      }
 }
 ----
@@ -1531,4 +1533,11 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 ==== Javadoc
 link:{apidocs-url}/org/forgerock/openig/handler/StaticResponseHandler.html[org.forgerock.openig.handler.StaticResponseHandler, window=\_blank]
 
+'''
+[#WelcomeHandler]
+=== WelcomeHandler — serve the bundled welcome page
 
+The bundled gateway configuration uses this internal handler to serve the OpenIG welcome page as a `200 OK` HTML response.
+
+`"temporaryStorage"`: __TemporaryStorage reference, optional__::
+Buffer storage for the response entity. Specify a heap object name or an inline declaration in `config.temporaryStorage`. The default is the heap object named `TemporaryStorage`. See xref:misc-conf.adoc#TemporaryStorage[TemporaryStorage(5)].

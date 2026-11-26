@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -37,9 +37,7 @@ For API specifications, see the appropriate link:{apidocs-url}/index.html[Javado
 [#reserved-routes]
 === Reserved Routes
 
-OpenIG reserves all paths starting with `/openig` for administrative use.
-
-Resources exposed under `/openig` are only accessible to local client applications.
+The administration servlet handles paths under `/openig` by default. Configure the prefix and access protection in xref:required-conf.adoc#admin-json[admin.json].
 
 
 [#reserved-field-names]
@@ -53,7 +51,7 @@ If you must define your own field names, for example, in custom decorators, use 
 [#field-value-conventions]
 === Field Value Conventions
 
-OpenIG configuration uses link:http://json.org[JSON, window=\_blank] notation.
+OpenIG configuration uses link:http://json.org[JSON, window=\_blank] notation. Usage outlines show placeholders such as `string` and `...`. Replace placeholders with concrete JSON values before saving a configuration.
 --
 This reference uses the following terms when referring to values of configuration object fields:
 
@@ -571,12 +569,12 @@ The following `replace` operation removes the existing `telephoneNumber` value f
   }
 ]
 ----
-A PATCH replace operation on a list semantic array works in the same fashion as a PATCH remove operation. The following example demonstrates how the effect of both operations. Start with the following resource:
+A PATCH replace operation on a list semantic array works in the same fashion as a PATCH remove operation. The following example demonstrates the effect of both operations. Start with the following resource:
 
 [source, json]
 ----
 {
-    "fruits" : [ "apple", "orange", "kiwi", "lime" ],
+    "fruits" : [ "apple", "orange", "kiwi", "lime" ]
 }
 ----
 Apply the following operations on that resource:
@@ -602,7 +600,7 @@ The PATCH operations are applied sequentially. The `remove` operation removes th
 ----
 [
   {
-    "fruits" : [ "orange", "kiwi", "lime" ],
+    "fruits" : [ "orange", "kiwi", "lime" ]
   }
 ]
 ----
@@ -612,7 +610,7 @@ The second PATCH operation, a `replace`, is applied on the second member (`fruit
 ----
 [
   {
-    "fruits" : [ "orange", "pineapple", "lime" ],
+    "fruits" : [ "orange", "pineapple", "lime" ]
   }
 ]
 ----
@@ -635,7 +633,7 @@ The `transform` operation changes the value of a field based on a script or some
         "file" : "something.js"
       }
     }
-  },
+  }
 ]
 ----
 

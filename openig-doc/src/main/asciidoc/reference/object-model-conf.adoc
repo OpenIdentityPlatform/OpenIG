@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -23,7 +23,7 @@
 [#object-model-conf]
 == Requests, Responses, and Contexts
 
-This part of the reference describes the OpenIG object model. The top-level objects are request, response, and contexts.
+See xref:expressions-conf.adoc#expression-bindings[Expression Bindings] for when `request`, `response`, and `contexts` are available.
 [#Attributes]
 === Attributes — context for arbitrary information
 
@@ -63,8 +63,8 @@ This is one of the contexts described in xref:#Contexts[Contexts(5)].
 ==== Properties
 --
 
-`"certificates"`: array::
-List of X.509 certificates presented by the client
+`"certificates"`: collection::
+The certificates presented by the client. The servlet entry point supplies X.509 certificates.
 
 +
 If the client does not present any certificates, OpenIG returns an empty list.
@@ -72,10 +72,10 @@ If the client does not present any certificates, OpenIG returns an empty list.
 +
 This is never `null`.
 
-`"isExternal"`: boolean::
+`"external"`: boolean::
 True if the client connection is external.
 
-`"isSecure"`: boolean::
+`"secure"`: boolean::
 True if the client connection is secure.
 
 `"localAddress"`: string::
@@ -111,9 +111,7 @@ link:{apidocs-url}/org/forgerock/services/context/ClientContext.html[org.forgero
 
 [#d210e17350]
 ==== Description
-The root object for request context information.
-
-Contexts is a map of available contexts, which implement the link:{apidocs-url}/org/forgerock/services/context/Context.html[Context, window=\_blank] interface. The contexts map's keys are strings and the values are context objects. A context holds type-safe information useful for processing requests and responses. The `contexts` map is populated dynamically when creating bindings for evaluation of expressions and scripts.
+`context` is the current context object. The `contexts` map looks up objects by context name. OpenIG builds the map by walking from the current context toward the root. If a name occurs more than once, the map uses the occurrence nearest the current context. The other occurrences remain accessible through the `parent` chain.
 --
 All context objects have the following properties:
 
@@ -134,7 +132,7 @@ Parent of this context object.
 [#d210e17401]
 ==== Properties
 --
-The contexts object provides access to the following contexts:
+The contexts below are available when the request source or a filter adds them. The standard servlet entry point supplies `root`, `session`, `router`, `requestAudit`, `attributes`, and `client`. Requests from message brokers begin with `root` and `attributes`.
 
 `"attributes"`: AttributesContext object::
 Arbitrary state information.
@@ -163,11 +161,95 @@ Session context associated with the remote client.
 +
 See also xref:#Session[Session(5)].
 
+`"root"`: RootContext object::
+Root of the context chain. Its `parent` is `null`.
+
+`"requestAudit"`: RequestAuditContext object::
+`requestReceivedTime` is the time the request reached the framework, in milliseconds since the Unix epoch.
+
+`"oauth2"`: OAuth2Context object::
+The xref:filters-conf.adoc#OAuth2ResourceServerFilter[OAuth2ResourceServerFilter] provides `accessToken` for a validated request. See xref:#AccessTokenInfo[AccessTokenInfo] for token properties.
+
+`"ssoToken"`: SsoTokenContext object::
+The xref:filters-conf.adoc#SingleSignOnFilter[SingleSignOnFilter] provides session information in the `info` map and the SSO token string in `value`.
+
+`"policyDecision"`: PolicyDecisionContext object::
+The xref:filters-conf.adoc#PolicyEnforcementFilter[PolicyEnforcementFilter] supplies the policy decision. The `attributes` and `advices` properties are maps of string keys to lists of strings. `jsonAttributes` and `jsonAdvices` expose those values as `JsonValue` objects, preserving the JSON structure.
+
+`"sts"`: StsContext object::
+The xref:filters-conf.adoc#TokenTransformationFilter[TokenTransformationFilter] exposes the token issued by the STS in `issuedToken`. See the filter for cases that produce an empty string.
+
+`"jwtBuilder"`: JwtBuilderContext object::
+The xref:filters-conf.adoc#JwtBuilderFilter[JwtBuilderFilter] exposes the compact JWT string as `value`, the claims map as `claims`, and its `JsonValue` representation as `claimsAsJsonValue`.
+
 --
 
 [#d210e17457]
 ==== Javadoc
 link:{apidocs-url}/org/forgerock/services/context/Context.html[org.forgerock.services.context.Context, window=\_blank]
+
+'''
+[#AccessTokenInfo]
+=== AccessTokenInfo — validated OAuth 2.0 access token
+
+Access the token as `contexts.oauth2.accessToken` after validation by an xref:filters-conf.adoc#OAuth2ResourceServerFilter[OAuth2ResourceServerFilter].
+
+`"info"`: map::
+The token information supplied by the access token resolver, as a map.
+
+`"token"`: string::
+The access token identifier.
+
+`"scopes"`: set of strings::
+The scopes associated with the token. The set can be empty.
+
+`"expiresAt"`: number::
+Expiration time in milliseconds since the Unix epoch. The largest signed 64-bit integer represents a token with no expiration.
+
+'''
+[#Cookie]
+=== Cookie — incoming HTTP cookie
+
+`request.cookies` maps each name to a list of these objects. Optional cookie attributes can be absent.
+
+[cols="1,3",options="header"]
+|===
+| Property | Value
+
+| `name` | Cookie name.
+| `value` | Cookie value.
+| `domain` | Domain to which the cookie applies.
+| `path` | Path to which the cookie applies.
+| `expires` | Expiration date as a Java `Date`.
+| `maxAge` | Maximum age in seconds.
+| `sameSite` | SameSite setting.
+| `comment` | Description of the cookie's purpose.
+| `commentURL` | URL describing the cookie's purpose.
+| `discard` | Whether the user agent should discard the cookie when it terminates.
+| `port` | List of allowed port numbers.
+| `version` | Cookie protocol version.
+|===
+
+'''
+[#Entity]
+=== Entity — HTTP message body
+
+Both `request.entity` and `response.entity` expose the following properties.
+
+`"bytes"`: byte array::
+A copy of the decoded content.
+
+`"json"`: object::
+The content parsed as JSON. For example, `+${request.entity.json['name']}+` reads a field from a JSON object. An EL evaluation error, including malformed JSON, yields `null`.
+
+`"string"`: string::
+The decoded content as text.
+
+`"decodedContentEmpty"`, `"rawContentEmpty"`: boolean::
+`true` when the entity is empty. Both properties use the same check in the current HTTP framework and return `true` if the check encounters an I/O error.
+
+`"rawContentInputStream"`: InputStream::
+The current stream owned by the entity. Reading it advances the entity's stream position. Use `bytes`, `json`, or `string` to inspect the body without advancing that position. Closing the entity also closes its stream.
 
 '''
 [#Request]
@@ -196,14 +278,14 @@ Protocol version. Example: `"HTTP/1.1"`.
 `"headers"`: __object__::
 Exposes message header fields as name-value pairs, where name is header name and value is an array of header values.
 
-`"cookies"`: __object__::
-Exposes incoming request cookies as name-value pairs, where name is cookie name and value is an array of string cookie values.
+`"cookies"`: __map__::
+Maps each cookie name to a list of xref:#Cookie[Cookie] objects. For example, `+${request.cookies['name'][0].value}+` reads the value of the first cookie named `name`.
 
 `"form"`: __object__::
 Exposes query parameters and/or `application/x-www-form-urlencoded` entity as name-value pairs, where name is the field name and value is an array of string values.
 
-`"entity"`: __object__::
-The message entity body (no accessible properties).
+`"entity"`: __Entity object__::
+The message body. See xref:#Entity[Entity].
 
 --
 
@@ -224,7 +306,7 @@ An HTTP response message.
 --
 
 `"cause"`: __Exception object__::
-The cause of an error if the status code is in the range 4xx-5xx. Possibly null.
+The exception attached to the response, or `null` when no exception was attached. This property is independent of the status code.
 
 `"status"`: __Status object__::
 The response status.
@@ -238,8 +320,8 @@ Protocol version. Example: `"HTTP/1.1"`.
 `"headers"`: __object__::
 Exposes message header fields as name-value pairs, where name is header name and value is an array of header values.
 
-`"entity"`: __object__::
-The message entity body (no accessible properties).
+`"entity"`: __Entity object__::
+The message body. See xref:#Entity[Entity].
 
 --
 
@@ -262,7 +344,10 @@ This is one of the contexts described in xref:#Contexts[Contexts(5)].
 --
 
 `"session"`: map::
-Provides access to the HTTP session, which is a map. Session attributes are name-value pairs, where both keys and value are strings.
+The session stores object values under string keys. With xref:misc-conf.adoc#JwtSession[JwtSession], values must be representable as JSON and fit in the session cookie.
+
++
+`contexts.session.session` accesses the session through its context. The `session` binding is a shortcut for the same map when a session is available.
 
 --
 
@@ -317,20 +402,20 @@ The human-readable reason-phrase corresponding to the status code.
 +
 For details, see link:https://tools.ietf.org/html/rfc7231#section-6.1[RFC 7231: HTTP/1.1 Semantics and Content, Section 6.1. Overview of Status Codes, window=\_blank].
 
-`"isClientError"`: __boolean__::
-True if Family.CLIENT_ERROR.
+`"clientError"`: __boolean__::
+True for `Family.CLIENT_ERROR`.
 
-`"isInformational"`: __boolean__::
-True if Family.INFORMATIONAL.
+`"informational"`: __boolean__::
+True for `Family.INFORMATIONAL`.
 
-`"isRedirection"`: __boolean__::
-True if Family.REDIRECTION.
+`"redirection"`: __boolean__::
+True for `Family.REDIRECTION`.
 
-`"isServerError"`: __boolean__::
-True if Family.SERVER_ERROR.
+`"serverError"`: __boolean__::
+True for `Family.SERVER_ERROR`.
 
-`"isSuccessful"`: __boolean__::
-True if Family.SUCCESSFUL.
+`"successful"`: __boolean__::
+True for `Family.SUCCESSFUL`.
 
 --
 
@@ -369,13 +454,16 @@ Use "rawUserInfo" to access the raw (encoded) component.
 The host component of the URI, or `null` if the host is undefined.
 
 `"port"`: __number__::
-The port component of the URI, or `null` if the port is undefined.
+The explicit port number, or `-1` if the URI has no port.
 
 `"path"`: __string__::
 The decoded path component of the URI, or `null` if the path is undefined.
 
 +
-Use "rawPath" to access the raw (encoded) component.
+Use `rawPath` to access the raw (encoded) component.
+
+`"pathElements"`: __list of strings__::
+An immutable list of the path segments.
 
 `"query"`: __string__::
 The decoded query component of the URI, or `null` if the query is undefined.
@@ -408,6 +496,9 @@ This is one of the contexts described in xref:#Contexts[Contexts(5)].
 [#d210e18057]
 ==== Properties
 --
+
+`"baseUri"`: string::
+The portion of the request URI matched so far, including matches in parent router contexts. May be empty.
 
 `"matchedUri"`: string::
 The portion of the request URI that matched the URI template.

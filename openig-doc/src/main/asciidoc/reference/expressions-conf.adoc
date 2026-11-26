@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2026 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#expressions-conf]
+endif::env-site[]
 == Expressions
+
+ifdef::env-site[]
+anchor:expressions-conf[]
+endif::env-site[]
 
 Many configuration parameters support dynamic expressions.
 [#Expressions]
@@ -33,7 +39,7 @@ Expressions are specified as configuration parameter values for a number of buil
 
 [#d210e15763]
 ==== General Syntax
-All expressions follow standard Universal Expression Language syntax: `${expression}`. The expression can be a simple reference to a value, a function call, or arbitrarily complex arithmetic, logical, relational and conditional operations. When supplied within a configuration parameter, an expression is always a string enclosed in quotation marks, for example: `"${request.method}"`.
+All expressions follow standard Universal Expression Language syntax: `+${expression}+`. The expression can be a simple reference to a value, a function call, or arbitrarily complex arithmetic, logical, relational and conditional operations. When supplied within a configuration parameter, an expression is always a string enclosed in quotation marks, for example: `"${request.method}"`.
 
 [#d210e15774]
 ==== Value Expressions
@@ -72,6 +78,26 @@ Universal Expression Language supports arbitrarily complex arithmetic, logical, 
 * Conditional operations: `?`, `:`
 
 
+[#expression-bindings]
+==== Expression Bindings
+
+[cols="1,3",options="header"]
+|===
+| Evaluation stage | Available values
+
+| Configuration
+| Named heap xref:required-conf.adoc#gateway-properties[properties], including inherited properties, plus `env`, `system`, `now`, and the built-in functions.
+
+| Request processing
+| `request`, the current `context`, and the named `contexts` in its parent chain. `attributes` and `session` are available when the corresponding context is present. The built-in variables and functions remain available.
+
+| Response processing
+| At evaluation points that receive a response, `response` is available alongside the request and context bindings.
+
+|===
+
+Each configuration property determines when evaluation happens and which values it supplies. For example, a route condition receives the incoming request. See xref:object-model-conf.adoc#Contexts[Contexts] for the request context chain. An unresolved expression, an EL evaluation error, or a result of the wrong expected type yields `null`. The object using the expression determines how to handle that result.
+
 [#d210e15952]
 ==== System Properties and Environment Variables
 You can use expressions to retrieve Java system properties, and to retrieve environment variables.
@@ -79,6 +105,13 @@ You can use expressions to retrieve Java system properties, and to retrieve envi
 For system properties, `${system['property']}` yields the value of __property__, or `null` if there is no value for __property__. For example, `${system['user.home']}` yields the home directory of the user running the application server for OpenIG.
 
 For environment variables, `${env['variable']}` yields the value of __variable__, or `null` if there is no value for __variable__. For example, `${env['HOME']}` yields the home directory of the user running the application server for OpenIG.
+
+[#expression-now]
+==== Current Time
+
+`now` provides the current instant. Use `epochSeconds` or `epochMillis` for the time since the Unix epoch in seconds or milliseconds. The methods `plusDays`, `plusHours`, `plusMinutes`, `plusSeconds`, and `plusMillis` return a new instant offset by the argument in the named unit. Use the corresponding `minusDays`, `minusHours`, `minusMinutes`, `minusSeconds`, and `minusMillis` to subtract time. Each day is exactly 24 hours.
+
+For example, `+${now.plusMinutes(5).epochSeconds}+` gives a Unix timestamp five minutes in the future.
 
 [#d210e15997]
 ==== Functions
@@ -88,13 +121,27 @@ Syntax is `${function(parameter, ...)}`, where zero or more parameters are suppl
 
 [#d210e16012]
 ==== Escaping Literal Expressions
-Use the backslash `\` character as the escape character. For example, `${true}` as an expression normally evaluates to `true`. To include the string `${true}` in an expression, write `${true}`.
+A backslash before `$` in an EL expression preserves the dollar sign literally. JSON also escapes backslashes. The following JSON string decodes to the EL text `+\${true}+` and evaluates to the literal text `+${true}+`.
 
-You can also escape literal expressions by single-quoting the initial characters. For example, `${'${'}true}` evaluates to `${true}`. To include a single backslash `\` character, write `${'\\'}`. To include a double backslash, write `${'\\\\'}`.
+[source,json]
+----
+"\\${true}"
+----
+
+Another option is to return the opening characters from an EL string literal. For example, `+${'${'}true}+` evaluates to `+${true}+`. Within an EL string literal, `\\` represents one backslash.
+
+To send a backslash through both JSON and an EL string literal to the regular expression engine, write four backslashes in the JSON. For example, this route condition matches the literal dot in `/v2.1/`:
+
+[source,json]
+----
+{
+    "condition": "${matches(request.uri.path, '^/v2\\\\.1/')}"
+}
+----
 
 [#d210e16049]
 ==== Embedding Expressions
-Although an expression cannot be embedded as `${expression}` inside another expression, embedding system property, environment variable, and function expressions within each other is fine. Do not enclose the embedded elements in `${}`.
+Although an expression cannot be embedded as `+${expression}+` inside another expression, embedding system property, environment variable, and function expressions within each other is fine. Do not enclose the embedded elements in `${}`.
 
 The following single line example embeds an `env` environment variable expression and the Java `String.concat()` method in the argument to a `read()` function:
 
@@ -176,6 +223,15 @@ the resulting array of containing the given strings.
 
 --
 
+[#functions-bool]
+==== bool
+
+[source]
+----
+bool(string)
+----
+Returns `true` when the string equals `true`, ignoring case. It returns `false` for all other values, including `null`. Spaces are significant.
+
 [#functions-contains]
 ==== contains
 
@@ -209,7 +265,7 @@ if the object contains the specified value.
 ----
 decodeBase64(string)
 ----
-Returns the base64-decoded string, or `null` if the string is not valid Base64.
+Decodes a Base64 string and converts the bytes to text using the JVM default charset. A null argument yields `null`. A decoding error yields `null` when evaluated through EL.
 .Parameters
 --
 
@@ -232,7 +288,7 @@ The base64-decoded string.
 ----
 encodeBase64(string)
 ----
-Returns the base64-encoded string, or `null` if the string is `null`.
+Encodes the string as bytes in the JVM default charset, then returns the Base64 representation. A null argument yields `null`.
 .Parameters
 --
 
@@ -271,6 +327,15 @@ string::
 The JSON escaped string, or `null` if the input was `null`.
 
 --
+
+[#functions-fileToUrl]
+==== fileToUrl
+
+[source]
+----
+fileToUrl(file)
+----
+Converts a `java.io.File` object to a `file:` URL string. A relative file is resolved against the JVM working directory. The file does not have to exist. Returns `null` for a null argument or if URL conversion fails.
 
 [#functions-formDecodeParameterNameOrValue]
 ==== formDecodeParameterNameOrValue
@@ -347,6 +412,24 @@ The index count starts from 1, not 0.
 
 --
 
+[#functions-integer]
+==== integer
+
+[source]
+----
+integer(string)
+----
+Parses a signed decimal 32-bit integer. Returns `null` if the input is absent, invalid, or out of range.
+
+[#functions-integerWithRadix]
+==== integerWithRadix
+
+[source]
+----
+integerWithRadix(string, radix)
+----
+Parses a signed 32-bit integer in the given radix, from 2 to 36. Returns `null` if the radix or input is invalid or the result is out of range. For example, `+${integerWithRadix('ff', 16)}+` yields `255`.
+
 [#functions-join]
 ==== join
 
@@ -406,7 +489,7 @@ the first matching key, or `null` if no match found.
 ----
 length(object)
 ----
-Returns the number of items in a collection, or the number of characters in a string.
+Returns the number of elements in a collection or array, including primitive arrays, the number of entries in a map, or the length of a character sequence. Returns `0` for `null` or an unsupported type.
 .Parameters
 --
 
@@ -474,6 +557,15 @@ if the string contains the specified regular expression pattern.
 
 --
 
+[#functions-pathToUrl]
+==== pathToUrl
+
+[source]
+----
+pathToUrl(string)
+----
+Converts a filesystem path to a `file:` URL string by constructing a Java `File`. Relative paths resolve against the JVM working directory. Returns `null` for a null argument or if URL conversion fails.
+
 [#functions-read]
 ==== read
 
@@ -481,7 +573,7 @@ if the string contains the specified regular expression pattern.
 ----
 read(string)
 ----
-Takes a file name as a `string`, and returns the content of the file as a plain string, or `null` on error (due to the file not being found, for example).
+Reads a file into a string using the JVM default charset. Returns `null` if an I/O error occurs, for example if the file does not exist.
 
 Either provide the absolute path to the file, or a path relative to the location of the Java system property `user.dir`.
 .Parameters

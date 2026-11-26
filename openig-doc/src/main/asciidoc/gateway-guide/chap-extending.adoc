@@ -12,18 +12,24 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2026 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
 :example-caption!:
 :table-caption!:
-:openig-version: x.y.z
+include::../partials/openig-release-version.adoc[]
 
 
 
+ifndef::env-site[]
 [#chap-extending]
+endif::env-site[]
 == Extending OpenIG's Functionality
+
+ifdef::env-site[]
+anchor:chap-extending[]
+endif::env-site[]
 
 This chapter covers extending what OpenIG can do. In this chapter, you will learn to:
 
@@ -277,7 +283,7 @@ When the request path matches `/basic` the route calls the `Chain`, which runs t
 
 To try it out, browse to link:http://openig.example.com:8080/basic[http://openig.example.com:8080/basic, window=\_blank].
 
-The captured request in the console log shows that the scheme is now HTTPS, and that the `Authorization` header is set for HTTP Basic:
+Enable the capture logger as described in xref:chap-logging.adoc#chap-logging[Logging Events in OpenIG]. With demo credentials, check that the captured request uses HTTPS and sets the HTTP Basic `Authorization` header:
 
 [source, httprequest]
 ----
@@ -406,15 +412,7 @@ If the directory server installation does not match the assumptions made in the 
         "type": "ScriptableHandler",
         "config": {
           "type": "application/x-groovy",
-          "source":
-          "import org.forgerock.http.protocol.Response;
-           import org.forgerock.http.protocol.Status;
-           dn = request.headers['Ldap-User-Dn'].values[0];
-           entity = '<html><p>Ldap-User-Dn: ' + dn + '</p></html>';
-
-           response = new Response(Status.OK);
-           response.entity = entity;
-           return response"
+          "source": "import org.forgerock.http.protocol.Response;\nimport org.forgerock.http.protocol.Status;\ndn = request.headers['Ldap-User-Dn'].values[0];\nentity = '<html><p>Ldap-User-Dn: ' + dn + '</p></html>';\n\nresponse = new Response(Status.OK);\nresponse.entity = entity;\nreturn response"
         }
       }
     }

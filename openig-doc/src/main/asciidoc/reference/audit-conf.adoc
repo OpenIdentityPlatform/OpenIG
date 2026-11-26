@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#audit-conf]
+endif::env-site[]
 == Audit Framework
+
+ifdef::env-site[]
+anchor:audit-conf[]
+endif::env-site[]
 
 OpenIG uses the Open Identity Platform common audit framework to log system boundary events using an implementation that is common across the ForgeRock platform.
 [#AuditService]
@@ -39,12 +45,12 @@ The route is decorated with an `auditService` field whose value references the c
 [source, javascript]
 ----
 {
-     "name": string,
-     "type": "AuditService",
-     "config": {
-         "config": object,
-         "event-handlers": array
-     }
+    "name": string,
+    "type": "AuditService",
+    "config": {
+        "config": object,
+        "event-handlers": array
+    }
 }
 ----
 
@@ -52,95 +58,63 @@ The route is decorated with an `auditService` field whose value references the c
 ==== Properties
 --
 
-`"config"`: __object, required__::
-This object configures the audit service itself, rather than event handlers. If the configuration uses only default settings, you can omit the field instead of including an empty object as the field value.
+The heap object's `config` object has the following properties:
+
+`"config"`: __object, optional__::
+Settings for the audit service. Omit the inner `config` object to use the defaults.
 +
 [open]
 ====
-The configuration object has the following fields:
-
 `"handlerForQueries"`: __string, optional__::
-This references the name of the event handler to use when querying audit event messages over REST.
+Name of the enabled event handler that handles audit service read and query requests.
+Choose a handler that supports these operations.
+By default, the audit service has no query handler.
 
 `"availableAuditEventHandlers"`: __array of strings, optional__::
-This lists fully qualified event handler class names for event handlers available to the audit service.
+The service accepts this list of fully qualified class names.
+OpenIG registers handlers using `event-handlers`.
 
 `"filterPolicies"`: __object, optional__::
-These policies indicate what fields and values to include and to exclude from audit event messages.
+Controls which fields are removed before an audit event is sent to its handlers.
+Both `field` and `value` are objects with the same behavior:
 +
 [open]
 ======
-The filter policies object has these fields:
-
-`"field"`: __object, optional__::
-Audit event fields use JSON pointer notation, and are taken from the JSON schema for the audit event content.
-
-+
-Default: Include all fields.
-
-+
-The field object specifies which fields to include and to exclude:
-+
-[open]
-========
-
 `"excludeIf"`: __array of strings, optional__::
-This holds a list of audit event fields to exclude.
+JSON Pointers whose first segment is the audit topic and whose remaining segments identify the field.
+For example, `/access/http/request/headers` removes the request headers from events on the `access` topic.
+The event is still sent to the handlers.
+The default is an empty list.
 
 `"includeIf"`: __array of strings, optional__::
-This holds a list of audit event fields to include.
-
-========
-
-`"value"`: __object, optional__::
-Default: Include all messages.
-
-+
-The value object specifies field values based on which messages are included and excluded:
-+
-[open]
-========
-
-`"excludeIf"`: __array of strings, optional__::
-This holds a list of audit event field values.
-
-+
-When a value matches, the message is excluded.
-
-`"includeIf"`: __array of strings, optional__::
-This holds a list of audit event field values.
-
-+
-When a value matches, the message is included.
-
-========
-
+The service accepts this property without applying it.
 ======
 
 ====
 
-`"event-handlers"`: __array of configuration objects, required__::
-This array of audit event handler configuration objects defines the event handlers that deal with audit events.
-
+`"event-handlers"`: __array of objects, optional__::
+The handler definitions. The default is an empty array.
 +
-Each event handler configuration depends on type of the event handler.
+Each entry has a `class` with the handler's fully qualified Java class name and a `config` object with settings for that handler.
+Each handler needs a `config.name` that is unique within the service.
+Handlers are enabled by default. Set `topics` to `["access"]` to receive route audit events.
+The default topic list is empty.
 +
-OpenIG supports the following audit event handlers:
+OpenIG ships the following event handlers:
 
 * xref:#CsvAuditEventHandler[CsvAuditEventHandler(5)]
-
 * xref:#JdbcAuditEventHandler[JdbcAuditEventHandler(5)]
-
+* xref:#JmsAuditEventHandler[JmsAuditEventHandler(5)]
+* xref:#JsonAuditEventHandler[JsonAuditEventHandler(5)]
+* xref:#JsonStdoutAuditEventHandler[JsonStdoutAuditEventHandler(5)]
 * xref:#SyslogAuditEventHandler[SyslogAuditEventHandler(5)]
-
 * xref:#ElasticsearchAuditEventHandler[ElasticsearchAuditEventHandler(5)]
-
 
 --
 
 [#d210e10190]
 ==== Example
-The following example configures an audit service to log access event messages in a comma-separated variable file, named `/path/to/audit/logs/access.csv`:
+The following example configures an audit service to log access event messages in a comma-separated values file, named `/path/to/audit/logs/access.csv`:
 
 [source, json]
 ----
@@ -148,7 +122,6 @@ The following example configures an audit service to log access event messages i
     "name": "AuditService",
     "type": "AuditService",
     "config": {
-        "config": {},
         "event-handlers": [
             {
                 "class": "org.forgerock.audit.handlers.csv.CsvAuditEventHandler",
@@ -180,11 +153,11 @@ link:{apidocs-url}/org/forgerock/audit/AuditService.html[org.forgerock.audit.Aud
 
 '''
 [#CsvAuditEventHandler]
-=== CsvAuditEventHandler — log audit events to CSV format files
+=== CsvAuditEventHandler — log audit events to CSV files
 
 [#d210e10226]
 ==== Description
-An audit event handler that responds to events by logging messages to files in comma-separated variable (CSV) format.
+An audit event handler that responds to events by logging messages to files in comma-separated values (CSV) format.
 
 The configuration is declared in an audit service configuration. For details, see xref:#AuditService[AuditService(5)].
 
@@ -213,7 +186,8 @@ The configuration is declared in an audit service configuration. For details, se
             "enabled": boolean,
             "filename": string,
             "password": string,
-            "signatureInterval": duration
+            "signatureInterval": duration,
+            "keyStoreHandlerName": string
         },
         "fileRetention": {
             "maxDiskSpaceToUse": number,
@@ -245,14 +219,9 @@ The name of the event handler.
 `"logDirectory"`: __string, required__::
 The file system directory where log files are written.
 
-`"topics"`: __array of strings, required__::
-The topics that this event handler intercepts.
-
-+
-OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
-
-+
-Set this to `"topics": [ "access" ]`.
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
 
 `"enabled"`: __boolean, optional__::
 Whether this event handler is active.
@@ -288,7 +257,7 @@ Default: system-dependent line separator defined for the JVM.
 ====
 
 `"buffering"`: __object, optional__::
-Buffering settings for writing CSV log files. The default is for messages to be written to the log file for each event.
+Settings for buffering writes to CSV log files. The configuration also accepts `bufferingConfiguration` as the object name.
 +
 [open]
 ====
@@ -301,7 +270,7 @@ Whether log buffering is enabled.
 Default: false.
 
 `"autoFlush"`: __boolean, optional__::
-Whether events are automatically flushed after being written.
+When buffering is enabled, controls whether each event is flushed after writing.
 
 +
 Default: true.
@@ -322,29 +291,35 @@ Whether tamper-evident logging is enabled.
 Default: false.
 
 +
-Tamper-evident logging depends on a specially prepared keystore. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"].
+Tamper-evident logging requires `filename`, `password`, and `signatureInterval`. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"].
 
-`"filename"`: __string, required__::
+`"filename"`: __string, required when signing is enabled__::
 File system path to the keystore containing the private key for tamper-evident logging.
 
 +
 The keystore must be a keystore of type `JCEKS`. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"].
 
-`"password"`: __string, required__::
+`"password"`: __string, required when signing is enabled__::
 The password for the keystore for tamper-evident logging.
 
 +
 This password is used for the keystore and for private keys. For details, see xref:#log-common-audit-keystore["Preparing a Keystore for Tamper-Evident Logs"].
 
-`"signatureInterval"`: __duration, required__::
-The time interval after which to insert a signature in the CSV file. This duration must not be zero, and must not be unlimited.
+`"signatureInterval"`: __duration, required when signing is enabled__::
+The time interval after which to insert a signature in the CSV file.
+Use a positive, finite duration.
 +
 include::../partials/sec-duration-description.adoc[]
 
+`"keyStoreHandlerName"`: __string, optional__::
+Commons accepts this property, which requires a `KeyStoreHandlerProvider`.
+OpenIG's audit service does not supply that provider. Use the JCEKS file settings to enable signing.
+
 ====
 
+[#audit-file-retention]
 `"fileRetention"`: __object, optional__::
-File retention settings for CSV log files.
+File retention settings for audit log files. The CSV handler applies these settings when file rotation is enabled.
 +
 [open]
 ====
@@ -354,31 +329,32 @@ The file retention object has the following fields:
 The maximum disk space in bytes the audit logs can occupy. A setting of 0 or less indicates that the policy is disabled.
 
 +
-Default: 0.
+Default: `-1`.
 
 `"maxNumberOfHistoryFiles"`: __number, optional__::
-The maximum number of historical log files to retain. A setting of -1 disables pruning of old history files.
+The maximum number of historical log files to retain. A setting of 0 or less disables the file count limit.
 
 +
-Default: 0.
+Default: `-1`.
 
 `"minFreeSpaceRequired"`: __number, optional__::
 The minimum free space in bytes that the system must contain for logs to be written. A setting of 0 or less indicates that the policy is disabled.
 
 +
-Default: 0.
+Default: `-1`.
 
 ====
 
+[#audit-file-rotation]
 `"fileRotation"`: __object, optional__::
-File rotation settings for CSV log files.
+File rotation settings for audit log files.
 +
 [open]
 ====
 The file rotation object has the following fields:
 
 `"rotationEnabled"`: __boolean, optional__::
-Whether file rotation is enabled for CSV log files.
+Whether file rotation is enabled. Set this to `true` to apply the configured rotation policies.
 
 +
 Default: false.
@@ -387,44 +363,37 @@ Default: false.
 The maximum file size of an audit log file in bytes. A setting of 0 or less indicates that the policy is disabled.
 
 +
-Default: 0.
+Default: `-1`.
 
 `"rotationFilePrefix"`: __string, optional__::
-The prefix to add to a log file on rotation.
-
-+
-This has an effect when time-based file rotation is enabled.
+The prefix for rotated log files. By default, the active log file's name is used.
 
 `"rotationFileSuffix"`: __string, optional__::
-The suffix to add to a log file on rotation, possibly expressed in link:https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/text/SimpleDateFormat.html[SimpleDateFormat, window=\_blank].
+The suffix for rotated log files. Use a Joda-Time `DateTimeFormat` timestamp pattern, optionally followed by `.gz` to compress the rotated file.
 
 +
-This has an effect when time-based file rotation is enabled.
-
-+
-Default: `-yyyy.MM.dd-HH.mm.ss`, where __yyyy__ characters are replaced with the year, __MM__ characters are replaced with the month, __dd__ characters are replaced with the day, __HH__ characters are replaced with the hour (00-23), __mm__ characters are replaced with the minute (00-60), and __ss__ characters are replaced with the second (00-60).
+Default: `-yyyy.MM.dd-HH.mm.ss.gz`.
 
 `"rotationInterval"`: __duration, optional__::
-The time interval after which to rotate log files. This duration must not be zero.
-+
-This has the effect of enabling time-based file rotation.
+The time interval after which to rotate log files when rotation is enabled.
+Use a positive, finite duration.
+The default, `disabled`, leaves interval-based rotation off.
 +
 include::../partials/sec-duration-description.adoc[]
 
 
 `"rotationTimes"`: __array of durations, optional__::
-The durations, counting from midnight, after which to rotate files.
+The times at which to rotate files each day when rotation is enabled, expressed as durations after midnight.
+Default: `[]`.
 
 +
 The following example schedules rotation six and twelve hours after midnight:
 +
 
-[source, json]
+[source, text]
 ----
 "rotationTimes": [ "6 hours", "12 hours" ]
 ----
-+
-This has the effect of enabling time-based file rotation.
 +
 include::../partials/sec-duration-description.adoc[]
 
@@ -432,9 +401,9 @@ include::../partials/sec-duration-description.adoc[]
 ====
 
 `"rotationRetentionCheckInterval"`: __duration, optional__::
-The time interval after which to check file rotation and retention policies for updates.
+The interval between checks of rotation and retention policies. When these policies are enabled, use a finite duration of at least 1 millisecond.
 +
-Default: 5 seconds
+Default: 5 seconds.
 +
 include::../partials/sec-duration-description.adoc[]
 
@@ -510,21 +479,22 @@ password, Nov 27, 2015, SecretKeyEntry,
 ==== Example
 For instructions on recording audit events in a CSV file, see xref:../gateway-guide/chap-auditing.adoc#audit-csv[ To Record Audit Events In a CSV File ] in the __Gateway Guide__.
 
-The following example configures a CSV audit event handler to write a log file, `/path/to/audit/logs/access.csv`, that is signed every 10 seconds to make it tamper-evident:
+This event handler writes to `/path/to/audit/logs/tamper-evident-access.csv` with a 10-second signature interval. Set `filename` and `password` to match the prepared JCEKS keystore.
 
 [source, json]
 ----
 {
-    "name": "csv",
-    "topics": [
-        "access"
-    ],
-    "logDirectory": "/path/to/audit/logs/",
-    "security": {
-        "enabled": "true",
-        "filename": "/path/to/audit-keystore",
-        "password": "password",
-        "signatureInterval": "10 seconds"
+    "class": "org.forgerock.audit.handlers.csv.CsvAuditEventHandler",
+    "config": {
+        "name": "csv",
+        "topics": ["access"],
+        "logDirectory": "/path/to/audit/logs",
+        "security": {
+            "enabled": true,
+            "filename": "/path/to/audit-keystore",
+            "password": "password",
+            "signatureInterval": "10 seconds"
+        }
     }
 }
 ----
@@ -539,7 +509,10 @@ link:{apidocs-url}/org/forgerock/audit/handlers/csv/CsvAuditEventHandler.html[or
 
 [#d210e11364]
 ==== Description
-An audit event handler that responds to events by logging messages to an appropriately configured relational database table.
+An audit event handler that writes events to a relational database table.
+
+Install HikariCP and the database's JDBC driver on the servlet container's classpath so that the OpenIG application can load them.
+The OpenIG WAR includes the audit handler. HikariCP and the JDBC driver must be supplied by the deployment.
 
 The configuration is declared in an audit service configuration. For details, see xref:#AuditService[AuditService(5)].
 
@@ -565,6 +538,7 @@ The configuration is declared in an audit service configuration. For details, se
         },
         "connectionPool": {
             "dataSourceClassName": string,
+            "driverClassName": string,
             "jdbcUrl": string,
             "username": string,
             "password": string,
@@ -598,14 +572,9 @@ The `"config"` object has the following properties:
 `"name"`: __string, required__::
 The name of the event handler.
 
-`"topics"`: __array of strings, required__::
-The topics that this event handler intercepts.
-
-+
-OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
-
-+
-Set this to `"topics": [ "access" ]`.
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
 
 `"databaseType"`: __string, required__::
 The database type name.
@@ -620,29 +589,25 @@ Whether this event handler is active.
 Default: true.
 
 `"buffering"`: __object, optional__::
-Buffering settings for sending messages to the database. The default is for messages to be written to the log file for each event.
+Settings for buffering database writes. The configuration also accepts `bufferingConfiguration` as the object name.
 +
 [open]
 ====
 The buffering object has the following fields:
 
 `"enabled"`: __boolean, optional__::
-Whether log buffering is enabled.
+Whether audit events are buffered before writing to the database. With buffering disabled, each event is written directly.
 
 +
 Default: false.
 
-`"writeInterval"`: __duration, required__::
-The interval at which to send buffered event messages to the database.
-
-+
-This interval must be greater than 0 if buffering is enabled.
-+
-include::../partials/sec-duration-description.adoc[]
+`"writeInterval"`: __string, optional__::
+The configuration accepts this property with a default of `disabled`.
+With buffering enabled the writer polls an empty queue every 10 milliseconds regardless of this setting.
 
 
 `"autoFlush"`: __boolean, optional__::
-Whether the events are automatically flushed after being written.
+Whether to drain the event queue at shutdown when buffering is enabled.
 
 +
 Default: true.
@@ -675,16 +640,19 @@ Connection pool settings for sending messages to the database.
 The connection pool object has the following fields:
 
 `"dataSourceClassName"`: __string, optional__::
-The class name of the data source for the database.
+The fully qualified class name of the data source. Configure either a data source or a JDBC URL.
 
-`"jdbcUrl"`: __string, required__::
-The JDBC URL to connect to the database.
+`"driverClassName"`: __string, optional__::
+The fully qualified class name of the JDBC driver. Set it if HikariCP cannot discover the driver from the JDBC URL.
 
-`"username"`: __string, required__::
-The username identifier for the database user with access to write the messages.
+`"jdbcUrl"`: __string, required for URL-based connections__::
+The JDBC URL for the database.
 
-`"password"`: __number, optional__::
-The password for the database user with access to write the messages.
+`"username"`: __string, optional__::
+The username to use when the connection requires authentication. The account must have access to write audit events.
+
+`"password"`: __string, optional__::
+The password to use when the connection requires authentication.
 
 `"autoCommit"`: __boolean, optional__::
 Whether to commit transactions automatically when writing messages.
@@ -768,7 +736,7 @@ The following example configures a JDBC audit event handler using a local MySQL 
             "access"
         ],
         "connectionPool": {
-            "jdbcUrl": "jdbc:mysql://localhost:3306/audit?allowMultiQueries=true&characterEncoding=utf8",
+            "jdbcUrl": "jdbc:mysql://localhost:3306/audit",
             "username": "audit",
             "password": "audit"
         },
@@ -808,11 +776,246 @@ The following example configures a JDBC audit event handler using a local MySQL 
     }
 }
 ----
-Examples including statements to create tables are provided in the JDBC handler library, `forgerock-audit-handler-jdbc-version.jar`, that is built into the OpenIG .war file. Unpack the library, then find the examples under the `db/` folder.
+Create the required tables before using the handler. The `db/` directory in the `WEB-INF/lib/handler-jdbc-*.jar` library in the OpenIG WAR contains example configuration and SQL for MySQL and Oracle.
 
 [#d210e11910]
 ==== Javadoc
 link:{apidocs-url}/org/forgerock/audit/handlers/jdbc/JdbcAuditEventHandler.html[org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandler, window=\_blank]
+
+'''
+[#JmsAuditEventHandler]
+=== JmsAuditEventHandler — publish audit events to a JMS topic
+
+==== Description
+
+The handler sends a JMS text message containing a JSON object with the fields `auditTopic` and `event`.
+Configure it in xref:#AuditService[AuditService(5)].
+
+Make a Jakarta JMS provider and its JNDI implementation available to OpenIG in the servlet container.
+The OpenIG WAR includes the Jakarta JMS API.
+Configure JNDI bindings for a Jakarta JMS `ConnectionFactory` and `Topic` and ensure OpenIG can publish to the topic.
+
+==== Configuration
+
+The handler's `class` is `org.forgerock.audit.handlers.jms.JmsAuditEventHandler`.
+Its `config` object accepts these properties:
+
+`"name"`: __string, required__::
+A unique handler name within the audit service.
+
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
+
+`"enabled"`: __boolean, optional__::
+Whether this event handler is active.
+Default: `true`.
+
+`"deliveryMode"`: __string, required__::
+The JMS delivery mode. Use `PERSISTENT` or `NON_PERSISTENT`.
+
+`"sessionMode"`: __string, required__::
+The JMS session acknowledgement mode. Use `AUTO`, `CLIENT`, or `DUPS_OK`.
+
+`"jndi"`: __object, optional__::
+The JNDI environment and lookup names used to obtain the connection factory and destination.
++
+[open]
+====
+`"contextProperties"`: __object, optional__::
+String properties passed to the JNDI initial context, such as `java.naming.factory.initial` and `java.naming.provider.url`.
+The required properties depend on the provider and the container.
+Default: `{}`.
+
+`"topicName"`: __string, optional__::
+The JNDI name of the JMS topic to publish messages to.
+The configuration also accepts `jmsTopicName`.
+Default: `audit`.
+
+`"connectionFactoryName"`: __string, optional__::
+The JNDI name of the Jakarta JMS connection factory.
+The configuration also accepts `jmsConnectionFactoryName`.
+Default: `connectionFactory`.
+====
+
+`"batch"`: __object, optional__::
+Settings for queued publication.
++
+[open]
+====
+`"batchEnabled"`: __boolean, optional__::
+Whether to publish queued events in batches. The default, `false`, publishes each event directly.
+
+`"capacity"`: __integer, optional__::
+The maximum number of events that can be queued. Use a value greater than zero.
+Default: `1`.
+
+`"threadCount"`: __integer, optional__::
+The number of worker threads publishing events. Use a value greater than zero.
+Default: `1`.
+
+`"maxBatchedEvents"`: __integer, optional__::
+The maximum number of events to take from the queue per batch. Use a value greater than zero.
+Default: `1`.
+
+`"insertTimeoutSec"`: __integer, optional__::
+Seconds to wait for space in the queue when it is full.
+Default: `60`.
+
+`"shutdownTimeoutSec"`: __integer, optional__::
+Seconds to wait for publishing workers to finish during shutdown.
+Default: `60`.
+
+`"pollTimeoutSec"`: __integer, optional__::
+The configuration accepts this property with a default of `10`.
+The publisher polls the queue every 10 milliseconds regardless of this setting.
+====
+
+==== Example
+
+This handler uses the default JNDI environment. Bind the connection factory as `connectionFactory` and the JMS topic as `audit` in that environment, or configure the lookup names for your provider.
+
+[source, json]
+----
+{
+    "class": "org.forgerock.audit.handlers.jms.JmsAuditEventHandler",
+    "config": {
+        "name": "jms",
+        "topics": ["access"],
+        "deliveryMode": "PERSISTENT",
+        "sessionMode": "AUTO",
+        "jndi": {
+            "topicName": "audit",
+            "connectionFactoryName": "connectionFactory"
+        }
+    }
+}
+----
+
+'''
+[#JsonAuditEventHandler]
+=== JsonAuditEventHandler — write audit events to JSON files
+
+==== Description
+
+The handler writes one UTF-8 JSON event per line to a separate file for each topic.
+The file for the `access` topic is `access.audit.json`.
+Configure the handler in xref:#AuditService[AuditService(5)].
+
+==== Configuration
+
+The handler's `class` is `org.forgerock.audit.handlers.json.JsonAuditEventHandler`.
+Its `config` object accepts these properties:
+
+`"name"`: __string, required__::
+A unique handler name within the audit service.
+
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
+
+`"enabled"`: __boolean, optional__::
+Whether this event handler is active.
+Default: `true`.
+
+`"logDirectory"`: __string, required__::
+The directory where log files are written. Ensure the OpenIG process can write to the directory.
+If the directory does not exist, its parent must already exist and allow OpenIG to create it.
+
+`"elasticsearchCompatible"`: __boolean, optional__::
+Whether to normalize the JSON for Elasticsearch, including renaming `_id` to `_eventId`.
+The default, `false`, preserves the original audit event fields.
+
+`"buffering"`: __object, optional__::
+Settings for the event queue. The handler drains pending events at shutdown.
++
+[open]
+====
+`"maxSize"`: __integer, optional__::
+The maximum number of queued events. The default and minimum effective value are 100,000.
+Publishing waits for space when the queue is full.
+
+`"writeInterval"`: __duration, optional__::
+The interval between scheduled writes. Use a duration of at least 1 millisecond. The handler uses 10 milliseconds if this is omitted, invalid, or nonpositive.
++
+include::../partials/sec-duration-description.adoc[]
+====
+
+`"fileRotation"`: __object, optional__::
+Settings and defaults are shared with the CSV handler's xref:#audit-file-rotation[`fileRotation`] object.
+
+`"fileRetention"`: __object, optional__::
+Settings and defaults are shared with the CSV handler's xref:#audit-file-retention[`fileRetention`] object. The JSON handler applies these settings even when rotation is disabled.
+
+`"rotationRetentionCheckInterval"`: __duration, optional__::
+The interval between checks of rotation and retention policies.
+An omitted, invalid, zero, or unlimited interval uses the default of 5 seconds.
++
+include::../partials/sec-duration-description.adoc[]
+
+==== Example
+
+This handler writes route audit events to `/path/to/audit/logs/access.audit.json`.
+
+[source, json]
+----
+{
+    "class": "org.forgerock.audit.handlers.json.JsonAuditEventHandler",
+    "config": {
+        "name": "json-file",
+        "topics": ["access"],
+        "logDirectory": "/path/to/audit/logs",
+        "buffering": {
+            "writeInterval": "20 millis"
+        }
+    }
+}
+----
+
+'''
+[#JsonStdoutAuditEventHandler]
+=== JsonStdoutAuditEventHandler — write audit events to standard output
+
+==== Description
+
+The handler prints one JSON event per line to the Java process's standard output (`System.out`).
+Each event includes the audit topic in the `_topic` field.
+Configure the handler in xref:#AuditService[AuditService(5)].
+
+==== Configuration
+
+The handler's `class` is `org.forgerock.audit.handlers.json.JsonStdoutAuditEventHandler`.
+Its `config` object accepts these properties:
+
+`"name"`: __string, required__::
+A unique handler name within the audit service.
+
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
+
+`"enabled"`: __boolean, optional__::
+Whether this event handler is active.
+Default: `true`.
+
+`"elasticsearchCompatible"`: __boolean, optional__::
+Whether to normalize the JSON for Elasticsearch, including renaming `_id` to `_eventId`.
+Default: `false`.
+
+==== Example
+
+This handler writes route audit events to standard output.
+
+[source, json]
+----
+{
+    "class": "org.forgerock.audit.handlers.json.JsonStdoutAuditEventHandler",
+    "config": {
+        "name": "json-stdout",
+        "topics": ["access"]
+    }
+}
+----
 
 '''
 [#SyslogAuditEventHandler]
@@ -834,14 +1037,14 @@ The configuration is declared in an audit service configuration. For details, se
     "config": {
         "name": string,
         "topics": array,
+        "enabled": boolean,
         "protocol": string,
         "host": string,
         "port": number,
         "connectTimeout": number,
-        "facility": "string",
+        "facility": string,
         "buffering": {
-            "enabled": boolean,
-            "maxSize": number
+            "enabled": boolean
         },
         "severityFieldMappings": [
             {
@@ -865,23 +1068,22 @@ The `"config"` object has the following properties:
 `"name"`: __string, required__::
 The name of the event handler.
 
-`"topics"`: __array of strings, required__::
-The topics that this event handler intercepts.
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
 
-+
-OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
-
-+
-Set this to `"topics": [ "access" ]`.
+`"enabled"`: __boolean, optional__::
+Whether this event handler is active.
+Default: `true`.
 
 `"protocol"`: __string, required__::
 The transport protocol used to send event messages to the Syslog daemon.
 
 +
-Set this to `TCP` for Transmission Control Protocol, or to `UDP` for User Datagram Protocol.
+Set this to `TCP` or `UDP`. The TCP connection uses plain TCP.
 
 `"host"`: __string, required__::
-The hostname of the Syslog daemon to which to send event messages. The hostname must resolve to an IP address.
+The hostname or IP address of the Syslog daemon. Use the host without a URL scheme.
 
 `"port"`: __number, required__::
 The port of the Syslog daemon to which to send event messages.
@@ -889,8 +1091,9 @@ The port of the Syslog daemon to which to send event messages.
 +
 The value must be between 0 and 65535.
 
-`"connectTimeout"`: __number, required when using TCP__::
-The number of milliseconds to wait for a connection before timing out.
+`"connectTimeout"`: __number, required for TCP__::
+The TCP connection timeout in milliseconds. Use a positive value.
+UDP ignores this setting.
 
 `"facility"`: __string, required__::
 The Syslog facility to use for event messages.
@@ -899,107 +1102,102 @@ The Syslog facility to use for event messages.
 ====
 Set this to one of the following values:
 
-`kern`::
+`KERN`::
 Kernel messages
 
-`user`::
+`USER`::
 User-level messages
 
-`mail`::
+`MAIL`::
 Mail system
 
-`daemon`::
+`DAEMON`::
 System daemons
 
-`auth`::
+`AUTH`::
 Security/authorization messages
 
-`syslog`::
+`SYSLOG`::
 Messages generated internally by `syslogd`
 
-`lpr`::
+`LPR`::
 Line printer subsystem
 
-`news`::
+`NEWS`::
 Network news subsystem
 
-`uucp`::
+`UUCP`::
 UUCP subsystem
 
-`cron`::
+`CRON`::
 Clock daemon
 
-`authpriv`::
+`AUTHPRIV`::
 Security/authorization messages
 
-`ftp`::
+`FTP`::
 FTP daemon
 
-`ntp`::
+`NTP`::
 NTP subsystem
 
-`logaudit`::
+`LOGAUDIT`::
 Log audit
 
-`logalert`::
+`LOGALERT`::
 Log alert
 
-`clockd`::
+`CLOCKD`::
 Clock daemon
 
-`local0`::
+`LOCAL0`::
 Local use 0
 
-`local1`::
+`LOCAL1`::
 Local use 1
 
-`local2`::
+`LOCAL2`::
 Local use 2
 
-`local3`::
+`LOCAL3`::
 Local use 3
 
-`local4`::
+`LOCAL4`::
 Local use 4
 
-`local5`::
+`LOCAL5`::
 Local use 5
 
-`local6`::
+`LOCAL6`::
 Local use 6
 
-`local7`::
+`LOCAL7`::
 Local use 7
 
 ====
 
 `"buffering"`: __object, optional__::
-Buffering settings for writing to the system log facility. The default is for messages to be written to the log for each event.
+Settings for buffering messages before writing them to Syslog.
+The configuration also accepts `bufferingConfiguration` as the object name.
 +
 [open]
 ====
-The buffering object has the following fields:
-
 `"enabled"`: __boolean, optional__::
-Whether log buffering is enabled.
-
-+
-Default: false.
-
-`"maxSize"`: __number, optional__::
-The maximum number of buffered event messages.
-
-+
-Default: 5000.
+Whether to send messages through an asynchronous queue.
+Default: `false` (send each message directly).
+When buffering is enabled, the queue holds up to 5,000 messages. The handler accepts only `enabled` in this object.
 
 ====
 
-`"severityFieldMappings"`: __object, optional__::
-Severity field mappings set the correspondence between audit event fields and Syslog severity values.
+`"severityFieldMappings"`: __array of objects, optional__::
+Selects which audit event field supplies the Syslog severity for each topic.
+The formatter uses that field's value as a case-sensitive Syslog severity name.
+It falls back to `INFORMATIONAL` when there is no mapping, no field value, or an unrecognized value.
+Default: `[]`.
 +
 [open]
 ====
-The severity field mappings object has the following fields:
+Each mapping has the following fields:
 
 `"topic"`: __string, required__::
 The audit event topic to which the mapping applies.
@@ -1011,40 +1209,40 @@ Set this to `access`.
 The audit event field to which the mapping applies.
 
 +
-Audit event fields use JSON pointer notation, and are taken from the JSON schema for the audit event content.
-
-`"valueMappings"`: __object, required__::
-The map of audit event values to Syslog severities, where both the keys and the values are strings.
+Audit event fields use JSON Pointer notation and are taken from the JSON schema for the audit event content.
 +
 [open]
 ======
-Syslog severities are one of the following values:
+The formatter recognizes these field values:
 
-`emergency`::
+`EMERGENCY`::
 System is unusable.
 
-`alert`::
+`ALERT`::
 Action must be taken immediately.
 
-`critical`::
+`CRITICAL`::
 Critical conditions.
 
-`error`::
+`ERROR`::
 Error conditions.
 
-`warning`::
+`WARNING`::
 Warning conditions.
 
-`notice`::
+`NOTICE`::
 Normal but significant condition.
 
-`informational`::
+`INFORMATIONAL`::
 Informational messages.
 
-`debug`::
+`DEBUG`::
 Debug-level messages.
 
 ======
+
+`"valueMappings"`: __object, optional__::
+The configuration accepts this map of strings to Syslog severity names. The formatter uses the event field value directly, so the map has no effect.
 
 ====
 
@@ -1052,28 +1250,20 @@ Debug-level messages.
 
 [#d210e12374]
 ==== Example
-The following example configures a Syslog audit event handler that writes to the system log daemon on `syslogd.example.com`, port `6514` over TCP with a timeout of 30 seconds. The facility is the first one for local use, and response status is mapped to Syslog informational messages:
+This event handler sends messages to the plain TCP Syslog listener at `syslogd.example.com:514` with a 30-second connection timeout. It uses the `LOCAL0` facility and the default `INFORMATIONAL` severity.
 
 [source, json]
 ----
 {
     "class": "org.forgerock.audit.handlers.syslog.SyslogAuditEventHandler",
     "config": {
+        "name": "syslog",
+        "topics": ["access"],
         "protocol": "TCP",
-        "host": "https://syslogd.example.com",
-        "port": 6514,
+        "host": "syslogd.example.com",
+        "port": 514,
         "connectTimeout": 30000,
-        "facility": "local0",
-        "severityFieldMappings": [
-            {
-                "topic": "access",
-                "field": "response/status",
-                "valueMappings": {
-                    "FAILED": "INFORMATIONAL",
-                    "SUCCESSFUL": "INFORMATIONAL"
-                }
-            }
-        ]
+        "facility": "LOCAL0"
     }
 }
 ----
@@ -1088,7 +1278,7 @@ link:{apidocs-url}/org/forgerock/audit/handlers/syslog/SyslogAuditEventHandler.h
 
 [#d210e12408]
 ==== Description
-An audit event handler that responds to events by logging messages in the Elasticsearch search and analytics engine.
+An audit event handler that writes to the Elasticsearch search and analytics engine. The handler uses the document API for individual events and the Bulk API when buffering is enabled.
 
 The configuration is declared in an audit service configuration. For information, see xref:#AuditService[AuditService(5)].
 
@@ -1103,7 +1293,7 @@ To define an `ElasticsearchClientHandler`, create the following object in the he
 {
   "name": "ElasticsearchClientHandler",
   "type": "ClientHandler",
-  "config": {},
+  "config": {}
 }
 ----
 
@@ -1115,6 +1305,8 @@ To define an `ElasticsearchClientHandler`, create the following object in the he
 {
   "class": "org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandler",
   "config": {
+    "name": string,
+    "enabled": boolean,
     "connection" : {
       "host" : string,
       "port" : number,
@@ -1142,8 +1334,15 @@ The values in this configuration object can use expressions if they resolve to t
 --
 The `"config"` object has the following properties:
 
+`"name"`: __string, required__::
+The name of the event handler.
+
+`"enabled"`: __boolean, optional__::
+Whether this event handler is active.
+Default: `true`.
+
 `"connection"`: __object, optional__::
-Connection settings for sending messages to Elasticsearch. If this object is not configured, it takes default values for its fields. This object has the following fields:
+Connection settings for sending events to Elasticsearch. Omit this object to use the defaults.
 +
 [open]
 ====
@@ -1161,16 +1360,16 @@ The port used by Elasticsearch. The value must be between 0 and 65535.
 Default: `9200`
 
 `"useSSL"`: __boolean, optional__::
-Setting to use or not use SSL/TLS to connect to Elasticsearch.
+Whether to connect to Elasticsearch over HTTPS. With this setting disabled, the handler uses HTTP.
 
 +
 Default: `false`
 
 `"username"`: __string, optional__::
-Username when Basic Authentication is enabled through Elasticsearch Shield.
+The username for HTTP Basic authentication. The handler sends Basic credentials when both the username and password are non-empty.
 
 `"password"`: __string, optional__::
-Password when Basic Authentication is enabled through Elasticsearch Shield.
+The password for HTTP Basic authentication.
 
 ====
 
@@ -1181,7 +1380,7 @@ Defines how an audit event and its fields are stored and indexed.
 ====
 
 `"indexName"`: __string, optional__::
-The index name. Set this parameter if the default name `audit` conflicts with an existing Elasticsearch index.
+The index name prefix. The handler appends an underscore and the topic, for example `audit_access` for the `access` topic.
 
 +
 Default: `audit`.
@@ -1195,42 +1394,29 @@ Settings for buffering events and batch writes.
 ====
 
 `"enabled"`: __boolean, optional__::
-Setting to use or not use log buffering.
+Whether to buffer events and send them using the Elasticsearch Bulk API.
 
 +
 Default: false.
 
-`"writeInterval"`: __duration, required if buffering is enabled__::
-The interval at which to send buffered event messages to Elasticsearch. If buffering is enabled, this interval must be greater than 0.
-
-+
-Default: 1 second
+`"writeInterval"`: __duration, optional__::
+The interval at which to send buffered events to Elasticsearch. Use a duration of at least 1 millisecond.
+The default is 10 milliseconds.
 +
 include::../partials/sec-duration-description.adoc[]
 
 
 `"maxBatchedEvents"`: __number, optional__::
-The maximum number of event messages in a batch write to Elasticsearch for each `writeInterval`.
-
-+
-Default: 500
+The maximum number of events per batch. The default and minimum effective value are 500.
 
 `"maxSize"`: __number, optional__::
-The maximum number of event messages in the queue of buffered event messages.
-
-+
-Default: 10000
+The maximum number of queued events. The default and minimum effective value are 10,000.
 
 ====
 
-`"topics"`: __array of strings, required__::
-The topics that this event handler intercepts.
-
-+
-OpenIG handles access events that occur at the system boundary, such as arrival of the initial request and departure of the final response.
-
-+
-Set this to `"topics": [ "access" ]`.
+`"topics"`: __array of strings, optional__::
+The audit topics this handler receives. Set this to `["access"]` for OpenIG route audit events.
+Default: `[]`.
 
 --
 
@@ -1245,19 +1431,14 @@ The following example configures an Elasticsearch audit event handler:
 {
   "class" : "org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandler",
   "config" : {
+    "name" : "elasticsearch",
     "connection" : {
       "useSSL" : false,
       "host" : "localhost",
-      "port" : "9200"
+      "port" : 9200
     },
     "indexMapping" : {
       "indexName" : "audit"
-    },
-    "buffering" : {
-      "enabled" : false,
-      "maxSize" : 20000,
-      "writeInterval" : "1 second",
-      "maxBatchedEvents" : "500"
     },
     "topics" : [
       "access"

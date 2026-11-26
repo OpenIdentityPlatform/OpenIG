@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-gateway-templates]
+endif::env-site[]
 == Configuration Templates
+
+ifdef::env-site[]
+anchor:chap-gateway-templates[]
+endif::env-site[]
 
 This chapter contains template routes for common configurations.
 
@@ -34,7 +40,7 @@ When you move to use OpenIG in production, be sure to turn off DEBUG level loggi
 [#template-proxy-capture]
 === Proxy and Capture
 
-If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started], then you already proxy and capture both the application requests coming in and the server responses going out.
+If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started], then you already have a route that proxies requests and responses. See xref:chap-logging.adoc#chap-logging[Logging Events in OpenIG] to enable capture for this template.
 
 The route shown in xref:#example-proxy-capture[Proxy and Capture] uses a `DispatchHandler` to change the scheme to HTTPS on login. To use this template change the baseURI settings to match those of the target application.
 

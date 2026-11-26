@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -31,7 +31,9 @@ To protect applications from being overused by clients, use a throttling filter 
 ==== Description
 Limits the rate that requests pass through a filter. The maximum number of requests that a client is allowed to make in a defined time is called the __throttling rate__.
 
-The throttling filter uses a strategy based on the token bucket algorithm, which allows some bursts. Because of traffic bursts, the throttling rate can occasionally be higher than the defined limit - for example, with a throttling rate of 10 requests/10 seconds there can be more than 10 requests in the 10 second duration. However, the number of concurrent requests cannot exceed that defined for the throttling rate - for example, with a throttling rate of 10 requests/10 seconds there cannot be more than 10 concurrent requests.
+The filter uses a token bucket for each request partition. Each accepted request consumes one token and the bucket refills over time. A full bucket can absorb a burst with up to `numberOfRequests` requests. For example, with a rate of 10 requests per 10 seconds, a full bucket can accept 10 requests immediately and then accept more as tokens become available.
+
+The filter counts requests when they enter the filter. Requests can still be in progress when new tokens become available.
 
 When the throttling rate is reached, OpenIG issues an HTTP status code 429 `Too Many Requests` and a `Retry-After` header, whose value is rounded up to the number of seconds to wait before trying the request again.
 
@@ -55,13 +57,14 @@ GET http://openig.example.com:8080/throttle-scriptable HTTP/1.1
     "type": "ThrottlingFilter",
     "config": {
         "requestGroupingPolicy": expression,
-        "throttlingRatePolicy": reference or inline declaration,  //Use either "policy"
-        "rate": {                                                 //or "rate", but not both.
+        "throttlingRatePolicy": reference or inline declaration,
+        "rate": {
             "numberOfRequests": integer,
             "duration": duration string
         },
-        "cleaningInterval": duration string,
-        "executor": executor
+        "cleaningInterval": duration string or expression,
+        "executor": reference or inline declaration,
+        "strategy": string or expression
     }
 }
 ----
@@ -70,11 +73,11 @@ GET http://openig.example.com:8080/throttle-scriptable HTTP/1.1
 ==== Properties
 --
 
-`"requestGroupingPolicy"`: __expression, required__::
-An expression to identify the partition to use for the request. In many cases the partition identifies an individual client that sends requests, but it can also identify a group that sends requests. The expression can evaluate to the client IP address or user ID, or an OpenID Connect subject/issuer.
+`"requestGroupingPolicy"`: __runtime expression<string>, optional__::
+An expression that identifies the partition for each request, such as a client IP address, a user ID, or an OpenID Connect subject or issuer.
 
 +
-Default: Empty string. The value for this expression must not be null.
+The default is the empty string, which puts all requests in one partition. If the expression evaluates to null, the filter returns HTTP 500.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
@@ -89,25 +92,28 @@ A reference to or inline declaration of a policy to apply for throttling rate. T
 * xref:#DefaultRateThrottlingPolicy[DefaultRateThrottlingPolicy(5)]
 
 +
-This value for this parameter must not be null.
+If the policy returns null, the request proceeds without throttling.
 
-`"rate"`: __rate object, required if "throttlingRatePolicy" is not used__::
-The throttling rate to apply to requests. The rate is calculated as the number of requests divided by the duration.
+`"rate"`: __rate object, required if "throttlingRatePolicy" is omitted__::
+A fixed throttling rate, calculated as the number of requests divided by the duration. If both properties are present, the filter uses `rate`.
 
-`"numberOfRequests"`: __integer, required__::
-The number of requests allowed through the filter in the time specified by `"duration"`.
+`"numberOfRequests"`: __positive integer or expression<integer>, required__::
+The capacity of the token bucket. The heap evaluates expressions when it creates the rate.
 
-`"duration"`: __duration string, required__::
-A time interval during which the number of requests passing through the filter is counted.
+`"duration"`: __duration string or expression<string>, required__::
+The interval over which the bucket refills its capacity. It must be finite and at least 1 millisecond. The heap evaluates expressions when it creates the rate.
 +
 include::../partials/sec-duration-description.adoc[]
 
 
-`"cleaningInterval"`: __duration, optional__::
-The time to wait before cleaning outdated partitions. The value must be more than zero but not more than one day.
+`"cleaningInterval"`: __duration string or expression<string>, optional__::
+The delay between attempts to remove expired partitions. It must be greater than zero and at most one day. The heap evaluates the expression when it creates the filter. The default is `5 seconds`.
 
-`"executor"`: __executor, optional__::
-An executor service to schedule the execution of tasks, such as the clean up of partitions that are no longer used.
+`"strategy"`: __string or expression<string>, optional__::
+The throttling strategy. The default is `bursty`. The heap evaluates the expression when it creates the filter. All values currently select the token bucket strategy.
+
+`"executor"`: __reference or inline declaration, optional__::
+The scheduled executor service that removes expired partitions.
 
 +
 Default: `ScheduledExecutorService`
@@ -201,29 +207,20 @@ Maps different throttling rates to different groups of requests, according to th
 ==== Properties
 --
 
-`"throttlingRateMapper"`: __expression, required__::
-An expression to categorize requests for mapping to a throttling rate in the `throttlingRatesMapping`.
+`"throttlingRateMapper"`: __runtime expression<string>, required__::
+An expression that selects a throttling rate for each request. If its result is null or no key matches it, the policy uses `defaultRate`.
 
-+
-If this parameter is null or does not match any specified mappings, the default throttling rate is applied.
+`"throttlingRatesMapping"`: __object, optional__::
+A map whose keys are the possible results of `throttlingRateMapper` and whose values are rate objects. The names and number of entries are configurable. The default is an empty map.
 
-`"throttlingRatesMapping"`: __object, required__::
-A map of throttling rate by request group. Requests are categorized into groups by the evaluation of the expression `"throttlingRateMapper"`.
+`"defaultRate"`: __object, optional__::
+The fallback rate object. When the policy has neither a mapping for the request nor a fallback, the request proceeds without throttling.
 
-`"mapping1"` and `"mapping2"`: __string, required__::
-The evaluation of the expression `"throttlingRateMapper"`.
+`"numberOfRequests"`: __positive integer or expression<integer>, required__::
+The capacity of the token bucket. The heap evaluates expressions when it creates the rate.
 
-`"defaultRate"`: __object, required__::
-The default throttling rate to apply if the evaluation of the expression `"throttlingRateMapper"` is null or is not mapped to a throttling rate.
-
-+
-The number of mappings is not limited to two.
-
-`"numberOfRequests"`: __integer, required__::
-The number of requests allowed through the filter in the time specified by `"duration"`.
-
-`"duration"`: __duration string, required__::
-A time interval during which the number of requests passing through the filter is counted.
+`"duration"`: __duration string or expression<string>, required__::
+The interval over which the bucket refills its capacity. It must be finite and at least 1 millisecond. The heap evaluates expressions when it creates the rate.
 +
 include::../partials/sec-duration-description.adoc[]
 
@@ -291,7 +288,7 @@ link:{apidocs-url}/org/forgerock/openig/filter/throttling/MappedThrottlingPolicy
 
 [#d210e13515]
 ==== Description
-Uses a script to look up throttling rates to apply to groups of requests.
+Uses a script to look up throttling rates for requests. The script can return a `ThrottlingRate`, null, or a promise of either. When the policy supplies no rate, the request proceeds without throttling unless an enclosing xref:#DefaultRateThrottlingPolicy[DefaultRateThrottlingPolicy] supplies a fallback.
 
 [#d210e13525]
 ==== Usage
@@ -306,8 +303,10 @@ Uses a script to look up throttling rates to apply to groups of requests.
            "type": "ScriptableThrottlingPolicy",
            "config": {
                "type": string,
-               "file": string,     // Use either "file"
-               "source": string    // or "source", but not both
+               "file": string or expression,  // Use either "file"
+               "source": string,               // or "source", but not both
+               "args": map,
+               "clientHandler": reference or inline declaration
            }
        }
    }
@@ -321,8 +320,8 @@ Uses a script to look up throttling rates to apply to groups of requests.
 `"type"`: __string, required__::
 The Internet media type (formerly MIME type) of the script. For Groovy, the value is `"application/x-groovy"`.
 
-`"file"`: __string, required if "source" is not used__::
-The path to the file containing the script.
+`"file"`: __string or expression<string>, required if "source" is omitted__::
+The path to the file containing the script. The heap evaluates an expression when it creates the policy.
 
 +
 Relative paths in this field are relative to the base location for scripts, which depends on the configuration. For information, see xref:../gateway-guide/chap-install.adoc#install[Installing OpenIG] in the __Gateway Guide__.
@@ -330,8 +329,14 @@ Relative paths in this field are relative to the base location for scripts, whic
 +
 The base location for Groovy scripts is on the classpath when the scripts are executed. If a Groovy script is not in the default package, but instead has its own package name, it belongs in the directory corresponding to the package name. For example, a script in package `com.example.groovy` belongs under `openig-base/scripts/groovy/com/example/groovy/`.
 
-`"source"`: __string, required if "file" is not used__::
-The script as a string.
+`"source"`: __string, required if "file" is omitted__::
+The script as a literal string.
+
+`"args"`: __map, optional__::
+Named values available as variables in the script. The heap evaluates expressions in the values when it creates the policy, using heap properties and the `heap` binding. Argument names must differ from existing bindings.
+
+`"clientHandler"`: __reference or inline declaration, optional__::
+The handler used by the script's `http` client binding. The default is `ClientHandler`.
 
 --
 
@@ -439,7 +444,7 @@ Provides a default throttling rate if the delegating throttling policy returns `
 ==== Properties
 --
 
-`"delegateThrottlingRatePolicy"`: __reference, required__::
+`"delegateThrottlingRatePolicy"`: __reference or inline declaration, required__::
 The policy to which the default policy delegates the throttling rate. The `DefaultRateThrottlingPolicy` delegates management of throttling to the policy specified by `delegateThrottlingRatePolicy`.
 
 +
@@ -451,11 +456,11 @@ For information about policies to use, see xref:#MappedThrottlingPolicy[MappedTh
 `"defaultRate"`: __object, required__::
 The default throttling rate to apply if the delegating policy returns `null`.
 
-`"numberOfRequests"`: __integer, required__::
-The number of requests allowed through the filter in the time specified by `"duration"`.
+`"numberOfRequests"`: __positive integer or expression<integer>, required__::
+The capacity of the token bucket. The heap evaluates expressions when it creates the rate.
 
-`"duration"`: __duration string, required__::
-A time interval during which the number of requests passing through the filter is counted.
+`"duration"`: __duration string or expression<string>, required__::
+The interval over which the bucket refills its capacity. It must be finite and at least 1 millisecond. The heap evaluates expressions when it creates the rate.
 +
 include::../partials/sec-duration-description.adoc[]
 

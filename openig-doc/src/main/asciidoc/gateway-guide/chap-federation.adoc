@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-federation]
+endif::env-site[]
 == OpenIG As a SAML 2.0 Service Provider
+
+ifdef::env-site[]
+anchor:chap-federation[]
+endif::env-site[]
 
 The federation component of OpenIG is a standards-based authentication service used by OpenIG to validate users and log them in to applications that OpenIG protects. The federation component implements SAML 2.0. In this chapter, you will learn:
 
@@ -29,7 +35,7 @@ The federation component of OpenIG is a standards-based authentication service u
 
 * How to configure OpenIG as a service provider for a single application.
 
-xref:appendix-multiple-sps.adoc#appendix-multiple-sps[Appendix A, "SAML 2.0 and Multiple Applications] describes how to set up OpenIG as a SAML 2.0 service provider for two applications, using OpenAM as the identity provider.
+xref:appendix-multiple-sps.adoc#appendix-multiple-sps[SAML 2.0 and Multiple Applications] describes how to set up OpenIG as a SAML 2.0 service provider for two applications, using OpenAM as the identity provider.
 
 [#about-saml2]
 === About SAML 2.0 SSO and Federation
@@ -77,9 +83,9 @@ When SSO is initiated by the IDP, the IDP sends an unsolicited authentication st
 
 This tutorial assumes that you are familiar with SAML 2.0 federation and with the components involved, including OpenAM. For information about OpenAM, read the documentation for your version of OpenAM.
 
-This tutorial does not address PKI configuration for validation and encryption, although OpenIG is capable of handling both, just as any OpenAM Fedlet can handle both.
+This tutorial uses a local Fedlet setup and demo identities. For deployments, exchange metadata over a trusted channel, use HTTPS for the advertised endpoints, and configure signing and, where required, encryption keys for both peers.
 
-This tutorial takes you through the steps to set up OpenAM as an IDP and OpenIG as an SP to protect an application. To set up multiple SPs, read this chapter, work through the samples, and then consider the explanation in xref:appendix-multiple-sps.adoc#appendix-multiple-sps[Appendix A, "SAML 2.0 and Multiple Applications].
+This tutorial takes you through the steps to set up OpenAM as an IDP and OpenIG as an SP to protect an application. To set up multiple SPs, read this chapter, work through the samples, and then consider the explanation in xref:appendix-multiple-sps.adoc#appendix-multiple-sps[SAML 2.0 and Multiple Applications].
 
 [#d2528e3314]
 .Tasks for Configuring SAML 2.0 SSO and Federation
@@ -135,7 +141,7 @@ For examples of the federation configuration files, see xref:#example-fedlet-fil
 
 Configure the network so that browser traffic to the application hosts is proxied through OpenIG. The example in this chapter uses the host name `sp.example.com`.
 
-Add the following address to your hosts file: `sp.example.com`.
+Add the following entries to your hosts file when all services run on the same host.
 
 [source]
 ----
@@ -266,7 +272,7 @@ To test your setup, access the HTTP server home page through OpenIG at link:http
 ----
 $ cd $HOME/openam/myfedlets/sp
 $ unzip Fedlet.zip
-$ mkdir $HOME/.openig/SAML
+$ mkdir -p "$HOME/.openig/SAML"
 $ cp conf/* $HOME/.openig/SAML
 $ ls -l $HOME/.openig/SAML
 
@@ -286,6 +292,18 @@ sp.xml
 [#route-credential-injection]
 ==== Adding a Route for Credential Injection
 
+Add this object to the main configuration's `heap` array and restart OpenIG. Both SAML routes below use the same session manager.
+
+[source, json]
+----
+{
+  "name": "JwtSession",
+  "type": "JwtSession"
+}
+----
+
+For a deployment that needs existing sessions to survive restarts or to work across nodes, see xref:chap-install.adoc#keystore-for-jwt-encryption[Setting Up Keys For JWT Encryption].
+
 Create the configuration file `$HOME/.openig/config/routes/05-saml.json`.
 
 On Windows, the file name should be `%appdata%\OpenIG\config\routes\05-saml.json`.
@@ -303,13 +321,13 @@ On Windows, the file name should be `%appdata%\OpenIG\config\routes\05-saml.json
       "redirectURI": "/federate"
     }
   },
-  "condition": "${matches(request.uri.path, '^/saml')}",
+  "condition": "${matches(request.uri.path, '^/saml(/|$)')}",
   "session": "JwtSession"
 }
 ----
 The route injects credentials into the context, based on attribute values from the SAML assertion returned on successful authentication. Note the following features of the route:
 
-* The route matches requests to `/saml`.
+* The route matches requests under `/saml`.
 
 * The `SamlFederationHandler` extracts credentials from the attributes returned in the SAML 2.0 assertion. It then redirects to the `/federate` route.
 
@@ -399,21 +417,7 @@ If the credentials have been inserted into the context, or after successful auth
 * The route uses the `JwtSession` implementation, meaning it stores encrypted session information in a browser cookie. The name is a reference to the `JwtSession` object defined in `config.json`. For details, see xref:../reference/misc-conf.adoc#JwtSession[JwtSession(5)] in the __Configuration Reference__.
 
 
-[TIP]
-====
-If more dynamic control is needed for the URL where the user agent is redirected, then use the `RelayState` query string parameter in the URL of the redirect `Location` header. The `RelayState` query string parameter specifies where to redirect the user when the SAML 2.0 web browser SSO process is complete. The `RelayState` overrides the redirectURI set in the `SamlFederationHandler`. The `RelayState` value must be URL-encoded. When using an expression, use the `urlEncode()` function to encode the value. For example: `${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}`. In the following example, the user is finally redirected to the original URI from the request:
-
-[source, javascript]
-----
-"headers": {
-    "Location": [
-        "http://openig.example.com:8080/saml/SPInitiatedSSO?RelayState=${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}"
-    ]
-}
-----
-====
-
-
+The example uses a fixed post-login destination (the handler's `redirectURI`). If your integration uses `RelayState` to select a destination, validate it against the known application origins and paths, and URL-encode it as a query parameter.
 
 [#fed-tutorial-testing]
 === Testing the Configuration
@@ -423,7 +427,7 @@ If more dynamic control is needed for the URL where the user agent is redirected
 ==== Testing IDP-initiated SSO
 
 
-* Log out of the OpenAM console and select this link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank]. The OpenAM login page is displayed.
+* Open a private browser window to start with fresh sessions and select this link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank]. The OpenAM login page is displayed.
 
 * Log in to OpenAM with username `george` and password `costanza`. OpenIG returns the response page showing that the user has logged in.
 
@@ -437,7 +441,7 @@ image::images/saml-idp-initiated.png[]
 ==== Testing SP-initiated SSO
 
 
-* Log out of the OpenAM console, and browse to the URL for the route at link:http://openig.example.com:8080/federate[http://openig.example.com:8080/federate, window=\_blank]. The OpenAM login page is displayed.
+* Open a new private browser window and browse to the URL for the route at link:http://sp.example.com:8080/federate[http://sp.example.com:8080/federate, window=\_blank]. The OpenAM login page is displayed.
 
 * Log in to OpenAM with the username `george` and password `costanza`. OpenIG returns the response page showing that the user has logged in.
 
@@ -447,6 +451,15 @@ The following sequence diagram shows what just happened.
 image::images/saml-sp-initiated.png[]
 
 
+
+[#federation-upgrade-checks]
+==== Verifying Federation After an Upgrade
+
+Compare the metadata in the OpenIG `SAML` directory with the metadata imported by the IdP. Check the entity IDs, circle of trust, aliases, public hostnames and ports, and certificate fingerprints. The assertion consumer service and logout locations must match the deployed SAML routes and the bindings configured at both peers.
+
+. In separate browser sessions, test the SP-initiated flow and, if enabled by your IdP, the IdP-initiated flow. Confirm that the expected SP receives the assertion at its configured public hostname and returns the test user's application page.
+. While signed in, initiate logout through each configured SLO flow. For SP-initiated SLO, use the handler's `SPinitiatedSLOEndpoint` (by default, `/saml/SPInitiatedSLO` in this example). Check that the logout exchange uses the expected binding and that visiting the protected application again requires authentication.
+. If an exchange fails, check the OpenIG and IdP logs and compare the endpoint URL and binding with the metadata. If you operate multiple SPs, repeat the checks for each entity.
 
 [#example-fedlet-files]
 === Example Federation Configuration Files
@@ -470,7 +483,7 @@ sun-fm-saml2-writerservice-url=
 [#d2528e3948]
 ==== SAML Configuration File
 
-The following example of `$HOME/.openig/SAML/sp.xml` defines a SAML configuration file for an OpenIG service provider, `sp`:
+The following `$HOME/.openig/SAML/sp.xml` example uses the handler’s default SSO and logout endpoint names. Advertise only the bindings and endpoint URLs that your deployment serves.
 
 [source, xml]
 ----
@@ -485,10 +498,6 @@ The following example of `$HOME/.openig/SAML/sp.xml` defines a SAML configuratio
       Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
       Location="http://sp.example.com:8080/saml/fedletSloRedirect"
       ResponseLocation="http://sp.example.com:8080/saml/fedletSloRedirect"/>
-    <SingleLogoutService
-      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-      Location="http://sp.example.com:8080/saml/fedletSloPOST"
-      ResponseLocation="http://sp.example.com:8080/saml/fedletSloPOST"/>
     <SingleLogoutService
       Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
       Location="http://sp.example.com:8080/saml/fedletSloSoap"/>
@@ -604,7 +613,7 @@ The following example of `$HOME/.openig/SAML/sp-extended.xml` defines a SAML con
            <Value></Value>
        </Attribute>
        <Attribute name="appLogoutUrl">
-           <Value>http://sp1.example.com:8080/saml/logout</Value>
+           <Value>http://sp.example.com:8080/saml/logout</Value>
        </Attribute>
        <Attribute name="assertionTimeSkew">
            <Value>300</Value>

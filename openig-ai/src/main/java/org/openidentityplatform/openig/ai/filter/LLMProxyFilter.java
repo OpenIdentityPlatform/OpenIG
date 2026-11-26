@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2026 3A Systems LLC.
+ * Copyright 2026 3A Systems, LLC.
  */
 
 package org.openidentityplatform.openig.ai.filter;
@@ -265,9 +265,7 @@ public class LLMProxyFilter implements Filter {
         @Override
         public Object create() throws HeapException {
 
-            JsonValue evaluatedConfig = config.as(evaluatedWithHeapProperties());
-
-            String providerStr = evaluatedConfig.get("provider").required().asString();
+            String providerStr = config.get("provider").as(evaluatedWithHeapProperties()).required().asString();
             LLMProvider provider;
             try {
                 provider = LLMProvider.valueOf(providerStr.toUpperCase());
@@ -275,13 +273,15 @@ public class LLMProxyFilter implements Filter {
                 throw new HeapException("Unknown LLM provider '" + providerStr
                         + "'. Valid values: OPENAI, ANTHROPIC, MISTRAL, AZURE_OPENAI, OPENAI_COMPATIBLE", e);
             }
-            String apiKey = evaluatedConfig.get("apiKey").required().asString();
+            String apiKey = config.get("apiKey").as(evaluatedWithHeapProperties()).required().asString();
 
-            String baseUrl = evaluatedConfig.get("baseUrl").defaultTo(provider.getDefaultBaseUrl()).asString();
+            String baseUrl = config.get("baseUrl").as(evaluatedWithHeapProperties())
+                                   .defaultTo(provider.getDefaultBaseUrl()).asString();
 
-            boolean rateLimitEnabled = evaluatedConfig.get("rateLimitEnabled").defaultTo(true).asBoolean();
+            boolean rateLimitEnabled = config.get("rateLimitEnabled").as(evaluatedWithHeapProperties())
+                                             .defaultTo(true).asBoolean();
 
-            Expression<String> sub = evaluatedConfig.get("sub").defaultTo("anonymous").as(expression(String.class));
+            Expression<String> sub = config.get("sub").defaultTo("anonymous").as(expression(String.class));
 
             TokenRateLimiter rateLimiter = null;
             if (rateLimitEnabled) {

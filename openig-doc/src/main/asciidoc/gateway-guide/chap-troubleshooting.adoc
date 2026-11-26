@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -61,7 +61,7 @@ Cannot read/parse content of /Users/me/.openig/config/routes/99-default.json
 ----
 In this case, extra comma is spotted at line 8, column 33.
 
-Use a JSON editor or JSON validation tool such as link:http://jsonlint.com/[JSONLint, window=\_blank] to make sure your JSON is valid.
+Validate the file locally with a JSON-aware editor or a command such as `python3 -m json.tool 99-default.json`.
 
 
 [#troubleshooting-flat-file-values-not-correct]
@@ -131,7 +131,7 @@ OpenIG loads all configuration at startup. By default, it then periodically relo
 
 If you make changes to a route that result in an invalid configuration, OpenIG logs errors, but it keeps the previous, correct configuration, and continues to use the old route.
 
-OpenIG only uses the new configuration after you save a valid version or when you restart OpenIG.
+OpenIG picks up a valid replacement during the next scheduled scan. If scans are disabled, restart OpenIG to load the replacement.
 
 Of course, if you restart OpenIG with an invalid route configuration, then OpenIG tries to load the invalid route at startup and logs an error. In that case, if there is no default handler to accept any incoming request for the invalid route, then you see an error, `No handler to dispatch to`.
 
@@ -141,9 +141,9 @@ Of course, if you restart OpenIG with an invalid route configuration, then OpenI
 
 If you have copied routes from another OpenIG server, those routes might depend on environment or container configuration that you have not yet configured locally.
 
-You can work around this problem by changing the route file extension. A router ignores route files that do not have the `.json` extension.
+You can work around this problem by changing the route file extension. Use an extension such as `.inactive`. The router scans `.json` route files and, when OpenAPI support is enabled, it also checks `.json`, `.yaml`, and `.yml` for OpenAPI specifications.
 
-For example, suppose you copy route all sample route configurations from the documentation, and then start OpenIG without first configuring your container. This can result in an error such as the following:
+For example, suppose you copy all sample route configurations from the documentation, and then start OpenIG without first configuring your container. This can result in an error such as the following:
 
 [source]
 ----

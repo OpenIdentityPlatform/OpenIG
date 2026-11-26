@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2026 3A Systems LLC.
+ * Copyright 2026 3A Systems, LLC.
  */
 
 package org.openidentityplatform.openig.ai.filter;
@@ -20,6 +20,8 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
+import org.forgerock.openig.heap.HeapImpl;
+import org.forgerock.openig.heap.Name;
 import org.forgerock.services.context.AttributesContext;
 import org.forgerock.services.context.RootContext;
 import org.forgerock.util.promise.Promises;
@@ -30,7 +32,9 @@ import org.testng.annotations.Test;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.openig.util.JsonValues.expression;
 import static org.forgerock.util.time.Duration.duration;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,6 +96,23 @@ public class LLMProxyFilterTest {
 
         assertThat(response.getHeaders().getFirst(LLMProxyFilter.HEADER_RATE_LIMIT_REMAINING))
                 .isNotNull();
+    }
+
+    @Test
+    public void shouldResolveSubjectWithRequestAndHeapBindings() throws Exception {
+        Name name = Name.of("llmProxy");
+        HeapImpl heap = new HeapImpl(name);
+        heap.init(json(object(field("properties", object(field("tenant", "example"))))));
+        LLMProxyFilter filter = (LLMProxyFilter) new LLMProxyFilter.Heaplet().create(name,
+                json(object(
+                        field("provider", "OPENAI"),
+                        field("apiKey", "test-api-key"),
+                        field("sub", "${tenant}-${attributes.sub}"))), heap);
+
+        Response response = filter.filter(contextWithSubject("alice"), chatRequest(), mockNextHandler).get();
+
+        assertThat(response.getHeaders().getFirst(LLMProxyFilter.HEADER_LLM_IDENTITY))
+                .isEqualTo("example-alice");
     }
 
     @Test

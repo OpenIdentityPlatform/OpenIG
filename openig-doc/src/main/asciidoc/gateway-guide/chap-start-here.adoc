@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -153,7 +153,7 @@ __Decorators__ are additional heap objects that let you extend what another obje
     }
 }
 ----
-OpenIG also creates additional utility objects with default settings, including ClientHandler, __LogSink__, and __TemporaryStorage__. These objects can be referenced by name and do not need to be configured unless they are needed to override the default configurations.
+OpenIG supplies default heap objects such as `ClientHandler` and `TemporaryStorage`. Reference them by name or declare an object with the same name to override the default configuration.
 
 __Routes__ are configuration objects whose behavior is triggered when their conditions are matched. Routes inherit settings from their parent configurations. This means that you can configure global objects in the heap of the base configuration for example, and then reference the objects by name in any other OpenIG configuration.
 
@@ -171,13 +171,13 @@ A router does not explicitly specify any routes. Instead the router specifies a 
 
 The following example specifies a condition that is true when the request path is `/login`:
 
-[source, json]
+[source,javascript]
 ----
-"condition": "${matches(request.uri.path, '^/login')}"
+"condition": "${request.uri.path == '/login'}"
 ----
-If the route has no condition, or if the value of the condition is null, then the route matches any request. Furthermore, OpenIG orders routes lexicographically by file name.
+A route with no `condition` matches every request. A conditional route matches only when the expression evaluates to the boolean `true`. OpenIG tries routes in lexicographic order by route ID and uses the first match. The route ID for a JSON route configuration is its filename without `.json`.
 
-You can use these features to have both optional and default routes. For example, you could name your routes to check conditions in order: `01-login.json`, `02-protected.json`, `99-default.json`. Alternatively, you can name routes by using the name property on the route.
+For example, use `01-login.json`, `02-protected.json`, and `99-default.json` to check the login and protected routes before the fallback. Set the optional `name` field to change a route's display name.
 
 A router configuration can specify where to look for route files. As a router is a kind of handler, routes can have routers, too.
 
@@ -246,8 +246,7 @@ The route configuration in xref:#example-chain[Chain to a Protected Application]
             ],
             "handler": {
                 "type": "ClientHandler",
-                "comment": "Log the request, pass it to the protected application,
-                            and then log the response",
+                "comment": "Log the request, forward it to the application, and log the response",
                 "capture": "all",
                 "baseURI": "http://app.example.com:8081"
             }
@@ -255,7 +254,7 @@ The route configuration in xref:#example-chain[Chain to a Protected Application]
     }
 }
 ----
-The chain receives the request and context and processes it as follows:
+Enable the capture logger as described in xref:chap-logging.adoc#chap-logging[Logging Events in OpenIG] to see the HTTP messages in this example. The chain receives the request and context and processes it as follows:
 
 * The first `HeaderFilter` adds a header to the incoming request.
 
@@ -322,7 +321,7 @@ Use the following conventions when commenting to ensure your configuration files
 {
     "name": "capture",
     "type": "CaptureDecorator",
-    "comment": "Write request and response information to the LogSink",
+    "comment": "Log request and response information",
     "config": {
         "captureEntity": true
     }
@@ -368,7 +367,7 @@ xref:chap-password-capture-replay-tutorial.adoc#chap-password-capture-replay-tut
 This chapter walks you through an OpenAM integration with OpenAM's password capture and replay feature.
 
 xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider]::
-This chapter shows how to configure OpenIG as a SAML 2.0 Identity Provider.
+This chapter shows how to configure OpenIG as a SAML 2.0 service provider.
 
 xref:chap-oauth2-rs.adoc#chap-oauth2-rs[OpenIG As an OAuth 2.0 Resource Server]::
 This chapter explains how OpenIG acts as an OAuth 2.0 Resource Server, and follows with a tutorial that shows you how to use OpenIG as a resource server.
