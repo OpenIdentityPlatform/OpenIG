@@ -12,13 +12,13 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2026 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
 :example-caption!:
 :table-caption!:
-:openig-version: x.y.z
+include::../partials/openig-release-version.adoc[]
 
 
 [#chap-uma]
@@ -165,20 +165,7 @@ This tutorial uses `api.example.com` as the domain. Add `api.example.com` as an 
 ----
 127.0.0.1    openig.example.com api.example.com
 ----
-Edit `config.json` to comment the baseURI decoration in the top-level handler for OpenIG configuration. After you make the changes, the handler declaration appears as follows:
-
-[source, json]
-----
-{
-    "handler": {
-        "type": "Router",
-        "audit": "global",
-        "_baseURI": "http://app.example.com:8081",
-        "capture": "all"
-    }
-}
-----
-Restart Jetty for the changes to take effect. This allows you to view the token information that OpenAM returns.
+Use the main configuration from Getting Started. Its fallback route carries its own `baseURI`, so each UMA route can select its upstream independently.
 
 Now proceed to xref:#uma-openam-configuration[Setting Up OpenAM As an Authorization Server].
 
@@ -490,6 +477,11 @@ The CORS filter handles pre-flight (HTTP OPTIONS) requests, and responses for al
 import org.forgerock.http.protocol.Response
 import org.forgerock.http.protocol.Status
 
+def origin = request.headers['Origin']?.firstValue
+if (origin != 'http://api.example.com:8081') {
+    return next.handle(context, request)
+}
+
 if (request.method == 'OPTIONS') {
     /**
      * Supplies a response to a CORS preflight request.
@@ -530,7 +522,7 @@ return next.handle(context, request)
         // Skip headers if the response is a server error.
     } else {
         def headers = [
-                "Access-Control-Allow-Origin": request.headers['Origin']?.firstValue,
+                "Access-Control-Allow-Origin": origin,
                 "Access-Control-Allow-Credentials": "true",
                 "Access-Control-Expose-Headers": "WWW-Authenticate"
         ]
@@ -552,26 +544,26 @@ The `UmaFilter` manages requesting party access to protected resources, using th
 * The route matches requests to `api.example.com`.
 
 
-. Overload the default `ApiProtectionFilter` that protects the reserved routes for paths under `/openig` so that the UMA share API has CORS support.
-+
-You can reuse the CORS filter for this purpose.
-+
-Add the following declaration to the heap array in `config.json`:
+. For this local tutorial, add CORS support to the administrative application in `config/admin.json`. See xref:../reference/required-conf.adoc#admin-json[`admin.json`].
 +
 
 [source, json]
 ----
 {
-    "name": "ApiProtectionFilter",
-    "type": "ScriptableFilter",
-    "config": {
+  "heap": [
+    {
+      "name": "ApiProtectionFilter",
+      "type": "ScriptableFilter",
+      "config": {
         "type": "application/x-groovy",
         "file": "CorsFilter.groovy"
+      }
     }
+  ]
 }
 ----
 
-. After editing `config.json`, restart Jetty to reload the configuration.
+. Restart Jetty to load `admin.json`. CORS headers permit browser calls from the sample client origin. Configure API authentication and authorization before exposing administrative APIs beyond the lab.
 
 ====
 
@@ -589,7 +581,7 @@ Follow these steps to run the demonstration:
 The settings match if you are using the defaults described in this chapter. If not, unpack UMA sample client files from the minimal HTTP server described in xref:chap-quickstart.adoc#quickstart-sample-app[Install an Application to Protect] to a web server document location for your web server:
 +
 
-[source, console, subs="normal"]
+[source, console, subs="attributes,specialcharacters"]
 ----
 $ cd /path/to/web/server/files/
 $ jar -xvf /path/to/openig-doc-{openig-version}-jar-with-dependencies.jar uma

@@ -20,211 +20,113 @@ Copyright 2026 3A Systems, LLC.
 == OpenIG HTTP Client
 :imagesdir: ../
 
-This step details removing the dependency on the http-builder library and using the built-in CHF APIs instead. The migrated example script below demonstrates the basics of the CHF API: request creation, obtaining a response and reading its content as JSON (without forgetting to release resources).
+Use the built-in Common HTTP Framework (CHF) client from an OpenIG script to call another HTTP service. Both examples call OpenAM's session logout endpoint from a filter on a logout route.
 
 [[openig-http-client-background]]
 === Background
 
-In each script’s execution context there is an HTTP binding (Client interface) that provides you with a way to perform HTTP requests from within your script.
-
-From the Client API:
-
-[source,java]
-----
-class Client {
-   Promise<Response, NeverThrowsException> send(Request request);
-   Promise<Response, NeverThrowsException> send(Context context, Request request);
-}
-----
-
-There is only one thing that you can obviously do with this interface, that is, send an HTTP request. You do not get back the response directly, but you have the promise of a response. This is comparable to a Future on which you would attach listeners that get notified when the response has been fully received (or an error has happened).
-
-This part of the migration uses the Promise as a Future (blocking on a .get()). In essence, this migration step is all about creating and populating a CHF Request object.
+OpenIG exposes a CHF `Client` as the `http` script binding. `http.send(context, request)` returns a promise of a CHF response. Responses received by the script must be closed if the script consumes them. A response passed back to the caller remains open for the platform to send.
 
 [[openig-http-client-migrated-example-script]]
-==== Migrated example script
+==== Blocking example
 
-The following shows the above example script after it has been migrated to use the built-in CHF APIs:
+Save this script as `logout-blocking.groovy` under `$OPENIG_BASE/scripts/groovy/`. Supply `openamUrl` as a script argument, for example `https://openam.example.org/openam` without a trailing slash. Use the script only on an explicit logout route. Configure the client handler's connection and read timeouts to bound HTTP operations.
 
-[source,groovy]
+[source#http-client-blocking-script,groovy]
 ----
-// Check if OpenAM session cookie is present
-if (null != request.cookies[ 'iPlanetDirectoryPro' ]) {
-   String openAMCookieValue = request.cookies[ 'iPlanetDirectoryPro' ][ 0 ].value
+import org.forgerock.http.protocol.Request
 
-   logger.info("iPlanetDirectoryPro cookie found, performing logout")
+def token = request.cookies['iPlanetDirectoryPro']?.getAt(0)?.value
+if (!token) {
+    return next.handle(context, request)
+}
 
-   def logout = new Request()
-   logout.method = "POST"
-   logout.uri = "${openamUrl}/sessions"
-   logout.uri.query = "_action=logout"
-   logout.headers['iPlanetDirectoryPro'] = openAMCookieValue
+def logout = new Request()
+    .setMethod('POST')
+    .setUri(openamUrl + '/json/sessions/?_action=logout')
+logout.headers.put('iPlanetDirectoryPro', token)
 
-   // Block for at most 20 seconds before using the response
-   def logoutResponse = http.send(logout)
-                            .get(20, SECONDS)
-
-   def result = logoutResponse.entity.json.result
-   logger.info("OpenAM logout response: " + result)
-
-   // Don’t forget to release resources associated with the response
-   logoutResponse.close()
+def response = http.send(context, logout).getOrThrow()
+try {
+    if (response.status.successful) {
+        logger.info('OpenAM logout result: {}', response.entity.json.result)
+    } else {
+        logger.warn('OpenAM logout returned HTTP {}', response.status.code)
+    }
+} catch (IOException ignored) {
+    logger.warn('OpenAM logout response could not be read')
+} finally {
+    response.close()
 }
 
 return next.handle(context, request)
 ----
 
-The logic in this script is as follows:
-
-[arabic]
-. Request initialization: the following snippet of this script creates a POST request to the AM/OpenAM sessions endpoint (using Groovy String substitution). It specifies the logout action in the query URL component and places the current request’s SSO Token (the iPlanetDirectoryPro cookie) in a header (as this is where the sessions endpoint expects it):
-
-[source,groovy]
-----
-def logout = new Request()
-logout.method = "POST"
-logout.uri = "${openamUrl}/sessions"
-logout.uri.query = "_action=logout"
-logout.headers['iPlanetDirectoryPro'] = openAMCookieValue
-----
-
-[arabic, start=2]
-. Perform the request and wait for the response: the following snippet of this script uses the get() method. The returned promise can never throw an exception, which means you do not need to use the getOrThrow() variant of the get() method; if something goes wrong when making the request, you will receive a 502 Bad Gateway response. This example also includes a timeout to prevent deadlocks if there is no response. When the timeout is reached, a RuntimeException is returned; ideally the timeout should be configurable and IG/OpenIG provides the args configuration point in the script configuration, which can be used for this purpose:
-
-[source,groovy]
-----
-// Block for at most 20 seconds before using the response
-def logoutResponse = http.send(logout)
-                         .get(20, SECONDS)
-----
-
-[arabic, start=3]
-. Read the response's content using the CHF's native JSON support: the following snippet of this script calls logoutResponse.entity.json, which provides the JSON-parsed content of the message, with a focus on the result JSON attribute. The message is then closed to release resources:
-
-[source,groovy]
-----
-def result = logoutResponse.entity.json.result
-
-// Don’t forget to release resources associated with the response
-logoutResponse.close()
-----
-
-[arabic, start=4]
-. Call the next element of the chain and continue the request processing:
-
-[source,groovy]
-----
-return next.handle(context, request)
-----
+`getOrThrow()` waits for the HTTP response on the current thread. The script reads the logout result for a successful response and closes the response in `finally`, including when reading the JSON fails. It then continues the original request through the chain.
 
 [[openig-http-client-migrate-to-chf-asynchronous-apis]]
-=== Migrate to CHF asynchronous APIs
+=== Using the asynchronous CHF API
 
-This step details moving away from synchronous programming (where we spend valuable CPU time waiting for things to happen) to asynchronous programming (where we register callbacks to notify us when things are ready and act when that happens rather than waiting for something; this allows our valuable CPU time to do other things). It also introduces the http.send() returned Promise object, where it’s the promise of a response that may or may not have been received yet. Put simply, we want to read the response content after it has been received, log the result and then continue the chain execution.
-
-This step demonstrates adding an asynchronous function that calls the next element in the chain, after the response processing has been done.
+With the asynchronous API, the callback processes the response when it arrives. The script returns the chained promise immediately and the HTTP client timeouts still apply.
 
 [[openig-http-client-migrated-example-script-1]]
-==== Migrated example script
+==== Asynchronous example
 
-The following shows the example script after it has been migrated to use the CHF asynchronous APIs:
+Save this version as `logout-async.groovy` in the same scripts directory. It uses the same `openamUrl` argument.
 
-[source,groovy]
+[source#http-client-async-script,groovy]
 ----
-// Check if OpenAM session cookie is present
-if (null != request.cookies[ 'iPlanetDirectoryPro' ]) {
-   String openAMCookieValue = request.cookies[ 'iPlanetDirectoryPro' ][ 0 ].value
+import org.forgerock.http.protocol.Request
+import org.forgerock.util.AsyncFunction
 
-   logger.info("iPlanetDirectoryPro cookie found, performing logout")
-
-   def logout = new Request()
-   logout.method = "POST"
-   logout.uri = "${openamUrl}/sessions"
-   logout.uri.query = "_action=logout"
-   logout.headers['iPlanetDirectoryPro'] = openAMCookieValue
-
-   // Return the "promise" of a result => non-blocking
-   // Processing will happen when a response from AM will be received
-   return http.send(logout)
-              .then { response ->
-                   def result = response.entity.json.result
-                   logger.info("OpenAM logout response: " + result)
-                   response.close()
-                   return response
-              }
-              .thenAsync({
-                   next.handle(context, request)
-              } as AsyncFunction)
+def token = request.cookies['iPlanetDirectoryPro']?.getAt(0)?.value
+if (!token) {
+    return next.handle(context, request)
 }
 
-logger.info("iPlanetDirectoryPro cookie not found, continue and ignore logout action")
-return next.handle(context, request)
+def logout = new Request()
+    .setMethod('POST')
+    .setUri(openamUrl + '/json/sessions/?_action=logout')
+logout.headers.put('iPlanetDirectoryPro', token)
+
+return http.send(context, logout).thenAsync({ response ->
+    try {
+        if (response.status.successful) {
+            logger.info('OpenAM logout result: {}', response.entity.json.result)
+        } else {
+            logger.warn('OpenAM logout returned HTTP {}', response.status.code)
+        }
+    } catch (IOException ignored) {
+        logger.warn('OpenAM logout response could not be read')
+    } finally {
+        response.close()
+    }
+    return next.handle(context, request)
+} as AsyncFunction)
 ----
 
-As you can see, most of the changes have occurred towards the end of the script, with the response being processed using callbacks. Additionally, since we no longer block, we do not need a timeout to prevent deadlocks.
+To use the asynchronous version, place this filter on the logout route before its handler and set the OpenAM URL.
 
-The logic in this script is as follows:
-
-[arabic]
-. Process the response when it’s ready: the following snippet of this script introduces a then(Function) method to process this response. The callback Function provided in this then() method accepts the result of the invocation as a parameter, which can be processed as required; this example reuses the response processing logic from before to return the response (a result is expected from Function callbacks):
-
-[source,groovy]
+[source,json]
 ----
-return http.send(logout)
-           .then { response ->
-                def result = response.entity.json.result
-                logger.info("OpenAM logout response: " + result)
-                response.close()
-                return response
-           }
-----
-
-You must include the first return in this section of the script to ensure the promise that is configured with the response processing function is returned when the logout action is triggered. If you exclude the return, for example, the first line is simply:
-
-[source,groovy]
-----
-http.send(logout)
-----
-
-The script will execute, do an HTTP call, register a callback on the promise and then just continue. This means the logout action will get missed when there is an iPlanetDirectoryPro cookie, which is not the desired behavior of this script.
-
-[arabic, start=2]
-. Continue the execution of the chain after triggering the logout action: the following snippet of this script calls the next element of the chain by performing the call in a then-able fashion (chaining different then() methods together). You can use this approach because you will just see the response of the logout action when a request with an iPlanetDirectoryPro cookie enters the filter, rather than the usual response sent back from the protected application:
-
-[source,groovy]
-----
-           .thenAsync({
-               next.handle(context, request)
-           } as AsyncFunction)
+{
+  "type": "ScriptableFilter",
+  "config": {
+    "type": "application/x-groovy",
+    "file": "logout-async.groovy",
+    "args": {
+      "openamUrl": "https://openam.example.org/openam"
+    }
+  }
+}
 ----
 
 [[openig-http-client-groovy-specific-points]]
 ==== Groovy specific points
 
-* There is no return statement, because Groovy considers the last evaluated expression of a method to be the returned value.
-* The as AsyncFunction is only required for asynchronous functions (ResultHandler, ExceptionHandler and Function don’t need it). The Groovy compiler doesn’t handle all the generic types of AsyncFunction very well.
+The callback passed to `thenAsync` returns the promise from `next.handle(context, request)`. The explicit `as AsyncFunction` cast adapts the Groovy closure to the Promise API.
 
 [[openig-http-client-further-information-on-the-promise-object]]
 === Further information on the Promise object
 
-There are a number of then-able methods offered by the Promise API that you can try, which will make your code simpler and avoid 'callback hell'. These methods fall into the following categories:
-
-* `thenOn++*++(Handler)`: These methods are pure notification functions (on successful result, on error). You can’t return anything from within these methods, they are here as a side-effect-free type of handler. No exceptions should be thrown in theses callbacks.
-* then(Function), with 1, 2 or 3 Function arguments: These methods are designed for when you need to return something different to the next handler in the Promise chain (a transformation). They could be parsing an input string and return a JSON, or modifying the result. Throwing exceptions is accepted here and they will be propagated to the next functions in the Promise chain.
-* thenAsync(AsyncFunction), with 1, 2 or 3 AsyncFunction arguments: These methods are quite similar to those in then(Function). The real difference is that they have to return a promise of their result instead of the actual result. These methods are an ideal fit when you need to call another method that itself returns a promise (like returning the result of the filter’s chain).
-* `then++*++()`, the rest of the then-able methods (thenAlways(), thenFinally(), thenCatch(), ...): These methods are really syntactic sugar to make the promise more fluent to read.
-
-Now you can understand why our first then() can be turned into a thenOnResult() instead, which saves the last return statement as the received parameter is returned:
-
-[source,groovy]
-----
-return http.send(logout)
-           .thenOnResult { response ->
-               def result = response.entity.json.result
-               logger.info("OpenAM logout response: " + result)
-               response.close()
-           }
-           .thenAsync({
-               next.handle(context, request)
-           } as AsyncFunction)
-----
+Use `then` to transform a promise result, `thenAsync` when the callback returns another promise, and `thenOnResult` for a notification that preserves the result. If a callback consumes an HTTP response, close it there before continuing with a different result.

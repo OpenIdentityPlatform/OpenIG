@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-gateway-templates]
+endif::env-site[]
 == Configuration Templates
+
+ifdef::env-site[]
+anchor:chap-gateway-templates[]
+endif::env-site[]
 
 This chapter contains template routes for common configurations.
 
@@ -29,12 +35,14 @@ Before you use one of the templates here, install and configure OpenIG with a ro
 
 Next, take one of the templates and then modify it to suit your deployment. Read the summary of each template to find the right match for your application.
 
+In the password replay templates, the route's `baseURI` selects the upstream for pass-through requests and initial page fetches. The filter's `request.uri` selects the login endpoint.
+
 When you move to use OpenIG in production, be sure to turn off DEBUG level logging, and to deactivate `CaptureDecorator` use to avoid filling up disk space. Also consider locking down the `Router` configuration.
 
 [#template-proxy-capture]
 === Proxy and Capture
 
-If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started], then you already proxy and capture both the application requests coming in and the server responses going out.
+If you installed and configured OpenIG with a router and default route as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started], then you already have a route that proxies requests and responses. See xref:chap-logging.adoc#chap-logging[Logging Events in OpenIG] to enable capture for this template.
 
 The route shown in xref:#example-proxy-capture[Proxy and Capture] uses a `DispatchHandler` to change the scheme to HTTPS on login. To use this template change the baseURI settings to match those of the target application.
 
@@ -129,6 +137,7 @@ The route in xref:#example-simple-login[Simple Login Form] logs the user into th
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=simple')}"
 }
 ----
@@ -181,6 +190,7 @@ Some applications expect a cookie from the login page to be sent in the login re
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=cookie')}"
 }
 ----
@@ -260,6 +270,7 @@ The route uses a `CookieFilter` to manage cookies, ensuring that cookies from th
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=classic')}"
 }
 ----
@@ -342,6 +353,7 @@ Some applications call for extracting a hidden value from the login page and inc
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=hidden')}"
 }
 ----
@@ -454,6 +466,7 @@ The route in xref:#example-am-integration-headers[OpenAM Integration With Header
       "handler": "ClientHandler"
     }
   },
+  "baseURI": "http://app.example.com:8081",
   "condition": "${matches(request.uri.query, 'demo=headers')}"
 }
 ----
@@ -556,12 +569,12 @@ The route in xref:#example-owa-online[Microsoft Online Outlook Web Access] logs 
           ],
           "handler": {
             "type": "ClientHandler"
-          },
-          "baseURI": "https://login.microsoftonline.com"
+          }
         }
       }
     }
   },
+  "baseURI": "https://login.microsoftonline.com",
   "condition": "${matches(request.uri.query, 'demo=headers')}"
 }
 ----

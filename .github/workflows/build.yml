@@ -62,6 +62,30 @@ jobs:
       run: |
         python3 -m unittest discover -s openig-doc -p 'test_check_how_to_links.py'
         python3 openig-doc/check-how-to-links.py
+    - name: Check out documentation site inputs
+      if: matrix.os == 'ubuntu-latest' && matrix.java == '11'
+      uses: actions/checkout@v7
+      with:
+        repository: OpenIdentityPlatform/doc.openidentityplatform.org
+        path: openig-doc/target/doc-site
+        persist-credentials: false
+        sparse-checkout: |
+          /openam/antora.yml
+          /openam/modules/
+          /openig/antora.yml
+          /ui/ui-bundle.zip
+          /lib/nested-open-block.js
+          /package.json
+          /package-lock.json
+        sparse-checkout-cone-mode: false
+    - name: Check rendered OpenIG documentation links
+      if: matrix.os == 'ubuntu-latest' && matrix.java == '11'
+      run: |
+        python3 -m unittest discover -s openig-doc -p 'test_check_rendered_links.py'
+        npm ci --ignore-scripts --prefix openig-doc/target/doc-site
+        cp openig-doc/target/doc-site/openig/antora.yml openig-doc/target/asciidoc/antora/
+        (cd openig-doc && target/doc-site/node_modules/.bin/antora antora-preview.yml --log-failure-level error)
+        python3 openig-doc/check-rendered-links.py openig-doc/target/rendered-docs
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:

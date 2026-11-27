@@ -13,6 +13,7 @@
  *
  * Copyright 2010-2011 ApexIdentity Inc.
  * Portions Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyright 2026 3A Systems, LLC.
  */
 
 package org.forgerock.openig.el;
@@ -79,6 +80,14 @@ public class ExpressionTest {
         Expression<String> expr = Expression.valueOf("${null}", String.class);
         String o = expr.eval();
         assertThat(o).isNull();
+    }
+
+    @Test
+    public void shouldUseWholeStringsInReplace() throws ExpressionException {
+        Expression<String> expression = Expression.valueOf("${'identity-value'.replace(search, 'subject')}",
+                String.class);
+        assertThat(expression.eval(bindings("search", "value"))).isEqualTo("identity-subject");
+        assertThat(expression.eval(bindings("search", "vanished"))).isEqualTo("identity-value");
     }
 
     @Test

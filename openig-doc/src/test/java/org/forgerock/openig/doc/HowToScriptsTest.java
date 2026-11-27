@@ -23,8 +23,11 @@ import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.Signature;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,13 +56,8 @@ public class HowToScriptsTest {
     private static final String ARTICLE = "src/main/asciidoc/how-to/"
             + "how-to-protect-web-services-with-openig.adoc";
 
-    private String article() throws Exception {
-        return String.join("\n", Files.readAllLines(Paths.get(ARTICLE), StandardCharsets.UTF_8));
-    }
-
-    private String guardArticle() throws Exception {
-        return String.join("\n", Files.readAllLines(Paths.get("src/main/asciidoc/how-to/"
-                + "prompt-injection-mitigation-in-ai-systems-using-api-gateway.adoc"), StandardCharsets.UTF_8));
+    private static String article(String path) throws Exception {
+        return String.join("\n", Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8));
     }
 
     @DataProvider
@@ -138,17 +136,14 @@ public class HowToScriptsTest {
     }
 
     private Response filter(Request request, Response response) throws Exception {
-        String source = listing("[source#how-to-protect-web-services-with-openig-accept-script,groovy]");
+        String source = new String(Files.readAllBytes(Paths.get("src/main/asciidoc/attachments/how-to/accept.groovy")),
+                StandardCharsets.UTF_8);
         groovy.lang.Binding binding = new groovy.lang.Binding();
         binding.setVariable("request", request);
         binding.setVariable("context", new RootContext());
         binding.setVariable("next", (Handler) (context, incoming) -> Promises.newResultPromise(response));
         Script script = new GroovyShell(getClass().getClassLoader(), binding).parse(source);
         return (Response) ((Promise<?, ?>) script.run()).getOrThrow(5, TimeUnit.SECONDS);
-    }
-
-    private String listing(String marker) throws Exception {
-        return listing(article(), marker);
     }
 
     private String listing(String text, String marker) {
@@ -159,7 +154,7 @@ public class HowToScriptsTest {
     }
 
     private Script jwtScript(Binding binding) throws Exception {
-        String text = article();
+        String text = article(ARTICLE);
         return script(listing(text.substring(text.indexOf("`jwt.groovy`:\n")), "[source,Groovy]"), binding);
     }
 
@@ -198,18 +193,21 @@ public class HowToScriptsTest {
                 .isEqualTo(java.util.Collections.singletonMap("error", message));
     }
 
-    private Response runJwtScript(Request request, Map<String, String> issuers, Handler next) throws Exception {
+    private Response runJwtScript(Request request, Map<String, String> issuers, List<String> allowedRoles,
+                                  Map<String, Object> attributes, Handler next) throws Exception {
         Binding binding = new Binding();
         binding.setVariable("request", request);
         binding.setVariable("context", new RootContext());
         binding.setVariable("next", next);
         binding.setVariable("iss", issuers);
+        binding.setVariable("audience", "sample-api");
+        binding.setVariable("allowedRoles", allowedRoles);
+        binding.setVariable("attributes", attributes);
         return response(jwtScript(binding).run());
     }
 
-    private static String signedJwt(KeyPair keys, long expirationSeconds) throws Exception {
+    private static String signedJwt(KeyPair keys, String claims) throws Exception {
         Base64.Encoder base64 = Base64.getUrlEncoder().withoutPadding();
-        String claims = "{\"iss\":\"test\",\"name\":\"alice\",\"exp\":" + expirationSeconds + "}";
         String signingInput = base64.encodeToString("{\"alg\":\"RS256\",\"typ\":\"JWT\"}"
                 .getBytes(StandardCharsets.UTF_8)) + "." + base64.encodeToString(claims.getBytes(StandardCharsets.UTF_8));
         Signature signature = Signature.getInstance("SHA256withRSA");
@@ -219,13 +217,20 @@ public class HowToScriptsTest {
     }
 
     @DataProvider
-    public Object[][] jwtExpirations() {
+    public Object[][] jwtClaims() {
         long now = System.currentTimeMillis() / 1000;
-        return new Object[][] { { now + 600, 200 }, { now - 600, 401 } };
+        return new Object[][] {
+            { "sample-api", now + 600, "manager", 200 },
+            { "sample-api", now + 600, "supervisor", 200 },
+            { "sample-api", now + 600, "bad", 403 },
+            { "sample-api", now - 600, "manager", 401 },
+            { "sample-api", null, "manager", 401 },
+            { "other-api", now + 600, "manager", 401 },
+        };
     }
 
-    @Test(dataProvider = "jwtExpirations")
-    public void jwtScriptChecksExpiration(long expirationSeconds, int status) throws Exception {
+    @Test(dataProvider = "jwtClaims")
+    public void jwtScriptChecksClaims(String audience, Long expiration, String role, int status) throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
         KeyPair keys = generator.generateKeyPair();
@@ -234,14 +239,27 @@ public class HowToScriptsTest {
                         .encodeToString(keys.getPublic().getEncoded())
                 + "\n-----END PUBLIC KEY-----\n";
         Request request = new Request();
-        request.getHeaders().put("Authorization", "Bearer " + signedJwt(keys, expirationSeconds));
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", "test");
+        claims.put("sub", "user-123");
+        claims.put("name", "alice");
+        claims.put("role", role);
+        claims.put("aud", audience);
+        if (expiration != null) {
+            claims.put("exp", expiration);
+        }
+        String token = signedJwt(keys, new ObjectMapper().writeValueAsString(claims));
+        request.getHeaders().put("Authorization", "Bearer " + token);
+        Map<String, Object> attributes = new HashMap<>();
         AtomicBoolean forwarded = new AtomicBoolean();
         Handler next = (context, incoming) -> {
             forwarded.set(true);
             assertThat(incoming.getHeaders().getFirst("X-Auth-Username")).isEqualTo("alice");
+            assertThat(attributes).containsEntry("sub", "user-123").containsEntry("role", role);
             return Promises.newResultPromise(new Response(Status.OK));
         };
-        Response response = runJwtScript(request, Collections.singletonMap("test", pem), next);
+        Response response = runJwtScript(request, Collections.singletonMap("test", pem),
+                Arrays.asList("manager", "supervisor"), attributes, next);
         assertThat(response.getStatus().getCode()).isEqualTo(status);
         assertThat(forwarded.get()).isEqualTo(status == 200);
     }
@@ -251,25 +269,68 @@ public class HowToScriptsTest {
         Handler next = (context, incoming) -> {
             throw new AssertionError("next must not be called");
         };
-        Response response = runJwtScript(new Request(), Collections.<String, String>emptyMap(), next);
+        Response response = runJwtScript(new Request(), Collections.<String, String>emptyMap(),
+                Collections.<String>emptyList(), new HashMap<>(), next);
         assertJsonError(response, Status.UNAUTHORIZED, "Not Authenticated");
     }
 
-    private Script guardScript(String section, Binding binding) throws Exception {
-        String text = guardArticle();
-        return script(listing(text.substring(text.indexOf(section)), "[source,groovy]"), binding);
+    @DataProvider
+    public Object[][] logoutResponses() {
+        return new Object[][] {
+            { "blocking", "{\"result\":\"logged out\"}" },
+            { "blocking", "invalid JSON" },
+            { "async", "{\"result\":\"logged out\"}" },
+            { "async", "invalid JSON" },
+        };
+    }
+
+    @Test(dataProvider = "logoutResponses")
+    public void logoutScriptClosesResponseBeforeContinuing(String mode, String body) throws Exception {
+        String text = article("src/main/asciidoc/how-to/openig-http-client.adoc");
+        Request request = new Request();
+        request.getHeaders().put("Cookie", "iPlanetDirectoryPro=demo-cookie");
+        Response logoutResponse = new Response(Status.OK).setEntity(body);
+        Binding binding = new Binding();
+        binding.setVariable("request", request);
+        binding.setVariable("openamUrl", "https://openam.example.org/openam");
+        binding.setVariable("context", new RootContext());
+        binding.setVariable("logger", LoggerFactory.getLogger(HowToScriptsTest.class));
+        binding.setVariable("http", new Client((context, outgoing) -> {
+            assertThat(outgoing.getUri().asURI().toString())
+                    .isEqualTo("https://openam.example.org/openam/json/sessions/?_action=logout");
+            assertThat(outgoing.getMethod()).isEqualTo("POST");
+            assertThat(outgoing.getHeaders().getFirst("iPlanetDirectoryPro")).isEqualTo("demo-cookie");
+            return Promises.newResultPromise(logoutResponse);
+        }));
+        Response nextResponse = new Response(Status.NO_CONTENT);
+        binding.setVariable("next", (Handler) (context, incoming) -> {
+            assertThat(incoming).isSameAs(request);
+            try {
+                assertThat(logoutResponse.getEntity().getString()).isEmpty();
+            } catch (java.io.IOException e) {
+                throw new AssertionError(e);
+            }
+            return Promises.newResultPromise(nextResponse);
+        });
+        String source = listing(text, "[source#http-client-" + mode + "-script,groovy]");
+        assertThat(response(script(source, binding).run())).isSameAs(nextResponse);
+    }
+
+    private Script guardScript(String file, Binding binding) throws Exception {
+        return script(new String(Files.readAllBytes(Paths.get("src/main/asciidoc/attachments/how-to/ollama", file)),
+                StandardCharsets.UTF_8), binding);
     }
 
     @Test(dataProvider = "errors")
     public void requestGuardErrorsAreValidJson(Status status, String message) throws Exception {
-        Script script = guardScript("The `RequestGuardRail` filter uses", new Binding());
+        Script script = guardScript("RequestGuardRail.groovy", new Binding());
         assertJsonError((Response) script.invokeMethod("generateErrorResponse", new Object[] { status, message }),
                 status, message);
     }
 
     @Test(dataProvider = "errors")
     public void llmGuardErrorsAreValidJson(Status status, String message) throws Exception {
-        Script script = guardScript("The `LlmGuardRail` filter performs", new Binding());
+        Script script = guardScript("LlmGuardRail.groovy", new Binding());
         assertJsonError((Response) script.invokeMethod("generateErrorResponse", new Object[] { status, message }),
                 status, message);
     }
@@ -280,6 +341,7 @@ public class HowToScriptsTest {
             { "{\"error\":{\"message\":\"model not found\"}}", 403 },
             { "{\"choices\":[]}", 403 },
             { "{}", 403 },
+            { "invalid JSON", 403 },
             { "{\"choices\":[{}]}", 403 },
             { "{\"choices\":[{\"message\":{\"content\":\"SAFE\"}}]}", 200 },
             { "{\"choices\":[{\"message\":{\"content\":\"INJECTION\"}}]}", 403 },
@@ -304,7 +366,7 @@ public class HowToScriptsTest {
             forwarded.set(true);
             return Promises.newResultPromise(new Response(Status.OK));
         });
-        Response response = response(guardScript("The `LlmGuardRail` filter performs", binding).run());
+        Response response = response(guardScript("LlmGuardRail.groovy", binding).run());
         assertThat(response.getStatus().getCode()).isEqualTo(status);
         assertThat(forwarded.get()).isEqualTo(status == 200);
         if (status == 403) {

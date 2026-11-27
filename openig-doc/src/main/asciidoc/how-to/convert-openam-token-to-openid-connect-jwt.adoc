@@ -22,13 +22,15 @@ Copyright 2026 3A Systems, LLC.
 
 This route transforms an OpenAM session token into an OpenID Connect token using an OpenAM REST STS instance named `jwt` in the `/staff` realm. Configure that STS instance first, and supply the OpenAM URL and protected backend URL through the `openam` and `endpoint.api` system properties.
 
+The API route accepts an OpenAM session token in the incoming `Authorization` header. A missing session token or an STS response without an issued token results in HTTP 401. Only requests with an issued token reach the backend.
+
 See xref:../reference/filters-conf.adoc#TokenTransformationFilter[TokenTransformationFilter] for the filter configuration and the OpenAM authorization tutorial for a complete STS setup.
 
 [source,json]
 ----
 {
     "name": "10-api",
-    "condition": "${matches(request.uri.path, '^/api')}",
+    "condition": "${matches(request.uri.path, '^/api(/|$)')}",
     "monitor": true,
     "timer": true,
     "handler": {
@@ -47,28 +49,26 @@ See xref:../reference/filters-conf.adoc#TokenTransformationFilter[TokenTransform
                     }
                 },
                 {
-                    "type": "HeaderFilter",
+                    "type": "ConditionEnforcementFilter",
                     "config": {
-                        "messageType": "REQUEST",
-                        "remove": [
-                            "Authorization"
-                        ]
+                        "condition": "${not empty contexts.sts.issuedToken}",
+                        "failureHandler": {
+                            "type": "StaticResponseHandler",
+                            "config": {
+                                "status": 401,
+                                "headers": { "Content-Type": ["application/json"] },
+                                "entity": "{ \"error\": \"Unauthorized\" }"
+                            }
+                        }
                     }
                 },
                 {
-                    "type": "ConditionalFilter",
+                    "type": "HeaderFilter",
                     "config": {
-                        "condition": "${not empty contexts.sts.issuedToken}",
-                        "delegate": {
-                            "type": "HeaderFilter",
-                            "config": {
-                                "messageType": "REQUEST",
-                                "add": {
-                                    "Authorization": [
-                                        "Bearer ${contexts.sts.issuedToken}"
-                                    ]
-                                }
-                            }
+                        "messageType": "REQUEST",
+                        "remove": ["Authorization"],
+                        "add": {
+                            "Authorization": ["Bearer ${contexts.sts.issuedToken}"]
                         }
                     }
                 }
@@ -79,7 +79,6 @@ See xref:../reference/filters-conf.adoc#TokenTransformationFilter[TokenTransform
                     "bindings": [
                         {
                             "handler": "ClientHandler",
-                            "capture": ["filtered_request"],
                             "baseURI": "${system['endpoint.api']}"
                         }
                     ]

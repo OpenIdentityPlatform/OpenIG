@@ -20,7 +20,7 @@ Copyright 2026 3A Systems, LLC.
 == Authorization Flow with OpenAM and OpenIG
 :imagesdir: ../
 
-The browser accesses a protected API or UI through OpenIG. OpenIG redirects unauthenticated requests to OpenAM, validates the returned session token, and checks authorization before forwarding the request to the protected resource.
+The browser accesses a protected API or UI through OpenIG. OpenIG redirects unauthenticated requests to OpenAM, validates the session cookie sent by the browser, and checks authorization before forwarding the request to the protected resource.
 
 image:images/how-to/authorization-flow.svg[Authorization flow]
 
@@ -35,10 +35,10 @@ The sequence diagram is also available as text:
 title Authorization flow with OpenAM and OpenIG
 Browser -> OpenIG: GET /app (API or UI)
 note right of OpenIG: Authentication: check for a session token
-OpenIG -> Browser: Redirect to OpenAM /passport/UI/Login?goto=/app
+OpenIG -> Browser: Redirect to OpenAM /passport/UI/Login with the OpenIG /app URL as goto
 Browser -> OpenAM: Open the authentication UI
 note right of OpenAM: Registration or authentication
-OpenAM -> Browser: Session token
+OpenAM -> Browser: Set the session cookie and redirect to OpenIG
 Browser -> OpenIG: GET /app with the session token
 note right of OpenIG: Authentication: token valid and not revoked?
 note right of OpenIG: Authorization: user allowed to access /app?
@@ -48,6 +48,7 @@ else Access allowed
     note right of OpenIG: Optional profile enrichment and token conversion
     OpenIG -> Resource: GET /app with JWT and user information headers
     note right of Resource: Read the user identifier and roles
-    Resource -> Browser: API or UI response
+    Resource -> OpenIG: API or UI response
+    OpenIG -> Browser: API or UI response
 end
 ----

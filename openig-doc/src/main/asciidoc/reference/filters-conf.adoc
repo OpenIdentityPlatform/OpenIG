@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2026 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#filters-conf]
+endif::env-site[]
 == Filters
+
+ifdef::env-site[]
+anchor:filters-conf[]
+endif::env-site[]
 
 Filter objects intercept requests and responses during processing.
 [#AssignmentFilter]
@@ -101,7 +107,7 @@ This is an example of how you would capture credentials and store them in the Op
         "onRequest": [
             {
                 "target": "${session.authUsername}",
-                "value": "${request.form['username'][0]}",
+                "value": "${request.form['username'][0]}"
             },
             {
                 "target": "${session.authPassword}",
@@ -127,6 +133,39 @@ This is an example of how you would capture credentials and store them in the Op
 [#d210e4696]
 ==== Javadoc
 link:{apidocs-url}/org/forgerock/openig/filter/AssignmentFilter.html[org.forgerock.openig.filter.AssignmentFilter, window=\_blank]
+
+'''
+[#ChainOfFilters]
+=== ChainOfFilters — reuse a sequence of filters
+
+`filters` is a required array of filter names or inline filter declarations. OpenIG evaluates the filters in array order and calls the enclosing chain's next filter or handler at the end. Use `ChainOfFilters` where a single filter is expected.
+
+[source,json]
+----
+{
+    "name": "ResponseFilters",
+    "type": "ChainOfFilters",
+    "config": {
+        "filters": ["ResponseHeaders", "LocationRewriter"]
+    }
+}
+----
+
+[#ConditionalFilter]
+=== ConditionalFilter — run a filter when a condition matches
+
+`condition` is a required boolean or boolean runtime expression. `delegate` is a required filter name or inline filter declaration. When the condition is true, OpenIG executes the delegate. When it is false, processing continues with the next filter or handler.
+
+[source,json]
+----
+{
+    "type": "ConditionalFilter",
+    "config": {
+        "condition": "${request.method == 'POST'}",
+        "delegate": "PostFilter"
+    }
+}
+----
 
 '''
 [#ConditionEnforcementFilter]
@@ -264,6 +303,7 @@ Encrypts or decrypts headers in a request or response.
         "operation": string,
         "key": expression,
         "algorithm": string,
+        "charset": string or expression,
         "keyType": string,
         "headers": [ string, ... ]
     }
@@ -297,6 +337,9 @@ Algorithm used for encryption and decryption.
 
 +
 Default: `AES/ECB/PKCS5Padding`
+
+`"charset"`: __string or expression<string>, optional__::
+The character encoding used to decode decrypted header bytes. The heap evaluates the expression when it creates the filter. The default is `UTF-8`.
 
 `"keyType"`: __string, optional__::
 Algorithm name for the secret key.
@@ -359,7 +402,7 @@ Extracts regular expression patterns from a message entity. The extraction resul
         "target": lvalue-expression,
         "bindings": [
             {
-                "key": string,
+                "key": string or expression,
                 "pattern": pattern,
                 "template": pattern-template
             }, ...
@@ -396,8 +439,11 @@ The object stored in the target location is a Map<String, String>. You can then 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"key"`: __string, required__::
-Name of element in target object to contain an extraction result.
+`"bindings"`: __array of objects, required__::
+The extraction rules. Each object contains a `key`, a `pattern`, and an optional `template`.
+
+`"key"`: __string or expression<string>, required__::
+The name of the result in the target object. The heap evaluates each key when it creates the filter. The resulting keys must be unique.
 
 `"pattern"`: __pattern, required__::
 The regular expression pattern to find in the entity.
@@ -422,7 +468,7 @@ Extracts a nonce from the response, which is typically a login page, and sets it
 
 The pattern finds all matches in the HTTP body of the form `wpLogintoken value="abc"`. Setting the template to `$1` assigns the value `abc` to `attributes.extract.wpLoginToken`:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "WikiNoncePageExtract",
@@ -433,7 +479,7 @@ The pattern finds all matches in the HTTP body of the form `wpLogintoken value="
         "bindings": [
             {
                 "key": "wpLoginToken",
-                "pattern": "wpLoginToken\"\s.*value=\"(.*)\"",
+                "pattern": "wpLoginToken\"\\s.*value=\"(.*)\"",
                 "template": "$1"
             }
         ]
@@ -442,7 +488,7 @@ The pattern finds all matches in the HTTP body of the form `wpLogintoken value="
 ----
 The following example reads the response looking for the OpenAM login page. When found, it sets `isLoginPage = true` to be used in a SwitchFilter to post the login credentials:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "FindLoginPage",
@@ -453,7 +499,7 @@ The following example reads the response looking for the OpenAM login page. When
         "bindings": [
             {
                 "key": "isLoginPage",
-                "pattern": "OpenAM\s\(Login\)",
+                "pattern": "OpenAM\\s\\(Login\\)",
                 "template": "true"
             }
         ]
@@ -502,7 +548,7 @@ For an example see xref:../gateway-guide/chap-credentials-tutorial.adoc#tutorial
 --
 
 `"file"`: __expression, required__::
-The file containing the record to be read.
+The file containing the record to be read. The heap evaluates the expression when it creates the filter.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
@@ -544,7 +590,7 @@ Default: `true`.
 A list of keys in the order they appear in a record.
 
 +
-If `fields` is not set, the keys are assigned automatically by the column numbers of the file.
+When `header` is `true` and `fields` is omitted or empty, the lookup uses the first row as the field names. When `header` is `false`, supply the field names explicitly to enable lookups by `key`.
 
 `"target"`: __lvalue-expression, required__::
 Expression that yields the target object to contain the record.
@@ -574,15 +620,15 @@ link:{apidocs-url}/org/forgerock/openig/filter/FileAttributesFilter.html[org.for
 [#JwtBuilderFilter]
 === JwtBuilderFilter — creates a JSON Web Token (JWT)
 
-Creates a JSON Web Token (JWT) with runtime data and puts the JWT into the link:{apidocs-url}/org/openidentityplatform/openig/filter/JwtBuilderContext.java[JwtBuilderContext, window=\_blank]
+Creates a JSON Web Token (JWT) with runtime data and puts the JWT into the link:{apidocs-url}/org/openidentityplatform/openig/filter/JwtBuilderContext.html[JwtBuilderContext, window=\_blank].
 
-Configure JwtBuilderFilter create a signed JWT or a signed then encrypted JWT.
+Configure `signature` to sign the JWT, and `encryption` to encrypt it. When both are configured, the filter signs the JWT first and then encrypts it. When both are omitted, the JWT is unsigned and unencrypted.
 
-To retrieve secrets from environment or system properties, the xref:misc-conf.adoc#SystemAndEnvSecretStore[SystemAndEnvSecretStore] object should be declared in a heap.
+Declare a xref:misc-conf.adoc#SystemAndEnvSecretStore[SystemAndEnvSecretStore] in the heap to retrieve key material from environment variables or system properties. Encode binary key material as Base64 for the default secret store format.
 
 ==== Usage
 
-[source, json]
+[source, text]
 ----
 {
   "name": string,
@@ -590,13 +636,13 @@ To retrieve secrets from environment or system properties, the xref:misc-conf.ad
   "config": {
     "template": map or runtime expression<map>,
     "signature": {
-      "secretId": configuration expression<string>,
-      "algorithm": configuration expression<string>
+      "secretId": string,
+      "algorithm": string
     },
     "encryption": {
-      "secretId": configuration expression<string>,
-      "algorithm": configuration expression<string>,
-      "method": configuration expression<string>
+      "secretId": string,
+      "algorithm": string,
+      "method": string
     }
   }
 }
@@ -622,16 +668,26 @@ A map of one or more data pairs with the format `Map<String, Object>`, where:
 ====
 A JWT signature to allow the authenticity of the claims/data to be validated. A signed JWT can be encrypted.
 
-The encryption settings take precedence over this property.
-
-`"secretId"`: configuration expression<string>, required if signature is used::
+`"secretId"`: string, required if signature is used::
 The secret ID of the key to sign the JWT.
 
-`"algorithm"`: configuration expression<string>, optional::
+`"algorithm"`: string, optional::
 +
-The algorithm to sign the JWT.
-+
-Default: RS256
+The JWT signature algorithm. The default is `RS256`. The secret store must supply the key bytes appropriate for the selected algorithm.
+
+[cols="2,3",options="header"]
+|===
+|Algorithm |Key bytes
+
+|`HS256`, `HS384`, `HS512`
+|HMAC shared secret
+
+|`RS256`, `RS384`, `RS512`
+|DER-encoded PKCS#8 RSA private key
+
+|`ES256`, `ES384`, `ES512`
+|DER-encoded PKCS#8 EC private key
+|===
 ====
 
 `"encryption"`: object, optional::
@@ -640,18 +696,29 @@ Default: RS256
 ====
 Configuration to encrypt the JWT.
 
-This property takes precedence over the signature settings.
-
-`"secretId"`: string, optional::
-+
+`"secretId"`: string, required if encryption is used::
 The secret ID of the key used to encrypt the JWT.
 
 
-`"algorithm"`: configuration expression<string>, required::
-The algorithm used to encrypt the JWT.
+`"algorithm"`: string, required::
+The JWE key management algorithm.
 
-`"method"`: configuration expression<enumeration>, required::
-The method used to encrypt the JWT.
+[cols="2,3",options="header"]
+|===
+|Algorithm |Key bytes
+
+|`RSA1_5`, `RSA-OAEP`, `RSA-OAEP-256`
+|DER-encoded X.509 SubjectPublicKeyInfo for an RSA public key
+
+|`A128KW`, `A192KW`, `A256KW`
+|Raw AES key for key wrapping
+
+|`dir`
+|Raw content encryption key of the length required by `method`
+|===
+
+`"method"`: string, required::
+The JWE content encryption method. Supported values are `A128CBC-HS256`, `A192CBC-HS384`, `A256CBC-HS512`, `A128GCM`, `A192GCM`, and `A256GCM`.
 ====
 
 ==== Example
@@ -663,7 +730,6 @@ The method used to encrypt the JWT.
   "config": {
     "template": {
       "sub": "${request.headers['X-User-ID'][0]}",
-      "exp": "${now.plusSeconds(20).epochSeconds}",
       "iss": "my-issuer"
     },
     "signature": {
@@ -719,7 +785,7 @@ Indicates the type of message to filter headers for. Must be one of: `"REQUEST"`
 The names of header fields to remove from the message.
 
 `"add"`: __object, optional__::
-Header fields to add to the message. The `name` specifies the header name, with an associated array of string values.
+A map from header names to arrays of strings or expressions that evaluate to strings. For `REQUEST`, the filter evaluates the expressions before forwarding the request. For `RESPONSE`, it evaluates them after the downstream handler returns, with both the request and response available.
 
 --
 
@@ -785,9 +851,9 @@ link:{apidocs-url}/org/forgerock/openig/filter/HeaderFilter.html[org.forgerock.o
 ==== Description
 Performs authentication through the HTTP Basic authentication scheme. For more information, see link:http://www.ietf.org/rfc/rfc2617.txt[RFC 2617, window=\_blank].
 
-If challenged for authentication via a `401 Unauthorized` status code by the server, this filter retries the request with credentials attached. Once an HTTP authentication challenge is issued from the remote server, all subsequent requests to that remote server that pass through the filter include the user credentials.
+The filter replaces the incoming `Authorization` header with a Basic authentication header before forwarding the first request. It generates the header from `username` and `password` or reuses a cached header for the upstream server.
 
-If authentication fails (including the case of no credentials yielded from expressions), then processing is diverted to the specified authentication failure handler.
+If the upstream server returns `401 Unauthorized` for a cached header, the filter evaluates the credentials again and retries once. A `401 Unauthorized` for freshly evaluated credentials, or a null username or password, sends the request to `failureHandler`.
 
 [#d210e5552]
 ==== Usage
@@ -801,7 +867,7 @@ If authentication fails (including the case of no credentials yielded from expre
         "username": expression,
         "password": expression,
         "failureHandler": Handler reference,
-        "cacheHeader": boolean
+        "cacheHeader": boolean or expression
     }
 }
 ----
@@ -831,11 +897,11 @@ Provide either the name of a Handler object defined in the heap, or an inline Ha
 +
 See also xref:handlers-conf.adoc#handlers-conf[Handlers].
 
-`"cacheHeader"`: __boolean, optional__::
-Whether to cache credentials in the session after the first successful authentication, and then replay those credentials for subsequent authentications in the same session.
+`"cacheHeader"`: __boolean or expression<boolean>, optional__::
+Whether to store newly generated credentials in the session before sending them upstream. The cache is keyed by the request URI's scheme, host, and port. The same session can reuse the header for requests to that server.
 
 +
-With `"cacheHeader": false`, the filter generates the header for each request. This is useful, for example, when users change their passwords during a browser session.
+With `"cacheHeader": false`, the filter generates the header for each request. The heap evaluates a `cacheHeader` expression when it creates the filter.
 
 +
 Default: `true`
@@ -865,172 +931,67 @@ link:{apidocs-url}/org/forgerock/openig/filter/HttpBasicAuthFilter.html[org.forg
 
 '''
 
+[#ICAP]
+=== ICAP — send request bodies to an ICAP service
+
+The filter sends nonempty request bodies in ICAP `REQMOD` requests. An ICAP `204` lets the original request continue. For an ICAP `200`, OpenIG adds ICAP status and response headers to the request. With `rewrite` enabled, OpenIG returns the encapsulated HTTP response to the caller. With `rewrite` disabled, it continues processing. ICAP errors are logged and processing continues.
+
+`"server"` (configuration expression or string, required)::
+ICAP server URI, for example `icap://icap.example.com:1344`. The default port is `1344` when omitted from the URI. When the URI expression resolves to a blank value, the filter passes requests through.
+
+`"service"` (configuration expression or string, optional)::
+Name of the ICAP request modification service. The default is an empty string.
+
+`"rewrite"` (configuration expression or string, optional)::
+Whether to return the encapsulated HTTP response. The default is `"true"`.
+
+`"connect_timeout"`, `"read_timeout"` (configuration expression or string, optional)::
+Connection and read timeouts in milliseconds. The expression must resolve to an integer value such as `"5000"`. Defaults are `"5000"` and `"15000"`, respectively.
+
+See xref:../how-to/how-to-setup-icap-filter-for-dlp-and-antivirus-protection.adoc[Set Up ICAP for DLP and Antivirus Protection] for a route example.
+
+'''
 [#LLMPromptGuardFilter]
-=== LLMPromptGuardFilter — detect and block prompt-injection attacks
-Intercepts outgoing LLM API requests and scans every prompt for prompt-injection
-attacks before the request reaches the downstream model.
-Implements mitigations for
-https://owasp.org/www-project-top-10-for-large-language-model-applications/[OWASP LLM Top 10 (2025), window=_blank]
-risks LLM01 (Prompt Injection) and LLM07 (System Prompt Leakage).
+=== LLMPromptGuardFilter — detect prompt injection in LLM requests
 
-Detection runs as a short-circuiting chain: the first layer that flags a prompt
-stops evaluation and applies the configured action.
-Layers run in this fixed order:
-
-cols="1,3,1", options="header"]
-|===
-|Layer |Detector |Typical latency
-
-|1
-|*RegexDetector* — deterministic pattern matching against `patternFile`.
-Applies Unicode NFD normalisation, strips invisible characters (zero-width
-spaces, RTL overrides U+202A–202E), and performs Base64 decode-then-scan.
-Covers override instructions, roleplay bypass, prompt exfiltration, delimiter
-injection, and encoding obfuscation.
-|< 1 ms
-
-|2
-|*TypoglycemiaDetector* — catches injection keywords whose interior letters
-have been transposed to evade exact matching
-(e.g. `jialbrek` for `jailbreak`).
-Uses a fingerprint gate followed by unrestricted Damerau-Levenshtein distance.
-Controlled by `typoglycemiaEnabled`, `typoglycemiaMaxEditDist`,
-`typoglycemiaMinWordLen`, and `typoglycemiaExtraKeywords`.
-|< 1 ms
-|===
-
-When injection is detected the filter applies one of three configurable actions:
-
-* `BLOCK` — returns an HTTP error response (default 400). The request never reaches the LLM.
-* `LOG_ONLY` — logs an audit event only
-
-==== Usage
-
-[source, json]
-----
-{
-  "name": string,
-  "type": "LLMPromptGuardFilter",
-  "config": {
-    "action":                        string,
-    "patternFile":                   string,
-    "typoglycemiaEnabled":           boolean,
-    "typoglycemiaMaxEditDist":       integer,
-    "typoglycemiaMinWordLen":        integer,
-    "typoglycemiaKeywords":          string,
-    "blockResponse": {
-      "status":                      integer,
-      "body":                        string
-    }
-  }
-}
-----
+The filter scans text in the `messages` array of an OpenAI chat-completions request, including string `content` and `text` fields in content blocks. It checks regex patterns first, followed by the optional detector for keywords with transposed letters. Requests with no prompt text pass through.
 
 ==== Properties
 
---
+`"action"` (string, optional)::
+`BLOCK` logs a warning and returns `400 Bad Request` with `Content-Type: application/json`, an `X-Blocked-Reason` header, and a body containing `error` (`prompt_injection_detected`) and `reason` fields. `LOG_ONLY` logs detections at `WARN` and forwards the request. If reading or parsing the request body throws an I/O error, either action returns `400 Bad Request` with reason `request_parse_error`. The default action is `BLOCK`. An unknown action prevents the filter from loading.
 
-`"enabled"`: __boolean, optional__::
-When `false`, the filter passes all requests through without scanning.
-Useful for disabling the filter on a route without removing it from the chain.
-+
-Default: `true`
+`"patternFile"` (URL string, optional)::
+A URL to a JSON array of objects with string fields `reason` and `regex`. For a local file, use a URL such as `file:///opt/openig/config/injection-patterns.json`. When this setting is omitted, OpenIG loads its bundled `injection-patterns.json`. A blank URL, inaccessible resource, or invalid JSON leaves the regex detector with an empty list and writes a warning.
 
-`"action"`: __string, optional__::
-Action to take when a prompt injection is detected.
-+
-Must be one of:
-+
-`BLOCK`;;
-Return the response defined by `blockResponse`. The request does not reach
-the LLM.
-`LOG_ONLY`;;
-Emit a structured audit event only. No headers are modified and the request
-is not blocked.
-+
-Default: `"BLOCK"`
+`"typoglycemiaEnabled"` (boolean, optional)::
+Enables the detector for keywords with transposed letters. The default is `true`.
 
-`"patternFile"`: __string, optional__::
-Path to the JSON file that defines the regex injection
-patterns used by layer 1 (RegexDetector).
-+
-The file must be a JSON array of objects, each with a `"reason"` string and
-a `"regex"` string:
-+
-[source, json]
-----
-[
-  { "reason": "override_instruction", "regex": "(?i)ignore\\s+all\\s+previous\\s+instructions" },
-  { "reason": "prompt_exfiltration",  "regex": "(?i)repeat\\s+your\\s+system\\s+(prompt|instructions)" }
-]
-----
-+
-If the file is absent from the classpath, the built-in default pattern set
-is used automatically.
+`"typoglycemiaMaxEditDist"` (integer, optional)::
+Maximum Damerau–Levenshtein edit distance for the keyword detector. The default is `2`.
 
-`"typoglycemiaEnabled"`: __boolean, optional__::
-Enables layer 2 (TypoglycemiaDetector), which detects injection keywords
-with transposed interior letters.
-+
-Default: `true`
+`"typoglycemiaMinWordLen"` (integer, optional)::
+Minimum word length considered by the keyword detector. The default is `4`.
 
-`"typoglycemiaMaxEditDist"`: __integer, optional__::
-Maximum unrestricted Damerau-Levenshtein distance between a word in the
-prompt and a known injection keyword for the word to be flagged.
-Only used when `typoglycemiaEnabled` is `true`.
-+
-Default: `3`
-
-`"typoglycemiaMinWordLen"`: __integer, optional__::
-Minimum word length considered by the typoglycemia detector.
-Words shorter than this value are never compared against the keyword list.
-Only used when `typoglycemiaEnabled` is `true`.
-+
-Default: `4`
-
-`"typoglycemiaKeywords"`: __strings, optional__::
-Path to a JSON file that defines the regex keywords to add to the typoglycemia detector's list.
-Only used when `typoglycemiaEnabled` is `true`.
-
-`"blockResponse"`: __object, optional__::
-Defines the HTTP response returned to the client when `action` is `BLOCK`.
-+
-[open]
-====
-`"status"`: __integer, optional__::
-HTTP status code of the block response.
-+
-Default: `400`
-
-`"body"`: __string, optional__::
-Response body of the block response.
-+
-Default: `{"error":"prompt_injection_detected"}`
-====
-
---
+`"typoglycemiaKeywords"` (URL string, optional)::
+A URL to a JSON array of keyword strings. When omitted, OpenIG loads its bundled `typoglycemia-keywords.json`. If loading fails, the keyword detector receives an empty list. This setting is used when `typoglycemiaEnabled` is `true`.
 
 ==== Example
-[source, json]
+
+[source,json]
 ----
 {
-  "name": "PromptGuard",
-  "type": "LLMPromptGuardFilter",
-  "config": {
-    "action":                        "BLOCK",
-    "typoglycemiaEnabled":           true,
-    "typoglycemiaMaxEditDist":       3,
-    "typoglycemiaMinWordLen":        4,
-    "blockResponse": {
-      "status": 400,
-      "body":   "{\"error\":\"prompt_injection_detected\"}"
+    "name": "PromptGuard",
+    "type": "LLMPromptGuardFilter",
+    "config": {
+        "action": "BLOCK",
+        "typoglycemiaEnabled": true
     }
-  }
 }
 ----
 
 ==== Javadoc
-link:{apidocs-url}/org/openidentityplatform/openig/filter/llm/LLMPromptGuardFilter.html[org.openidentityplatform.openig.filter.llm.LLMPromptGuardFilter, window=_blank]
+link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/LLMPromptGuardFilter.html[org.openidentityplatform.openig.ai.filter.LLMPromptGuardFilter, window=\_blank]
 
 
 '''
@@ -1045,7 +1006,7 @@ link:{apidocs-url}/org/openidentityplatform/openig/filter/llm/LLMPromptGuardFilt
 correct authentication header for the configured provider.
 * Token-based rate limiting – estimates the prompt-token cost of each
 request and enforces per-identity limits.
-Returns `429 Too Many Requests` with an exact `Retry-After` header when the bucket is exhausted.
+When the bucket cannot cover the estimated cost, the filter returns `429 Too Many Requests` and a `Retry-After` value in seconds, rounded down.
 
 ==== Usage
 
@@ -1054,15 +1015,15 @@ Returns `429 Too Many Requests` with an exact `Retry-After` header when the buck
 {
     "type": "LLMProxyFilter",
     "config": {
-        "provider"          : string, expression, required,
-        "baseUrl"           : string, expression, optional,
-        "apiKey"            : string, expression, required,
-        "sub"               : string, optional, expression, default "anonymous"
-        "rateLimitEnabled"  : boolean, optional, default true
+        "provider": string or expression,
+        "baseUrl": string or expression,
+        "apiKey": string or expression,
+        "sub": string or runtime expression,
+        "rateLimitEnabled": boolean or expression,
         "rate": {
-            "numberOfTokens"  : optional, expression, number,
-            "duration"        : duration,
-            "cleaningInterval"  : duration, expression, optional
+            "numberOfTokens": integer,
+            "duration": duration string,
+            "cleaningInterval": duration string
         }
     }
 }
@@ -1070,45 +1031,53 @@ Returns `429 Too Many Requests` with an exact `Retry-After` header when the buck
 
 ==== Properties
 
-`"provider"`: __expression, required__::
-LLM Provider, allowed values are: `OPENAI`, `ANTHROPIC`, `MISTRAL`, `AZURE_OPENAI`,
-`OPENAI_COMPATIBLE`.
+The heap evaluates expressions in `provider`, `baseUrl`, `apiKey`, and `rateLimitEnabled` when it creates the filter.
 
-`"baseUrl"`: __expression, optional__::
-Custom URL for an LLM provider.
+`"provider"`: __string or expression<string>, required__::
+The upstream LLM provider. The filter recognizes `OPENAI`, `ANTHROPIC`, `MISTRAL`, `AZURE_OPENAI`, and `OPENAI_COMPATIBLE` case-insensitively.
 
-`"apiKey"`: __expression, required__::
-API-key for an LLM provider, if using Ollama, set any non-empty value.
-
-`"sub"`: __expression, optional__::
-Identity subject to restrict token usage.
+`"baseUrl"`: __string or expression<string>, required for AZURE_OPENAI and OPENAI_COMPATIBLE__::
+The destination URL, including the complete upstream path. The filter replaces the incoming URL with this value and appends the original query string without decoding it. Supply a URL without a query string.
 +
-Default `anonymous`.
+[cols="1,2",options="header"]
+|===
+|Provider |Default URL
 
-`"rateLimitEnabled"`: __expression, optional__::
-Enables token usage control.
-+
-Default: true
+|`OPENAI`
+|`https://api.openai.com/v1`
+
+|`ANTHROPIC`
+|`https://api.anthropic.com/v1`
+
+|`MISTRAL`
+|`https://api.mistral.ai/v1`
+
+|`AZURE_OPENAI`, `OPENAI_COMPATIBLE`
+|Supply the upstream URL
+|===
+
+`"apiKey"`: __string or expression<string>, required__::
+The API key for the configured provider. For an Ollama endpoint that does not check the key, supply any non-empty value.
+
+`"sub"`: __string or runtime expression<string>, optional__::
+The identity used to track token usage. The filter evaluates expressions that use request bindings for each request, with heap properties also available. Members of the HTTP Request object use the current request even when a heap property named `request` declares the same member. Configuration-only members of that heap property can supply a fixed identity or select an EL template at startup, including through conditional expressions. For bindings such as `attributes`, the request takes precedence and a complete EL template read from the heap can be selected at startup. Templates can also come from a JVM property or an escaped expression in the route JSON. The filter evaluates the selected template for each request. The default is `anonymous`, which also applies when the expression returns null or an empty string.
+
+`"rateLimitEnabled"`: __boolean or expression<boolean>, optional__::
+Enables token rate limiting. The default is `true`.
 
 `"rate"`: __object, optional__::
 [open]
 ====
-Rate limit settings:
+Token rate settings. Supply literal values for these fields. The filter reads them only when `rateLimitEnabled` is `true`.
 
-`"numberOfTokens"`: __number, optional::
-Amount of tokens per time window.
-+
-Default: 10000
+`"numberOfTokens"`: __positive integer, optional__::
+Token bucket capacity per identity and the number of tokens replenished over the configured duration. The default is `10000`.
 
-`"duration"`: __expression, optional::
-Token usage duration (time window).
-+
-Default: 1 minute
+`"duration"`: __duration string, optional__::
+The refill duration. It must be finite and at least 1 millisecond. The default is `1 minute`.
 
-`"cleaningInterval"`: __expression, optional::
-Token bucket eviction period
-+
-Default: 5 minutes
+`"cleaningInterval"`: __duration string, optional__::
+How long an identity's token bucket remains cached after its last access. The interval is measured in whole milliseconds. A zero-length interval expires the bucket immediately. The default is `5 minutes`.
 ====
 
 ==== Example
@@ -1134,7 +1103,7 @@ Default: 5 minutes
 ----
 
 ==== Javadoc
-link:{apidocs-url}/index.html/org/openidentityplatform/openig/ai/filter/LLMProxyFilter.java.html[org.openidentityplatform.openig.ai.filter.LLMProxyFilter, window=\_blank]
+link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/LLMProxyFilter.html[org.openidentityplatform.openig.ai.filter.LLMProxyFilter, window=\_blank]
 
 
 '''
@@ -1160,7 +1129,6 @@ For example, if OpenIG listens on `\https://proxy.example.com:443/` and the appl
     }
 }
 ----
-An alternative value for type is RedirectFilter.
 
 [#d210e5684]
 ==== Properties
@@ -1197,20 +1165,19 @@ link:{apidocs-url}/org/forgerock/openig/filter/LocationHeaderFilter.html[org.for
 
 '''
 [#MCPServerFeaturesFilter]
-=== MCPServerFeaturesFilter — restrict access to MCP server features.
+=== MCPServerFeaturesFilter — restrict access to MCP server features
 
 [#MCPServerFeaturesFilter-description]
-An MCPServerFeaturesFilter enforces allow/deny policies for MCP (https://modelcontextprotocol.io/specification/2025-11-25[Model Context Protocol, target="_blank"]):
-features exchanged as JSON-RPC payloads with an MCP server. It inspects both
+The filter enforces allow and deny policies for features exchanged as JSON-RPC payloads with a https://modelcontextprotocol.io/specification/2025-11-25[Model Context Protocol (MCP) server, window=\_blank]. It inspects both
 incoming requests and outgoing responses and removes or rejects features
 according to the configured rules.
 
 ==== Usage
 
-[source, json]
+[source, text]
 ----
 {
-     "type": "MCPFeaturesFilter",
+     "type": "MCPServerFeaturesFilter",
      "config": {
          "allow": {
              "tools": [tools names list],
@@ -1230,6 +1197,10 @@ according to the configured rules.
 
 ==== Properties
 
+Each feature type matches identifiers exactly and case-sensitively. Use names for tools and prompts, URIs for resources, and URI template strings for resource templates. An omitted or empty list imposes no restriction for that feature type.
+
+For operations subject to identifier checks, a deny match takes precedence, and a non-empty allow list limits which identifiers are accepted. List responses use the allow list when it is non-empty and the deny list otherwise. Keep allow and deny rules for a feature type disjoint when configuring the filter.
+
 `"allow"`: __allowed MCP server features, optional__::
 This object represents allowed MCP server features:
 +
@@ -1242,8 +1213,8 @@ A list of allowed MCP server tool names
 A list of allowed MCP server prompt names
 `"resources"`: __array of strings, optional__::
 A list of allowed MCP server resource URIs
-`"resources/templates"` :__array of strings, optional__::
-A list of allowed MCP server resources template URIs
+`"resources/templates"`: __array of strings, optional__::
+A list of allowed MCP server resource URI templates.
 ====
 +
 Default: Empty object.
@@ -1260,8 +1231,8 @@ A list of denied MCP server tool names
 A list of denied MCP server prompt names
 `"resources"`: __array of strings, optional__::
 A list of denied MCP server resource URIs
-`"resources/templates"` :__array of strings, optional__::
-A list of denied MCP server resource templates URIs
+`"resources/templates"`: __array of strings, optional__::
+A list of denied MCP server resource URI templates.
 ====
 +
 Default: Empty object.
@@ -1272,7 +1243,7 @@ Default: Empty object.
 [source, json]
 ----
 {
-     "type": "MCPFeaturesFilter",
+     "type": "MCPServerFeaturesFilter",
      "config": {
          "allow": {
              "tools": ["get_weather"],
@@ -1286,7 +1257,7 @@ Default: Empty object.
 ----
 
 ==== Javadoc
-link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/MCPServerFeaturesFilter[org.openidentityplatform.openig.ai.filter.MCPServerFeaturesFilter, window=\_blank]
+link:{apidocs-url}/org/openidentityplatform/openig/ai/filter/MCPServerFeaturesFilter.html[org.openidentityplatform.openig.ai.filter.MCPServerFeaturesFilter, window=\_blank]
 
 
 '''
@@ -1345,11 +1316,11 @@ Restore authorization state in the specified target location and call the next f
     "failureHandler": Handler reference,
     "discoveryHandler": Handler reference,
     "loginHandler": Handler reference,
-    "registrations": [ ClientRegistration reference(s) ],
+    "registrations": ClientRegistration reference, inline declaration, or array of either,
     "metadata": dynamic registration client metadata object,
     "cacheExpiration": duration string,
     "executor": executor,
-    "target": expression,
+    "target": lvalue-expression,
     "defaultLoginGoto": expression,
     "defaultLogoutGoto": expression,
     "requireHttps": boolean,
@@ -1444,34 +1415,26 @@ Provide either the name of a Handler object defined in the heap, or an inline Ha
 For an example of a login handler where no client registrations are defined, see xref:../gateway-guide/chap-oauth2-client.adoc#oidc-discovery-setup-gateway[Preparing OpenIG for Discovery and Dynamic Registration] in the __Gateway Guide__. The following example shows a login handler that allows the user to choose from two client registrations: `openam` and `google`:
 +
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "NascarPage",
     "type": "StaticResponseHandler",
     "config": {
         "status": 200,
-        "entity": "<html><p><a
-                   href='/openid/login?registration=openam&goto=${urlEncodeQueryParameterNameOrValue(contexts.router.originalUri)}'
-                   >OpenAM Login</a></p>
-                   <p><a
-                   href='/openid/login?registration=google&goto=${contexts.router.originalUri}'
-                   >Google Login</a></p>
-                   </html>"
+        "headers": { "Content-Type": ["text/html; charset=UTF-8"] },
+        "entity": "<html><p><a href='/openid/login?registration=openam&amp;goto=${urlEncodeQueryParameterNameOrValue(toString(contexts.router.originalUri))}'>OpenAM Login</a></p><p><a href='/openid/login?registration=google&amp;goto=${urlEncodeQueryParameterNameOrValue(toString(contexts.router.originalUri))}'>Google Login</a></p></html>"
     }
 }
 ----
 +
 See also xref:handlers-conf.adoc#handlers-conf[Handlers].
 
-`"registrations"`: __Array of ClientRegistration references or inline ClientRegistration declarations, optional__::
-List of client registrations that authenticate OpenIG to the identity providers. The list must contain all client registrations that are to be used by the client filter.
-
-+
-The value represents a static client registration with an identity provider as described in xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)].
+`"registrations"`: __ClientRegistration reference or inline declaration, or array of either, optional__::
+The static client registrations that OpenIG uses to authenticate to identity providers. Specify one heap object name, one inline declaration, or an array of names and declarations. See xref:misc-conf.adoc#ClientRegistration[ClientRegistration(5)].
 
 `"metadata"`: __client metadata object, required for dynamic client registration and ignored otherwise__::
-This object holds client metadata as described in link:https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata[OpenID Connect Dynamic Client Registration 1.0, window=\_blank], and optionally a list of scopes. See that document for additional details and a full list of fields.
+OpenIG sends this object to the provider's registration endpoint when registering a new client. See link:https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata[OpenID Connect Dynamic Client Registration 1.0, window=\_blank] for client metadata fields.
 
 +
 This object can also hold client metadata as described in RFC 7591, link:https://tools.ietf.org/html/rfc7591[OAuth 2.0 Dynamic Client Registration Protocol, window=\_blank]. See that RFC for additional details.
@@ -1484,10 +1447,10 @@ The following partial list of metadata fields is not exhaustive, but includes me
 The array of redirection URIs to use when dynamically registering this client.
 
 `"client_name"`: __string, optional__::
-Name of the client to present to the end user.
+Name of the client to present to the end user. If the provider returns `client_name` in the registration response, OpenIG uses it as the dynamic xref:misc-conf.adoc#ClientRegistration[registration name]. Otherwise it uses the returned `client_id`.
 
 `"scopes"`: __array of strings, optional__::
-Array of scope strings to request of the OpenID Provider.
+Array of scope strings to send as dynamic registration metadata. For the subsequent authorization request, OpenIG uses the `scopes` array returned by the provider in the registration response. The response defaults to an empty scope list when it omits `scopes`.
 
 ====
 
@@ -1501,7 +1464,7 @@ OpenIG lazily fetches user info from the OpenID provider. In other words, OpenIG
 include::../partials/sec-duration-description.adoc[]
 
 +
-Default: 20 seconds
+Default: 10 minutes
 
 +
 Set this to disabled or zero to disable caching. When caching is disabled, user info is still lazily fetched.
@@ -1515,8 +1478,8 @@ Default: `ScheduledExecutorService`
 +
 See also xref:misc-conf.adoc#ScheduledExecutorService[ScheduledExecutorService(5)].
 
-`"target"`: __expression, optional__::
-Expression that yields the target object whose value is to be set, such as `${attributes.openid}`.
+`"target"`: __lvalue-expression, optional__::
+A writable expression where OpenIG stores the authorization state, such as `${attributes.openid}`.
 
 +
 Default: `${attributes.openid}`
@@ -1614,7 +1577,7 @@ An OAuth2ResourceServerFilter is a filter that validates a request containing an
 ----
 Authorization: Bearer 1fc0e143-f248-4e50-9c13-1d710360cec9
 ----
-The filter extracts the access token, and then validates it against the configured tokenInfoEndpoint URL.
+Send the token in the `Authorization: Bearer` header. The filter extracts bearer tokens exclusively from that header. The filter passes the token to the configured access token resolver. By default, it queries the OpenAM endpoint specified by `tokenInfoEndpoint`.
 
 On successful validation, the filter creates a new context for the authorization server response, at `${contexts.oauth2}`.
 
@@ -1655,14 +1618,14 @@ If the scopes for the access token do not match the specified required scopes, t
   }
 }
 ----
-An alternative value for type is OAuth2RSFilter.
+The `OAuth2RSFilter` alias is equivalent to `OAuth2ResourceServerFilter`.
 
 [#d210e6434]
 ==== Properties
 --
 
 `"accessTokenResolver"`: __reference, optional__::
-Resolves an access token against an Authorization Server. Currently, supports the link:{apidocs-url}/org/forgerock/openig/filter/oauth2/ScriptableAccessTokenResolver.html[`ScriptableAccessTokenResolver`, window=\_blank] to customize the default access token resolution algorithm. The example below utilizes the `token.groovy` script to resolve an access token.
+Name or inline declaration of an access token resolver. Use xref:#ScriptableAccessTokenResolver[ScriptableAccessTokenResolver] for a custom lookup, as in the following example.
 +
 [source, json]
 ----
@@ -1695,11 +1658,11 @@ The list of required OAuth 2.0 scopes for this protected resource.
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"tokenInfoEndpoint"`: __URL string, required__::
-The URL to the token info endpoint of the OAuth 2.0 authorization server.
+`"tokenInfoEndpoint"`: __URL string or configuration expression, required when `accessTokenResolver` is omitted__::
+The URL of the OpenAM token info endpoint. The built-in resolver requires this setting and has no default URL. A custom resolver receives the filter configuration and can define its own settings.
 
 `"cacheExpiration"`: __duration string, optional__::
-Duration for which to cache OAuth 2.0 access tokens.
+Maximum duration for caching access token information. Cached information also expires when the token expires.
 
 +
 Caching allows OpenIG to avoid repeated requests for token info when reusing the information over a short period.
@@ -1710,7 +1673,7 @@ include::../partials/sec-duration-description.adoc[]
 Default: 1 minute
 
 +
-Set this to disabled or zero to disable caching. When caching is disabled, each request triggers a new request to the authorization server to verify the access token.
+Set this to `"disabled"` or a zero duration to call the resolver on each request.
 
 `"executor"`: __executor, optional__::
 An executor service to schedule the execution of tasks, such as the eviction of entries in the access token cache.
@@ -1799,8 +1762,7 @@ response through unchanged.
 
 *Validation report in the context*
 
-Before delegating to either error handler, the filter places validation report
-object into `AttributesContext` under the key `openApiValidationReport`.
+Before delegating to either error handler, the filter stores the validation message list in `AttributesContext`. Expressions can read it as `attributes.openApiValidationReport`.
 
 *Auto-loading from the routes directory*
 
@@ -1811,7 +1773,7 @@ See xref:handlers-conf.adoc#Router[Router(5)] for details.
 
 ==== Usage
 
-[source, json]
+[source, text]
 ----
 {
     "name": string,
@@ -1839,7 +1801,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 `"failOnResponseViolation"`: __boolean, optional__::
 Controls the behaviour when response validation fails.
 +
-* `true` — return a `502 Bad Gateway` error response.
+* `true` — invoke `responseValidationErrorHandler`, which returns `503 Service Unavailable` by default.
 * `false` — log a warning at `WARN` level and pass the original response through.
 +
 Default: `false`.
@@ -1850,8 +1812,7 @@ Handler invoked when request validation fails.
 Provide either the name of a Handler object defined in the heap, or an inline Handler
 configuration object.
 +
-Default: a built-in handler equivalent to the following declaration, which returns
-`400 Bad Request`
+Default: a built-in handler that returns `400 Bad Request` with the validation report in a plain-text response body.
 +
 See also xref:handlers-conf.adoc#handlers-conf[Handlers].
 
@@ -1861,8 +1822,7 @@ Handler invoked when response validation fails and `failOnResponseViolation` is 
 Provide either the name of a Handler object defined in the heap, or an inline Handler
 configuration object.
 +
-Default: a built-in handler equivalent to the following declaration, which returns
-`503 Service Unavailable`
+Default: a built-in handler that returns `503 Service Unavailable` with the validation report in a plain-text response body.
 +
 See also xref:handlers-conf.adoc#handlers-conf[Handlers].
 
@@ -1884,7 +1844,7 @@ Response violations are logged as warnings but do not block the response.
             "name": "ApiValidator",
             "type": "OpenApiValidationFilter",
             "config": {
-                "spec": "${read('/opt/openig/config/routes/api.yaml')}",
+                "spec": "${read('/opt/openig/config/specs/api.yaml')}",
                 "failOnResponseViolation": false,
                 "requestValidationErrorHandler": {
                     "type": "StaticResponseHandler",
@@ -1978,8 +1938,8 @@ The request configuration object has the following fields:
 `"method"`: __string, required__::
 The HTTP method to be performed on the resource such as `GET` or `POST`.
 
-`"uri"`: __string, required__::
-The fully qualified URI of the resource to access such as `\http://www.example.com/login`.
+`"uri"`: __string or runtime expression<string>, required__::
+The URI of the resource to access, such as `\http://www.example.com/login`. The filter evaluates an expression for each request.
 
 `"entity"`: __expression, optional__::
 The entity body to include in the request.
@@ -1991,7 +1951,7 @@ This setting is mutually exclusive with the `form` setting when the `method` is 
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 `"form"`: __object, optional__::
-A form to include in the request.
+The form parameters. The filter encodes them in the request body for `POST` and appends them to the URI query for other methods.
 
 +
 The `param` specifies the form parameter name. Its value is an array of expressions to evaluate as form field values.
@@ -2027,13 +1987,13 @@ For example, the following expression specifies that an HTTP GET to the path `/l
 ${matches(request.uri.path, '/login') and (request.method == 'GET')}
 ----
 +
-OpenIG only evaluates the expression for the request, not for the response.
+OpenIG evaluates this expression on the request. When both `loginPage` and `loginPageContentMarker` are configured, `loginPage` determines whether to replay credentials.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
 `"loginPageContentMarker"`: __pattern, required unless loginPage is defined__::
-A pattern that matches when a response entity is that of a login page.
+A pattern that identifies a login page in the response entity when `loginPage` is omitted.
 
 +
 See also xref:expressions-conf.adoc#Patterns[Patterns(5)].
@@ -2048,7 +2008,7 @@ When this is not specified, credentials must be made available to the request by
 See also xref:#filters-conf[Filters].
 
 `"headerDecryption"`: __crypto configuration object, optional__::
-Object to decrypt request headers that contain credentials to replay.
+Configuration for decrypting request headers that contain credentials to replay. The filter sets the nested `CryptoHeaderFilter` to `messageType: REQUEST` and `operation: DECRYPT`.
 +
 [open]
 ====
@@ -2071,6 +2031,9 @@ Algorithm name for the secret key.
 
 +
 Default: `AES`
+
+`"charset"`: __string or expression<string>, optional__::
+The character encoding used to decode decrypted header bytes. The heap evaluates the expression when it creates the filter. The default is `UTF-8`.
 
 `"headers"`: __array of strings, optional__::
 The names of header fields to decrypt.
@@ -2097,7 +2060,7 @@ The names are mapped into `attributes.extracted`.
 For example, if the name is `nonce`, the value can be obtained with the expression `${attributes.extracted.nonce}`.
 
 +
-The name `isLoginPage` is reserved to hold a boolean that indicates whether the response entity is a login page.
+The name `isLoginPage` is reserved. When the filter marks an extracted response as a login page, `attributes.extracted.isLoginPage` contains the string `"true"`.
 
 `"pattern"`: __pattern, required__::
 The regular expression pattern to find in the entity.
@@ -2166,13 +2129,13 @@ This filter requests policy decisions from OpenAM, which allows or denies the re
 
 * If the request is allowed, processing continues.
 
-* If the request is denied, OpenIG returns 403 Forbidden.
+* If the request is denied, OpenIG uses the failure handling chain, which processes policy advice and defaults to HTTP 403 for denials.
 
 * If an error occurs during the process, OpenIG returns 500 Internal Server Error.
 
 This filter allows you to specify the subject by SSO token, JWT, or JWT claims.
 
-This filter can add contextual attributes (accessible through `${attributes}`), and some elements returned by the policy decision, such as attributes and advices.
+The filter exposes the decision attributes and advice to downstream handlers as `${contexts.policyDecision.attributes}` and `${contexts.policyDecision.advices}`.
 
 [NOTE]
 ====
@@ -2201,8 +2164,12 @@ The request URI from OpenIG must match the `Resources` parameter defined in the 
         "realm": string,
         "ssoTokenHeader": string,
         "application": string,
-        "cacheMaxExpiration": duration string,
-        "target": lvalue-expression,
+        "cache": {
+            "enabled": boolean or expression,
+            "defaultTimeout": duration string or expression,
+            "maxTimeout": duration string or expression
+        },
+        "failureHandler": Handler reference or inline declaration,
         "environment": map or expression,
         "executor": executor
     }
@@ -2296,7 +2263,7 @@ The OpenAM realm to use when requesting policy decisions.
 Default: `/` (Top Level Realm)
 
 `"ssoTokenHeader"`: __string, optional__::
-The name of the HTTP header to use when supplying the SSO token ID for the user making a policy decision request.
+The name of the HTTP header that carries the OpenAM SSO token for the policy enforcement client.
 
 +
 Default: `iPlanetDirectoryPro`
@@ -2307,30 +2274,33 @@ The OpenAM application to use when requesting policy decisions.
 +
 Default: OpenIG does not specify an application when making a policy decision request. As a result, the application is `iPlanetAMWebAgentService`, which is the default for OpenAM.
 
-`"cacheMaxExpiration"`: __duration string, optional__::
-Maximum duration for which to cache policy decision responses. If the time-to-live value in the policy decision response is shorter, then OpenIG expires the decision according to the shorter lifetime.
-
+`"cache"`: __object, optional__::
+Policy decision cache settings. The heap evaluates expressions in this object when it creates the filter. OpenIG skips caching decisions that carry advice or have already expired.
 +
-This setting prevents OpenIG from having to issue a new request for every policy decision, including even repeated requests by the same subject for the same resource.
-+
+[open]
+====
+`"enabled"`: __boolean or expression<boolean>, optional__::
+Enables policy decision caching. The default is `false`.
 
+`"defaultTimeout"`: __duration string or expression<string>, optional__::
+How long to cache a decision when OpenAM omits its expiry time (`ttl`) or reports the unlimited TTL sentinel. The default is `1 minute`.
+
+`"maxTimeout"`: __duration string or expression<string>, optional__::
+An optional upper bound on how long a decision may be cached. The value, if supplied, must be a finite duration greater than zero.
+====
++
+include::../partials/sec-duration-description.adoc[]
++
 [NOTE]
 ======
 Cached policy decisions remain in the OpenIG cache even after a user logs out of OpenAM and the OpenAM session becomes invalid.
 ======
-+
-include::../partials/sec-duration-description.adoc[]
-+
-Default: 1 minute
 
-`"target"`: __lvalue-expression, optional__::
-A map in the attributes context where the "attributes" and "advices" map fields from the policy decision are saved.
+`"cacheMaxExpiration"`: __deprecated string__::
+OpenIG logs a warning when this legacy property is set. Use `cache.enabled` and `cache.maxTimeout` for a bounded policy decision cache.
 
-+
-Example: `${attributes.policy.attributes}` and `${attributes.policy.advices}`
-
-+
-Default: `${attributes.policy}`
+`"failureHandler"`: __Handler reference or inline declaration, optional__::
+Handles denied requests after the policy advice filters. The handler can read the `policyDecision` context. The default handler returns HTTP 403 Forbidden.
 
 `"environment"`: __map or expression, optional__::
 Environment conditions can be defined in an OpenAM policy to set the circumstances under which the policy applies. For example, environment conditions can specify that the policy applies only during working hours or only when accessing from a specific IP address.
@@ -2355,7 +2325,7 @@ If this property is an expression, its evaluation must give an object of type `M
 ----
 
 `"executor"`: __executor, optional__::
-An executor service to schedule the execution of tasks, such as the eviction of entries in the policy decision cache.
+The scheduled executor service used for cache eviction when `cache.enabled` is `true`.
 
 +
 Default: `ScheduledExecutorService`
@@ -2383,8 +2353,6 @@ The following example requests a policy decision from OpenAM before allowing a r
                         "pepUsername": "policyAdmin",
                         "pepPassword": "${env['POLICY_ADMIN_PWD']}",
                         "ssoTokenSubject": "${attributes.SSOCurrentUser}",
-                        "claimsSubject": "${attributes.openid.id_token_claims}",
-                        "target": "${attributes.currentPolicy}",
                         "environment": {
                             "IP": [ "${contexts.client.remoteAddress}" ]
                          }
@@ -2643,6 +2611,33 @@ For details, see xref:handlers-conf.adoc#handlers-conf[Handlers].
 link:{apidocs-url}/org/forgerock/openig/filter/ScriptableFilter.html[org.forgerock.openig.filter.ScriptableFilter, window=\_blank]
 
 '''
+[#ScriptableAccessTokenResolver]
+=== ScriptableAccessTokenResolver — resolve access tokens with a script
+
+Configure this heap object as `accessTokenResolver` on an xref:#OAuth2ResourceServerFilter[OAuth2ResourceServerFilter]. The script receives the token as `token` and the evaluated resource server filter configuration as `config`. It returns an `AccessTokenInfo` object. The registry of supported scripting languages, script source settings (`type` and either `file` or `source`), and optional `args` and `clientHandler` settings are the same as for xref:#ScriptableFilter[ScriptableFilter].
+
+link:{apidocs-url}/org/forgerock/openig/filter/oauth2/ScriptableAccessTokenResolver.html[ScriptableAccessTokenResolver Javadoc, window=\_blank]
+
+[#SingleSignOnFilter]
+=== SingleSignOnFilter — validate OpenAM session cookies
+
+Validates the OpenAM session cookie and makes the validated session available through the `ssoToken` context. The filter redirects users to OpenAM to sign in when the cookie is missing or the session is invalid.
+
+`"openamUrl"` (configuration expression or URL string, required)::
+Base URL of the OpenAM deployment.
+
+`"realm"` (configuration expression or string, optional)::
+OpenAM realm. The default is `/`.
+
+`"cookieName"` (configuration expression or string, optional)::
+Name of the OpenAM session cookie. The default is `iPlanetDirectoryPro`.
+
+`"amHandler"` (handler reference or inline declaration, optional)::
+HTTP client handler used to contact OpenAM. The default is `ForgeRockClientHandler`.
+
+link:{apidocs-url}/org/forgerock/openig/openam/SingleSignOnFilter.html[SingleSignOnFilter Javadoc, window=\_blank]
+
+'''
 [#SqlAttributesFilter]
 === SqlAttributesFilter — execute SQL query
 
@@ -2697,7 +2692,7 @@ See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 ==== Example
 Using the user's session ID from a cookie, query the database to find the user logged in and set the profile attributes in the attributes context:
 
-[source, javascript]
+[source, json]
 ----
 {
         "name": "SqlAttributesFilter",
@@ -2705,26 +2700,11 @@ Using the user's session ID from a cookie, query the database to find the user l
         "config": {
               "target": "${attributes.sql}",
               "dataSource": "java:comp/env/jdbc/mysql",
-              "preparedStatement": "SELECT f.value AS 'first', l.value AS
-                'last', u.mail AS 'email', GROUP_CONCAT(CAST(r.rid AS CHAR)) AS
-                'roles'
-                FROM sessions s
-                INNER JOIN users u
-                ON ( u.uid = s.uid AND u.status = 1 )
-                LEFT OUTER JOIN profile_values f
-                ON ( f.uid = u.uid AND f.fid = 1 )
-                LEFT OUTER JOIN profile_values l
-                ON ( l.uid = u.uid AND l.fid = 2 )
-                LEFT OUTER JOIN users_roles r
-                ON ( r.uid = u.uid )
-                WHERE (s.sid = ? AND s.uid <> 0) GROUP BY s.sid;",
-              "parameters": [ "${request.cookies
-                [keyMatch(request.cookies,'JSESSION1234')]
-                [0].value}" ]
+              "preparedStatement": "SELECT f.value AS 'first', l.value AS 'last', u.mail AS 'email', GROUP_CONCAT(CAST(r.rid AS CHAR)) AS 'roles' FROM sessions s INNER JOIN users u ON ( u.uid = s.uid AND u.status = 1 ) LEFT OUTER JOIN profile_values f ON ( f.uid = u.uid AND f.fid = 1 ) LEFT OUTER JOIN profile_values l ON ( l.uid = u.uid AND l.fid = 2 ) LEFT OUTER JOIN users_roles r ON ( r.uid = u.uid ) WHERE (s.sid = ? AND s.uid <> 0) GROUP BY s.sid;",
+              "parameters": [ "${request.cookies [keyMatch(request.cookies,'JSESSION1234')] [0].value}" ]
          }
  }
 ----
-Lines are folded for readability in this example. In your JSON, keep the values for `"preparedStatement"` and `"parameters"` on one line.
 
 [#d210e8177]
 ==== Javadoc
@@ -2748,7 +2728,7 @@ Creates a new request, replacing any existing request. The request can include a
      "type": "StaticRequestFilter",
      "config": {
          "method": string,
-         "uri": string,
+         "uri": string or runtime expression,
          "version": string,
          "headers": {
              name: [ expression, ... ], ...
@@ -2768,8 +2748,8 @@ Creates a new request, replacing any existing request. The request can include a
 `"method"`: __string, required__::
 The HTTP method to be performed on the resource (for example, `"GET"`).
 
-`"uri"`: __string, required__::
-The fully-qualified URI of the resource to access (for example, `"http://www.example.com/resource.txt"`).
+`"uri"`: __string or runtime expression<string>, required__::
+The URI of the resource to access, such as `"http://www.example.com/resource.txt"`. The filter evaluates an expression against the original request and its context. If the expression produces null or an invalid URI, the filter returns HTTP 500.
 
 `"version"`: __string, optional__::
 Protocol version. Default: `"HTTP/1.1"`.
@@ -2781,7 +2761,7 @@ Header fields to set in the request.
 The `name` specifies the header name. Its value is an array of expressions to evaluate as header values.
 
 `"form"`: __object, optional__::
-A form to include in the request.
+The form parameters. The filter encodes them in the request body for `POST` and appends them to the URI query for other methods.
 
 +
 The `param` specifies the form parameter name. Its value is an array of expressions to evaluate as form field values.
@@ -2923,11 +2903,11 @@ link:{apidocs-url}/org/forgerock/openig/filter/SwitchFilter.html[org.forgerock.o
 ==== Description
 This filter transforms a token issued by OpenAM to another token type.
 
-The current implementation uses the REST Security Token Service (STS) APIs. It supports transforming an OpenID Connect ID Token (`id_token`) into a SAML 2.0 assertion where the subject confirmation method is Bearer, as described in link:http://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf[Profiles for the OASIS Security Assertion Markup Language (SAML) V2.0, window=\_blank].
+The filter uses the OpenAM REST Security Token Service (STS) API. By default, it transforms an OpenID Connect ID token (`id_token`) into a SAML 2.0 assertion with Bearer subject confirmation, as described in link:http://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf[Profiles for the OASIS Security Assertion Markup Language (SAML) V2.0, window=\_blank].
 
 The configuration for this filter references a REST STS instance that must be set up in OpenAM before this filter can be used. The REST STS instance exposes a pre-configured transformation under a specific REST endpoint. See the OpenAM documentation for details about setting up a REST STS instance.
 
-Any errors that occur during the token transformation cause a error response to be returned to the client and an error message to be logged for the OpenIG administrator.
+Downstream filters and handlers can read the result as `${contexts.sts.issuedToken}`. The filter continues with an empty string if the input expression returns null, the STS returns an error with a readable JSON response, or the response omits the issued token. An I/O error while reading the STS response returns HTTP 500.
 
 [#d210e8509]
 ==== Usage
@@ -2938,15 +2918,18 @@ Any errors that occur during the token transformation cause a error response to 
     "name": "string",
     "type": "TokenTransformationFilter",
     "config": {
-        "openamUri": URL string,
-        "realm": OpenAM realm name string,
-        "username": "${attributes.username}",
-        "password": "${attributes.password}",
-        "idToken": "${attributes.id_token}",
-        "target": "${attributes.saml_assertions}",
-        "instance": "oidc-to-saml",
-        "amHandler": Handler reference,
-        "ssoTokenHeader": string
+        "openamUri": URL string or expression,
+        "realm": string or expression,
+        "username": string or expression,
+        "password": string or expression,
+        "idToken": runtime expression,
+        "from": string or expression,
+        "to": string or expression,
+        "instance": string or expression,
+        "amHandler": Handler reference or inline declaration,
+        "ssoTokenHeader": string or expression,
+        "cache-ttl": number or expression,
+        "cache-size": integer or expression
     }
 }
 ----
@@ -2955,53 +2938,43 @@ Any errors that occur during the token transformation cause a error response to 
 ==== Properties
 --
 
-`"openamUri"`: __URL string, required__::
+The heap evaluates configuration expressions when the route is initialized, except for `idToken`, which the filter evaluates for each request.
+
+`"openamUri"`: __URL string or expression<string>, required__::
 The base URL to an OpenAM service, such as `\https://openam.example.com:8443/openam/`.
 
 +
 Authentication and REST STS requests are made to this service.
 
-`"realm"`: __string, optional__::
-The OpenAM realm containing both the OpenAM user who can make the REST STS request and whose credentials are the username and password, and the STS instance described by the instance field.
+`"realm"`: __string or expression<string>, optional__::
+The OpenAM realm containing the REST STS instance. When client authentication is configured, this realm also contains the OpenAM user configured in `username`.
 
 +
 Default: `/` (Top Level Realm)
 
-`"username"`: __expression, required__::
-The username for authenticating OpenIG as an OpenAM REST STS client.
+`"username"`: __string or expression<string>, optional__::
+The username for authenticating OpenIG as an OpenAM REST STS client. When it resolves to a username, the filter authenticates with OpenAM before requesting token transformation.
+
+`"password"`: __string or expression<string>, used with username__::
+The password for authenticating OpenIG as an OpenAM REST STS client. Configure it when setting `username`.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"password"`: __expression, required__::
-The password for authenticating OpenIG as an OpenAM REST STS client.
+`"idToken"`: __runtime expression<string>, required__::
+The token to transform. For the default input type, the expression must return a JWT-encoded OpenID Connect ID token. For an `OPENAM` input type, it must return an OpenAM session token.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
 
-`"idToken"`: __expression, required__::
-An expression evaluating to OpenID Connect ID token.
+`"from"`: __string or expression<string>, optional__::
+The REST STS input token type. The default is `OPENIDCONNECT`, which sends the token as `oidc_id_token`. For `OPENAM`, the filter sends the token as `session_id`.
 
-+
-The expected value is a string that is the JWT encoded `id_token`.
+`"to"`: __string or expression<string>, optional__::
+The REST STS output token type. The default is `SAML2`. Configure the input and output types to match the transformation supported by the OpenAM STS instance.
 
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
-
-`"target"`: __expression, required__::
-An expression evaluating to the location where the SAML 2.0 assertion is injected following successful transformation.
-
-+
-The value of the SAML 2.0 assertion is a string.
-
-+
-See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
-
-`"instance"`: __expression, required__::
-An expression evaluating to name of the REST STS instance.
-
-+
-This expression is evaluated when the route is initialized, so the expression cannot refer to `request` or `contexts`.
+`"instance"`: __string or expression<string>, required__::
+The name of the REST STS instance.
 
 +
 See also xref:expressions-conf.adoc#Expressions[Expressions(5)].
@@ -3018,11 +2991,14 @@ Default: OpenIG uses the `ForgeRockClientHandler`.
 +
 See also xref:handlers-conf.adoc#handlers-conf[Handlers].
 
-`"ssoTokenHeader"`: __string, optional__::
-The name of the HTTP header to use when supplying the SSO token ID for the REST STS client subject.
+`"ssoTokenHeader"`: __string or expression<string>, optional__::
+The HTTP header carrying the SSO token obtained through REST STS client authentication. The default is `iPlanetDirectoryPro`.
 
-+
-Default: `iPlanetDirectoryPro`
+`"cache-ttl"`: __number or expression<number>, optional__::
+The time in milliseconds for which to cache a transformation result after writing it, keyed by the input token. A positive value enables the cache. The default is `0`, which disables caching.
+
+`"cache-size"`: __non-negative integer or expression<number>, optional__::
+The maximum number of cached transformation results when caching is enabled. The default is `32000`.
 
 --
 
@@ -3030,7 +3006,7 @@ Default: `iPlanetDirectoryPro`
 ==== Example
 For an example of how to set up and test the token transformation filter, see xref:../gateway-guide/chap-ttf.adoc#chap-ttf[Transforming OpenID Connect ID Tokens Into SAML Assertions] in the __Gateway Guide__.
 
-The following example uses the REST STS instance `oidc-to-saml` to request transformation of an OpenID Connect ID token into a SAML 2.0 assertion. Both the subject authenticating to access the REST endpoint, and the REST STS instance are in the realm `/sts`. The subject credentials for authentication to OpenAM are provided in the attributes context at `sts.username` and `sts.password`. The ID token to transform is provided in the attributes context at `sts.id_token`. The resulting SAML 2.0 assertion is injected as a string in the attribute context at `sts.saml_assertions`:
+The following example uses the REST STS instance `oidc-to-saml` in the `/sts` realm. OpenIG reads the client credentials from environment variables and the ID token from the request's attributes. The resulting SAML assertion is available as `${contexts.sts.issuedToken}`.
 
 [source, javascript]
 ----
@@ -3039,10 +3015,9 @@ The following example uses the REST STS instance `oidc-to-saml` to request trans
     "config": {
         "openamUri": "https://openam.example.com/openam/",
         "realm": "/sts",
-        "username": "${attributes.sts.username}",
-        "password": "${attributes.sts.password}",
+        "username": "${env['STS_USERNAME']}",
+        "password": "${env['STS_PASSWORD']}",
         "idToken": "${attributes.sts.id_token}",
-        "target": "${attributes.sts.saml_assertions}",
         "instance": "oidc-to-saml",
         "amHandler": "ClientHandler"
     }

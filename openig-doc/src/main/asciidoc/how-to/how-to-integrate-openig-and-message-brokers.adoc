@@ -27,315 +27,149 @@ Open Identity Platform implemented message broker integration in xref:ROOT:index
 
 The following article shows an example how to send and receive messages from and to message brokers using xref:ROOT:index.adoc[OpenIG]
 
-You can use the following project as a base: https://github.com/maximthomas/openig-mb-example[https://github.com/maximthomas/openig-mb-example]
+The examples use `$OPENIG_BASE/config/config.json` for heap objects and `$OPENIG_BASE/config/routes/` for route files. The https://github.com/maximthomas/openig-mb-example[original sample project] contains older Compose examples.
 
 [[how-to-integrate-openig-and-message-brokers-use-cases]]
 === Use Cases
 
 [[how-to-integrate-openig-and-message-brokers-send-http-requests-to-apache-kafka]]
-==== Send HTTP Requests to Apache Kafka
+==== Send HTTP requests to Apache Kafka
 
-The following setup allows to receive messages via HTTP protocol and send them to Apache Kafka topic.
+Start OpenIG with a running Kafka broker and an HTTP service that accepts POST requests at `/kafka2http`. This example assumes OpenIG and the Kafka command-line tools can reach the broker at `localhost:9092` and the HTTP service runs at `http://localhost:8081`. Set the following JVM options on OpenIG.
 
-Create Apache Kafka topic:
+[source,text]
+----
+-Dkafka.bootstrap=localhost:9092
+-Dendpoint.api=http://localhost:8081
+----
+
+For containers or remote brokers, use addresses reachable from OpenIG and make sure Kafka advertises addresses reachable from each client. Give `endpoint.api` without a trailing slash to preserve the request path.
+
+Create both demo topics before starting OpenIG.
 
 [source,bash]
 ----
 kafka-topics.sh --create --topic topic1 --bootstrap-server localhost:9092
+kafka-topics.sh --create --topic topic2 --bootstrap-server localhost:9092
 ----
 
-Add Apache Kafka producer handler to the heap in OpenIG configuration file:
+Save the following main configuration. The producer sends to `topic1`. The consumer subscribes to `topic2` and creates an internal `POST /kafka2http` request for each record.
 
-`config.json`
-
-[source,json]
+.config/config.json
+[source#kafka-config,json]
 ----
 {
   "heap": [
-    ...
     {
       "name": "kafka-producer",
       "type": "MQ_Kafka",
       "config": {
-        "bootstrap.servers": "kafka:9092",
+        "bootstrap.servers": "${system['kafka.bootstrap']}",
         "topic.produce": "topic1"
       }
     },
-    ...
-  ]
-}
-----
-
-Some important *MQ++_++Kafka* handler settings:
-
-[cols=",",options="header",]
-|===
-|Setting |Name
-|`bootstrap.servers` |Comma-separated list of host and port pairs that are the addresses of the Kafka brokers
-|`topic.produce` |To which topic OpenIG should send messages
-|`topic.consume` |From which topic should OpenIG consume messages
-|`uri` |OpenIG route endpoint
-|`method` |HTTP method, which OpenIG uses to send requests to the HTTP endpoint
-|===
-
-Add OpenIG route to `routes` folder to process HTTP requests:
-
-`10-http2kafka.json`
-
-[source,json]
-----
-{
-  "name": "${(request.method == 'PUT') and matches(request.uri.path, '^/http2kafka$')}",
-  "condition": "${(request.method == 'PUT') and matches(request.uri.path, '^/http2kafka$')}",
-  "monitor": true,
-  "timer": true,
-  "handler": {
-    "type": "Chain",
-    "config": {
-    "filters": [],
-      "handler": {
-        "type": "DispatchHandler",
-        "config": {
-          "bindings": [
-            {
-              "handler": "kafka-producer"
-            }
-          ]
-        }
-      }
-    }
-  }
-}
-----
-
-Send HTTP request to OpenIG and then check received messages in `topic1` topic:
-
-[source,bash]
-----
-$ curl -v -X PUT --data '{"data": "test"}' -H 'Content-Type: application/json' 'http://localhost:8080/http2kafka'
-*   Trying 127.0.0.1:8080...
-* TCP_NODELAY set
-* Connected to localhost (127.0.0.1) port 8080 (#0)
-> PUT /http2kafka HTTP/1.1
-> Host: localhost:8080
-> User-Agent: curl/7.68.0
-> Accept: */*
-> Content-Type: application/json
-> Content-Length: 16
->
-* upload completely sent off: 16 out of 16 bytes
-* Mark bundle as not supporting multiuse
-< HTTP/1.1 202 Accepted
-< Server: Apache-Coyote/1.1
-< Content-Length: 0
-< Date: Wed, 13 Apr 2022 12:34:03 GMT
-<
-* Connection #0 to host localhost left intact
-----
-
-[source,bash]
-----
-$ kafka-console-consumer.sh --topic topic1 --from-beginning --bootstrap-server localhost:9092
-{"data": "test"}
-----
-
-[[how-to-integrate-openig-and-message-brokers-send-apache-kafka-messages-to-http-endpoint]]
-==== Send Apache Kafka Messages to HTTP Endpoint
-
-In the following configuration OpenIG will receive messages from Apache Kafka `topic2` topic and send them to a HTTP endpoint
-
-Create new Apache Kafka topic:
-
-[source,bash]
-----
-kafka-topics.sh --create --topic topic2 --bootstrap-server localhost:9092
-----
-
-Add Apache Kafka consumer handler to the heap in the OpenIG configuration file
-
-`config.json`
-
-[source,json]
-----
-{
-  "heap": [
-    ...
     {
       "name": "kafka-consumer",
       "type": "MQ_Kafka",
       "config": {
-        "bootstrap.servers": "kafka:9092",
+        "bootstrap.servers": "${system['kafka.bootstrap']}",
         "topic.consume": "topic2",
-        "method": "POST"
-      }
-    },
-    ...
-  ]
-}
-----
-
-Add OpenIG route to `routes` folder to process Apache Kafka messages:
-
-`10-kafka2http.json`
-
-[source,json]
-----
-{
-  "name": "${(request.method == 'POST') and matches(request.uri.path, '^/kafka2http$')}",
-  "condition": "${(request.method == 'POST') and matches(request.uri.path, '^/kafka2http$')}",
-  "monitor": true,
-  "timer": true,
-  "handler": {
-    "type": "Chain",
-    "config": {
-      "filters": [],
-      "handler": {
-      "type": "DispatchHandler",
-        "config": {
-          "bindings": [{
-              "handler": "ClientHandler",
-              "capture": "all",
-              "baseURI": "${system['endpoint.api']}"
-          }]
-        }
+        "group.id": "openig-http-demo",
+        "method": "POST",
+        "uri": "/kafka2http"
       }
     }
+  ],
+  "handler": {
+    "type": "Router",
+    "name": "_router"
   }
 }
-
 ----
 
-Send test data to the Apache Kafka topic:
+.config/routes/10-http2kafka.json
+[source#kafka-producer-route,json]
+----
+{
+  "name": "http-to-kafka",
+  "condition": "${request.method == 'PUT' and request.uri.path == '/http2kafka'}",
+  "handler": "kafka-producer"
+}
+----
+
+Start OpenIG after adding both routes in this guide. Then send a request and read the Kafka topic.
 
 [source,bash]
 ----
-$ kafka-console-producer.sh --topic topic2 --bootstrap-server localhost:9092
->{"data": "test"}
+curl -i -X PUT http://localhost:8080/http2kafka \
+  -H 'Content-Type: application/json' --data '{"data":"test"}'
+kafka-console-consumer.sh --topic topic1 --from-beginning --bootstrap-server localhost:9092
 ----
 
-There is a new record in the sample service log:
+OpenIG responds with HTTP 202 after Kafka acknowledges the write according to the producer's acknowledgement settings. This status confirms publication to the broker. The response includes the correlation ID and Kafka metadata. The producer stores the first value of each request header with the record, so remove credentials and other unwanted headers before passing requests to `MQ_Kafka`.
 
-[listing]
+[[how-to-integrate-openig-and-message-brokers-send-apache-kafka-messages-to-http-endpoint]]
+==== Send Apache Kafka messages to an HTTP endpoint
+
+Add this route alongside `10-http2kafka.json`. The consumer's configured `uri` and method match the route condition. By default, `uri` would be `/kafka-consumer`, the consumer object's name prefixed with a slash, and the method would be PUT.
+
+.config/routes/20-kafka2http.json
+[source#kafka-consumer-route,json]
 ----
-2022-04-21 07:26:14.645 DEBUG 1 --- [nio-8080-exec-6] o.s.w.f.CommonsRequestLoggingFilter      : After request [POST /kafka2http, headers=[kafka-offset:"29", kafka-topic:"topic2", content-length:"16", host:"sample-service:8080", connection:"Keep-Alive", user-agent:"Apache-HttpAsyncClient/4.1.4 (Java/1.8.0_212)"], payload={"data": "test"}]
+{
+  "name": "kafka-to-http",
+  "condition": "${request.method == 'POST' and request.uri.path == '/kafka2http'}",
+  "handler": {
+    "type": "DispatchHandler",
+    "config": {
+      "bindings": [
+        {
+          "handler": "ClientHandler",
+          "baseURI": "${system['endpoint.api']}"
+        }
+      ]
+    }
+  }
+}
 ----
+
+Once OpenIG is running, send a record to `topic2`.
+
+[source,bash]
+----
+printf '%s\n' '{"data":"test"}' | \
+  kafka-console-producer.sh --topic topic2 --bootstrap-server localhost:9092
+----
+
+Check the upstream service logs for `POST /kafka2http` with the test body and the `kafka-topic: topic2` header. OpenIG submits dispatches asynchronously. The default Kafka offset auto-commit is independent of the HTTP response, so the example offers no guarantee that a failed HTTP request will be retried or that records will arrive in order.
 
 [[how-to-integrate-openig-and-message-brokers-embedded-apache-kafka]]
 ==== Embedded Apache Kafka
 
-If there are no message brokers in the infrastructure, but there is a need to receive and redirect Kafka messages, OpenIG offers embedded Apache Kafka. To setup embedded kafka, add `EmbeddedKafka` to OpenIG config.json file.
+For a local demo, add this heap object before the producer and consumer in the previous `config.json`. Start OpenIG, create `topic1` and `topic2`, and run the same commands as above. The listener and advertised address both point to loopback, so the Kafka tools must run on the same host as OpenIG.
 
-`config.json`
-
-[source,json]
+.Embedded broker heap object
+[source#kafka-embedded-heap,json]
 ----
 {
-  "heap": [
-    ...
-      {
-        "name": "EmbeddedKafka",
-        "type": "EmbeddedKafka",
-        "config": {
-          "zookeper.port": "${system['zookeper.port']}",
-          "security.inter.broker.protocol": "${empty system['keystore.location'] ?'PLAINTEXT':'SSL'}",
-          "listeners": "${system['kafka.bootstrap']}",
-          "advertised.listeners": "${system['kafka.bootstrap']}",
-          "ssl.endpoint.identification.algorithm": "",
-          "ssl.enabled.protocols":"TLSv1.2",
-          "ssl.keystore.location":"${system['keystore.location']}",
-          "ssl.keystore.password":"${empty system['keystore.password']?'changeit':system['keystore.password']}",
-          "ssl.key.password":"${empty system['key.password']?'changeit':system['key.password']}",
-          "ssl.truststore.location":"${system['truststore.location']}",
-          "ssl.truststore.password":"${empty system['truststore.password']?'changeit':system['truststore.password']}"
-        },
-    ...
-  ]
-}
-----
-
-Some significant *EmbeddedKafka* settings:
-
-[cols=",",options="header",]
-|===
-|Setting |Name
-|`zookeper.port` |Port of the embedded ZooKeeper. Kafka does not start unless `zookeper.port` or `zookeper.connect` is set
-|`zookeper.connect` |Address of an external ZooKeeper that Kafka uses instead of `localhost:<zookeper.port>`. Leave `zookeper.port` unset with it, otherwise an unused embedded ZooKeeper still starts on that port
-|`listeners` |Port and hosts which Kafka binds to for listening
-|`advertised.listeners` |Port and hosts which Kafka clients listening
-|===
-
-Add kafka listener to OpenIG heap and create a route that listens Kafka message and redirects it to HTTP endpoint (you can also redirect the message to another message broker).
-
-`config.json`
-
-[source,json]
-----
-{
-  "heap": [
-    ...
-      {
-      "name": "kafka-consumer",
-      "type": "MQ_Kafka",
-      "config": {
-        "bootstrap.servers": "openig:9092",
-        "topic.consume": "topic1",
-        "method": "POST",
-        "uri": "/kafka2http"
-      }
-    ...
-  ]
-}
-----
-
-`10-kafka2http.json`
-
-[source,json]
-----
-{
-  "name": "${(request.method == 'POST') and matches(request.uri.path, '^/kafka2http$')}",
-  "condition": "${(request.method == 'POST') and matches(request.uri.path, '^/kafka2http$')}",
-  "monitor": true,
-  "timer": true,
-  "handler": {
-    "type": "Chain",
-    "config": {
-      "filters": [],
-      "handler": {
-      "type": "DispatchHandler",
-        "config": {
-          "bindings": [{
-              "handler": "ClientHandler",
-              "capture": "all",
-              "baseURI": "${system['endpoint.api']}"
-          }]
-        }
-      }
-    }
+  "name": "embedded-kafka",
+  "type": "EmbeddedKafka",
+  "config": {
+    "zookeper.port": "2181",
+    "listeners": "PLAINTEXT://127.0.0.1:9092",
+    "advertised.listeners": "PLAINTEXT://127.0.0.1:9092"
   }
 }
 ----
 
-Start OpenIG. Now you can create a topic in embedded OpenIG Kafka and send messages to the topic.
-
-[source,bash]
-----
-$ kafka-console-producer.sh --topic topic1 --bootstrap-server localhost:9092
->{"data": "test"}
-----
-
-There is a new record in the sample service log:
-
-[listing]
-----
-2022-04-21 07:26:14.645 DEBUG 1 --- [nio-8080-exec-6] o.s.w.f.CommonsRequestLoggingFilter      : After request [POST /kafka2http, headers=[kafka-offset:"29", kafka-topic:"topic2", content-length:"16", host:"sample-service:8080", connection:"Keep-Alive", user-agent:"Apache-HttpAsyncClient/4.1.4 (Java/1.8.0_212)"], payload={"data": "test"}]
-----
+The configuration keys `zookeper.port` and `zookeper.connect` use the spelling shown here. Set `zookeper.port` to start an embedded ZooKeeper, or provide `zookeper.connect` for an external ZooKeeper. The embedded broker uses a temporary data directory by default. Set `path` to persist the embedded ZooKeeper files and the default Kafka log directory across restarts.
 
 [[how-to-integrate-openig-and-message-brokers-send-http-requests-to-ibm-mq]]
 ==== Send HTTP Requests to IBM MQ
 
-The following setup allows to receive messages via HTTP protocol and send them to IBM MQ topic.
+The following setup allows to receive messages via HTTP protocol and send them to IBM MQ queue.
 
-Add IBM MQ consumer handler to the heap in the OpenIG configuration file:
+Add the following IBM MQ producer object to the `heap` array in your existing `config.json`.
 
 `config.json`
 
@@ -343,7 +177,6 @@ Add IBM MQ consumer handler to the heap in the OpenIG configuration file:
 ----
 {
   "heap": [
-    ...
     {
       "name": "mq-producer",
       "type": "MQ_IBM",
@@ -355,8 +188,7 @@ Add IBM MQ consumer handler to the heap in the OpenIG configuration file:
         "XMSC_PASSWORD":"passw0rd",
         "topic.produce": "DEV.QUEUE.1"
       }
-    },
-    ...
+    }
   ]
 }
 ----
@@ -370,8 +202,8 @@ Some important *MQ++_++IBM* handler settings:
 |`XMSC++_++WMQ++_++CHANNEL` |IBM MQ channel name, used for connection
 |`XMSC++_++USERID` |IBM MQ user id
 |`XMSC++_++PASSWORD` |IBM MQ user password
-|`topic.produce` |To which topic OpenIG should send messages
-|`topic.consume` |From which topic should OpenIG consume messages
+|`topic.produce` |Queue to which OpenIG sends messages
+|`topic.consume` |Queue from which OpenIG consumes messages
 |`uri` |OpenIG route endpoint
 |`method` |HTTP method, which OpenIG uses to send requests to the HTTP endpoint
 |===
@@ -438,7 +270,7 @@ image:images/how-to/openig-message-brokers/ibm-mq-console-queue1.png[IBM MQ DEV.
 [[how-to-integrate-openig-and-message-brokers-send-ibm-mq-messages-to-http-endpoint]]
 ==== Send IBM MQ Messages to HTTP Endpoint
 
-Add IBM MQ comsumer handler to the heap in OpenIG configuration file
+Add the following IBM MQ consumer object to the `heap` array in your existing `config.json`.
 
 `config.json`
 
@@ -446,7 +278,6 @@ Add IBM MQ comsumer handler to the heap in OpenIG configuration file
 ----
 {
   "heap": [
-    ...
     {
       "name": "mq-consumer",
       "type": "MQ_IBM",
@@ -461,7 +292,6 @@ Add IBM MQ comsumer handler to the heap in OpenIG configuration file
         "method": "POST"
       }
     }
-    ...
   ]
 }
 ----
@@ -499,7 +329,7 @@ Add OpenIG route to `routes` folder to process IBM MQ messages:
 
 ----
 
-Log in to the IBM MQ console, and create a message for DEV.QUEUE.2 topic
+Log in to the IBM MQ console, and create a message for DEV.QUEUE.2 queue
 
 image:images/how-to/openig-message-brokers/ibm-mq-console-create-message.png[IBM MQ DEV.QUEUE1]
 

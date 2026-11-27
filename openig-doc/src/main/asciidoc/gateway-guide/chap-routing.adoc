@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-routing]
+endif::env-site[]
 == Configuring Routes
+
+ifdef::env-site[]
+anchor:chap-routing[]
+endif::env-site[]
 
 Other tutorials in this guide demonstrate how to use routes so that you can change the configuration without restarting OpenIG. This chapter takes a closer look at `Router` and `Route` configurations, further described in xref:../reference/handlers-conf.adoc#Router[Router(5)] in the __Configuration Reference__ and xref:../reference/handlers-conf.adoc#Route[Route(5)] in the __Configuration Reference__. In this chapter, you will learn to:
 
@@ -35,44 +41,9 @@ Other tutorials in this guide demonstrate how to use routes so that you can chan
 
 When you set up the first tutorial, you configured a `Router`.
 
-The `Router` is a handler that you can configure in the top-level `config.json` file for OpenIG, and in fact wherever you can configure a `Handler`. For the first tutorial, you added a `Router` as part of the base configuration, which is shown here again in the following listing:
+Configure the `Router` as the top-level handler in `config.json`, as shown in xref:chap-quickstart.adoc#quickstart-configure[Configure OpenIG]. You can also use a router wherever a handler is accepted.
 
-[source, javascript]
-----
-{
-  "handler": {
-    "type": "Router",
-    "audit": "global",
-    "baseURI": "http://app.example.com:8081",
-    "capture": "all"
-  },
-  "heap": [
-    {
-      "name": "LogSink",
-      "type": "ConsoleLogSink",
-      "config": {
-        "level": "DEBUG"
-      }
-    },
-    {
-      "name": "JwtSession",
-      "type": "JwtSession"
-    },
-    {
-      "name": "capture",
-      "type": "CaptureDecorator",
-      "config": {
-        "captureEntity": true,
-        "_captureContext": true
-      }
-    }
-  ]
-}
-----
-The `Router`'s job is to pass the request and context to a route that matches a condition, and to periodically reload changed route configurations. As routes define the conditions on which they accept any given request, the `Router` does not have to know about specific `Routes` in advance. In other words, you can configure the `Router` first and then add routes while OpenIG is running, as you have done in the tutorials.
-
-The configuration shown above passes all requests to the `Router` using the default settings, meaning that the `Router` monitors `$HOME/.openig/config/routes` for `Routes`. When OpenIG receives a request, if more time has passed than the default scan interval of 10 seconds, then OpenIG rescans the routes directory for changes and reloads any routes changes it finds.
-
+The router checks the route directory at startup. It then scans for additions, changes, and removals on a schedule, even when OpenIG receives no requests. The default directory is `config/routes` under the OpenIG base directory. The default scan interval is `"10 seconds"`.
 
 [#routing-route-setup]
 === Configuring Additional Routes
@@ -81,24 +52,25 @@ Routes are configurations to handle a request that meets a specified condition.
 
 The condition is defined using an OpenIG expression as described in xref:../reference/expressions-conf.adoc#Expressions[Expressions(5)] in the __Configuration Reference__. It can be based on almost any characteristic of the request, context, or even of the OpenIG runtime environment. Another way to think of the `Route` is like an independent `DispatchHandler` as described in xref:../reference/handlers-conf.adoc#DispatchHandler[DispatchHandler(5)] in the __Configuration Reference__.
 
-The following example shows a condition setting. With this condition on a route, the route matches all requests that have `api.example.com` as the host portion of the URI:
+This route condition matches requests with `api.example.com` as the URI host:
 
-[source, javascript]
+[source,javascript]
 ----
 "condition": "${request.uri.host == 'api.example.com'}"
 ----
-Routes can also have their own names, used to order them lexicographically. If no name is specified, the route file name is used. Route file names have the extension `.json`. In other words, a router only scans for files with the `.json` extension, and ignores files with other extensions.
+The router checks routes in lexicographic order by route ID and dispatches to the first match. For JSON route configurations, the ID is the filename without `.json`. The optional `name` field sets the display name. With OpenAPI support enabled, the router also discovers specifications with the `.json`, `.yaml`, and `.yml` extensions. See xref:../reference/handlers-conf.adoc#Router[Router] for how OpenAPI route IDs are assigned.
 
 Routes can have a base URI to change the scheme, host, and port of the request.
 
 Routes wrap a heap of configuration objects, and hand off any request they accept to a handler. In this way each route is much like its own server-wide configuration file.
 
-If no condition is specified for the route, the route accepts any request. The following is a basic default route that accepts any request and forwards it on without changes:
+An omitted or null `condition` makes the route unconditional. If a configured condition evaluates to false or null for a request, the router continues looking for a match. Save an unconditional route with a filename that sorts after the other route IDs, such as `99-default.json`, so it serves as a fallback.
 
-[source, javascript]
+[source, json]
 ----
 {
-    "name": "default",
+    "name": "Fallback",
+    "baseURI": "http://127.0.0.1:8081",
     "handler": {
         "type": "ClientHandler"
     }
@@ -111,28 +83,28 @@ If no condition is specified for the route, the route accepts any request. The f
 
 Having the `Route` configurations automatically reloaded is great in the lab, but is perhaps not what you want in production.
 
-In that case, stop the server, edit the `Router` `scanInterval`, and restart. When `scanInterval` is set to -1, the `Router` only loads routes at startup:
+Set the router's `scanInterval` to `"disabled"` to load routes only at startup, then restart OpenIG. Use a duration string such as `"30 seconds"` to set an explicit scan interval. See xref:../reference/handlers-conf.adoc#Router[Router(5)] for the supported values.
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "Router",
     "type": "Router",
     "config": {
-        "scanInterval": -1
+        "scanInterval": "disabled"
     }
 }
 ----
 You can also change the file system location to look for routes:
 
-[source, javascript]
+[source, json]
 ----
 {
     "name": "Router",
     "type": "Router",
     "config": {
         "directory": "/path/to/safe/routes",
-        "scanInterval": -1
+        "scanInterval": "disabled"
     }
 }
 ----

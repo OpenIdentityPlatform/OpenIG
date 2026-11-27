@@ -39,10 +39,10 @@ Copyright 2026 3A Systems, LLC.
 <line x1="420" y1="270" x2="110" y2="270" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
 <text x="265.0" y="258" text-anchor="middle">Redirect to OpenAM login UI</text>
 <line x1="110" y1="327" x2="780" y2="327" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="445.0" y="315" text-anchor="middle">GET /passport/UI/Login?goto=/app</text>
+<text x="445.0" y="315" text-anchor="middle">GET /passport/UI/Login with the OpenIG /app URL as goto</text>
 <text x="780" y="365" text-anchor="middle">Registration or authentication</text>
 <line x1="780" y1="412" x2="110" y2="412" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="445.0" y="400" text-anchor="middle">Return session token</text>
+<text x="445.0" y="400" text-anchor="middle">Set the session cookie and redirect to OpenIG</text>
 <line x1="110" y1="470" x2="420" y2="470" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
 <text x="265.0" y="458" text-anchor="middle">GET /app with session token</text>
 <rect x="445" y="491" width="390" height="61" rx="4" fill="#fff6d8" stroke="#c2a44d"/>
@@ -59,7 +59,9 @@ Copyright 2026 3A Systems, LLC.
 <line x1="420" y1="851" x2="1090" y2="851" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
 <text x="755.0" y="839" text-anchor="middle">GET /app with JWT and user information headers</text>
 <text x="1090" y="896" text-anchor="middle" font-size="15">Read user ID and roles</text>
-<line x1="1090" y1="972" x2="110" y2="972" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="600.0" y="960" text-anchor="middle">API or UI response</text>
+<line x1="1090" y1="947" x2="420" y2="947" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="755" y="935" text-anchor="middle">API or UI response</text>
+<line x1="420" y1="993" x2="110" y2="993" stroke="#233951" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="265" y="981" text-anchor="middle">API or UI response</text>
 </g>
 </svg>

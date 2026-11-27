@@ -20,9 +20,11 @@ Copyright 2026 3A Systems, LLC.
 == How to Persist OpenIG Configuration Between Restarts
 :imagesdir: ../
 
-OpenIG stores its configuration data in `/usr/local/openig-config` directory. If you need to customize OpenIG configuration and need OpenIG Docker container to load it, mount your local folder to the OpenIG docker image
+The OpenIG image sets `OPENIG_BASE=/var/openig`. Mount a host directory at `/var/openig/config` to keep configuration files when the container is replaced. Create `openig-config` next to the Compose file and put `admin.json`, `config.json` and the `routes/` directory directly in it. The container user (UID 1001) needs read access.
 
-With `docker-compose.yaml` file
+Scripts live under `/var/openig/scripts`. To persist scripts and configuration together, mount a host directory at `/var/openig` with separate `config/` and `scripts/` subdirectories.
+
+Use this `compose.yaml` file.
 
 [source,yaml]
 ----
@@ -30,19 +32,19 @@ services:
   openig:
     image: openidentityplatform/openig:latest
     volumes:
-      - ./openig-config:/usr/local/openig-config/config
+      - ./openig-config:/var/openig/config:ro
     ports:
       - "8080:8080"
 ----
 
-With `docker run` command:
+The equivalent `docker run` command uses an absolute host path.
 
 [listing]
 ----
 docker run -h openig-01.domain.com \
     -p 8080:8080 \
     --name openig-01 \
-    -v ./openig-config:/usr/local/openig-config/config \
+    -v "$PWD/openig-config":/var/openig/config:ro \
     openidentityplatform/openig
 ----
 

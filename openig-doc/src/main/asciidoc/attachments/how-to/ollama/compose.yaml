@@ -1,0 +1,41 @@
+# The contents of this file are subject to the terms of the Common Development and
+# Distribution License (the License). You may not use this file except in compliance with the
+# License.
+#
+# You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+# specific language governing permission and limitations under the License.
+#
+# When distributing Covered Software, include this CDDL Header Notice in each file and include
+# the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+# Header, with the fields enclosed by brackets [] replaced by your own identifying
+# information: "Portions copyright [year] [name of copyright owner]".
+#
+# Copyright 2026 3A Systems, LLC.
+
+services:
+  openig:
+    image: openidentityplatform/openig:latest
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/openig/api/info"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./openig/config:/var/openig/config:ro
+      - ./openig/scripts:/var/openig/scripts:ro
+    environment:
+      CATALINA_OPTS: -Dopenai.api=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  ollama-models:

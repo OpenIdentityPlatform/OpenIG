@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -21,8 +21,14 @@
 
 
 [appendix]
+ifndef::env-site[]
 [#appendix-multiple-sps]
+endif::env-site[]
 == SAML 2.0 and Multiple Applications
+
+ifdef::env-site[]
+anchor:appendix-multiple-sps[]
+endif::env-site[]
 
 xref:chap-federation.adoc#chap-federation[OpenIG As a SAML 2.0 Service Provider] describes how to set up OpenIG as a SAML 2.0 service provider for a single application, using OpenAM as the identity provider. This chapter describes how to set up OpenIG as a SAML 2.0 service provider for two applications, still using OpenAM as the identity provider.
 
@@ -153,10 +159,6 @@ For an example of how this file should be, see xref:#multisp-sp1-extended[Extend
       Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
       Location="http://sp1.example.com:8080/saml/fedletSloRedirect/metaAlias/sp1"
       ResponseLocation="http://sp1.example.com:8080/saml/fedletSloRedirect/metaAlias/sp1"/>
-    <SingleLogoutService
-      Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-      Location="http://sp1.example.com:8080/saml/fedletSloPOST/metaAlias/sp1"
-      ResponseLocation="http://sp1.example.com:8080/saml/fedletSloPOST/metaAlias/sp1"/>
     <SingleLogoutService
       Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
       Location="http://sp1.example.com:8080/saml/fedletSloSoap/metaAlias/sp1"/>
@@ -443,35 +445,7 @@ For each new protected application, prepare an OpenIG configuration. The configu
 [#multisp-conf]
 ==== Preparing the Base Configuration File
 
-Edit the base configuration file, `$HOME/.openig/config/routes/config.json`, so that it does not rebase incoming URLs. The following example file differs from that used in earlier tutorials:
-
-[source, javascript]
-----
-{
-    "handler": {
-        "type": "Router"
-    },
-    "heap": [
-        {
-            "name": "LogSink",
-            "type": "ConsoleLogSink",
-            "config": {
-                "level": "DEBUG"
-            }
-        },
-        {
-            "name": "capture",
-            "type": "CaptureDecorator",
-            "config": {
-                "captureEntity": true,
-                "captureContext": true
-            }
-        }
-    ]
-}
-----
-Restart OpenIG to put the configuration changes into effect.
-
+Start from the main `$HOME/.openig/config/config.json` in xref:chap-quickstart.adoc#quickstart-configure[Configure OpenIG]. Keep application-specific upstream URIs on their routes, so the SAML handlers receive requests for the public SP hostnames.
 
 [#multisp-conf-sp1]
 ==== Preparing Routes for Application One
@@ -683,6 +657,6 @@ Similarly, try the SAML 2.0 web single sign-on profile with application two by s
 
 * The link for link:http://openam.example.com:8088/openam/idpssoinit?NameIDFormat=urn:oasis:names:tc:SAML:2.0:nameid-format:transient&metaAlias=/idp&spEntityID=sp2&binding=urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST[IDP-initiated SSO, window=\_blank].
 
-If you have not configured the examples exactly as shown in this guide, then adapt the SSO links accordingly.
+Adjust each URL to match the metadata you imported. Verify SSO and each configured logout flow separately for each SP, as described in xref:chap-federation.adoc#federation-upgrade-checks[Verifying Federation After an Upgrade].
 
 

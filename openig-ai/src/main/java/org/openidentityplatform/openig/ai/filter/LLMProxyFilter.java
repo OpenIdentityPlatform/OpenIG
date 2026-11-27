@@ -11,7 +11,7 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2026 3A Systems LLC.
+ * Copyright 2026 3A Systems, LLC.
  */
 
 package org.openidentityplatform.openig.ai.filter;
@@ -23,7 +23,13 @@ import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.json.JsonValue;
+import org.forgerock.json.JsonValueException;
 import org.forgerock.openig.el.Expression;
+import org.forgerock.openig.el.Expression.DeferredBindingException;
+import org.forgerock.openig.el.Expression.ReadPolicy;
+import org.forgerock.openig.el.Expression.ReadUse;
+import org.forgerock.openig.el.ExpressionException;
+import org.forgerock.openig.el.Functions;
 import org.forgerock.openig.heap.GenericHeaplet;
 import org.forgerock.openig.heap.HeapException;
 import org.forgerock.services.context.Context;
@@ -35,11 +41,25 @@ import org.openidentityplatform.openig.ai.filter.llm.LLMProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
+import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValueFunctions.duration;
 import static org.forgerock.openig.el.Bindings.bindings;
@@ -262,12 +282,21 @@ public class LLMProxyFilter implements Filter {
 
     public static class Heaplet extends GenericHeaplet {
 
+        private static final Set<String> REQUEST_BINDINGS =
+                Set.of("request", "context", "contexts", "attributes", "session");
+        private static final BeanInfo REQUEST_API = requestApi();
+        private static final Set<String> REQUEST_PROPERTIES = Arrays.stream(REQUEST_API.getPropertyDescriptors())
+                .filter(property -> property.getReadMethod() != null)
+                .map(property -> property.getName())
+                .collect(toUnmodifiableSet());
+        private static final Set<String> REQUEST_METHODS = Arrays.stream(REQUEST_API.getMethodDescriptors())
+                .map(method -> method.getName())
+                .collect(toUnmodifiableSet());
+
         @Override
         public Object create() throws HeapException {
 
-            JsonValue evaluatedConfig = config.as(evaluatedWithHeapProperties());
-
-            String providerStr = evaluatedConfig.get("provider").required().asString();
+            String providerStr = config.get("provider").as(evaluatedWithHeapProperties()).required().asString();
             LLMProvider provider;
             try {
                 provider = LLMProvider.valueOf(providerStr.toUpperCase());
@@ -275,13 +304,15 @@ public class LLMProxyFilter implements Filter {
                 throw new HeapException("Unknown LLM provider '" + providerStr
                         + "'. Valid values: OPENAI, ANTHROPIC, MISTRAL, AZURE_OPENAI, OPENAI_COMPATIBLE", e);
             }
-            String apiKey = evaluatedConfig.get("apiKey").required().asString();
+            String apiKey = config.get("apiKey").as(evaluatedWithHeapProperties()).required().asString();
 
-            String baseUrl = evaluatedConfig.get("baseUrl").defaultTo(provider.getDefaultBaseUrl()).asString();
+            String baseUrl = config.get("baseUrl").as(evaluatedWithHeapProperties())
+                                   .defaultTo(provider.getDefaultBaseUrl()).asString();
 
-            boolean rateLimitEnabled = evaluatedConfig.get("rateLimitEnabled").defaultTo(true).asBoolean();
+            boolean rateLimitEnabled = config.get("rateLimitEnabled").as(evaluatedWithHeapProperties())
+                                             .defaultTo(true).asBoolean();
 
-            Expression<String> sub = evaluatedConfig.get("sub").defaultTo("anonymous").as(expression(String.class));
+            Expression<String> sub = subjectExpression(config.get("sub"));
 
             TokenRateLimiter rateLimiter = null;
             if (rateLimitEnabled) {
@@ -310,6 +341,267 @@ public class LLMProxyFilter implements Filter {
             }
 
             return new LLMProxyFilter(provider, baseUrl, apiKey, sub, rateLimitEnabled, rateLimiter);
+        }
+
+        private Expression<String> subjectExpression(JsonValue subject) {
+            Expression<Object> configured = subject.as(expression(Object.class));
+            if (configured != null) {
+                try {
+                    Object value = configured.eval(bindings(), REQUEST_BINDINGS);
+                    subject = new JsonValue(value, subject.getPointer());
+                } catch (DeferredBindingException e) {
+                    Expression<String> startupSubject = heapSubject(subject, configured);
+                    if (startupSubject != null) {
+                        return startupSubject;
+                    }
+                }
+            }
+            return subject.defaultTo("anonymous").as(expression(String.class));
+        }
+
+        private Expression<String> heapSubject(JsonValue subject, Expression<Object> configured) {
+            Map<String, Object> heapProperties = heap.getProperties().asMap();
+            Set<String> heapBindings = new HashSet<>(REQUEST_BINDINGS);
+            heapBindings.retainAll(heapProperties.keySet());
+            if (heapBindings.isEmpty()) {
+                return null;
+            }
+
+            Set<String> deferred = new HashSet<>(REQUEST_BINDINGS);
+            deferred.removeAll(heapBindings);
+            HeapSubjectReads reads = new HeapSubjectReads(heapBindings, heapProperties.get("request"));
+            try {
+                Object value = configured.eval(bindings(), deferred, reads);
+                if (!(value instanceof String)) {
+                    return null;
+                }
+                String source = (String) value;
+                Expression<String> startupSubject = new JsonValue(source, subject.getPointer())
+                        .as(expression(String.class));
+                boolean literal = startupSubject.isLiteralText();
+                if (reads.usesRequestConfiguration() || reads.returnsRequestString(source, literal)
+                        || (!literal && reads.returnsSharedTemplate(source))) {
+                    return startupSubject;
+                }
+            } catch (DeferredBindingException | JsonValueException e) {
+                // Keep the original expression for request-time evaluation.
+            }
+            return null;
+        }
+
+        private static BeanInfo requestApi() {
+            try {
+                return Introspector.getBeanInfo(Request.class);
+            } catch (IntrospectionException e) {
+                throw new IllegalStateException("Cannot inspect HTTP Request members", e);
+            }
+        }
+
+        private static final class HeapSubjectReads implements ReadPolicy {
+            private final Set<String> heapBindings;
+            private final Object heapRequest;
+            private ResultSources resultSources = new ResultSources();
+            private boolean requestConfigurationRead;
+            private boolean sharedBindingRead;
+
+            private HeapSubjectReads(Set<String> heapBindings, Object heapRequest) {
+                this.heapBindings = heapBindings;
+                this.heapRequest = heapRequest;
+            }
+
+            @Override
+            public boolean canRead(Object base, Object member, boolean method, ReadUse use) {
+                if (base == null) {
+                    // A member lookup can use heap configuration. Testing the whole request needs the live request.
+                    return !"request".equals(member) || use.isReceiver()
+                            || (!use.isOperand() && heapRequest instanceof String);
+                }
+                if (base != heapRequest) {
+                    return true;
+                }
+                return !(method ? REQUEST_METHODS : REQUEST_PROPERTIES).contains(member);
+            }
+
+            @Override
+            public void onRead(Object base, Object member, Object value, ReadUse use) {
+                if (base == null && heapBindings.contains(member)) {
+                    if ("request".equals(member)) {
+                        rememberResultString(resultSources.request, value, use);
+                    } else {
+                        sharedBindingRead = true;
+                        rememberSharedValue(value, use);
+                    }
+                } else if (base != null && base == heapRequest) {
+                    if (base instanceof String) {
+                        rememberResultString(resultSources.request, value, use);
+                    } else {
+                        // A non-HTTP member belongs to the heap configuration, including optional map keys.
+                        requestConfigurationRead = true;
+                    }
+                } else if (resultSources.receivers.contains(base)) {
+                    rememberSharedValue(value, use);
+                }
+            }
+
+            private void rememberSharedValue(Object value, ReadUse use) {
+                if (value != null && use == ReadUse.RECEIVER) {
+                    resultSources.receivers.add(value);
+                }
+                rememberResultString(resultSources.shared, value, use);
+            }
+
+            @Override
+            public Object evaluateCall(Supplier<Object> invocation) {
+                ResultSources parent = resultSources;
+                ResultSources inputs = new ResultSources();
+                resultSources = inputs;
+                try {
+                    Object value = invocation.get();
+                    if (value instanceof String) {
+                        // Carry forward only text that survived this call, before EL appends other components.
+                        String result = (String) value;
+                        inputs.request.stream().filter(text -> retains(result, text)).forEach(parent.request::add);
+                        inputs.shared.stream().filter(text -> retains(result, text)).forEach(parent.shared::add);
+                    } else if (value instanceof String[]) {
+                        List<ResultSources> elements = inputs.arrays.get(value);
+                        if (elements != null) {
+                            parent.arrays.put((String[]) value, elements);
+                        }
+                    }
+                    return value;
+                } finally {
+                    resultSources = parent;
+                }
+            }
+
+            @Override
+            public Object evaluateArgument(Supplier<Object> argument) {
+                ResultSources parent = resultSources;
+                ResultSources sources = new ResultSources();
+                parent.arguments.add(sources);
+                resultSources = sources;
+                try {
+                    sources.argumentValue = argument.get();
+                    return sources.argumentValue;
+                } finally {
+                    resultSources = parent;
+                }
+            }
+
+            @Override
+            public void onFunction(Method function, Object value) {
+                List<ResultSources> arguments = resultSources.arguments;
+                if (function.getDeclaringClass() == Functions.class) {
+                    if ("array".equals(function.getName())) {
+                        recordArray((String[]) value, arguments);
+                        return;
+                    }
+                    if ("join".equals(function.getName())) {
+                        recordJoinedStrings(arguments.get(0), arguments.get(1));
+                        return;
+                    }
+                }
+                arguments.forEach(resultSources::addStrings);
+            }
+
+            private void recordArray(String[] array, List<ResultSources> arguments) {
+                if (arguments.size() == 1 && arguments.get(0).argumentValue == array) {
+                    // A String[] passed as the sole vararg is returned directly.
+                    resultSources.arrays.putAll(arguments.get(0).arrays);
+                } else {
+                    resultSources.arrays.put(array, List.copyOf(arguments));
+                }
+            }
+
+            private void recordJoinedStrings(ResultSources values, ResultSources separator) {
+                if (values.argumentValue instanceof String[]) {
+                    String[] array = (String[]) values.argumentValue;
+                    List<ResultSources> elements = values.arrays.get(array);
+                    if (elements != null) {
+                        elements.forEach(resultSources::addStrings);
+                    }
+                    if (array.length > 1) {
+                        resultSources.addStrings(separator);
+                    }
+                }
+            }
+
+            @Override
+            public void onInvocation(Object base, Object method, Object[] arguments) {
+                int firstResultArgument = 0;
+                if (base instanceof Map) {
+                    if ("get".equals(method) || "containsKey".equals(method)) {
+                        return;
+                    }
+                    if ("getOrDefault".equals(method) && arguments.length == 2) {
+                        // Only the default can supply text, and only when the key is absent.
+                        if (((Map<?, ?>) base).containsKey(arguments[0])) {
+                            return;
+                        }
+                        firstResultArgument = 1;
+                    }
+                } else if (base instanceof String && "replace".equals(method) && arguments.length == 2) {
+                    // The search term selects a match. The replacement supplies text only when a match exists.
+                    if (!(arguments[0] instanceof CharSequence) || !(arguments[1] instanceof CharSequence)
+                            || !((String) base).contains((CharSequence) arguments[0])) {
+                        return;
+                    }
+                    firstResultArgument = 1;
+                }
+                resultSources.arguments.stream().skip(firstResultArgument).forEach(resultSources::addStrings);
+            }
+
+            private static void rememberResultString(Set<String> strings, Object value, ReadUse use) {
+                if (use == ReadUse.RESULT && value instanceof String) {
+                    strings.add((String) value);
+                }
+            }
+
+            private boolean usesRequestConfiguration() {
+                return requestConfigurationRead && !sharedBindingRead;
+            }
+
+            private boolean returnsRequestString(String result, boolean literal) {
+                return !sharedBindingRead && (resultSources.request.stream()
+                        .anyMatch(text -> result.equals(text) || result.equals(text.trim()))
+                        || (!literal && containsTemplate(resultSources.request, result)));
+            }
+
+            private boolean returnsSharedTemplate(String result) {
+                // Runtime bindings such as attributes have no fixed set of member names.
+                return containsTemplate(resultSources.shared, result);
+            }
+
+            private static boolean containsTemplate(Set<String> strings, String result) {
+                return strings.stream().map(String::trim)
+                        .anyMatch(text -> result.contains(text) && isTemplate(text));
+            }
+
+            private static boolean retains(String result, String text) {
+                return result.equals(text) || result.contains(text.trim());
+            }
+
+            private static boolean isTemplate(String text) {
+                try {
+                    return !Expression.valueOf(text, String.class).isLiteralText();
+                } catch (ExpressionException e) {
+                    return false;
+                }
+            }
+
+            private static final class ResultSources {
+                private final Set<String> request = new HashSet<>();
+                private final Set<String> shared = new HashSet<>();
+                private final Set<Object> receivers = Collections.newSetFromMap(new IdentityHashMap<>());
+                private final Map<String[], List<ResultSources>> arrays = new IdentityHashMap<>();
+                private final List<ResultSources> arguments = new ArrayList<>();
+                private Object argumentValue;
+
+                private void addStrings(ResultSources sources) {
+                    request.addAll(sources.request);
+                    shared.addAll(sources.shared);
+                }
+            }
         }
     }
 }

@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-ttf]
+endif::env-site[]
 == Transforming OpenID Connect ID Tokens Into SAML Assertions
+
+ifdef::env-site[]
+anchor:chap-ttf[]
+endif::env-site[]
 
 OpenIG provides a token transformation filter to transform OpenID Connect ID tokens (id_tokens) issued by OpenAM into SAML 2.0 assertions. The implementation uses the REST Security Token Service (STS) APIs, where the subject confirmation method is Bearer.
 
@@ -42,7 +48,7 @@ The basic process is as follows:
 
 . If the user consents, OpenAM returns an id_token to the `OAuth2ClientFilter`. The filter opens the id_token JWT and makes it available in `attributes.openid.id_token` and `attributes.openid.id_token_claims` for downstream filters.
 
-. The `TokenTransformationFilter` redirects the request to the STS. The request includes the user's credentials, the id_token to transform, and the location where the SAML 2.0 assertion is to be injected after successful transformation.
+. The `TokenTransformationFilter` calls the REST STS endpoint. The transformation request supplies the ID token. The filter makes the issued token available to downstream filters and handlers through `contexts.sts.issuedToken`.
 
 . The STS validates the signature, decodes the payload, and verifies that the user issued the transaction. The STS then issues a SAML assertion to OpenIG on behalf of the user.
 
@@ -341,31 +347,15 @@ image::images/ttf-idtoken.png[]
 [#ttf-OIDC-json-procedure]
 .To Set Up Routes to Create an id_token
 ====
-Any errors that occur during the token transformation cause an error response to be returned to the client and an error message to be logged for the OpenIG administrator.
+If the transformation fails, check the OpenIG and OpenAM logs. A non-success response from STS can leave the issued token empty.
 
-. Edit `config.json` to comment the baseURI in the top-level handler. The handler declaration appears as follows:
-+
-
-[source, javascript]
-----
-{
-    "handler": {
-        "type": "Router",
-        "audit": "global",
-        "_baseURI": "http://app.example.com:8081",
-        "capture": "all"
-    }
-}
-----
-+
-Restart OpenIG for the changes to take effect.
-
+. Use the base configuration from xref:chap-quickstart.adoc#quickstart-configure[Configure OpenIG].
 . Add the following route to the OpenIG configuration as `$HOME/.openig/config/routes/50-id-token.json`
 +
-On Windows, add the route as `%appdata%${projectName}\config\routes\50-id-token.json`.
+On Windows, add the route as `%APPDATA%\OpenIG\config\routes\50-id-token.json`.
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -412,14 +402,17 @@ On Windows, add the route as `%appdata%${projectName}\config\routes\50-id-token.
       "handler": {
         "type": "StaticResponseHandler",
         "config": {
-          "entity": "{\"id_token\":\n\"${attributes.openid.id_token}\"} \n\n\n{\"saml_assertions\":\n\"${attributes.saml_assertions}\"}",
-          "reason": "Found",
+          "entity": "ID token:\n${attributes.openid.id_token}\n\nSAML assertion:\n",
+          "headers": {
+            "Content-Type": ["text/plain; charset=UTF-8"],
+            "Cache-Control": ["no-store"]
+          },
           "status": 200
         }
       }
     }
   },
-  "condition": "${matches(request.uri.path, '^/id_token')}"
+  "condition": "${matches(request.uri.path, '^/id_token(/|$)')}"
 }
 ----
 +
@@ -431,7 +424,7 @@ Notice the following features of the route:
 * The `OAuth2ClientFilter` enables OpenIG to act as an OpenID Connect relying party.
 +
 
-** The client endpoint is set to `/id_token`, so the service URIs for this filter on the OpenIG server are `/openid/login`, `/openid/logout`, and `/openid/callback`.
+** The client endpoint is set to `/id_token`, so the service URIs for this filter on the OpenIG server are `/id_token/login`, `/id_token/logout`, and `/id_token/callback`.
 
 ** For convenience in this test, `"requireHttps"` is false. In production environments, set it to true. So that you see the delegated authorization process when you make a request, `"requireLogin"` is true.
 
@@ -454,16 +447,15 @@ An OpenID Connect request to access private information is displayed.
 
 . Select Allow.
 +
-The id_token is displayed above an empty placeholder for the SAML assertion.
+The response displays the ID token and an empty SAML assertion field. Keep this route on a restricted development instance while testing.
 +
 
 [source, console]
 ----
-{"id_token":
-"eyAidHlwIjogIkpXVCIsICJhbGciOiAiSFMyNTYiIH0.eyAiYXRfaGFzaCI6ICJ . . ."}
+ID token:
+eyJ...
 
-{"saml_assertions":
-""}
+SAML assertion:
 ----
 
 ====
@@ -475,7 +467,7 @@ The id_token is displayed above an empty placeholder for the SAML assertion.
 . Add the following filter at the end of chain in `50-id-token.json`. An example of the edited route is at the end of this procedure.
 +
 
-[source, javascript]
+[source, json]
 ----
 {
   "type": "TokenTransformationFilter",
@@ -484,7 +476,6 @@ The id_token is displayed above an empty placeholder for the SAML assertion.
     "username": "george",
     "password": "costanza",
     "idToken": "${attributes.openid.id_token}",
-    "target": "${attributes.saml_assertions}",
     "instance": "openig",
     "ssoTokenHeader": "iPlanetDirectoryPro"
   }
@@ -494,13 +485,13 @@ The id_token is displayed above an empty placeholder for the SAML assertion.
 Notice the following features of the new filter:
 +
 
-* Requests from this filter are made to `\http://openam.example.com:8088/openam`.
+* In the root realm, the filter sends the transformation request to `http://openam.example.com:8088/openam/rest-sts/openig?_action=translate`.
 
 * The username and password are for OpenAM subject set up in xref:#ttf-OIDC-provider-procedure[ To Set Up OpenID Connect Provider and Client ].
 
-* The `id_token` parameter defines where this filter gets the id_token created by the `OAuth2ClientFilter`.
+* The `idToken` parameter defines where this filter gets the id_token created by the `OAuth2ClientFilter`.
 
-* The `target` parameter defines where this filter injects the SAML 2.0 assertion after transforming the id_token.
+* The filter exposes the SAML assertion as `${contexts.sts.issuedToken}`. Update the response handler to display that value as shown in the final route.
 
 * The `instance` parameter must match the `Deployment URL Element` for the REST STS instance.
 
@@ -513,17 +504,17 @@ The SAML assertion is displayed under the id_token.
 
 [source, console]
 ----
-{"id_token":
-"eyAidHlwIjogIkpXVCIsICJhbGciOiAiSFMyNTYiIH0.eyAiYXRfaGFzaCI6ICJ . . ."}
+ID token:
+eyJ...
 
-{"saml_assertions":
-<"saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" Version= . . ."}
+SAML assertion:
+<saml:Assertion ...>...</saml:Assertion>
 ----
 
 ====
-Example of the final `id_token.json`:
+Example of the final `50-id-token.json`:
 
-[source, javascript]
+[source, json]
 ----
 {
   "handler": {
@@ -573,7 +564,6 @@ Example of the final `id_token.json`:
             "username": "george",
             "password": "costanza",
             "idToken": "${attributes.openid.id_token}",
-            "target": "${attributes.saml_assertions}",
             "instance": "openig",
             "amHandler": {
               "type": "ClientHandler"
@@ -585,14 +575,17 @@ Example of the final `id_token.json`:
       "handler": {
         "type": "StaticResponseHandler",
         "config": {
-          "entity": "{\"id_token\":\n\"${attributes.openid.id_token}\"} \n\n\n{\"saml_assertions\":\n\"${attributes.saml_assertions}\"}",
-          "reason": "Found",
+          "entity": "ID token:\n${attributes.openid.id_token}\n\nSAML assertion:\n${contexts.sts.issuedToken}",
+          "headers": {
+            "Content-Type": ["text/plain; charset=UTF-8"],
+            "Cache-Control": ["no-store"]
+          },
           "status": 200
         }
       }
     }
   },
-  "condition": "${matches(request.uri.path, '^/id_token')}"
+  "condition": "${matches(request.uri.path, '^/id_token(/|$)')}"
 }
 ----
 

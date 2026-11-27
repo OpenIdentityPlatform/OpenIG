@@ -2,17 +2,17 @@
   The contents of this file are subject to the terms of the Common Development and
   Distribution License (the License). You may not use this file except in compliance with the
   License.
- 
+
   You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
   specific language governing permission and limitations under the License.
- 
+
   When distributing Covered Software, include this CDDL Header Notice in each file and include
   the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
   Header, with the fields enclosed by brackets [] replaced by your own identifying
   information: "Portions copyright [year] [name of copyright owner]".
- 
+
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-oauth2-rs]
+endif::env-site[]
 == OpenIG As an OAuth 2.0 Resource Server
+
+ifdef::env-site[]
+anchor:chap-oauth2-rs[]
+endif::env-site[]
 
 OpenIG helps integrate applications into OAuth 2.0 deployments. In this chapter, you will learn to use OpenIG as an OAuth 2.0 Resource Server.
 
@@ -65,7 +71,7 @@ In the tutorial that follows, you configure OpenIG as a resource server, and use
 [#oauth2-rs-tutorial-before-you-start]
 === Preparing the Tutorial
 
-xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
 
 You will learn how OpenIG can act as an OAuth 2.0 resource server, validating OAuth 2.0 access tokens and including token info in the context.
 
@@ -74,22 +80,6 @@ This tutorial relies on OpenAM as an OAuth 2.0 authorization server. As an OAuth
 Before you start this tutorial, prepare OpenIG and the minimal HTTP server as described in xref:chap-quickstart.adoc#chap-quickstart[Getting Started].
 
 OpenIG should be running in Jetty, configured to access the minimal HTTP server as described in that chapter.
-
-Edit `config.json` to make sure that the `CaptureDecorator` also captures the context. After you make the changes, the object declaration appears as follows:
-
-[source, json]
-----
-{
-    "name": "capture",
-    "type": "CaptureDecorator",
-    "config": {
-        "captureEntity": true,
-        "captureContext": true
-    }
-}
-----
-Restart Jetty for the changes to take effect. This allows you to view the token information that OpenAM returns.
-
 
 [#oauth2-rs-tutorial-openam-config]
 === Setting Up OpenAM As an Authorization Server
@@ -107,7 +97,7 @@ In the console for OpenAM 12 and earlier, use the common task wizard. In the con
 
 . Create an OAuth 2.0 Client profile in the top-level realm.
 +
-This allows you to request an OAuth 2.0 access token on behalf of the client.
+Register a client that can obtain a user access token through the authorization code flow with PKCE. Add the redirect URI for your OAuth client and allow the authorization code grant.
 +
 In the console for OpenAM 12 and earlier, browse to Access Control > / (Top Level Realm) > Agents > OAuth 2.0 Client. In the console for OpenAM 13 and later, select the top-level realm and browse to Agents > OAuth 2.0/OpenID Connect Client Then click New in the Agent table.
 +
@@ -117,9 +107,9 @@ The name is the OAuth 2.0 `client_id`, and the password is the `client_secret`.
 
 . Edit the `OpenIG` client profile to add `mail` and `employeenumber` scopes to the Scope(s) list, and then save your work.
 +
-Here, you overload these profile settings to pass credentials to OpenIG. This tutorial uses `mail` and `employeenumber` for the sake of simplicity. Both of those attributes are part of a user's profile out of the box with the default OpenAM configuration. Neither of the attributes are needed for anything else in this tutorial.
+Here, you overload these profile settings to pass credentials to OpenIG. This tutorial uses `mail` and `employeenumber` to pass the sample application credentials. Use these attributes only with test users. Production applications should use the access token or a trusted identity mapping to authorize users.
 +
-So, this tutorial uses `mail` to hold the username, and `employeenumber` to hold the password. In a real deployment, you would no doubt use other attributes that depend on how the real user profiles are configured.
+The tutorial stores the demo username in `mail` and the demo password in `employeenumber`.
 
 . Create a user whose additional credentials you set in the Email Address and Employee Number fields if you have not already done so for another tutorial:
 
@@ -178,7 +168,6 @@ To configure OpenIG as an OAuth 2.0 resource server, add a new route to the Open
             "tokenInfoEndpoint": "http://openam.example.com:8088/openam/oauth2/tokeninfo",
             "requireHttps": false
           },
-          "capture": "filtered_request",
           "timer": true
         },
         {
@@ -186,11 +175,11 @@ To configure OpenIG as an OAuth 2.0 resource server, add a new route to the Open
           "config": {
             "onRequest": [
               {
-                "target": "${session.username}",
+                "target": "${attributes.demoUsername}",
                 "value": "${contexts.oauth2.accessToken.info.mail}"
               },
               {
-                "target": "${session.password}",
+                "target": "${attributes.demoPassword}",
                 "value": "${contexts.oauth2.accessToken.info.employeenumber}"
               }
             ]
@@ -204,10 +193,10 @@ To configure OpenIG as an OAuth 2.0 resource server, add a new route to the Open
             "uri": "http://app.example.com:8081",
             "form": {
               "username": [
-                "${session.username}"
+                "${attributes.demoUsername}"
               ],
               "password": [
-                "${session.password}"
+                "${attributes.demoPassword}"
               ]
             }
           },
@@ -238,9 +227,9 @@ Notice the following features of the new route:
 +
 After successfully using the token info endpoint to validate an access token, the `OAuth2ResourceServerFilter` creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}`. The context contains the access token and the other info returned by the token info endpoint.
 
-* The `AssignmentFilter` accesses the token info through the context, and injects the credentials from the user profile in OpenAM into `session`.
+* The `AssignmentFilter` accesses the token info through the context, and injects the credentials from the user profile in OpenAM into request-scoped attributes.
 
-* The `StaticRequestFilter` retrieves the username and password from `session`, and replaces the original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
+* The `StaticRequestFilter` retrieves the username and password from those attributes, and replaces the original HTTP GET request with an HTTP POST login request that contains the credentials to authenticate.
 
 * The route matches requests to `/rs`.
 
@@ -249,29 +238,13 @@ After successfully using the token info endpoint to validate an access token, th
 [#oauth2-rs-tutorial-test]
 === Testing the Configuration
 
-To try your configuration you get an access token from OpenAM and use it to access OpenIG, which uses the OAuth 2.0 resource owner password credentials authorization grant.
+Obtain an access token from OpenAM and present it to OpenIG. The authorization code flow with PKCE lets the user enter credentials directly at OpenAM. For current OAuth security guidance, see link:https://www.rfc-editor.org/rfc/rfc9700.html[RFC 9700].
 
 [#d2528e4315]
 .To Test the Configuration
 ====
 
-. In a terminal window, use a `curl` command similar to the following to retrieve the access token:
-+
-
-[source, console]
-----
-$ curl \
---user "OpenIG:password" \
---data "grant_type=password&username=george&password=costanza&scope=mail%20employeenumber" \
-http://openam.example.com:8088/openam/oauth2/access_token
-
-{
-"access_token":"aba19a55-468d-45e2-b1c4-decc7202faea",
-"scope":"employeenumber mail",
-"token_type":"Bearer",
-"expires_in":3599
-}
-----
+. In your OAuth client, start an authorization code flow with PKCE using the registered `OpenIG` client and the `mail` and `employeenumber` scopes. Sign in to OpenAM as the tutorial user `george` and approve those scopes. Exchange the authorization code at the token endpoint with the same redirect URI and the PKCE verifier, and save the returned access token. The OpenAM discovery document provides the authorization and token endpoints.
 
 . In the following command, replace __<access_token>__ with the access token returned by the previous step, and then run the command:
 +
@@ -281,35 +254,16 @@ http://openam.example.com:8088/openam/oauth2/access_token
 $ curl \
 --header "Authorization: Bearer <access_token>" \
 http://openig.example.com:8080/rs
-
-...
-<h1>User Information</h1>
-
-<dl>
-    <dt>Username</dt>
-    <dd>george</dd>
-</dl>
-
-<h1>Request Information</h1>
-
-<dl>
-    <dt>Method</dt>
-    <dd>POST</dd>
-
-    <dt>URI</dt>
-    <dd>/</dd>
-
-    <dt>Headers</dt>
-    <dd style="font-family: monospace; font-size: small;">...</dd>
-</dl>
 ----
++
+The sample application response displays `Howdy, george`.
 
 ====
 What is happening behind the scenes?
 
 After OpenIG gets the `curl` request, the resource server filter validates the access token with OpenAM, and creates a new context for the authorization server response, at `${contexts.oauth2.accessToken}`. If the access token had been missing or invalid, then the resource server filter would have returned an error status to the user-agent, and the OAuth 2.0 client would then have had to deal with the error.
 
-OpenIG captures the token information into the log, and the `AssignmentFilter` injects the credentials into the session context.
+The `AssignmentFilter` reads the token information from the OAuth 2.0 context and adds the sample credentials to the request context.
 
 Finally, the `StaticRequestFilter` uses the credentials to log the user in to the minimal HTTP server, which responds with the user information page.
 

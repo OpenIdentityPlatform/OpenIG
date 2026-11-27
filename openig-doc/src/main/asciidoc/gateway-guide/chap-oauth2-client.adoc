@@ -12,7 +12,7 @@
   information: "Portions copyright [year] [name of copyright owner]".
  
   Copyright 2017 ForgeRock AS.
-  Portions Copyright 2024-2025 3A Systems LLC.
+  Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
 :figure-caption!:
@@ -20,8 +20,14 @@
 :table-caption!:
 
 
+ifndef::env-site[]
 [#chap-oauth2-client]
+endif::env-site[]
 == OpenIG As an OAuth 2.0 Client or OpenID Connect Relying Party
+
+ifdef::env-site[]
+anchor:chap-oauth2-client[]
+endif::env-site[]
 
 OpenIG helps integrate applications into OAuth 2.0 and OpenID Connect deployments. In this chapter, you will learn to:
 
@@ -76,7 +82,7 @@ In the tutorial that follows, you configure OpenIG as a relying party, and use O
 [#oidc-rp-tutorial-before-you-start]
 === Preparing the Tutorial
 
-xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic and capture request and response data. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
+xref:chap-quickstart.adoc#chap-quickstart[Getting Started] describes how to configure OpenIG to proxy traffic. You also learned how to configure OpenIG to use a static request to log in with hard-coded credentials.
 
 This tutorial shows you how OpenIG can act as an OpenID Connect 1.0 relying party.
 
@@ -327,35 +333,7 @@ Follow these steps to add a route demonstrating OpenID Connect discovery and dyn
       "config": {
         "status": 200,
         "reason": "OK",
-        "entity":
-          "<!doctype html>
-          <html>
-          <head>
-            <title>OpenID Connect Discovery</title>
-            <meta charset='UTF-8'>
-          </head>
-          <body>
-            <form id='form' action='/discovery/login?'>
-              Enter your user ID or email address:
-            <input type='text' id='discovery' name='discovery'
-                   placeholder='george or george@example.com' />
-            <input type='hidden' name='goto'
-                   value='${contexts.router.originalUri}' />
-            </form>
-            <script>
-            // The sample application handles the WebFinger request,
-            // so make sure the request is sent to the sample app.
-            window.onload = function() {
-              document.getElementById('form').onsubmit = function() {
-                // Fix the URL if not using the default settings.
-                var sampleAppUrl = 'http://app.example.com:8081/';
-                var discovery = document.getElementById('discovery');
-                discovery.value = sampleAppUrl + discovery.value.split('@', 1)[0];
-              };
-            };
-            </script>
-          </body>
-          </html>"
+        "entity": "<!doctype html>\n<html>\n<head>\n  <title>OpenID Connect Discovery</title>\n  <meta charset='UTF-8'>\n</head>\n<body>\n  <form id='form' action='/discovery/login?'>\n    Enter your user ID or email address:\n  <input type='text' id='discovery' name='discovery'\n         placeholder='george or george@example.com' />\n  <input type='hidden' name='goto'\n         value='${contexts.router.originalUri}' />\n  </form>\n  <script>\n  // The sample application handles the WebFinger request,\n  // so make sure the request is sent to the sample app.\n  window.onload = function() {\n    document.getElementById('form').onsubmit = function() {\n      // Fix the URL if not using the default settings.\n      var sampleAppUrl = 'http://app.example.com:8081/';\n      var discovery = document.getElementById('discovery');\n      discovery.value = sampleAppUrl + discovery.value.split('@', 1)[0];\n    };\n  };\n  </script>\n</body>\n</html>"
       }
     }
   ],

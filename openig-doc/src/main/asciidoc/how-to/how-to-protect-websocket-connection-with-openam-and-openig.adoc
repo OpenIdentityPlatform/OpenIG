@@ -19,417 +19,66 @@ Copyright 2026 3A Systems, LLC.
 [[how-to-protect-websocket-connection-with-openam-and-openig]]
 == How to Protect a WebSocket Connection with OpenAM and OpenIG
 :imagesdir: ../
+include::../partials/how-to-downloads.adoc[]
 
 [[how-to-protect-websocket-connection-with-openam-and-openig-introduction]]
 === Introduction
 
-This article is a continuation of the article xref:openam:how-to:how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack.adoc[How to Add Authorization and Protect Your Application With OpenAM and OpenIG Stack ]. The previous article described how to protect regular HTTP endpoints. In the following, we will protect a WebSocket connection with OpenAM authentication. To simplify the setup and deployment of services we will use Docker and Docker Compose tools.
+OpenIG checks the OpenAM session before allowing a browser to exchange WebSocket messages with an upstream service. In this demo, a browser connects to OpenIG on port 8081, OpenAM listens on port 8080, and the echo service is reachable only from the Compose network.
 
 [[how-to-protect-websocket-connection-with-openam-and-openig-sample-websocket-service-introduction]]
-=== Sample Websocket Service Introduction
+=== Sample WebSocket service
 
-To test WebSocket we will use a test https://hub.docker.com/r/jmalloc/echo-server[echo-server]. To run the service in Docker, create a `docker-compose.yml` file and add sample-service:
+Save link:{how-to-downloads}/websocket/compose.yaml[compose.yaml] and link:{how-to-downloads}/websocket/prepare.sh[prepare.sh] in the same empty directory. The example uses the https://hub.docker.com/r/jmalloc/echo-server[echo-server] image. Use a trusted upstream for this setup because OpenIG forwards the session cookie in the upstream WebSocket handshake.
 
-`docker-compose.yml`:
+Add the following entry to the hosts file on the machine running your browser.
 
-[source,yml]
+[source,text]
 ----
-version: '3'
-services:
-  echo-server:
-    image: jmalloc/echo-server
-    restart: always
-    ports:
-        - "8082:8080"
-    networks:
-      openam_network:
-        aliases:
-          - echo-server
-networks:
-  openam_network:
-    driver: bridge
-----
-
-Run the `docker compose up` command and after the service is started, you will see in the console something like this:
-
-[listing]
-----
-Echo server listening on port 8080.
+127.0.0.1 openam.example.org openig.example.org
 ----
 
 [[how-to-protect-websocket-connection-with-openam-and-openig-openig-configuration]]
-=== OpenIG Configuration
+=== OpenIG configuration
 
-Let's setup OpenIG to return a static content with a WebSocket client application
+Generate the configuration and verify the Compose file.
 
-Create folder `openig-config` go to the folder and create two files `admin.json` and `config.json` with the following contents:
-
-`admin.json`
-
-[source,json]
+[source,bash]
 ----
-{
-    "prefix" : "openig",
-    "mode": "PRODUCTION"
-}
+sh prepare.sh
+docker compose config --quiet
 ----
 
-`config.json`
+The script creates the following files under `openig-config/`, mounted at `/var/openig/config` in the OpenIG container.
 
-[source,json]
-----
-{
-  "heap": [],
-  "handler": {
-    "type": "Chain",
-    "config": {
-      "filters": [],
-      "handler": {
-        "type": "Router",
-        "name": "_router",
-        "capture": "all"
-      }
-    }
-  }
-}
-----
+* `admin.json` and `config.json` configure the OpenIG router.
+* `routes/10-ui.json` serves `static/ws-client.html` at `/ui`. The browser uses `ws:` on HTTP and `wss:` on HTTPS when connecting to `/ws-handler`.
+* `routes/20-websocket.json` transforms the OpenAM session cookie using REST STS, returns 401 if no JWT is issued, and sends the JWT in the upstream `Authorization` header. The WebSocket client inside OpenIG supplies its own handshake key and protocol version.
 
-Add a static HTML page with an UI for testing WebSocket connection. In `openig-config` folder create `static` directory and add `ws-client.html` file with the following contents:
+The Compose file sets `openam` to the OpenAM deployment URL and `ws.secured` to `ws://echo-server:8080`. The upstream URL contains only the scheme, host and port so dispatch preserves the original request path. Use `wss:` for an upstream with TLS.
 
-[source,html]
-----
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <title>WS-Client</title>
-    <style>
-        #log p {
-            margin: 0;
-        }
-        #log p.error {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-  <div>
-    <h1>WS-Client</h1>
-      <button id='connect' type='button'>Connect</button>
-      &nbsp;
-      <button id='send' type='button'>Send Message</button>
-      <br>
-      <label for='log'>Log:</label>
-      <div id='log'></div>
-  </div>
-  <script>
-      const connectBtn = document.getElementById('connect');
-      connectBtn.onclick = connect;
-      let socket;
-      function connect() {
-          appendToConsole('connecting...')
-          const endpoint = 'ws://' + location.host + '/ws-handler';
-          socket = new WebSocket(endpoint);
-          socket.onmessage = function(event) {
-              appendToConsole('got response message from server: ' + event.data);
-          };
-          socket.onopen = function () {
-              appendToConsole('connected')
-          };
-          socket.onerror = function (e) {
-              appendToConsole('socket error occurred', true);
-          }
-          socket.onclose = function () {
-              appendToConsole('socket connection closed')
-          }
-      }
-
-      const sendBtn = document.getElementById('send');
-      sendBtn.onclick = function () {
-          if(socket.readyState !== WebSocket.OPEN) {
-              appendToConsole('socket is not open', true);
-              return;
-          }
-          appendToConsole('sending message...');
-          try {
-              socket.send('Test message');
-          } catch (e) {
-              appendToConsole('error sending message: ' + e.message, true)
-          }
-      }
-
-      function appendToConsole(message, error) {
-          let className = '';
-          if (error) {
-              console.error(message);
-              className = 'error';
-          } else {
-              console.log(message);
-          }
-          const log = document.getElementById('log');
-          const p = document.createElement('p');
-          p.innerText = message;
-          p.className = className;
-          log.append(p)
-      }
-  </script>
-</body>
-</html>
-----
-
-Then add OpenIG routes for the `echo-server` UI and WebSocket endpoints. Create a `routes` folder in the `openig-config` folder. In `routes` folder create a `10-ui.json` for UI and a `10-websocket.json` as well. `10-ui.json`
-
-[source,json]
-----
-{
-    "name": "${matches(request.uri.path, '^/ui')}",
-    "condition": "${matches(request.uri.path, '^/ui')}",
-    "monitor": true,
-    "timer": true,
-    "handler": {
-       "type": "Chain",
-       "config": {
-          "filters": [],
-          "handler": "WSClient"
-       }
-    },
-    "heap": [
-       {
-         "name": "WSClient",
-         "type":"StaticResponseHandler",
-         "config": {
-            "status": 200,
-            "entity": "${read(system['openig.base'].concat('/config/static/ws-client.html'))}"
-         }
-       }
-    ]
- }
-----
-
-Let's setup access to the sample service instance via OpenIG. Remove the `ports` section from the `docker-compose.yml` file and add OpenIG.
-
-`10-websocket.json`
-
-[source,json]
-----
-{
-  "name": "${matches(request.uri.path, '^/ws-handler')}",
-  "condition": "${matches(request.uri.path, '^/ws-handler')}",
-  "monitor": true,
-  "timer": true,
-  "handler": {
-    "type": "Chain",
-    "config": {
-      "filters": [
-        {
-          "type": "HeaderFilter",
-          "config": {
-            "messageType": "REQUEST",
-            "add": {
-              "Host": [
-                "${matchingGroups(system['ws.secured'],\"(http|https):\/\/(.[^\/]*)\")[2]}"
-              ]
-            },
-            "remove": [
-              "Sec-Websocket-Key",
-              "Sec-Websocket-Version",
-              "Host",
-              "Origin"
-            ]
-          }
-        }
-      ],
-      "handler": "EndpointHandler"
-    }
-  },
-  "heap": [
-    {
-      "name": "EndpointHandler",
-      "type": "DispatchHandler",
-      "config": {
-        "bindings": [
-          {
-            "handler": "ClientHandler",
-            "capture": "all",
-            "baseURI": "${system['ws.secured']}"
-          }
-        ]
-      }
-    }
-  ]
-}
-----
-
-We need to remove headers from the client's original HTTP request to establish a proper WebSocket connection from OpenIG instance to the `secured-service`.
-
-Add OpenIG service to the `docker-compose.yml` file.
-
-[source,yml]
-----
-...
-    openig:
-    image: openidentityplatform/openig:latest
-    build: .
-    volumes:
-      - ./openig-config:/usr/local/openig-config/config:ro
-    ports:
-      - "8081:8080"
-      - "8000:8000"
-    environment:
-      CATALINA_OPTS: -Dopenig.base=/usr/local/openig-config -Dsecured=http://echo-server:8080 -Dopenam=http://openam.example.org:8080/openam -Dws.secured=ws://echo-server:8080 -Dorg.openidentityplatform.openig.websocket.ttl=180
-    networks:
-      openam_network:
-        aliases:
-          - openig.example.org
-...
-----
-
-System properties from OpenIG example configuration
-
-[cols=",",options="header",]
-|===
-|Peroperty |Description
-|secured |points to the HTTP service
-|ws.secured |Points to the WebSocket service
-|openam |points to OpenAM instance (we will use this setting in the future chapters)
-|org.openidentityplatform.openig.websocket.ttl |The interval in seconds, during which the validity of the session is checked (default 180)
-|===
-
-Run the `docker compose` command using the updated file. After OpenIG and sample servie are up, open http://localhost:8080/ui[http://localhost:8080/ui/ws] URL in your browser. You'll be able to establish a WebSocket connection and all interactions will be proxied by OpenIG.
+`org.openidentityplatform.openig.websocket.ttl` is the number of seconds for which OpenIG reuses a WebSocket authorization result. The default is 180 seconds. While the socket is open, the first message in either direction after that interval triggers another authorization check.
 
 [[how-to-protect-websocket-connection-with-openam-and-openig-openam-configuration]]
-=== OpenAM Configuration
+=== OpenAM configuration
 
-Let's add OpenAM authentication to our stack. Add OpenAM service to the `docker-compose.yml` file.
-
-[source,yml]
+[source,bash]
 ----
-...
-  openam:
-    image: openidentityplatform/openam
-    volumes:
-      - ./data/openam:/usr/openam/config
-    ports:
-      - "8080:8080"
-    networks:
-      openam_network:
-        aliases:
-          - openam.example.org
-...
+docker compose up -d openam
 ----
 
-The `./data/openam` folder is needed to store OpenAM persistent configuration.
+Open http://openam.example.org:8080/openam[OpenAM] and configure the deployment. Set the session cookie domain to `.example.org` so the browser also sends the cookie to `openig.example.org`. Create a REST STS instance named `jwt` in the root realm that transforms an `OPENAM` token into an `OPENIDCONNECT` token. Use the `iPlanetDirectoryPro` session cookie configured in the example route. Follow the xref:openam:how-to:how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack.adoc#how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack-openam-setup[OpenAM setup instructions] for the STS configuration.
 
-Add FQDN openam.example.org and openig.example.org to `hosts` file: `127.0.0.1 openam.example.org openig.example.org`
-
-Run the `docker-compose` file, setup OpenAM, add cookie domain and setup `jwt` endpoint as described in xref:openam:how-to:how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack.adoc#how-to-add-authorization-and-protect-your-application-with-openam-and-openig-stack-openam-setup[How to Add Authorization and Protect Your Application With OpenAM and OpenIG Stack ] article.
-
-Add OpenAM token validation filters to the `10-websocket.json` file.
-
-[source,json]
+[source,bash]
 ----
-       {
-          "type": "ConditionalFilter",
-          "config": {
-            "condition": "${empty contexts.sts.issuedToken and not empty request.cookies['iPlanetDirectoryPro'][0].value}",
-            "delegate": {
-              "type": "TokenTransformationFilter",
-              "config": {
-                "openamUri": "${system['openam']}",
-                "realm": "/",
-                "instance": "jwt",
-                "from": "OPENAM",
-                "to": "OPENIDCONNECT",
-                "idToken": "${request.cookies['iPlanetDirectoryPro'][0].value}"
-              }
-            }
-          }
-        },
-        {
-          "type": "ConditionalFilter",
-          "config": {
-            "condition": "${not empty contexts.sts.issuedToken}",
-            "delegate": {
-              "type": "HeaderFilter",
-              "config": {
-                "messageType": "REQUEST",
-                "remove": [
-                  "Authorization",
-                  "JWT"
-                ],
-                "add": {
-                  "Authorization": [
-                    "Bearer ${contexts.sts.issuedToken}"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "ConditionEnforcementFilter",
-          "config": {
-            "condition": "${not empty contexts.sts.issuedToken}",
-            "failureHandler": {
-              "type": "StaticResponseHandler",
-              "config": {
-                "status": 401,
-                "reason": "Found",
-                "headers": {
-                  "Content-Type": [
-                    "application/json"
-                  ]
-                },
-                "entity": "{ \"Error\": \"Unauthorized\"}"
-              }
-            }
-          }
-        }
+docker compose up -d
 ----
-
-These three filters do the following: The first filter converts OpenAM token to JWT and sets to the request context. The second filter adds JWT to the OpenIG to the target service request. The third filter checks if there is a JWT in the request context and if not, responds with the `401` error.
 
 [[how-to-protect-websocket-connection-with-openam-and-openig-test-solution]]
-=== Test Solution
+=== Test the connection
 
-Navigate to http://openig.example.org:8081/ui[http://openig.example.org:8081/ui] and press the `Connect` button. You will see the connection error message.
-
-[listing]
-----
-Log:
-connecting...
-socket error occurred
-socket connection closed
-----
-
-Open the next tab in your browser and navigate to the OpenAM URL http://openam.example.org:8080/openam[http://openam.example.org:8080/openam]
-
-Login to OpenAM, return to http://openig.example.org:8081/ui[http://openig.example.org:8081/ui] tab and try to connect again.
-
-You will see the following
-
-[listing]
-----
-connecting...
-connected
-----
-
-Press the `Send Message` button and you should see the following messages
-
-[listing]
-----
-sending message...
-got response message from server: Test message
-----
-
-Let's logout from OpenAM go back to http://openig.example.org:8081/ui/ws[http://openig.example.org:8081/ui/ws] wait 3 minutes (as set in the `org.openidentityplatform.openig.websocket.ttl` setting) and try to send a message.
-
-We will see the following:
-
-[listing]
-----
-sending message...
-socket connection closed
-----
+. While signed out of OpenAM, open http://openig.example.org:8081/ui[the WebSocket client] and select *Connect*. The upgrade fails.
+. In a second tab, sign into http://openam.example.org:8080/openam[OpenAM]. Return to the WebSocket client, select *Connect*, and select *Send message*. The log shows `Connected` and the echoed `Test message`.
+. Sign out of OpenAM, wait at least 180 seconds from the last authorization check and select *Send message* again. When OpenAM rejects the session on reauthorization, OpenIG closes the connection.
 
 image:images/how-to/openam-openig-websocket/sample-service-ws-ui-openam.png[Sample Service WebSocket UI and OpenAM]
