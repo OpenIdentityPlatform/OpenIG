@@ -15,8 +15,16 @@
   Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
+:table-caption!:
+
+ifndef::env-site[]
 [#chap-logging]
+endif::env-site[]
 == Logging Events in OpenIG
+
+ifdef::env-site[]
+anchor:chap-logging[]
+endif::env-site[]
 
 OpenIG uses SLF4J with Logback. Logback controls the logging level, message format, and destinations for OpenIG and for dependencies that log through SLF4J.
 

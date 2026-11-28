@@ -15,6 +15,7 @@
   Portions Copyright 2024-2026 3A Systems, LLC.
 ////
 
+:table-caption!:
 include::../partials/openig-release-version.adoc[]
 
 ifndef::env-site[]
